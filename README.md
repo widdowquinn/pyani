@@ -1,4 +1,4 @@
-#README.md (average_nucleotide_identity)
+#README.md (pyani)
 
 ## Overview
 This repository contains code for calculating average nucleotide identity and related measures, and rendering relevant graphical summary output.
@@ -22,8 +22,8 @@ This repository contains code for calculating average nucleotide identity and re
 If you have downloaded v0.1.0 or greater, and the dependencies above are satisfied, then installation should be as simple as cloning the repository:
 
 ```
-$ git clone https://github.com/widdowquinn/average_nucleotide_identity
-$ cd average_nucleotide_identity
+$ git clone https://github.com/widdowquinn/pyani
+$ cd pyani
 ```
 
 then issuing:
