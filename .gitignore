@@ -1,2 +1,6 @@
 .DS_Store
 *~
+*.pyc
+build/
+dist/
+pyani.egg-info/
