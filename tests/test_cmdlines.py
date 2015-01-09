@@ -9,21 +9,24 @@ If the test is run directly at the command-line, the output obtained by each
 test is returned to STDOUT.
 """
 
+
 from nose.tools import assert_equal
 from pyani import anim
+
 
 # Test ANIm command-lines
 # One pairwise comparison
 def test_anim_pairwise():
-    """Test generation of pairwise comparison command.
+    """Test generation of NUCmer pairwise comparison command.
     """
     cmd = anim.construct_nucmer_cmdline("file1.fna", "file2.fna")
     assert_equal(cmd, "nucmer -mum -p file1_vs_file2 file1.fna file2.fna")
     print(cmd)
 
+
 # List of pairwise comparisons
 def test_anim_collection():
-    """Test generation of pairwise comparison command.
+    """Test generation of list of NUCmer comparison commands.
     """
     files = ["file1", "file2", "file3", "file4"]
     cmdlist = anim.generate_nucmer_commands(files)
@@ -37,7 +40,6 @@ def test_anim_collection():
     
 
 # Run as script
-# This 
 if __name__ == '__main__':
     import inspect
     import test_cmdlines
