@@ -1,8 +1,15 @@
 #!/usr/bin/env python
 
 """Tests for pyani package command-line generation
+
+These tests are intended to be run using the nose package
+(see https://nose.readthedocs.org/en/latest/).
+
+If the test is run directly at the command-line, the output obtained by each
+test is returned to STDOUT.
 """
 
+from nose.tools import assert_equal
 from pyani import anim
 
 # Test ANIm command-lines
@@ -10,15 +17,32 @@ from pyani import anim
 def test_anim_pairwise():
     """Test generation of pairwise comparison command.
     """
-    cmd = anim.construct_nucmer_cmdline("file1", "file2")
-    print cmd
+    cmd = anim.construct_nucmer_cmdline("file1.fna", "file2.fna")
+    assert_equal(cmd, "nucmer -mum -p file1_vs_file2 file1.fna file2.fna")
+    print(cmd)
 
 # List of pairwise comparisons
-def test_anim_pairwise():
+def test_anim_collection():
     """Test generation of pairwise comparison command.
     """
     files = ["file1", "file2", "file3", "file4"]
     cmdlist = anim.generate_nucmer_commands(files)
-    print cmdlist
+    assert_equal(cmdlist, ['nucmer -mum -p file1_vs_file2 file1 file2',
+                           'nucmer -mum -p file1_vs_file3 file1 file3',
+                           'nucmer -mum -p file1_vs_file4 file1 file4',
+                           'nucmer -mum -p file2_vs_file3 file2 file3',
+                           'nucmer -mum -p file2_vs_file4 file2 file4',
+                           'nucmer -mum -p file3_vs_file4 file3 file4'])
+    print(cmdlist)
     
-    
+
+# Run as script
+# This 
+if __name__ == '__main__':
+    import inspect
+    import test_cmdlines
+    functions = [o[0] for o in inspect.getmembers(test_cmdlines) if
+                 inspect.isfunction(o[1])]
+    for fn in functions:
+        print("\nFunction called: {}()".format(fn))
+        locals()[fn]()
