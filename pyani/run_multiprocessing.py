@@ -15,14 +15,17 @@ import multiprocessing
 import subprocess
 import sys
 
+CUMRETVAL = 0
 
 # Run a set of command lines using multiprocessing
 def multiprocessing_run(cmdlines, verbose=False):
     """Distributes passed command-line jobs using multiprocessing.
 
     - cmdlines - an iterable of command line strings
-    - logger - an optional Python logger module Logger instance
     """
+    # Keep track of return values for this pool, reset to zero
+    global CUMRETVAL
+    # Run jobs
     pool = multiprocessing.Pool()
     completed = []
     if verbose:
@@ -37,6 +40,7 @@ def multiprocessing_run(cmdlines, verbose=False):
                     for cline in cmdlines]
     pool.close()        # Run jobs
     pool.join()         # Collect output
+    return CUMRETVAL
 
 
 # Callback function with multiprocessing run status
@@ -45,4 +49,5 @@ def status_callback(val):
 
     - val - return status indicated from multiprocessing
     """
-    pass  # We'll do something with this later
+    global CUMRETVAL
+    CUMRETVAL += val

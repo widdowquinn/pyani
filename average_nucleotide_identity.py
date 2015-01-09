@@ -159,6 +159,8 @@ import sys
 
 from argparse import ArgumentParser
 
+from pyani import pyani_files, anim, pyani_config
+from pyani.run_multiprocessing import multiprocessing_run
 
 # Process command-line arguments
 def parse_cmdline(args):
@@ -202,11 +204,14 @@ def parse_cmdline(args):
     parser.add_argument("-m", "--method", dest="method",
                         action="store", default="ANIm",
                         help="ANI method [ANIm|ANIb|TETRA]")
+    parser.add_argument("--scheduler", dest="scheduler",
+                        action="store", default="multiprocessing",
+                        help="Job scheduler [multiprocessing|SGE]")
     parser.add_argument("--maxmatch", dest="maxmatch",
                         action="store_true", default=False,
                         help="Override MUMmer to allow all NUCmer matches")
     parser.add_argument("--nucmer_exe", dest="nucmer_exe",
-                        action="store", default="nucmer",
+                        action="store", default=pyani_config.NUCMER_DEFAULT,
                         help="Path to NUCmer executable")
     parser.add_argument("--blast_exe", dest="blast_exe",
                         action="store", default="blastn",
@@ -266,17 +271,56 @@ def make_outdir():
 
 
 # Calculate ANIb for input
-def calculate_anib():
+def calculate_anib(infiles, org_lengths):
+    """Calculate ANIb for files in input directory.
+
+    - infiles - paths to each input file
+    - org_lengths - dictionary of input sequence lengths, keyed by sequence
+    """
     raise NotImplementedError
 
 
 # Calculate ANIm for input
-def calculate_anim():
+def calculate_anim(infiles, org_lengths):
+    """Calculate ANIm for files in input directory.
+
+    - infiles - paths to each input file
+    - org_lengths - dictionary of input sequence lengths, keyed by sequence
+    """
+    logger.info("Running ANIm", org_lengths)
+    logger.info("Generating NUCmer command-lines")
+    cmdlist = anim.generate_nucmer_commands(infiles, args.outdirname,
+                                            nucmer_exe=args.nucmer_exe,
+                                            maxmatch=args.maxmatch)
+    logger.info("NUCmer commands:\n" + os.linesep.join(cmdlist))
+    # Schedule NUCmer runs
+    if not args.skip_nucmer:
+        if args.scheduler == 'multiprocessing':
+            logger.info("Running jobs with multiprocessing")
+            cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
+            logger.info("Cumulative return value: %d" % cumval)
+            if 0 < cumval:
+                logger.warning("At least one NUCmer comparison failed. " +\
+                               "ANIm may fail.")
+            else:
+                logger.info("All multiprocessing jobs complete.")
+        else:
+            logger.info("Running jobs with SGE")
+            raise NotImplementedError
+    else:
+        logger.warning("Skipping NUCmer run (as instructed)!")
+    # Process resulting .delta files
+    logger.info("Processing NUCmer .delta files.")
     raise NotImplementedError
 
 
 # Calculate TETRA for input
-def calculate_tetra():
+def calculate_tetra(infiles):
+    """Calculate TETRA for files in input directory.
+
+    - infiles - paths to each input file
+    - org_lengths - dictionary of input sequence lengths, keyed by sequence
+    """
     raise NotImplementedError
 
 
@@ -336,3 +380,27 @@ if __name__ == '__main__':
         logger.error("Valid methods are: %s" % methods.keys())
         sys.exit(1)
     logger.info("Using ANI method: %s" % args.method)
+
+    # Have we got a valid scheduler choice?
+    schedulers = ["multiprocessing", "SGE"]
+    if args.scheduler not in schedulers:
+        logger.error("scheduler %s not recognised (exiting)" % args.scheduler)
+        logger.error("Valid schedulers are: %s" % '; '.join(schedulers))
+        sys.exit(1)
+    logger.info("Using scheduler method: %s" % args.scheduler)
+
+    # Get input files
+    logger.info("Identifying FASTA files in %s" % args.indirname)
+    infiles = pyani_files.get_fasta_files(args.indirname)
+    logger.info("Input files:\n\t%s" % '\n\t'.join(infiles))
+
+    # Get lengths of input sequences
+    logger.info("Processing input sequence lengths")
+    org_lengths = pyani_files.get_sequence_lengths(infiles)
+    logger.info("Sequence lengths:\n" +
+                os.linesep.join(["\t%s: %d" % (k, v) for
+                                 k, v in org_lengths.items()]))
+
+    # Run method on the contents of the input directory, writing out
+    # to the named output directory
+    methods[args.method](infiles, org_lengths)

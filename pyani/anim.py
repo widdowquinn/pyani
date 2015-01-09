@@ -27,12 +27,13 @@ import os
 
 # Generate list of NUCmer pairwise comparison command lines from
 # passed sequence filenames
-def generate_nucmer_commands(filenames,
+def generate_nucmer_commands(filenames, outdir,
                              nucmer_exe=pyani_config.NUCMER_DEFAULT,
                              maxmatch=False):
     """Return a list of NUCmer command-lines for ANIm
 
     - filenames - a list of paths to input FASTA files
+    - outdir - path to output directory
     - nucmer_exe - location of the nucmer binary
     - maxmatch - Boolean flag indicating to use NUCmer's -maxmatch option
 
@@ -41,31 +42,34 @@ def generate_nucmer_commands(filenames,
     """
     cmdlines = []
     for idx, f1 in enumerate(filenames[:-1]):
-        cmdlines.extend([construct_nucmer_cmdline(f1, f2, nucmer_exe) for 
+        cmdlines.extend([construct_nucmer_cmdline(f1, f2, outdir, 
+                                                  nucmer_exe) for 
                          f2 in filenames[idx+1:]])
     return cmdlines
 
 
 # Generate single NUCmer pairwise comparison command line from pair of
 # input filenames
-def construct_nucmer_cmdline(filename1, filename2, 
+def construct_nucmer_cmdline(fname1, fname2, outdir,
                              nucmer_exe=pyani_config.NUCMER_DEFAULT,
-                             maxmatch=False):
+                             maxmatch=True):
     """Returns a single NUCmer pairwise comparison command.
 
-    - filename1 - query FASTA filepath
-    - filename2 - subject FASTA filepath
-    - maxmatch - Boolean flag indicating to use NUCmer's -maxmatch option
+    - fname1 - query FASTA filepath
+    - fname2 - subject FASTA filepath
+    - outdir - path to output directory
+    - maxmatch - Boolean flag indicating whether to use NUCmer's -maxmatch
+    option. If not, the -mum option is used instead
     """
-    outprefix = "%s_vs_%s" %\
-                (os.path.splitext(os.path.split(filename1)[-1])[0],
-                 os.path.splitext(os.path.split(filename2)[-1])[0])
+    outprefix = os.path.join(outdir,"%s_vs_%s" %\
+                             (os.path.splitext(os.path.split(fname1)[-1])[0],
+                              os.path.splitext(os.path.split(fname2)[-1])[0]))
     if maxmatch:
         mode = "-maxmatch"
     else:
         mode = "-mum"
     return "{0} {1} -p {2} {3} {4}".format(nucmer_exe, mode, outprefix,
-                                           filename1, filename2)
+                                           fname1, fname2)
     
 # Parse NUCmer delta file to get total alignment length and total sim_errors
 def parse_delta(filename):
