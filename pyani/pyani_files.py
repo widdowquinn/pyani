@@ -14,7 +14,7 @@ from Bio import SeqIO
 
 # Get a list of FASTA files from the input directory
 def get_fasta_files(dirname=None):
-    """ Returns a list of FASTA files in the passed directory
+    """Returns a list of FASTA files in the passed directory
 
     - dirname - path to input directory
     """
@@ -26,7 +26,7 @@ def get_fasta_files(dirname=None):
 
 # Get list of FASTA files in a directory
 def get_input_files(dirname, *ext):
-    """ Returns files in passed directory, filtered by extension.
+    """Returns files in passed directory, filtered by extension.
 
     - dirname - path to input directory
     - *ext - list of arguments describing permitted file extensions
@@ -38,7 +38,7 @@ def get_input_files(dirname, *ext):
 
 # Get lengths of input sequences
 def get_sequence_lengths(fastafilenames):
-    """ Returns dictionary of sequence lengths, keyed by organism.
+    """Returns dictionary of sequence lengths, keyed by organism.
 
     Biopython's SeqIO module is used to parse all sequences in the FASTA
     file corresponding to each organism, and the total base count in each

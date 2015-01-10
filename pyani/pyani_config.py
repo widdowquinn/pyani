@@ -10,3 +10,8 @@
 
 # defaults assume that common binaries are on the $PATH
 NUCMER_DEFAULT="nucmer"
+
+# stems for output files
+ANIM_FILESTEMS = ("ANIm_alignment_lengths", "ANIm_percentage_identity",
+                  "ANIm_alignment_coverage", "ANIm_similarity_errors")
+

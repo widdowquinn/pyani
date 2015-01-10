@@ -159,8 +159,9 @@ import sys
 
 from argparse import ArgumentParser
 
-from pyani import pyani_files, anim, pyani_config
+from pyani import pyani_files, anim, pyani_config, pyani_graphics
 from pyani.run_multiprocessing import multiprocessing_run
+
 
 # Process command-line arguments
 def parse_cmdline(args):
@@ -201,6 +202,9 @@ def parse_cmdline(args):
     parser.add_argument("--format", dest="gformat",
                         action="store", default="pdf",
                         help="Graphics output format [pdf|png|jpg]")
+    parser.add_argument("--gmethod", dest="gmethod",
+                        action="store", default="mpl",
+                        help="Graphics output method [mpl|R]")
     parser.add_argument("-m", "--method", dest="method",
                         action="store", default="ANIm",
                         help="ANI method [ANIm|ANIb|TETRA]")
@@ -282,7 +286,7 @@ def calculate_anib(infiles, org_lengths):
 
 # Calculate ANIm for input
 def calculate_anim(infiles, org_lengths):
-    """Calculate ANIm for files in input directory.
+    """Returns ANIm result dataframes for files in input directory.
 
     - infiles - paths to each input file
     - org_lengths - dictionary of input sequence lengths, keyed by sequence
@@ -298,12 +302,10 @@ def calculate_anim(infiles, org_lengths):
     and similarity error count for every unique region alignment between
     the two organisms, as represented by the sequences in the FASTA files.
     
-    These are processed to give matrices of aligned sequence lengths,
-    similarity error counts, average nucleotide identity (ANI) percentages,
-    and minimum aligned percentage (of whole genome) for each pairwise
+    These are processed to give matrices of aligned sequence lengths, 
+    average nucleotide identity (ANI) percentages, coverage (aligned
+    percentage of whole genome), and similarity error cound for each pairwise
     comparison.
-    
-    The matrices are written to file in a plain text tab-separated format.
     """
     logger.info("Running ANIm", org_lengths)
     logger.info("Generating NUCmer command-lines")
@@ -329,7 +331,20 @@ def calculate_anim(infiles, org_lengths):
         logger.warning("Skipping NUCmer run (as instructed)!")
     # Process resulting .delta files
     logger.info("Processing NUCmer .delta files.")
-    raise NotImplementedError
+    try:
+        data = anim.process_deltadir(args.outdirname, org_lengths)
+    except ZeroDivisionError:
+        logger.error("One or more NUCmer output files has a problem.")
+        if not args.skip_nucmer:
+            if 0 < cumval:
+                logger.error("This is possibly due to NUCmer run failure, " +
+                             "please investigate")
+            else:
+                logger.error("This is possibly due to a NUCmer comparison " +
+                             "being too distant for use. Please consider " +
+                             "using the --maxmatch option.")
+        logger.error(last_exception())
+    return data
 
 
 # Calculate TETRA for input
@@ -340,6 +355,91 @@ def calculate_tetra(infiles):
     - org_lengths - dictionary of input sequence lengths, keyed by sequence
     """
     raise NotImplementedError
+
+
+# Write ANIb output
+def write_anib(results):
+    """Write ANIb results to output directory.
+
+    - results - tuple of dataframes from ANIb analysis
+    """
+    raise NotImplementedError
+
+# Write ANIm output
+def write_anim(results):
+    """Write ANIm results to output directory.
+
+    - results - tuple of dataframes from ANIm analysis
+    
+    ANIm analyses produces four dataframes, in the order:
+
+    - alignment_lengths - symmetrical: total length of alignment
+    - percentage_identity - symmetrical: percentage identity of alignment
+    - alignment_coverage - non-symmetrical: coverage of query and subject
+    - similarity_errors - symmetrical: count of similarity errors
+
+    Each is written to an Excel-format file, and plain text tab-separated
+    file in the output directory.
+    """
+    logger.info("Writing ANIm results to %s" % args.outdirname)
+    for df, filestem in zip(results, pyani_config.ANIM_FILESTEMS):
+        logger.info("\t%s" % filestem)
+        df.to_excel(os.path.join(args.outdirname, filestem) + '.xlsx',
+                    index=True)
+        df.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
+                    index=True, sep="\t")
+
+# Write TETRA output
+def write_tetra(results):
+    """Write TETRA results to output directory.
+
+    - results - tuple of dataframes from TETRA analysis
+    """
+    raise NotImplementedError
+
+
+# Draw ANIb output
+def draw_anib(results):
+    """Draw ANIb results
+
+    - results - tuple of dataframes from ANIb analysis
+    """
+    raise NotImplementedError
+
+# Draw ANIm output
+def draw_anim(results):
+    """Draw ANIm results
+
+    - results - tuple of dataframes from ANIb analysis
+    """
+    params = {'ANIm_alignment_lengths': ('afmhot',),
+              'ANIm_percentage_identity': ('spbnd_BuRd',),
+              'ANIm_alignment_coverage': ('BuRd',),
+              'ANIm_similarity_errors': ('afmhot',)}
+    for df, filestem in zip(results, pyani_config.ANIM_FILESTEMS):        
+        outfilename = os.path.join(args.outdirname, filestem) + \
+                      '.%s' % args.gformat
+        logger.info("Writing heatmap to %s" % outfilename)
+        # Set parameters according to which output data we have:
+        vmin, vmax = None, None
+        if filestem in ('ANIm_percentage_identity',
+                        'ANIm_alignment_coverage'):
+            vmin, vmax = (0.0, 1.0)
+        if args.gmethod == "mpl":
+            pyani_graphics.heatmap_mpl(df, outfilename, title=filestem,
+                                       cmap=params[filestem][0],
+                                       vmin=vmin, vmax=vmax)        
+
+# Draw TETRA output
+def draw_tetra(results):
+    """Draw TETRA results
+
+    - results - tuple of dataframes from TETRA analysis
+    """
+    raise NotImplementedError
+
+
+
 
 
 # Run as script
@@ -390,9 +490,11 @@ if __name__ == '__main__':
     logger.info("Output directory: %s" % args.outdirname)
 
     # Have we got a valid method choice?
-    methods = {"ANIm": calculate_anim,
-               "ANIb": calculate_anib,
-               "TETRA": calculate_tetra}
+    # Dictionary below defines analysis function, and output presentation
+    # functions, dependent on selected method.
+    methods = {"ANIm": (calculate_anim, write_anim, draw_anim),
+               "ANIb": (calculate_anib, write_anib, draw_anib),
+               "TETRA": (calculate_tetra, write_tetra, draw_tetra)}
     if args.method not in methods:
         logger.error("ANI method %s not recognised (exiting)" % args.method)
         logger.error("Valid methods are: %s" % methods.keys())
@@ -419,6 +521,18 @@ if __name__ == '__main__':
                 os.linesep.join(["\t%s: %d" % (k, v) for
                                  k, v in org_lengths.items()]))
 
-    # Run method on the contents of the input directory, writing out
-    # to the named output directory
-    methods[args.method](infiles, org_lengths)
+    # Run appropriate method on the contents of the input directory, 
+    # and write out corresponding results.
+    logger.info("Carrying out %s analysis" % args.method)
+    results = methods[args.method][0](infiles, org_lengths)
+    methods[args.method][1](results)
+    
+    # Do we want graphical output?
+    if args.graphics:
+        logger.info("Rendering output graphics")
+        logger.info("Graphics format: %s" % args.gformat)
+        logger.info("Graphics method: %s" % args.gmethod)
+        methods[args.method][2](results)
+
+    # Report that we've finished
+    logger.info("Done.")
