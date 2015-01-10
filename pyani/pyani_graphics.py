@@ -18,16 +18,20 @@ from math import floor, log10
 
 # Define custom matplotlib colourmaps
 # 1) Map for species boundaries (95%: 0.95), blue for values at
-# 0.9 or below, red for values at 1.0; white at 0.95
-cdict_spbnd_BuRd = {'red': ((0.0, 0.0, 0.0),
+# 0.9 or below, red for values at 1.0; white at 0.95.
+# Also, anything below 0.7 is 70% grey
+cdict_spbnd_BuRd = {'red': ((0.0, 0.0, 0.7),
+                            (0.7, 0.7, 0.0),
                             (0.9, 0.0, 0.0),
                             (0.95, 1.0, 1.0),
                             (1.0, 1.0, 1.0)),
-                    'green': ((0.0, 0.0, 0.0),
+                    'green': ((0.0, 0.0, 0.7),
+                              (0.7, 0.7, 0.0),
                               (0.9, 0.0, 0.0),
                               (0.95, 1.0, 1.0),
                               (1.0, 0.0, 0.0)),
-                    'blue': ((0.0, 1.0, 1.0),
+                    'blue': ((0.0, 0.0, 0.7),
+                             (0.7, 0.7, 1.0),
                              (0.95, 1.0, 1.0),
                              (1.0, 0.0, 0.0))}
 cmap_spbnd_BuRd = LinearSegmentedColormap("spbnd_BuRd", cdict_spbnd_BuRd)
