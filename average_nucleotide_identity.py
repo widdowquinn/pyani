@@ -286,6 +286,24 @@ def calculate_anim(infiles, org_lengths):
 
     - infiles - paths to each input file
     - org_lengths - dictionary of input sequence lengths, keyed by sequence
+
+    Finds ANI by the ANIm method, as described in Richter et al (2009)
+    Proc Natl Acad Sci USA 106: 19126-19131 doi:10.1073/pnas.0906412106.
+    
+    All FASTA format files (selected by suffix) in the input directory
+    are compared against each other, pairwise, using NUCmer (which must
+    be in the path). NUCmer output is stored in the output directory.
+    
+    The NUCmer .delta file output is parsed to obtain an alignment length
+    and similarity error count for every unique region alignment between
+    the two organisms, as represented by the sequences in the FASTA files.
+    
+    These are processed to give matrices of aligned sequence lengths,
+    similarity error counts, average nucleotide identity (ANI) percentages,
+    and minimum aligned percentage (of whole genome) for each pairwise
+    comparison.
+    
+    The matrices are written to file in a plain text tab-separated format.
     """
     logger.info("Running ANIm", org_lengths)
     logger.info("Generating NUCmer command-lines")
