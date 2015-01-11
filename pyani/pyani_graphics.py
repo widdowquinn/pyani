@@ -172,15 +172,32 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
         fig.savefig(outfilename)
     return fig
 
-def heatmap_r(df, infilename, outfilename, title=None, cmap=None,
-              vmin=None, vmax=None, gformat="pdf"):
-    """Returns matplotlib heatmap with cluster dendrograms.
+def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
+              vmin=None, vmax=None, gformat=None):
+    """Uses R to draw heatmap, and returns R code for rendering.
 
     - df - pandas DataFrame with relevant data
-    - outfilename - path to output file (indicates output format)
+    - infilename - path to tab-separated table with data
+    - outfilename - path to output file
     - cmap - colourmap option
     """
-    rstr = ["library(gplots)"]  # R import
+    vdiff = vmax - vmin
+    vstep = 0.001 * vdiff
+
+    # Prepare R code
+    rstr = ["library(gplots)", "library(RColorBrewer)"]  # R import
     rstr.append("ani = read.table('%s', header=T, sep='\\t', row.names=1)" %
                 infilename)
+    rstr.append("%s('%s')" % (gformat, outfilename))
+    rstr.append("heatmap.2(as.matrix(ani), col=%s, " % cmap +
+                "breaks=seq(%.2f, %.2f, %f), " % (vmin, vmax, vstep) + 
+                "trace='none', " + 
+                "margins=c(15, 12), cexCol=1/log10(ncol(ani)), " +
+                "cexRow=1/log10(nrow(ani)), main='%s')" % title)
+    rstr.append("dev.off()")
+
+    # Execute R code
+    rstr = '\n'.join(rstr)
+    robjects.r(rstr)
+    return rstr
 

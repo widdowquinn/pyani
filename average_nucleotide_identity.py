@@ -412,11 +412,20 @@ def draw_anim(results):
 
     - results - tuple of dataframes from ANIb analysis
     """
-    params_mpl = {'ANIm_alignment_lengths': ('afmhot',),
-                  'ANIm_percentage_identity': ('spbnd_BuRd',),
-                  'ANIm_alignment_coverage': ('BuRd',),
-                  'ANIm_similarity_errors': ('afmhot',)}
+    # Colour gradients for use in R
+    r_afmhot = 'colorRampPalette(c("black","red","yellow","white"))'
+    # Draw heatmaps
     for df, filestem in zip(results, pyani_config.ANIM_FILESTEMS):        
+        params_mpl = {'ANIm_alignment_lengths': ('afmhot',),
+                      'ANIm_percentage_identity': ('spbnd_BuRd',),
+                      'ANIm_alignment_coverage': ('BuRd',),
+                      'ANIm_similarity_errors': ('afmhot',)}
+        params_r = {'ANIm_alignment_lengths': (r_afmhot, df.values.min(),
+                                               df.values.max()),
+                    'ANIm_percentage_identity': ('bluered', 0.9, 1),
+                    'ANIm_alignment_coverage': ('bluered', 0, 1),
+                    'ANIm_similarity_errors': (r_afmhot, df.values.min(),
+                                               df.values.max())}
         fullstem = os.path.join(args.outdirname, filestem)
         outfilename = fullstem + '.%s' % args.gformat
         infilename = fullstem + '.tab'
@@ -432,7 +441,13 @@ def draw_anim(results):
                                        cmap=params_mpl[filestem][0],
                                        vmin=vmin, vmax=vmax)        
         elif args.gmethod == "R":
-            pyani_graphics.heatmap_r(df, infilename, outfilename)
+            rstr = pyani_graphics.heatmap_r(infilename, outfilename,
+                                            gformat=args.gformat.lower(),
+                                            title=filestem,
+                                            cmap=params_r[filestem][0],
+                                            vmin=params_r[filestem][1],
+                                            vmax=params_r[filestem][2])
+            logger.info("Executed R code:\n%s" % rstr)
 
 # Draw TETRA output
 def draw_tetra(results):
