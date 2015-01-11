@@ -281,6 +281,7 @@ def calculate_anib(infiles, org_lengths):
     - infiles - paths to each input file
     - org_lengths - dictionary of input sequence lengths, keyed by sequence
     """
+    logger.info("Running ANIb")
     raise NotImplementedError
 
 
@@ -307,7 +308,7 @@ def calculate_anim(infiles, org_lengths):
     percentage of whole genome), and similarity error cound for each pairwise
     comparison.
     """
-    logger.info("Running ANIm", org_lengths)
+    logger.info("Running ANIm")
     logger.info("Generating NUCmer command-lines")
     cmdlist = anim.generate_nucmer_commands(infiles, args.outdirname,
                                             nucmer_exe=args.nucmer_exe,
@@ -416,10 +417,12 @@ def draw_anim(results):
     r_afmhot = 'colorRampPalette(c("black","red","yellow","white"))'
     # Draw heatmaps
     for df, filestem in zip(results, pyani_config.ANIM_FILESTEMS):        
-        params_mpl = {'ANIm_alignment_lengths': ('afmhot',),
-                      'ANIm_percentage_identity': ('spbnd_BuRd',),
-                      'ANIm_alignment_coverage': ('BuRd',),
-                      'ANIm_similarity_errors': ('afmhot',)}
+        params_mpl = {'ANIm_alignment_lengths': ('afmhot', df.values.min(),
+                                                 df.values.max()),
+                      'ANIm_percentage_identity': ('spbnd_BuRd', 0, 1),
+                      'ANIm_alignment_coverage': ('BuRd', 0, 1),
+                      'ANIm_similarity_errors': ('afmhot', df.values.min(),
+                                                 df.values.max())}
         params_r = {'ANIm_alignment_lengths': (r_afmhot, df.values.min(),
                                                df.values.max()),
                     'ANIm_percentage_identity': ('bluered', 0.9, 1),
@@ -430,16 +433,12 @@ def draw_anim(results):
         outfilename = fullstem + '.%s' % args.gformat
         infilename = fullstem + '.tab'
         logger.info("Writing heatmap to %s" % outfilename)
-        # Set parameters according to which output data we have:
-        vmin, vmax = None, None
-        if filestem in ('ANIm_percentage_identity',
-                        'ANIm_alignment_coverage'):
-            vmin, vmax = (0.0, 1.0)
         if args.gmethod == "mpl":
             pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
                                        title=filestem,
                                        cmap=params_mpl[filestem][0],
-                                       vmin=vmin, vmax=vmax)        
+                                       vmin=params_mpl[filestem][1],
+                                       vmax=params_mpl[filestem][2])        
         elif args.gmethod == "R":
             rstr = pyani_graphics.heatmap_r(infilename, outfilename,
                                             gformat=args.gformat.lower(),
