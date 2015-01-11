@@ -189,9 +189,9 @@ def parse_cmdline(args):
                         action="store_true", default=False,
                         help="Skip NUCmer runs, for testing " +
                         "(e.g. if output already present)")
-    parser.add_argument("--skip_blast", dest="skip_blast",
+    parser.add_argument("--skip_blastn", dest="skip_blastn",
                         action="store_true", default=False,
-                        help="Skip BLAST runs, for testing " +
+                        help="Skip BLASTN runs, for testing " +
                         "(e.g. if output already present)")
     parser.add_argument("--noclobber", dest="noclobber",
                         action="store_true", default=False,
@@ -281,9 +281,34 @@ def calculate_anib(infiles, org_lengths):
 
     - infiles - paths to each input file
     - org_lengths - dictionary of input sequence lengths, keyed by sequence
+
+    Calculates ANI by the ANIb method, as described in Goris et al. (2007)
+    Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0.
+
+    All FASTA format files (selected by suffix) in the input directory are
+    used to construct BLAST databases, placed in the output directory.
+    Each file's contents are also split into sequence fragments of length
+    options.fragsize, and the multiple FASTA file that results written to
+    the output directory. These are BLASTNed, pairwise, against the
+    databases.
+    
+    The BLAST output is interrogated for all fragment matches that cover
+    at least 70% of the query sequence, with at least 30% nucleotide
+    identity over the full length of the query sequence. This is an odd
+    choice and doesn't correspond to the twilight zone limit as implied by
+    Goris et al. We persist with their definition, however.  Only these
+    qualifying matches contribute to the total aligned length, and total
+    aligned sequence identity used to calculate ANI.
+    
+    The results are processed to give matrices of aligned sequence length
+    (aln_lengths.tab), similarity error counts (sim_errors.tab), ANIs
+    (perc_ids.tab), and minimum aligned percentage (perc_aln.tab) of
+    each genome, for each pairwise comparison. These are written to the
+    output directory in plain text tab-separated format.
     """
     logger.info("Running ANIb")
-    if not args.skip_blast:
+    # Build BLAST databases and run pairwise BLASTN
+    if not args.skip_blastn:
         # Make sequence fragments
         logger.info("Fragmenting input files, and writing to %s" %
                     args.outdirname)
@@ -324,8 +349,10 @@ def calculate_anib(infiles, org_lengths):
             logger.info("Running jobs with SGE")
             raise NotImplementedError
     else:
-        logger.warning("Skipping NUCmer run (as instructed)!")
+        logger.warning("Skipping BLASTN run (as instructed)!")
     raise NotImplementedError
+
+    # Process pairwise BLASTN output
 
 
 # Calculate ANIm for input
@@ -353,12 +380,12 @@ def calculate_anim(infiles, org_lengths):
     """
     logger.info("Running ANIm")
     logger.info("Generating NUCmer command-lines")
-    cmdlist = anim.generate_nucmer_commands(infiles, args.outdirname,
-                                            nucmer_exe=args.nucmer_exe,
-                                            maxmatch=args.maxmatch)
-    logger.info("NUCmer commands:\n" + os.linesep.join(cmdlist))
     # Schedule NUCmer runs
     if not args.skip_nucmer:
+        cmdlist = anim.generate_nucmer_commands(infiles, args.outdirname,
+                                                nucmer_exe=args.nucmer_exe,
+                                                maxmatch=args.maxmatch)
+        logger.info("NUCmer commands:\n" + os.linesep.join(cmdlist))
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
@@ -373,6 +400,7 @@ def calculate_anim(infiles, org_lengths):
             raise NotImplementedError
     else:
         logger.warning("Skipping NUCmer run (as instructed)!")
+
     # Process resulting .delta files
     logger.info("Processing NUCmer .delta files.")
     try:
