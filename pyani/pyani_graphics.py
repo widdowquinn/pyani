@@ -7,13 +7,40 @@
 
 """Code to implement graphics output for ANI analyses."""
 
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import scipy.cluster.hierarchy as sch
-import scipy.spatial.distance as distance
+try:
+    import matplotlib.pyplot as plt
+    import matplotlib.gridspec as gridspec
+    from matplotlib.colors import LinearSegmentedColormap
+    mpl_import = True
+except ImportError:
+    print "Could not import matplotlib: some graphics options " +\
+        "will be unavailable."
+    mpl_import = False
 
-from matplotlib.colors import LinearSegmentedColormap
+try:
+    import numpy as np
+    numpy_import = True
+except ImportError:
+    print "Could not import numpy: some graphics options " +\
+        "will be unavailable."
+    numpy_import = False
+
+try:
+    import scipy.cluster.hierarchy as sch
+    import scipy.spatial.distance as distance
+    scipy_import = True
+except ImportError:
+    print "Could not import scipy: some graphics options " +\
+        "will be unavailable."
+
+try:
+    import rpy2.robjects as robjects
+    rpy2_import = True
+except ImportError:
+    print "Could not import rpy2: some graphics options " +\
+        "will be unavailable."
+    rpy2_import = False
+
 from math import floor, log10
 
 # Define custom matplotlib colourmaps
@@ -61,9 +88,9 @@ def clean_axis(ax):
         sp.set_visible(False)
 
 
-def heatmap_mpl(df, outfilename, title=None, cmap=None,
+def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                 vmin=None, vmax=None):
-    """Write matplotlib heatmap with cluster dendrograms.
+    """Returns matplotlib heatmap with cluster dendrograms.
 
     - df - pandas DataFrame with relevant data
     - outfilename - path to output file (indicates output format)
@@ -139,6 +166,21 @@ def heatmap_mpl(df, outfilename, title=None, cmap=None,
     cb.ax.yaxis.set_label_position('left')
     cb.outline.set_linewidth(0)
 
-    # Write resulting figure
+    # Return figure output, and write, if required
     fig.set_tight_layout(True)
-    fig.savefig(outfilename)
+    if outfilename:
+        fig.savefig(outfilename)
+    return fig
+
+def heatmap_r(df, infilename, outfilename, title=None, cmap=None,
+              vmin=None, vmax=None, gformat="pdf"):
+    """Returns matplotlib heatmap with cluster dendrograms.
+
+    - df - pandas DataFrame with relevant data
+    - outfilename - path to output file (indicates output format)
+    - cmap - colourmap option
+    """
+    rstr = ["library(gplots)"]  # R import
+    rstr.append("ani = read.table('%s', header=T, sep='\\t', row.names=1)" %
+                infilename)
+

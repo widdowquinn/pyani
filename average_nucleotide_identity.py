@@ -412,13 +412,14 @@ def draw_anim(results):
 
     - results - tuple of dataframes from ANIb analysis
     """
-    params = {'ANIm_alignment_lengths': ('afmhot',),
-              'ANIm_percentage_identity': ('spbnd_BuRd',),
-              'ANIm_alignment_coverage': ('BuRd',),
-              'ANIm_similarity_errors': ('afmhot',)}
+    params_mpl = {'ANIm_alignment_lengths': ('afmhot',),
+                  'ANIm_percentage_identity': ('spbnd_BuRd',),
+                  'ANIm_alignment_coverage': ('BuRd',),
+                  'ANIm_similarity_errors': ('afmhot',)}
     for df, filestem in zip(results, pyani_config.ANIM_FILESTEMS):        
-        outfilename = os.path.join(args.outdirname, filestem) + \
-                      '.%s' % args.gformat
+        fullstem = os.path.join(args.outdirname, filestem)
+        outfilename = fullstem + '.%s' % args.gformat
+        infilename = fullstem + '.tab'
         logger.info("Writing heatmap to %s" % outfilename)
         # Set parameters according to which output data we have:
         vmin, vmax = None, None
@@ -426,9 +427,12 @@ def draw_anim(results):
                         'ANIm_alignment_coverage'):
             vmin, vmax = (0.0, 1.0)
         if args.gmethod == "mpl":
-            pyani_graphics.heatmap_mpl(df, outfilename, title=filestem,
-                                       cmap=params[filestem][0],
+            pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
+                                       title=filestem,
+                                       cmap=params_mpl[filestem][0],
                                        vmin=vmin, vmax=vmax)        
+        elif args.gmethod == "R":
+            pyani_graphics.heatmap_r(df, infilename, outfilename)
 
 # Draw TETRA output
 def draw_tetra(results):
