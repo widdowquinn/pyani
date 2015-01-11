@@ -10,6 +10,8 @@
 
 # defaults assume that common binaries are on the $PATH
 NUCMER_DEFAULT="nucmer"
+BLASTN_DEFAULT="blastn"
+MAKEBLASTDB_DEFAULT="makeblastdb"
 
 # stems for output files
 ANIM_FILESTEMS = ("ANIm_alignment_lengths", "ANIm_percentage_identity",

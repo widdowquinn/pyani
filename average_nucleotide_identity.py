@@ -159,7 +159,7 @@ import sys
 
 from argparse import ArgumentParser
 
-from pyani import pyani_files, anim, pyani_config, pyani_graphics
+from pyani import anib, anim, pyani_config, pyani_files, pyani_graphics
 from pyani.run_multiprocessing import multiprocessing_run
 
 
@@ -218,10 +218,11 @@ def parse_cmdline(args):
                         action="store", default=pyani_config.NUCMER_DEFAULT,
                         help="Path to NUCmer executable")
     parser.add_argument("--blast_exe", dest="blast_exe",
-                        action="store", default="blastn",
+                        action="store", default=pyani_config.BLASTN_DEFAULT,
                         help="Path to BLASTN+ executable")
     parser.add_argument("--makeblastdb_exe", dest="makeblastdb_exe",
-                        action="store", default="makeblastdb",
+                        action="store",
+                        default=pyani_config.MAKEBLASTDB_DEFAULT,
                         help="Path to BLAST+ makeblastdb executable")
     return parser.parse_args()
 
@@ -282,6 +283,31 @@ def calculate_anib(infiles, org_lengths):
     - org_lengths - dictionary of input sequence lengths, keyed by sequence
     """
     logger.info("Running ANIb")
+    if not args.skip_blast:
+        # Make sequence fragments
+        logger.info("Fragmenting input files, and writing to %s" %
+                    args.outdirname)
+        fragfiles = anib.fragment_FASTA_files(infiles, args.outdirname,
+                                              args.fragsize)
+
+        # Build BLASTN databases
+        logger.info("Constructing BLASTN databases")
+        cmdlist = anib.generate_blastdb_commands(fragfiles, args.outdirname,
+                                                 args.makeblastdb_exe)
+        if args.scheduler == 'multiprocessing':
+            logger.info("Running jobs with multiprocessing")
+            cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
+            if 0 < cumval:
+                logger.warning("At least one makeblastdb run failed. " +\
+                               "ANIb may fail.")
+            else:
+                logger.info("All multiprocessing jobs complete.")
+        else:
+            logger.info("Running jobs with SGE")
+            raise NotImplementedError
+        
+        
+
     raise NotImplementedError
 
 
