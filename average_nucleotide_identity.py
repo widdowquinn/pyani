@@ -217,7 +217,7 @@ def parse_cmdline(args):
     parser.add_argument("--nucmer_exe", dest="nucmer_exe",
                         action="store", default=pyani_config.NUCMER_DEFAULT,
                         help="Path to NUCmer executable")
-    parser.add_argument("--blast_exe", dest="blast_exe",
+    parser.add_argument("--blastn_exe", dest="blastn_exe",
                         action="store", default=pyani_config.BLASTN_DEFAULT,
                         help="Path to BLASTN+ executable")
     parser.add_argument("--makeblastdb_exe", dest="makeblastdb_exe",
@@ -294,6 +294,7 @@ def calculate_anib(infiles, org_lengths):
         logger.info("Constructing BLASTN databases")
         cmdlist = anib.generate_blastdb_commands(fragfiles, args.outdirname,
                                                  args.makeblastdb_exe)
+        logger.info("Generated commands:\n%s" % '\n'.join(cmdlist))
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
@@ -306,8 +307,24 @@ def calculate_anib(infiles, org_lengths):
             logger.info("Running jobs with SGE")
             raise NotImplementedError
         
-        
-
+        # Run pairwise BLASTN
+        cmdlist = anib.generate_blastn_commands(fragfiles, args.outdirname,
+                                                args.blastn_exe)
+        logger.info("Generated commands:\n%s" % '\n'.join(cmdlist))
+        if args.scheduler == 'multiprocessing':
+            logger.info("Running jobs with multiprocessing")
+            cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
+            logger.info("Cumulative return value: %d" % cumval)
+            if 0 < cumval:
+                logger.warning("At least one BLASTN comparison failed. " +\
+                               "ANIm may fail.")
+            else:
+                logger.info("All multiprocessing jobs complete.")
+        else:
+            logger.info("Running jobs with SGE")
+            raise NotImplementedError
+    else:
+        logger.warning("Skipping NUCmer run (as instructed)!")
     raise NotImplementedError
 
 

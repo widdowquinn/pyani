@@ -44,12 +44,10 @@ def generate_blastdb_commands(filenames, outdir,
 
     - filenames - a list of paths to input FASTA files
     - outdir - path to output directory
-    - blastdb_exe - path to eht makeblastdb executable
+    - blastdb_exe - path to the makeblastdb executable
     """
-    cmdlines = []
-    for idx, fname in enumerate(filenames[:-1]):
-        cmdlines.extend([construct_makeblastdb_cmdline(fname, blastdb_exe) for 
-                         fname in filenames[idx+1:]])
+    cmdlines = [construct_makeblastdb_cmdline(fname, blastdb_exe) for 
+                fname in filenames]
     return cmdlines
 
 
@@ -59,8 +57,43 @@ def construct_makeblastdb_cmdline(filename,
     """Returns a single makeblastdb command.
 
     - filename - input filename
-    - blastdb_exe - path to eht makeblastdb executable
+    - blastdb_exe - path to the makeblastdb executable
     """
     title = os.path.splitext(os.path.split(filename)[-1])[0] + '-fragments'
     return "{0} -dbtype nucl -in {1} -title {2}".format(blastdb_exe,
                                                         filename, title)
+
+# Generate list of BLASTN command lines from passed filenames
+def generate_blastn_commands(filenames, outdir,
+                             blastn_exe=pyani_config.BLASTN_DEFAULT):
+    """Return a list of makeblastdb command-lines for ANIm
+
+    - filenames - a list of paths to input FASTA files
+    - outdir - path to output directory
+    - blastn_exe - path to BLASTN executable
+    """
+    cmdlines = []
+    for idx, fname1 in enumerate(filenames[:-1]):
+        cmdlines.extend([construct_makeblastn_cmdline(fname1, fname2, outdir,
+                                                      blastn_exe) for 
+                         fname2 in filenames[idx+1:]])
+    return cmdlines
+
+
+# Generate single BLASTN command line
+def construct_makeblastn_cmdline(fname1, fname2, outdir,
+                                 blastn_exe=pyani_config.BLASTN_DEFAULT):
+    """Returns a single makeblastdb command.
+
+    - filename - input filename
+    - blastn_exe - path to BLASTN executable
+    """
+    fstem1 = os.path.splitext(os.path.split(fname1)[-1])[0]
+    fstem2 = os.path.splitext(os.path.split(fname2)[-1])[0]
+    prefix = os.path.join(outdir, "%s_vs_%s" % (fstem1, fstem2))
+    cmd = "{0} -out {1}.blast_tab -query {2} -db {3} " +\
+        "-xdrop_gap_final 150 -dust no -evalue 1e-15 " +\
+        "-max_target_seqs 1 -outfmt '6 qseqid sseqid length mismatch " +\
+        "pident nident qlen slen qstart qend sstart send positive " +\
+        "ppos gaps' -task blastn"
+    return cmd.format(blastn_exe, prefix, fname1, fname2) 
