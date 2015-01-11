@@ -353,6 +353,20 @@ def calculate_anib(infiles, org_lengths):
     raise NotImplementedError
 
     # Process pairwise BLASTN output
+    logger.info("Processing pairwise BLASTN output.")
+    try:
+        data = anib.process_blastn(args.outdirname, org_lengths)
+    except ZeroDivisionError:
+        logger.error("One or more BLASTN output files has a problem.")
+        if not args.skip_blastn:
+            if 0 < cumval:
+                logger.error("This is possibly due to BLASTN run failure, " +
+                             "please investigate")
+            else:
+                logger.error("This is possibly due to a BLASTN comparison " +
+                             "being too distant for use.")
+        logger.error(last_exception())
+    return data
 
 
 # Calculate ANIm for input

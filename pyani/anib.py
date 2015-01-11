@@ -97,3 +97,8 @@ def construct_makeblastn_cmdline(fname1, fname2, outdir,
         "pident nident qlen slen qstart qend sstart send positive " +\
         "ppos gaps' -task blastn"
     return cmd.format(blastn_exe, prefix, fname1, fname2) 
+
+
+# Process pairwise BLASTN output
+def process_blastn(outdirname, org_lengths):
+    raise NotImplementedError
