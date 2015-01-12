@@ -159,7 +159,7 @@ import sys
 
 from argparse import ArgumentParser
 
-from pyani import anib, anim, pyani_config, pyani_files, pyani_graphics
+from pyani import anib, anim, tetra, pyani_config, pyani_files, pyani_graphics
 from pyani.run_multiprocessing import multiprocessing_run
 
 
@@ -438,13 +438,24 @@ def calculate_anim(infiles, org_lengths):
 
 
 # Calculate TETRA for input
-def calculate_tetra(infiles):
+def calculate_tetra(infiles, org_lengths):
     """Calculate TETRA for files in input directory.
 
     - infiles - paths to each input file
     - org_lengths - dictionary of input sequence lengths, keyed by sequence
     """
-    raise NotImplementedError
+    logger.info("Running TETRA.")
+    # First, find Z-scores
+    logger.info("Calculating TETRA Z-scores for each sequence.")
+    tetra_zscores = {}
+    for filename in infiles:
+        logger.info("Calculating TETRA Z-scores for %s" % filename)
+        org = os.path.splitext(os.path.split(filename)[-1])[0]
+        tetra_zscores[org] = tetra.calculate_tetra_zscore(filename)
+    # Then calculate Pearson correlation between Z-scores for each sequence
+    logger.info("Calculating TETRA correlation scores.")
+    tetra_correlations = tetra.calculate_correlations(tetra_zscores)
+    return (tetra_correlations, )
 
 
 # Write ANIb output
@@ -501,10 +512,23 @@ def write_anim(results):
 def write_tetra(results):
     """Write TETRA results to output directory.
 
-    - results - tuple of dataframes from TETRA analysis
-    """
-    raise NotImplementedError
+    - results - dataframes of correlation scores from TETRA analysis
 
+    The results are written to an Excel-format file, and plain text
+    tab-separated file in the output directory.
+    """
+    logger.info("Writing TETRA results to %s" % args.outdirname)
+    for df, filestem in zip(results, pyani_config.TETRA_FILESTEMS):
+        logger.info("\t%s" % filestem)
+        df.to_excel(os.path.join(args.outdirname, filestem) + '.xlsx',
+                    index=True)
+        df.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
+                    index=True, sep="\t")
+
+
+# NOTE: All the draw_X methods could be rolled together as one, with the
+# appropriate FILESTEMS value being passed as an option, and graphics
+# parameters going into pyani_config!
 
 # Draw ANIb output
 def draw_anib(results):
@@ -591,10 +615,40 @@ def draw_tetra(results):
 
     - results - tuple of dataframes from TETRA analysis
     """
-    raise NotImplementedError
-
-
-
+    # Draw heatmaps
+    for df, filestem in zip(results, pyani_config.TETRA_FILESTEMS):        
+        params_mpl = {'ANIm_alignment_lengths': ('afmhot', df.values.min(),
+                                                 df.values.max()),
+                      'ANIm_percentage_identity': ('spbnd_BuRd', 0, 1),
+                      'ANIm_alignment_coverage': ('BuRd', 0, 1),
+                      'ANIm_similarity_errors': ('afmhot', df.values.min(),
+                                                 df.values.max()),
+                      'TETRA_correlations': ('spbnd_BuRd', 0, 1)}
+        params_r = {'ANIm_alignment_lengths': (R_AFMHOT, df.values.min(),
+                                               df.values.max()),
+                    'ANIm_percentage_identity': ('bluered', 0.9, 1),
+                    'ANIm_alignment_coverage': ('bluered', 0, 1),
+                    'ANIm_similarity_errors': (R_AFMHOT, df.values.min(),
+                                               df.values.max()),
+                    'TETRA_correlations': ('bluered', 0.9, 1)}
+        fullstem = os.path.join(args.outdirname, filestem)
+        outfilename = fullstem + '.%s' % args.gformat
+        infilename = fullstem + '.tab'
+        logger.info("Writing heatmap to %s" % outfilename)
+        if args.gmethod == "mpl":
+            pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
+                                       title=filestem,
+                                       cmap=params_mpl[filestem][0],
+                                       vmin=params_mpl[filestem][1],
+                                       vmax=params_mpl[filestem][2])        
+        elif args.gmethod == "R":
+            rstr = pyani_graphics.heatmap_r(infilename, outfilename,
+                                            gformat=args.gformat.lower(),
+                                            title=filestem,
+                                            cmap=params_r[filestem][0],
+                                            vmin=params_r[filestem][1],
+                                            vmax=params_r[filestem][2])
+            logger.info("Executed R code:\n%s" % rstr)
 
 
 # Run as script

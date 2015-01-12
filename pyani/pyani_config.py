@@ -18,4 +18,7 @@ ANIM_FILESTEMS = ("ANIm_alignment_lengths", "ANIm_percentage_identity",
                   "ANIm_alignment_coverage", "ANIm_similarity_errors")
 ANIB_FILESTEMS = ("ANIb_alignment_lengths", "ANIb_percentage_identity",
                   "ANIb_alignment_coverage", "ANIb_similarity_errors")
+TETRA_FILESTEMS = ("TETRA_correlations",)
+
+
 
