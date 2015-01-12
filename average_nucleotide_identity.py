@@ -161,11 +161,7 @@ from argparse import ArgumentParser
 
 from pyani import anib, anim, tetra, pyani_config, pyani_files, pyani_graphics
 from pyani.run_multiprocessing import multiprocessing_run
-
-
-# GLOBAL: colour gradients for use in R
-R_AFMHOT = 'colorRampPalette(c("black","red","yellow","white"))'
-
+from pyani.pyani_config import params_mpl, params_r
 
 # Process command-line arguments
 def parse_cmdline(args):
@@ -369,7 +365,6 @@ def calculate_anib(infiles, org_lengths):
                 logger.error("This is possibly due to a BLASTN comparison " +
                              "being too distant for use.")
         logger.error(last_exception())
-    print data
     return data
 
 
@@ -530,26 +525,14 @@ def write_tetra(results):
 # appropriate FILESTEMS value being passed as an option, and graphics
 # parameters going into pyani_config!
 
-# Draw ANIb output
-def draw_anib(results):
-    """Draw ANIb results
+# Draw ANIb/ANIm/TETRA output
+def draw(results, filestems):
+    """Draw ANIb/ANIm/TETRA results
 
     - results - tuple of dataframes from ANIb analysis
     """
     # Draw heatmaps
-    for df, filestem in zip(results, pyani_config.ANIB_FILESTEMS):        
-        params_mpl = {'ANIb_alignment_lengths': ('afmhot', df.values.min(),
-                                                 df.values.max()),
-                      'ANIb_percentage_identity': ('spbnd_BuRd', 0, 1),
-                      'ANIb_alignment_coverage': ('BuRd', 0, 1),
-                      'ANIb_similarity_errors': ('afmhot', df.values.min(),
-                                                 df.values.max())}
-        params_r = {'ANIb_alignment_lengths': (R_AFMHOT, df.values.min(),
-                                               df.values.max()),
-                    'ANIb_percentage_identity': ('bluered', 0.9, 1),
-                    'ANIb_alignment_coverage': ('bluered', 0, 1),
-                    'ANIb_similarity_errors': (R_AFMHOT, df.values.min(),
-                                               df.values.max())}
+    for df, filestem in zip(results, filestems):        
         fullstem = os.path.join(args.outdirname, filestem)
         outfilename = fullstem + '.%s' % args.gformat
         infilename = fullstem + '.tab'
@@ -557,97 +540,16 @@ def draw_anib(results):
         if args.gmethod == "mpl":
             pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
                                        title=filestem,
-                                       cmap=params_mpl[filestem][0],
-                                       vmin=params_mpl[filestem][1],
-                                       vmax=params_mpl[filestem][2])        
+                                       cmap=params_mpl(df)[filestem][0],
+                                       vmin=params_mpl(df)[filestem][1],
+                                       vmax=params_mpl(df)[filestem][2])        
         elif args.gmethod == "R":
             rstr = pyani_graphics.heatmap_r(infilename, outfilename,
                                             gformat=args.gformat.lower(),
                                             title=filestem,
-                                            cmap=params_r[filestem][0],
-                                            vmin=params_r[filestem][1],
-                                            vmax=params_r[filestem][2])
-            logger.info("Executed R code:\n%s" % rstr)
-
-
-# Draw ANIm output
-def draw_anim(results):
-    """Draw ANIm results
-
-    - results - tuple of dataframes from ANIb analysis
-    """
-    # Draw heatmaps
-    for df, filestem in zip(results, pyani_config.ANIM_FILESTEMS):        
-        params_mpl = {'ANIm_alignment_lengths': ('afmhot', df.values.min(),
-                                                 df.values.max()),
-                      'ANIm_percentage_identity': ('spbnd_BuRd', 0, 1),
-                      'ANIm_alignment_coverage': ('BuRd', 0, 1),
-                      'ANIm_similarity_errors': ('afmhot', df.values.min(),
-                                                 df.values.max())}
-        params_r = {'ANIm_alignment_lengths': (R_AFMHOT, df.values.min(),
-                                               df.values.max()),
-                    'ANIm_percentage_identity': ('bluered', 0.9, 1),
-                    'ANIm_alignment_coverage': ('bluered', 0, 1),
-                    'ANIm_similarity_errors': (R_AFMHOT, df.values.min(),
-                                               df.values.max())}
-        fullstem = os.path.join(args.outdirname, filestem)
-        outfilename = fullstem + '.%s' % args.gformat
-        infilename = fullstem + '.tab'
-        logger.info("Writing heatmap to %s" % outfilename)
-        if args.gmethod == "mpl":
-            pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
-                                       title=filestem,
-                                       cmap=params_mpl[filestem][0],
-                                       vmin=params_mpl[filestem][1],
-                                       vmax=params_mpl[filestem][2])        
-        elif args.gmethod == "R":
-            rstr = pyani_graphics.heatmap_r(infilename, outfilename,
-                                            gformat=args.gformat.lower(),
-                                            title=filestem,
-                                            cmap=params_r[filestem][0],
-                                            vmin=params_r[filestem][1],
-                                            vmax=params_r[filestem][2])
-            logger.info("Executed R code:\n%s" % rstr)
-
-# Draw TETRA output
-def draw_tetra(results):
-    """Draw TETRA results
-
-    - results - tuple of dataframes from TETRA analysis
-    """
-    # Draw heatmaps
-    for df, filestem in zip(results, pyani_config.TETRA_FILESTEMS):        
-        params_mpl = {'ANIm_alignment_lengths': ('afmhot', df.values.min(),
-                                                 df.values.max()),
-                      'ANIm_percentage_identity': ('spbnd_BuRd', 0, 1),
-                      'ANIm_alignment_coverage': ('BuRd', 0, 1),
-                      'ANIm_similarity_errors': ('afmhot', df.values.min(),
-                                                 df.values.max()),
-                      'TETRA_correlations': ('spbnd_BuRd', 0, 1)}
-        params_r = {'ANIm_alignment_lengths': (R_AFMHOT, df.values.min(),
-                                               df.values.max()),
-                    'ANIm_percentage_identity': ('bluered', 0.9, 1),
-                    'ANIm_alignment_coverage': ('bluered', 0, 1),
-                    'ANIm_similarity_errors': (R_AFMHOT, df.values.min(),
-                                               df.values.max()),
-                    'TETRA_correlations': ('bluered', 0.9, 1)}
-        fullstem = os.path.join(args.outdirname, filestem)
-        outfilename = fullstem + '.%s' % args.gformat
-        infilename = fullstem + '.tab'
-        logger.info("Writing heatmap to %s" % outfilename)
-        if args.gmethod == "mpl":
-            pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
-                                       title=filestem,
-                                       cmap=params_mpl[filestem][0],
-                                       vmin=params_mpl[filestem][1],
-                                       vmax=params_mpl[filestem][2])        
-        elif args.gmethod == "R":
-            rstr = pyani_graphics.heatmap_r(infilename, outfilename,
-                                            gformat=args.gformat.lower(),
-                                            title=filestem,
-                                            cmap=params_r[filestem][0],
-                                            vmin=params_r[filestem][1],
-                                            vmax=params_r[filestem][2])
+                                            cmap=params_r(df)[filestem][0],
+                                            vmin=params_r(df)[filestem][1],
+                                            vmax=params_r(df)[filestem][2])
             logger.info("Executed R code:\n%s" % rstr)
 
 
@@ -700,10 +602,13 @@ if __name__ == '__main__':
 
     # Have we got a valid method choice?
     # Dictionary below defines analysis function, and output presentation
-    # functions, dependent on selected method.
-    methods = {"ANIm": (calculate_anim, write_anim, draw_anim),
-               "ANIb": (calculate_anib, write_anib, draw_anib),
-               "TETRA": (calculate_tetra, write_tetra, draw_tetra)}
+    # functions/settings, dependent on selected method.
+    methods = {"ANIm": (calculate_anim, write_anim,
+                        pyani_config.ANIB_FILESTEMS),
+               "ANIb": (calculate_anib, write_anib,
+                        pyani_config.ANIB_FILESTEMS),
+               "TETRA": (calculate_tetra, write_tetra,
+                        pyani_config.ANIB_FILESTEMS)}
     if args.method not in methods:
         logger.error("ANI method %s not recognised (exiting)" % args.method)
         logger.error("Valid methods are: %s" % methods.keys())
@@ -741,7 +646,7 @@ if __name__ == '__main__':
         logger.info("Rendering output graphics")
         logger.info("Graphics format: %s" % args.gformat)
         logger.info("Graphics method: %s" % args.gmethod)
-        methods[args.method][2](results)
+        draw(results, methods[args.method][2])
 
     # Report that we've finished
     logger.info("Done.")

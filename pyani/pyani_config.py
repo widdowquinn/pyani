@@ -8,17 +8,51 @@
 """Configuration settings for the pyani package.
 """
 
-# defaults assume that common binaries are on the $PATH
+# Defaults assume that common binaries are on the $PATH
 NUCMER_DEFAULT="nucmer"
 BLASTN_DEFAULT="blastn"
 MAKEBLASTDB_DEFAULT="makeblastdb"
 
-# stems for output files
+# Stems for output files
 ANIM_FILESTEMS = ("ANIm_alignment_lengths", "ANIm_percentage_identity",
                   "ANIm_alignment_coverage", "ANIm_similarity_errors")
 ANIB_FILESTEMS = ("ANIb_alignment_lengths", "ANIb_percentage_identity",
                   "ANIb_alignment_coverage", "ANIb_similarity_errors")
 TETRA_FILESTEMS = ("TETRA_correlations",)
 
+# Colour gradients for use in R
+R_AFMHOT = 'colorRampPalette(c("black","red","yellow","white"))'
 
+# Graphics parameters for each output file. Note that this should be 
+# in sync with the output file stems above
+def params_mpl(df):
+    return {'ANIb_alignment_lengths': ('afmhot', df.values.min(),
+                                       df.values.max()),
+            'ANIb_percentage_identity': ('spbnd_BuRd', 0, 1),
+            'ANIb_alignment_coverage': ('BuRd', 0, 1),
+            'ANIb_similarity_errors': ('afmhot', df.values.min(),
+                                       df.values.max()),
+            'ANIm_alignment_lengths': ('afmhot', df.values.min(),
+                                       df.values.max()),
+            'ANIm_percentage_identity': ('spbnd_BuRd', 0, 1),
+            'ANIm_alignment_coverage': ('BuRd', 0, 1),
+            'ANIm_similarity_errors': ('afmhot', df.values.min(),
+                                       df.values.max()),
+            'TETRA_correlations': ('spbnd_BuRd', 0, 1)}
+
+
+def params_r(df):
+    return {'ANIb_alignment_lengths': (R_AFMHOT, df.values.min(),
+                                       df.values.max()),
+            'ANIb_percentage_identity': ('bluered', 0.9, 1),
+            'ANIb_alignment_coverage': ('bluered', 0, 1),
+            'ANIb_similarity_errors': (R_AFMHOT, df.values.min(),
+                                       df.values.max()),
+            'ANIm_alignment_lengths': (R_AFMHOT, df.values.min(),
+                                       df.values.max()),
+            'ANIm_percentage_identity': ('bluered', 0.9, 1),
+            'ANIm_alignment_coverage': ('bluered', 0, 1),
+            'ANIm_similarity_errors': (R_AFMHOT, df.values.min(),
+                                       df.values.max()),
+            'TETRA_correlations': ('bluered', 0.9, 1)}
 
