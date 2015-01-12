@@ -163,6 +163,10 @@ from pyani import anib, anim, pyani_config, pyani_files, pyani_graphics
 from pyani.run_multiprocessing import multiprocessing_run
 
 
+# GLOBAL: colour gradients for use in R
+R_AFMHOT = 'colorRampPalette(c("black","red","yellow","white"))'
+
+
 # Process command-line arguments
 def parse_cmdline(args):
     """Parse command-line arguments for script."""
@@ -317,7 +321,7 @@ def calculate_anib(infiles, org_lengths):
 
         # Build BLASTN databases
         logger.info("Constructing BLASTN databases")
-        cmdlist = anib.generate_blastdb_commands(fragfiles, args.outdirname,
+        cmdlist = anib.generate_blastdb_commands(infiles, args.outdirname,
                                                  args.makeblastdb_exe)
         logger.info("Generated commands:\n%s" % '\n'.join(cmdlist))
         if args.scheduler == 'multiprocessing':
@@ -350,7 +354,6 @@ def calculate_anib(infiles, org_lengths):
             raise NotImplementedError
     else:
         logger.warning("Skipping BLASTN run (as instructed)!")
-    raise NotImplementedError
 
     # Process pairwise BLASTN output
     logger.info("Processing pairwise BLASTN output.")
@@ -366,6 +369,7 @@ def calculate_anib(infiles, org_lengths):
                 logger.error("This is possibly due to a BLASTN comparison " +
                              "being too distant for use.")
         logger.error(last_exception())
+    print data
     return data
 
 
@@ -448,8 +452,25 @@ def write_anib(results):
     """Write ANIb results to output directory.
 
     - results - tuple of dataframes from ANIb analysis
+
+    ANIm analyses produces four dataframes, in the order:
+
+    - alignment_lengths - symmetrical: total length of alignment
+    - percentage_identity - symmetrical: percentage identity of alignment
+    - alignment_coverage - non-symmetrical: coverage of query and subject
+    - similarity_errors - symmetrical: count of similarity errors
+
+    Each is written to an Excel-format file, and plain text tab-separated
+    file in the output directory.
     """
-    raise NotImplementedError
+    logger.info("Writing ANIb results to %s" % args.outdirname)
+    for df, filestem in zip(results, pyani_config.ANIB_FILESTEMS):
+        logger.info("\t%s" % filestem)
+        df.to_excel(os.path.join(args.outdirname, filestem) + '.xlsx',
+                    index=True)
+        df.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
+                    index=True, sep="\t")
+
 
 # Write ANIm output
 def write_anim(results):
@@ -475,6 +496,7 @@ def write_anim(results):
         df.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
                     index=True, sep="\t")
 
+
 # Write TETRA output
 def write_tetra(results):
     """Write TETRA results to output directory.
@@ -490,7 +512,39 @@ def draw_anib(results):
 
     - results - tuple of dataframes from ANIb analysis
     """
-    raise NotImplementedError
+    # Draw heatmaps
+    for df, filestem in zip(results, pyani_config.ANIB_FILESTEMS):        
+        params_mpl = {'ANIb_alignment_lengths': ('afmhot', df.values.min(),
+                                                 df.values.max()),
+                      'ANIb_percentage_identity': ('spbnd_BuRd', 0, 1),
+                      'ANIb_alignment_coverage': ('BuRd', 0, 1),
+                      'ANIb_similarity_errors': ('afmhot', df.values.min(),
+                                                 df.values.max())}
+        params_r = {'ANIb_alignment_lengths': (R_AFMHOT, df.values.min(),
+                                               df.values.max()),
+                    'ANIb_percentage_identity': ('bluered', 0.9, 1),
+                    'ANIb_alignment_coverage': ('bluered', 0, 1),
+                    'ANIb_similarity_errors': (R_AFMHOT, df.values.min(),
+                                               df.values.max())}
+        fullstem = os.path.join(args.outdirname, filestem)
+        outfilename = fullstem + '.%s' % args.gformat
+        infilename = fullstem + '.tab'
+        logger.info("Writing heatmap to %s" % outfilename)
+        if args.gmethod == "mpl":
+            pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
+                                       title=filestem,
+                                       cmap=params_mpl[filestem][0],
+                                       vmin=params_mpl[filestem][1],
+                                       vmax=params_mpl[filestem][2])        
+        elif args.gmethod == "R":
+            rstr = pyani_graphics.heatmap_r(infilename, outfilename,
+                                            gformat=args.gformat.lower(),
+                                            title=filestem,
+                                            cmap=params_r[filestem][0],
+                                            vmin=params_r[filestem][1],
+                                            vmax=params_r[filestem][2])
+            logger.info("Executed R code:\n%s" % rstr)
+
 
 # Draw ANIm output
 def draw_anim(results):
@@ -498,8 +552,6 @@ def draw_anim(results):
 
     - results - tuple of dataframes from ANIb analysis
     """
-    # Colour gradients for use in R
-    r_afmhot = 'colorRampPalette(c("black","red","yellow","white"))'
     # Draw heatmaps
     for df, filestem in zip(results, pyani_config.ANIM_FILESTEMS):        
         params_mpl = {'ANIm_alignment_lengths': ('afmhot', df.values.min(),
@@ -508,11 +560,11 @@ def draw_anim(results):
                       'ANIm_alignment_coverage': ('BuRd', 0, 1),
                       'ANIm_similarity_errors': ('afmhot', df.values.min(),
                                                  df.values.max())}
-        params_r = {'ANIm_alignment_lengths': (r_afmhot, df.values.min(),
+        params_r = {'ANIm_alignment_lengths': (R_AFMHOT, df.values.min(),
                                                df.values.max()),
                     'ANIm_percentage_identity': ('bluered', 0.9, 1),
                     'ANIm_alignment_coverage': ('bluered', 0, 1),
-                    'ANIm_similarity_errors': (r_afmhot, df.values.min(),
+                    'ANIm_similarity_errors': (R_AFMHOT, df.values.min(),
                                                df.values.max())}
         fullstem = os.path.join(args.outdirname, filestem)
         outfilename = fullstem + '.%s' % args.gformat

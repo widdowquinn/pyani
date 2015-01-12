@@ -23,9 +23,9 @@ percentage (of whole genome) for each pairwise comparison.
 
 import pandas as pd
 
-import pyani_config
-import pyani_files
 import os
+
+import pyani_config, pyani_files
 
 
 # Generate list of NUCmer pairwise comparison command lines from
