@@ -453,77 +453,24 @@ def calculate_tetra(infiles, org_lengths):
     return (tetra_correlations, )
 
 
-# Write ANIb output
-def write_anib(results):
-    """Write ANIb results to output directory.
+# Write ANIb/ANIm/TETRA output
+def write(results, filestems):
+    """Write ANIb/ANIm/TETRA results to output directory.
 
-    - results - tuple of dataframes from ANIb analysis
+    - results - tuple of dataframes from analysis
 
-    ANIm analyses produces four dataframes, in the order:
-
-    - alignment_lengths - symmetrical: total length of alignment
-    - percentage_identity - symmetrical: percentage identity of alignment
-    - alignment_coverage - non-symmetrical: coverage of query and subject
-    - similarity_errors - symmetrical: count of similarity errors
-
-    Each is written to an Excel-format file, and plain text tab-separated
-    file in the output directory.
+    Each dataframe is written to an Excel-format file, and plain text
+    tab-separated file in the output directory. The order of result output
+    must be reflected in the order of filestems.
     """
-    logger.info("Writing ANIb results to %s" % args.outdirname)
-    for df, filestem in zip(results, pyani_config.ANIB_FILESTEMS):
+    logger.info("Writing %s results to %s" % (args.method, args.outdirname))
+    for df, filestem in zip(results, filestems):
         logger.info("\t%s" % filestem)
         df.to_excel(os.path.join(args.outdirname, filestem) + '.xlsx',
                     index=True)
         df.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
                     index=True, sep="\t")
 
-
-# Write ANIm output
-def write_anim(results):
-    """Write ANIm results to output directory.
-
-    - results - tuple of dataframes from ANIm analysis
-    
-    ANIm analyses produces four dataframes, in the order:
-
-    - alignment_lengths - symmetrical: total length of alignment
-    - percentage_identity - symmetrical: percentage identity of alignment
-    - alignment_coverage - non-symmetrical: coverage of query and subject
-    - similarity_errors - symmetrical: count of similarity errors
-
-    Each is written to an Excel-format file, and plain text tab-separated
-    file in the output directory.
-    """
-    logger.info("Writing ANIm results to %s" % args.outdirname)
-    for df, filestem in zip(results, pyani_config.ANIM_FILESTEMS):
-        logger.info("\t%s" % filestem)
-        df.to_excel(os.path.join(args.outdirname, filestem) + '.xlsx',
-                    index=True)
-        df.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
-                    index=True, sep="\t")
-
-
-# Write TETRA output
-def write_tetra(results):
-    """Write TETRA results to output directory.
-
-    - results - dataframes of correlation scores from TETRA analysis
-
-    The results are written to an Excel-format file, and plain text
-    tab-separated file in the output directory.
-    """
-    logger.info("Writing TETRA results to %s" % args.outdirname)
-    for df, filestem in zip(results, pyani_config.TETRA_FILESTEMS):
-        logger.info("\t%s" % filestem)
-        df.to_excel(os.path.join(args.outdirname, filestem) + '.xlsx',
-                    index=True)
-        df.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
-                    index=True, sep="\t")
-
-
-# NOTE: All the draw_X methods could be rolled together as one, with the
-# appropriate FILESTEMS value being passed as an option, and graphics
-# parameters going into pyani_config!
 
 # Draw ANIb/ANIm/TETRA output
 def draw(results, filestems):
@@ -603,11 +550,11 @@ if __name__ == '__main__':
     # Have we got a valid method choice?
     # Dictionary below defines analysis function, and output presentation
     # functions/settings, dependent on selected method.
-    methods = {"ANIm": (calculate_anim, write_anim,
+    methods = {"ANIm": (calculate_anim, 
                         pyani_config.ANIB_FILESTEMS),
-               "ANIb": (calculate_anib, write_anib,
+               "ANIb": (calculate_anib, 
                         pyani_config.ANIB_FILESTEMS),
-               "TETRA": (calculate_tetra, write_tetra,
+               "TETRA": (calculate_tetra, 
                         pyani_config.ANIB_FILESTEMS)}
     if args.method not in methods:
         logger.error("ANI method %s not recognised (exiting)" % args.method)
@@ -639,14 +586,14 @@ if __name__ == '__main__':
     # and write out corresponding results.
     logger.info("Carrying out %s analysis" % args.method)
     results = methods[args.method][0](infiles, org_lengths)
-    methods[args.method][1](results)
+    write(results, methods[args.method][1])
     
     # Do we want graphical output?
     if args.graphics:
         logger.info("Rendering output graphics")
         logger.info("Graphics format: %s" % args.gformat)
         logger.info("Graphics method: %s" % args.gmethod)
-        draw(results, methods[args.method][2])
+        draw(results, methods[args.method][1])
 
     # Report that we've finished
     logger.info("Done.")
