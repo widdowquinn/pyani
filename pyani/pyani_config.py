@@ -12,6 +12,8 @@
 NUCMER_DEFAULT="nucmer"
 BLASTN_DEFAULT="blastn"
 MAKEBLASTDB_DEFAULT="makeblastdb"
+BLASTALL_DEFAULT="blastall"
+FORMATDB_DEFAULT="formatdb"
 
 # Stems for output files
 ANIM_FILESTEMS = ("ANIm_alignment_lengths", "ANIm_percentage_identity",
@@ -19,6 +21,10 @@ ANIM_FILESTEMS = ("ANIm_alignment_lengths", "ANIm_percentage_identity",
 ANIB_FILESTEMS = ("ANIb_alignment_lengths", "ANIb_percentage_identity",
                   "ANIb_alignment_coverage", "ANIb_similarity_errors")
 TETRA_FILESTEMS = ("TETRA_correlations",)
+ANIBLASTALL_FILESTEMS = ("ANIblastall_alignment_lengths",
+                         "ANIblastall_percentage_identity",
+                         "ANIblastall_alignment_coverage",
+                         "ANIblastall_similarity_errors")
 
 # Colour gradients for use in R
 R_AFMHOT = 'colorRampPalette(c("black","red","yellow","white"))'
@@ -38,7 +44,13 @@ def params_mpl(df):
             'ANIm_alignment_coverage': ('BuRd', 0, 1),
             'ANIm_similarity_errors': ('afmhot', df.values.min(),
                                        df.values.max()),
-            'TETRA_correlations': ('spbnd_BuRd', 0, 1)}
+            'TETRA_correlations': ('spbnd_BuRd', 0, 1),
+            'ANIblastall_alignment_lengths': ('afmhot', df.values.min(),
+                                              df.values.max()),
+            'ANIblastall_percentage_identity': ('spbnd_BuRd', 0, 1),
+            'ANIblastall_alignment_coverage': ('BuRd', 0, 1),
+            'ANIblastall_similarity_errors': ('afmhot', df.values.min(),
+                                              df.values.max()),}
 
 
 def params_r(df):
@@ -54,5 +66,11 @@ def params_r(df):
             'ANIm_alignment_coverage': ('bluered', 0, 1),
             'ANIm_similarity_errors': (R_AFMHOT, df.values.min(),
                                        df.values.max()),
-            'TETRA_correlations': ('bluered', 0.9, 1)}
+            'TETRA_correlations': ('bluered', 0.9, 1),
+            'ANIblastall_alignment_lengths': (R_AFMHOT, df.values.min(),
+                                              df.values.max()),
+            'ANIblastall_percentage_identity': ('bluered', 0.9, 1),
+            'ANIblastall_alignment_coverage': ('bluered', 0, 1),
+            'ANIblastall_similarity_errors': (R_AFMHOT, df.values.min(),
+                                              df.values.max()),}
 

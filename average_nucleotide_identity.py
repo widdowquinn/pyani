@@ -225,6 +225,13 @@ def parse_cmdline(args):
                         action="store",
                         default=pyani_config.MAKEBLASTDB_DEFAULT,
                         help="Path to BLAST+ makeblastdb executable")
+    parser.add_argument("--blastall_exe", dest="blastall_exe",
+                        action="store", default=pyani_config.BLASTALL_DEFAULT,
+                        help="Path to BLASTALL executable")
+    parser.add_argument("--formatdb_exe", dest="formatdb_exe",
+                        action="store",
+                        default=pyani_config.FORMATDB_DEFAULT,
+                        help="Path to BLAST formatdb executable")
     return parser.parse_args()
 
 
@@ -356,7 +363,8 @@ def calculate_anib(infiles, org_lengths):
     # Process pairwise BLASTN output
     logger.info("Processing pairwise BLASTN output.")
     try:
-        data = anib.process_blastn(args.outdirname, org_lengths)
+        data = anib.process_blast(args.outdirname, org_lengths,
+                                  mode="BLASTN")
     except ZeroDivisionError:
         logger.error("One or more BLASTN output files has a problem.")
         if not args.skip_blastn:
@@ -453,6 +461,103 @@ def calculate_tetra(infiles, org_lengths):
     logger.info("Calculating TETRA correlation scores.")
     tetra_correlations = tetra.calculate_correlations(tetra_zscores)
     return (tetra_correlations, )
+
+
+# Calculate ANIb for input
+def calculate_aniblastall(infiles, org_lengths):
+    """Calculate ANIblastall for files in input directory.
+
+    - infiles - paths to each input file
+    - org_lengths - dictionary of input sequence lengths, keyed by sequence
+
+    Calculates ANI by the ANIb method, as described in Goris et al. (2007)
+    Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0.
+
+    This method differs from calculate_anib() by using the deprecated 
+    BLAST version, for compatibility with JSpecies.
+
+    All FASTA format files (selected by suffix) in the input directory are
+    used to construct BLAST databases, placed in the output directory.
+    Each file's contents are also split into sequence fragments of length
+    options.fragsize, and the multiple FASTA file that results written to
+    the output directory. These are BLASTNed, pairwise, against the
+    databases.
+    
+    The BLAST output is interrogated for all fragment matches that cover
+    at least 70% of the query sequence, with at least 30% nucleotide
+    identity over the full length of the query sequence. This is an odd
+    choice and doesn't correspond to the twilight zone limit as implied by
+    Goris et al. We persist with their definition, however.  Only these
+    qualifying matches contribute to the total aligned length, and total
+    aligned sequence identity used to calculate ANI.
+    
+    The results are processed to give matrices of aligned sequence length
+    (aln_lengths.tab), similarity error counts (sim_errors.tab), ANIs
+    (perc_ids.tab), and minimum aligned percentage (perc_aln.tab) of
+    each genome, for each pairwise comparison. These are written to the
+    output directory in plain text tab-separated format.
+    """
+    logger.info("Running ANIblastall")
+    # Build BLAST databases and run pairwise BLASTALL -P BLASTN
+    if not args.skip_blastn:
+        # Make sequence fragments
+        logger.info("Fragmenting input files, and writing to %s" %
+                    args.outdirname)
+        fragfiles = anib.fragment_FASTA_files(infiles, args.outdirname,
+                                              args.fragsize)
+
+        # Build BLASTALL databases
+        logger.info("Constructing BLASTALL databases")
+        cmdlist = anib.generate_formatdb_commands(infiles, args.outdirname,
+                                                  args.formatdb_exe)
+        logger.info("Generated commands:\n%s" % '\n'.join(cmdlist))
+        if args.scheduler == 'multiprocessing':
+            logger.info("Running jobs with multiprocessing")
+            cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
+            if 0 < cumval:
+                logger.warning("At least one formatdb run failed. " +\
+                               "ANIblastall may fail.")
+            else:
+                logger.info("All multiprocessing jobs complete.")
+        else:
+            logger.info("Running jobs with SGE")
+        
+        # Run pairwise BLASTALL
+        cmdlist = anib.generate_blastall_commands(fragfiles,
+                                                  args.outdirname,
+                                                  args.blastall_exe)
+        logger.info("Generated commands:\n%s" % '\n'.join(cmdlist))
+        if args.scheduler == 'multiprocessing':
+            logger.info("Running jobs with multiprocessing")
+            cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
+            logger.info("Cumulative return value: %d" % cumval)
+            if 0 < cumval:
+                logger.warning("At least one BLASTALL comparison failed. " +\
+                               "ANIblastall may fail.")
+            else:
+                logger.info("All multiprocessing jobs complete.")
+        else:
+            logger.info("Running jobs with SGE")
+    else:
+        logger.warning("Skipping BLASTALL run (as instructed)!")
+
+    # Process pairwise BLASTALL output
+    logger.info("Processing pairwise BLASTALL output.")
+    try:
+        data = anib.process_blast(args.outdirname, org_lengths,
+                                   mode="BLASTALL")
+    except ZeroDivisionError:
+        logger.error("One or more BLASTALL output files has a problem.")
+        if not args.skip_blastn:
+            if 0 < cumval:
+                logger.error("This is possibly due to BLASTALL run failure, " +
+                             "please investigate")
+            else:
+                logger.error("This is possibly due to a BLASTALL comparison " +
+                             "being too distant for use.")
+        logger.error(last_exception())
+    return data
+
 
 
 # Write ANIb/ANIm/TETRA output
@@ -557,7 +662,9 @@ if __name__ == '__main__':
                "ANIb": (calculate_anib, 
                         pyani_config.ANIB_FILESTEMS),
                "TETRA": (calculate_tetra, 
-                        pyani_config.TETRA_FILESTEMS)}
+                         pyani_config.TETRA_FILESTEMS),
+               "ANIblastall": (calculate_aniblastall,
+                               pyani_config.ANIBLASTALL_FILESTEMS)}
     if args.method not in methods:
         logger.error("ANI method %s not recognised (exiting)" % args.method)
         logger.error("Valid methods are: %s" % methods.keys())

@@ -29,6 +29,7 @@ import pandas as pd
 
 import collections
 import os
+import shutil
 
 import pyani_config, pyani_files
 
@@ -97,6 +98,35 @@ def construct_makeblastdb_cmdline(filename, outdir,
                                                                  title,
                                                                  outfilename)
 
+
+# Generate list of makeblastdb command lines from passed filenames
+def generate_formatdb_commands(filenames, outdir,
+                               blastdb_exe=pyani_config.FORMATDB_DEFAULT):
+    """Return a list of formatdb command-lines for ANIm
+
+    - filenames - a list of paths to input FASTA files
+    - outdir - path to output directory
+    - blastdb_exe - path to the formatdb executable
+    """
+    cmdlines = [construct_formatdb_cmdline(fname, outdir, blastdb_exe) for 
+                fname in filenames]
+    return cmdlines
+
+
+# Generate single makeblastdb command line
+def construct_formatdb_cmdline(filename, outdir,
+                               blastdb_exe=pyani_config.FORMATDB_DEFAULT):
+    """Returns a single formatdb command.
+
+    - filename - input filename
+    - blastdb_exe - path to the formatdb executable
+    """
+    title = os.path.splitext(os.path.split(filename)[-1])[0]
+    newfilename = os.path.join(outdir, os.path.split(filename)[-1])
+    shutil.copy(filename, newfilename)
+    return "{0} -p F -i {1} -t {2}".format(blastdb_exe, newfilename, title)
+
+
 # Generate list of BLASTN command lines from passed filenames
 def generate_blastn_commands(filenames, outdir,
                              blastn_exe=pyani_config.BLASTN_DEFAULT):
@@ -115,14 +145,14 @@ def generate_blastn_commands(filenames, outdir,
     for idx, fname1 in enumerate(filenames[:-1]):
         for fname2 in filenames[idx+1:]:
             dbname = fname2.replace('-fragments','')
-            cmdlines.append(construct_makeblastn_cmdline(fname1, dbname,
-                                                         outdir, blastn_exe))
+            cmdlines.append(construct_blastn_cmdline(fname1, dbname,
+                                                     outdir, blastn_exe))
     return cmdlines
 
 
 # Generate single BLASTN command line
-def construct_makeblastn_cmdline(fname1, fname2, outdir,
-                                 blastn_exe=pyani_config.BLASTN_DEFAULT):
+def construct_blastn_cmdline(fname1, fname2, outdir,
+                             blastn_exe=pyani_config.BLASTN_DEFAULT):
     """Returns a single blastn command.
 
     - filename - input filename
@@ -140,8 +170,48 @@ def construct_makeblastn_cmdline(fname1, fname2, outdir,
     return cmd.format(blastn_exe, prefix, fname1, fname2) 
 
 
+# Generate list of BLASTALL command lines from passed filenames
+def generate_blastall_commands(filenames, outdir,
+                               blastall_exe=pyani_config.BLASTALL_DEFAULT):
+    """Return a list of blastall command-lines for ANIm
+
+    - filenames - a list of paths to fragmented input FASTA files
+    - outdir - path to output directory
+    - blastall_exe - path to BLASTALL executable
+
+    Assumes that the fragment sequence input filenames have the form
+    ACCESSION-fragments.ext, where the corresponding BLAST database filenames
+    have the form ACCESSION.ext. This is the convention followed by the
+    fragment_FASTA_files() function above.
+    """
+    cmdlines = []
+    for idx, fname1 in enumerate(filenames[:-1]):
+        for fname2 in filenames[idx+1:]:
+            dbname = fname2.replace('-fragments','')
+            cmdlines.append(construct_blastall_cmdline(fname1, dbname,
+                                                       outdir, blastall_exe))
+    return cmdlines
+
+
+# Generate single BLASTALL command line
+def construct_blastall_cmdline(fname1, fname2, outdir,
+                               blastall_exe=pyani_config.BLASTALL_DEFAULT):
+    """Returns a single blastall command.
+
+    - blastall_exe - path to BLASTALL executable
+    """
+    fstem1 = os.path.splitext(os.path.split(fname1)[-1])[0]
+    fstem2 = os.path.splitext(os.path.split(fname2)[-1])[0]
+    fstem1 = fstem1.replace('-fragments', '')
+    prefix = os.path.join(outdir, "%s_vs_%s" % (fstem1, fstem2))
+    cmd = "{0} -p blastn -o {1}.blast_tab -i {2} -d {3} " +\
+        "-X 150 -q 1 -F F -e 1e-15 " +\
+        "-b 1 -v 1 -m 8"
+    return cmd.format(blastall_exe, prefix, fname1, fname2) 
+
+
 # Process pairwise BLASTN output
-def process_blastn(blast_dir, org_lengths):
+def process_blast(blast_dir, org_lengths, mode="BLASTN"):
     """Returns a tuple of ANIb results for .blast_tab files in the output dir.
 
     - blast_dir - path to the directory containing .blast_tab files
@@ -160,6 +230,11 @@ def process_blastn(blast_dir, org_lengths):
     # Process directory to identify input files
     blastfiles = pyani_files.get_input_files(blast_dir, '.blast_tab')
     labels = org_lengths.keys()
+    # Which parser are we using:
+    if mode == "BLASTN":
+        blast_parser = parse_blastn
+    else:
+        blast_parser = parse_blastall
     # Hold data in pandas dataframe
     alignment_lengths = pd.DataFrame(index=labels, columns=labels,
                                      dtype=float)
@@ -177,7 +252,7 @@ def process_blastn(blast_dir, org_lengths):
     for blastfile in blastfiles:
         qname, sname = \
             os.path.splitext(os.path.split(blastfile)[-1])[0].split('_vs_')
-        tot_length, tot_sim_error = parse_blast(blastfile)
+        tot_length, tot_sim_error = blast_parser(blastfile)
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
         # Calculate percentage ID of aligned length. This may fail if 
@@ -201,7 +276,7 @@ def process_blastn(blast_dir, org_lengths):
            similarity_errors)
         
 # Parse BLASTN output to get total alignment length and mismatches
-def parse_blast(filename):
+def parse_blastn(filename):
     """Returns (alignment length, similarity errors) tuple from .blast_tab
 
     - filename - path to .blast_tab file
@@ -237,6 +312,49 @@ def parse_blast(filename):
         qnumid[qid] += int(line[5])
         qlen[qid] = int(line[6])
         qerr[qid] += int(line[3])
+    for qid, ql in qlen.items():
+        if 1.*qalnlen[qid]/ql > 0.7 and 1.*qnumid[qid]/ql > 0.3:
+            aln_length += int(qalnlen[qid])
+            sim_errors += int(qerr[qid])
+    return aln_length, sim_errors
+
+# Parse BLASTALL output to get total alignment length and mismatches
+def parse_blastall(filename):
+    """Returns (alignment length, similarity errors) tuple from .blast_tab
+
+    - filename - path to .blast_tab file
+
+    Calculate the alignment length and total number of similarity errors
+    for the passed BLASTALL alignment .blast_tab file.
+    """
+    aln_length, sim_errors = 0, 0
+    # Assuming that the filename format holds org1_vs_org2.blast_tab:
+    qname, sname = \
+        os.path.splitext(os.path.split(filename)[-1])[0].split('_vs_')
+    qalnlen, qnumid, qlen, qerr = (collections.defaultdict(float),
+                                   collections.defaultdict(float),
+                                   collections.defaultdict(float),
+                                   collections.defaultdict(float))
+    seen = set()  # IDs of queries that have been processed
+    for line in [l.strip().split() for l in open(filename, 'rU').readlines()
+                 if len(l) and not l.startswith('#')]:
+        # We need to collate matches by query ID, to determine whether the
+        # match has > 30% identity and > 70% coverage.
+        # Following Goris et al (2007) we only use matches that contribute to
+        # a total match identity of at least 30% and a total match coverage
+        # of at least 70% of either query or reference length
+        # As of BLASTN 2.2.29+, the max_target_seqs/num_alignments still
+        # will not restrict to the best hit. We rely on BLAST output giving
+        # the best hit for any query first in the table, and check whether we
+        # have seen it before. If not, we carry on processing the data.
+        qid = line[0]
+        if qid in seen:
+            continue
+        seen.add(qid)
+        qalnlen[qid] += int(line[3])
+        qnumid[qid] += int(line[3]) - int(line[4]) - int(line[5])
+        qlen[qid] = int(line[7])
+        qerr[qid] += int(line[4])
     for qid, ql in qlen.items():
         if 1.*qalnlen[qid]/ql > 0.7 and 1.*qnumid[qid]/ql > 0.3:
             aln_length += int(qalnlen[qid])
