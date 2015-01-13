@@ -5,7 +5,5 @@ build/
 dist/
 pyani.egg-info/
 *.log
-tests/test_ani_ANIm_out/
-tests/test_ani_ANIb_out/
-tests/test_ani_TETRA_out/
+tests/test_*_out/
 calculate_ani.py
