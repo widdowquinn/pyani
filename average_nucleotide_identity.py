@@ -156,6 +156,7 @@ import logging.handlers
 import os
 import shutil
 import sys
+import traceback
 
 from argparse import ArgumentParser
 
@@ -333,7 +334,8 @@ def calculate_anib(infiles, org_lengths):
             raise NotImplementedError
         
         # Run pairwise BLASTN
-        cmdlist = anib.generate_blastn_commands(fragfiles, args.outdirname,
+        cmdlist = anib.generate_blastn_commands(fragfiles,
+                                                args.outdirname,
                                                 args.blastn_exe)
         logger.info("Generated commands:\n%s" % '\n'.join(cmdlist))
         if args.scheduler == 'multiprocessing':
@@ -342,7 +344,7 @@ def calculate_anib(infiles, org_lengths):
             logger.info("Cumulative return value: %d" % cumval)
             if 0 < cumval:
                 logger.warning("At least one BLASTN comparison failed. " +\
-                               "ANIm may fail.")
+                               "ANIb may fail.")
             else:
                 logger.info("All multiprocessing jobs complete.")
         else:
@@ -551,11 +553,11 @@ if __name__ == '__main__':
     # Dictionary below defines analysis function, and output presentation
     # functions/settings, dependent on selected method.
     methods = {"ANIm": (calculate_anim, 
-                        pyani_config.ANIB_FILESTEMS),
+                        pyani_config.ANIM_FILESTEMS),
                "ANIb": (calculate_anib, 
                         pyani_config.ANIB_FILESTEMS),
                "TETRA": (calculate_tetra, 
-                        pyani_config.ANIB_FILESTEMS)}
+                        pyani_config.TETRA_FILESTEMS)}
     if args.method not in methods:
         logger.error("ANI method %s not recognised (exiting)" % args.method)
         logger.error("Valid methods are: %s" % methods.keys())

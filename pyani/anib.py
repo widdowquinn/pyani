@@ -52,8 +52,8 @@ def fragment_FASTA_files(infiles, outdirname, fragsize):
     """
     outfnames = []
     for fname in infiles:
-        outstem = os.path.splitext(os.path.split(fname)[-1])[0]
-        outfname = os.path.join(outdirname, outstem) + '.fasta'
+        outstem, outext = os.path.splitext(os.path.split(fname)[-1])
+        outfname = os.path.join(outdirname, outstem) + '-fragments' + outext
         outseqs = []
         idx, count = 0, 0
         for seq in SeqIO.parse(fname, 'fasta'):
@@ -77,50 +77,60 @@ def generate_blastdb_commands(filenames, outdir,
     - outdir - path to output directory
     - blastdb_exe - path to the makeblastdb executable
     """
-    cmdlines = [construct_makeblastdb_cmdline(fname, blastdb_exe) for 
+    cmdlines = [construct_makeblastdb_cmdline(fname, outdir, blastdb_exe) for 
                 fname in filenames]
     return cmdlines
 
 
 # Generate single makeblastdb command line
-def construct_makeblastdb_cmdline(filename,
+def construct_makeblastdb_cmdline(filename, outdir,
                                   blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT):
     """Returns a single makeblastdb command.
 
     - filename - input filename
     - blastdb_exe - path to the makeblastdb executable
     """
-    title = os.path.splitext(os.path.split(filename)[-1])[0] + '-fragments'
-    return "{0} -dbtype nucl -in {1} -title {2}".format(blastdb_exe,
-                                                        filename, title)
+    title = os.path.splitext(os.path.split(filename)[-1])[0]
+    outfilename = os.path.join(outdir, os.path.split(filename)[-1])
+    return "{0} -dbtype nucl -in {1} -title {2} -out {3}".format(blastdb_exe,
+                                                                 filename,
+                                                                 title,
+                                                                 outfilename)
 
 # Generate list of BLASTN command lines from passed filenames
 def generate_blastn_commands(filenames, outdir,
                              blastn_exe=pyani_config.BLASTN_DEFAULT):
-    """Return a list of makeblastdb command-lines for ANIm
+    """Return a list of blastn command-lines for ANIm
 
-    - filenames - a list of paths to input FASTA files
+    - filenames - a list of paths to fragmented input FASTA files
     - outdir - path to output directory
     - blastn_exe - path to BLASTN executable
+
+    Assumes that the fragment sequence input filenames have the form
+    ACCESSION-fragments.ext, where the corresponding BLAST database filenames
+    have the form ACCESSION.ext. This is the convention followed by the
+    fragment_FASTA_files() function above.
     """
     cmdlines = []
     for idx, fname1 in enumerate(filenames[:-1]):
-        cmdlines.extend([construct_makeblastn_cmdline(fname1, fname2, outdir,
-                                                      blastn_exe) for 
-                         fname2 in filenames[idx+1:]])
+        for fname2 in filenames[idx+1:]:
+            dbname = fname2.replace('-fragments','')
+            cmdlines.append(construct_makeblastn_cmdline(fname1, dbname,
+                                                         outdir, blastn_exe))
     return cmdlines
 
 
 # Generate single BLASTN command line
 def construct_makeblastn_cmdline(fname1, fname2, outdir,
                                  blastn_exe=pyani_config.BLASTN_DEFAULT):
-    """Returns a single makeblastdb command.
+    """Returns a single blastn command.
 
     - filename - input filename
     - blastn_exe - path to BLASTN executable
     """
     fstem1 = os.path.splitext(os.path.split(fname1)[-1])[0]
     fstem2 = os.path.splitext(os.path.split(fname2)[-1])[0]
+    fstem1 = fstem1.replace('-fragments', '')
     prefix = os.path.join(outdir, "%s_vs_%s" % (fstem1, fstem2))
     cmd = "{0} -out {1}.blast_tab -query {2} -db {3} " +\
         "-xdrop_gap_final 150 -dust no -evalue 1e-15 " +\
