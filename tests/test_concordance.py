@@ -212,10 +212,12 @@ def test_anim_concordance():
     # Run pairwise NUCmer
     cmdlist = anim.generate_nucmer_commands(infiles, outdirname,
                                             pyani_config.NUCMER_DEFAULT)
-    #multiprocessing_run(cmdlist, verbose=False)
+    multiprocessing_run(cmdlist, verbose=False)
     # Process .delta files
     anim_data = anim.process_deltadir(outdirname, org_lengths)
     anim_pid = anim_data[1].sort(axis=0).sort(axis=1)
+
+    print anim_data
 
     index, columns = anim_pid.index, anim_pid.columns
     diffmat = anim_pid.as_matrix() - anim_jspecies.as_matrix()

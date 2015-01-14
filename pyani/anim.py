@@ -147,13 +147,13 @@ def process_deltadir(delta_dir, org_lengths):
         # Populate dataframes: when assigning data, pandas dataframes
         # take column, index order, i.e. df['column']['row'] - this only
         # matters for asymmetrical data
-        alignment_lengths[qname][sname] = tot_length
-        alignment_lengths[sname][qname] = tot_length
-        similarity_errors[qname][sname] = tot_sim_error
-        similarity_errors[sname][qname] = tot_sim_error
-        percentage_identity[qname][sname] = 100. * perc_id
-        percentage_identity[sname][qname] = 100. * perc_id
-        alignment_coverage[sname][qname] = query_cover
-        alignment_coverage[qname][sname] = sbjct_cover
+        alignment_lengths.loc[qname, sname] = tot_length
+        alignment_lengths.loc[sname, qname] = tot_length
+        similarity_errors.loc[qname, sname] = tot_sim_error
+        similarity_errors.loc[sname, qname] = tot_sim_error
+        percentage_identity.loc[qname, sname] = 100. * perc_id
+        percentage_identity.loc[sname, qname] = 100. * perc_id
+        alignment_coverage.loc[sname, qname] = query_cover
+        alignment_coverage.loc[qname, sname] = sbjct_cover
     return(alignment_lengths, percentage_identity, alignment_coverage,
            similarity_errors)
