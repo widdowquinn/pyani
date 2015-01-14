@@ -1,7 +1,7 @@
 # Copyright 2013-2015, The James Hutton Insitute
 # Author: Leighton Pritchard
 #
-# This code is part of the pyani package, and is governed by its licence. 
+# This code is part of the pyani package, and is governed by its licence.
 # Please see the LICENSE file that should have been included as part of
 # this package.
 
@@ -78,7 +78,6 @@ cmap_BuRd = LinearSegmentedColormap("BuRd", cdict_BuRd)
 plt.register_cmap(cmap=cmap_BuRd)
 
 
-
 # helper for cleaning up matplotlib axes by removing ticks etc.
 def clean_axis(ax):
     """Remove ticks, tick labels, and frame from axis"""
@@ -96,12 +95,12 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     - outfilename - path to output file (indicates output format)
     - cmap - colourmap option
     """
-    # Get indication of dataframe size and, if necessary, max and 
+    # Get indication of dataframe size and, if necessary, max and
     # min values for colormap
-    size = df.shape[0]  
-    if vmin == None:
+    size = df.shape[0]
+    if vmin is None:
         vmin = df.values.min()
-    if vmax == None:
+    if vmax is None:
         vmax = df.values.max()
     vdiff = vmax - vmin
     cbticks = [vmin + e * vdiff for e in (0, 0.25, 0.5, 0.75, 1)]
@@ -125,7 +124,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     colclusters = sch.linkage(coldists, method='complete')
 
     # Create column dendrogram axis
-    coldend_axes = fig.add_subplot(heatmapGS[0,1])
+    coldend_axes = fig.add_subplot(heatmapGS[0, 1])
     coldend = sch.dendrogram(colclusters, color_threshold=np.inf)
     clean_axis(coldend_axes)
 
@@ -134,13 +133,13 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     rowclusters = sch.linkage(rowdists, method='complete')
 
     # Create column dendrogram axis
-    rowdend_axes = fig.add_subplot(heatmapGS[1,0])
+    rowdend_axes = fig.add_subplot(heatmapGS[1, 0])
     rowdend = sch.dendrogram(rowclusters, color_threshold=np.inf,
                              orientation="right")
     clean_axis(rowdend_axes)
-        
+
     # Create heatmap axis
-    heatmap_axes = fig.add_subplot(heatmapGS[1,1])
+    heatmap_axes = fig.add_subplot(heatmapGS[1, 1])
     ax_map = heatmap_axes.imshow(df.ix[rowdend['leaves'],
                                        coldend['leaves']],
                                  interpolation='nearest',
@@ -157,9 +156,10 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
     # Add colour scale
     scale_subplot =\
-                    gridspec.GridSpecFromSubplotSpec(1, 2, 
-                        subplot_spec=heatmapGS[0,0], wspace=0.0, hspace=0.0)
-    scale_ax = fig.add_subplot(scale_subplot[0,1])
+        gridspec.GridSpecFromSubplotSpec(1, 2,
+                                         subplot_spec=heatmapGS[0, 0],
+                                         wspace=0.0, hspace=0.0)
+    scale_ax = fig.add_subplot(scale_subplot[0, 1])
     cb = fig.colorbar(ax_map, scale_ax, ticks=cbticks, )
     cb.set_label('Scale')
     cb.ax.yaxis.set_ticks_position('left')
@@ -172,6 +172,8 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
         fig.savefig(outfilename)
     return fig
 
+
+# Draw heatmap with R
 def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
               vmin=None, vmax=None, gformat=None):
     """Uses R to draw heatmap, and returns R code for rendering.
@@ -190,8 +192,8 @@ def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
                 infilename)
     rstr.append("%s('%s')" % (gformat, outfilename))
     rstr.append("heatmap.2(as.matrix(ani), col=%s, " % cmap +
-                "breaks=seq(%.2f, %.2f, %f), " % (vmin, vmax, vstep) + 
-                "trace='none', " + 
+                "breaks=seq(%.2f, %.2f, %f), " % (vmin, vmax, vstep) +
+                "trace='none', " +
                 "margins=c(15, 12), cexCol=1/log10(ncol(ani)), " +
                 "cexRow=1/log10(nrow(ani)), main='%s')" % title)
     rstr.append("dev.off()")
@@ -200,4 +202,3 @@ def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
     rstr = '\n'.join(rstr)
     robjects.r(rstr)
     return rstr
-
