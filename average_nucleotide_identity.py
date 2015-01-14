@@ -356,6 +356,18 @@ def calculate_tetra(infiles, org_lengths):
 
     - infiles - paths to each input file
     - org_lengths - dictionary of input sequence lengths, keyed by sequence
+
+    Calculates TETRA correlation scores, as described in:
+
+    Richter M, Rossello-Mora R (2009) Shifting the genomic gold standard for the
+    prokaryotic species definition. Proc Natl Acad Sci USA 106: 19126-19131.
+    doi:10.1073/pnas.0906412106.
+
+    and
+
+    Teeling et al. (2004) Application of tetranucleotide frequencies for the
+    assignment of genomic fragments. Env. Microbiol. 6(9): 938-947.
+    doi:10.1111/j.1462-2920.2004.00624.x
     """
     logger.info("Running TETRA.")
     # First, find Z-scores
@@ -382,30 +394,6 @@ def unified_anib(infiles, org_lengths):
     Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0. There are
     some minor differences depending on whether BLAST+ or legacy BLAST
     (BLASTALL) methods are used.
-
-    '''The genomic sequence from one of the genomes in a pair (the query)
-    was cut into consecutive 1020 nt fragments. The 1020 nt cut-off was used
-    to correspond with the fragmentation of the genomic DNA to approximately
-    1 kb fragments during the DDH experiments. [...] The 1020 nt fragments
-    were then used to search against the whole genomic sequence of the other
-    genome in the pair (the reference) by using the BLASTN algorithm;
-    the best BLASTN match was saved for further analysis. The BLAST
-    algorithm was run using the following settings: X=150 (where X is the
-    drop-off value for gapped alignment), q=-1 (where q is the penalty
-    for nucleotide mismatch) and F=F (where F is the filter for repeated
-    sequences); the rest of the parameters were used at the default settings.
-    These settings give better sensitivity than the default settings when
-    more distantly related genomes are being compared, as the latter
-    target sequences that are more similar to each other.
-    [...]
-    The ANI between the query genome and the reference genome was
-    calculated as the mean identity of all BLASTN matches that showed more
-    than 30% overall sequence identity (recalculated to an identity along
-    the entire sequence) over an alignable region of at least 70% of their
-    length. This cut-off is above the 'twilight zone' of similarity searches in
-    which an inference of homology is error prone because of low levels of
-    Reverse searching, i.e. in which the reference genome is used as the
-    query, was also performed to provide reciprocal values.'''
 
     All FASTA format files (selected by suffix) in the input directory are
     used to construct BLAST databases, placed in the output directory.
