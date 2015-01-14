@@ -293,10 +293,10 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
         # Populate dataframes: when assigning data, pandas dataframes
         # take column, index order, i.e. df['column']['row'] - this only
         # matters for asymmetrical data
-        alignment_lengths[sname][qname] = tot_length
-        similarity_errors[sname][qname] = tot_sim_error
-        percentage_identity[sname][qname] = ani_pid
-        alignment_coverage[sname][qname] = query_cover
+        alignment_lengths.loc[qname, sname] = tot_length
+        similarity_errors.loc[qname, sname] = tot_sim_error
+        percentage_identity.loc[qname, sname] = ani_pid
+        alignment_coverage.loc[qname, sname] = query_cover
     return(alignment_lengths, percentage_identity, alignment_coverage,
            similarity_errors)
 
@@ -343,8 +343,8 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     # percentage identity
     data['ani_alnlen'] = data['blast_alnlen'] - data['blast_gaps']
     data['ani_alnids'] = data['ani_alnlen'] - data['blast_mismatch']
-    data['ani_coverage'] = data['ani_alnlen']/data['qlen']
-    data['ani_pid'] = data['ani_alnids']/data['qlen']
+    data['ani_coverage'] = data['ani_alnlen'] / data['qlen']
+    data['ani_pid'] = data['ani_alnids'] / data['qlen']
     # Filter rows on 'ani_coverage' > 0.7, 'ani_pid' > 0.3
     filtered = data[(data['ani_coverage'] > 0.7) & (data['ani_pid'] > 0.3)]
     # Dedupe query hits, so we only take the best hit

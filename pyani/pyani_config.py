@@ -29,6 +29,9 @@ ANIBLASTALL_FILESTEMS = ("ANIblastall_alignment_lengths",
 # Colour gradients for use in R
 R_AFMHOT = 'colorRampPalette(c("black","red","yellow","white"))'
 
+# Parameters for analyses
+FRAGSIZE = 1020
+
 
 # Graphics parameters for each output file. Note that this should be
 # in sync with the output file stems above
