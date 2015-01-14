@@ -27,7 +27,7 @@
 # Methods differ on: (1) what alignment algorithm is used, and the choice of
 # parameters (this affects the aligned region boundaries); (2) what the input
 # is for alignment (typically either fragments of fixed size, or the most
-# complete assembly available); (3) whether a reciprocal comparison is 
+# complete assembly available); (3) whether a reciprocal comparison is
 # necessary or desirable.
 #
 # ANIm: uses MUMmer (NUCmer) to align the input sequences.
@@ -166,6 +166,7 @@ from pyani import anib, anim, tetra, pyani_config, pyani_files, pyani_graphics
 from pyani.run_multiprocessing import multiprocessing_run
 from pyani.pyani_config import params_mpl, params_r
 
+
 # Process command-line arguments
 def parse_cmdline(args):
     """Parse command-line arguments for script."""
@@ -294,16 +295,16 @@ def calculate_anim(infiles, org_lengths):
 
     Finds ANI by the ANIm method, as described in Richter et al (2009)
     Proc Natl Acad Sci USA 106: 19126-19131 doi:10.1073/pnas.0906412106.
-    
+
     All FASTA format files (selected by suffix) in the input directory
     are compared against each other, pairwise, using NUCmer (which must
     be in the path). NUCmer output is stored in the output directory.
-    
+
     The NUCmer .delta file output is parsed to obtain an alignment length
     and similarity error count for every unique region alignment between
     the two organisms, as represented by the sequences in the FASTA files.
-    
-    These are processed to give matrices of aligned sequence lengths, 
+
+    These are processed to give matrices of aligned sequence lengths,
     average nucleotide identity (ANI) percentages, coverage (aligned
     percentage of whole genome), and similarity error cound for each pairwise
     comparison.
@@ -321,7 +322,7 @@ def calculate_anim(infiles, org_lengths):
             cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
             logger.info("Cumulative return value: %d" % cumval)
             if 0 < cumval:
-                logger.warning("At least one NUCmer comparison failed. " +\
+                logger.warning("At least one NUCmer comparison failed. " +
                                "ANIm may fail.")
             else:
                 logger.info("All multiprocessing jobs complete.")
@@ -378,8 +379,8 @@ def unified_anib(infiles, org_lengths):
     - org_lengths - dictionary of input sequence lengths, keyed by sequence
 
     Calculates ANI by the ANIb method, as described in Goris et al. (2007)
-    Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0. There are 
-    some minor differences depending on whether BLAST+ or legacy BLAST 
+    Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0. There are
+    some minor differences depending on whether BLAST+ or legacy BLAST
     (BLASTALL) methods are used.
 
     '''The genomic sequence from one of the genomes in a pair (the query)
@@ -404,7 +405,7 @@ def unified_anib(infiles, org_lengths):
     length. This cut-off is above the 'twilight zone' of similarity searches in
     which an inference of homology is error prone because of low levels of
     Reverse searching, i.e. in which the reference genome is used as the
-    query, was also performed to provide reciprocal values.''' 
+    query, was also performed to provide reciprocal values.'''
 
     All FASTA format files (selected by suffix) in the input directory are
     used to construct BLAST databases, placed in the output directory.
@@ -412,7 +413,7 @@ def unified_anib(infiles, org_lengths):
     options.fragsize, and the multiple FASTA file that results written to
     the output directory. These are BLASTNed, pairwise, against the
     databases.
-    
+
     The BLAST output is interrogated for all fragment matches that cover
     at least 70% of the query sequence, with at least 30% nucleotide
     identity over the full length of the query sequence. This is an odd
@@ -420,7 +421,7 @@ def unified_anib(infiles, org_lengths):
     Goris et al. We persist with their definition, however.  Only these
     qualifying matches contribute to the total aligned length, and total
     aligned sequence identity used to calculate ANI.
-    
+
     The results are processed to give matrices of aligned sequence length
     (aln_lengths.tab), similarity error counts (sim_errors.tab), ANIs
     (perc_ids.tab), and minimum aligned percentage (perc_aln.tab) of
@@ -462,14 +463,14 @@ def unified_anib(infiles, org_lengths):
             logger.info("Running jobs with multiprocessing")
             cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
             if 0 < cumval:
-                logger.warning("At least one makeblastdb run failed. " +\
+                logger.warning("At least one makeblastdb run failed. " +
                                "%s may fail." % args.method)
             else:
                 logger.info("All multiprocessing jobs complete.")
         else:
             logger.info("Running jobs with SGE")
             raise NotImplementedError
-        
+
         # Run pairwise BLASTN
         logger.info("Running %s BLASTN jobs" % args.method)
         cmdlist = anib.generate_blastn_commands(fragfiles, args.outdirname,
@@ -480,7 +481,7 @@ def unified_anib(infiles, org_lengths):
             cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
             logger.info("Cumulative return value: %d" % cumval)
             if 0 < cumval:
-                logger.warning("At least one BLASTN comparison failed. " +\
+                logger.warning("At least one BLASTN comparison failed. " +
                                "%s may fail." % args.method)
             else:
                 logger.info("All multiprocessing jobs complete.")
@@ -492,7 +493,7 @@ def unified_anib(infiles, org_lengths):
         if args.method == "ANIblastall":
             with open(os.path.join(args.outdirname, 'fraglengths.json'),
                       'rU') as infile:
-                fraglengths = json.load(infile)        
+                fraglengths = json.load(infile)
         else:
             fraglengths = None
         logger.warning("Skipping BLASTN runs (as instructed)!")
@@ -531,7 +532,7 @@ def write(results, filestems):
         df.to_excel(os.path.join(args.outdirname, filestem) + '.xlsx',
                     index=True)
         df.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
-                    index=True, sep="\t")
+                  index=True, sep="\t")
 
 
 # Draw ANIb/ANIm/TETRA output
@@ -541,7 +542,7 @@ def draw(results, filestems):
     - results - tuple of dataframes from ANIb analysis
     """
     # Draw heatmaps
-    for df, filestem in zip(results, filestems):        
+    for df, filestem in zip(results, filestems):
         fullstem = os.path.join(args.outdirname, filestem)
         outfilename = fullstem + '.%s' % args.gformat
         infilename = fullstem + '.tab'
@@ -551,7 +552,7 @@ def draw(results, filestems):
                                        title=filestem,
                                        cmap=params_mpl(df)[filestem][0],
                                        vmin=params_mpl(df)[filestem][1],
-                                       vmax=params_mpl(df)[filestem][2])        
+                                       vmax=params_mpl(df)[filestem][2])
         elif args.gmethod == "R":
             rstr = pyani_graphics.heatmap_r(infilename, outfilename,
                                             gformat=args.gformat.lower(),
@@ -586,7 +587,7 @@ if __name__ == '__main__':
         except:
             logger.error("Could not open %s for logging" %
                          args.logfile)
-            sys.exit(1)    
+            sys.exit(1)
 
     # Do we need verbosity?
     if args.verbose:
@@ -612,12 +613,9 @@ if __name__ == '__main__':
     # Have we got a valid method choice?
     # Dictionary below defines analysis function, and output presentation
     # functions/settings, dependent on selected method.
-    methods = {"ANIm": (calculate_anim, 
-                        pyani_config.ANIM_FILESTEMS),
-               "ANIb": (unified_anib, 
-                        pyani_config.ANIB_FILESTEMS),
-               "TETRA": (calculate_tetra, 
-                         pyani_config.TETRA_FILESTEMS),
+    methods = {"ANIm": (calculate_anim, pyani_config.ANIM_FILESTEMS),
+               "ANIb": (unified_anib, pyani_config.ANIB_FILESTEMS),
+               "TETRA": (calculate_tetra, pyani_config.TETRA_FILESTEMS),
                "ANIblastall": (unified_anib,
                                pyani_config.ANIBLASTALL_FILESTEMS)}
     if args.method not in methods:
@@ -646,12 +644,12 @@ if __name__ == '__main__':
                 os.linesep.join(["\t%s: %d" % (k, v) for
                                  k, v in org_lengths.items()]))
 
-    # Run appropriate method on the contents of the input directory, 
+    # Run appropriate method on the contents of the input directory,
     # and write out corresponding results.
     logger.info("Carrying out %s analysis" % args.method)
     results = methods[args.method][0](infiles, org_lengths)
     write(results, methods[args.method][1])
-    
+
     # Do we want graphical output?
     if args.graphics:
         logger.info("Rendering output graphics")
