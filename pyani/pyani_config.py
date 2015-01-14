@@ -1,7 +1,7 @@
 # Copyright 2013-2015, The James Hutton Insitute
 # Author: Leighton Pritchard
 #
-# This code is part of the pyani package, and is governed by its licence. 
+# This code is part of the pyani package, and is governed by its licence.
 # Please see the LICENSE file that should have been included as part of
 # this package.
 
@@ -9,11 +9,11 @@
 """
 
 # Defaults assume that common binaries are on the $PATH
-NUCMER_DEFAULT="nucmer"
-BLASTN_DEFAULT="blastn"
-MAKEBLASTDB_DEFAULT="makeblastdb"
-BLASTALL_DEFAULT="blastall"
-FORMATDB_DEFAULT="formatdb"
+NUCMER_DEFAULT = "nucmer"
+BLASTN_DEFAULT = "blastn"
+MAKEBLASTDB_DEFAULT = "makeblastdb"
+BLASTALL_DEFAULT = "blastall"
+FORMATDB_DEFAULT = "formatdb"
 
 # Stems for output files
 ANIM_FILESTEMS = ("ANIm_alignment_lengths", "ANIm_percentage_identity",
@@ -29,9 +29,11 @@ ANIBLASTALL_FILESTEMS = ("ANIblastall_alignment_lengths",
 # Colour gradients for use in R
 R_AFMHOT = 'colorRampPalette(c("black","red","yellow","white"))'
 
-# Graphics parameters for each output file. Note that this should be 
+
+# Graphics parameters for each output file. Note that this should be
 # in sync with the output file stems above
 def params_mpl(df):
+    """Returns dict of matplotlib parameters, dependent on dataframe."""
     return {'ANIb_alignment_lengths': ('afmhot', df.values.min(),
                                        df.values.max()),
             'ANIb_percentage_identity': ('spbnd_BuRd', 0, 1),
@@ -50,10 +52,11 @@ def params_mpl(df):
             'ANIblastall_percentage_identity': ('spbnd_BuRd', 0, 1),
             'ANIblastall_alignment_coverage': ('BuRd', 0, 1),
             'ANIblastall_similarity_errors': ('afmhot', df.values.min(),
-                                              df.values.max()),}
+                                              df.values.max())}
 
 
 def params_r(df):
+    """Returns dictionary of R rendering parameters, dependent on dataframe."""
     return {'ANIb_alignment_lengths': (R_AFMHOT, df.values.min(),
                                        df.values.max()),
             'ANIb_percentage_identity': ('bluered', 0.9, 1),
@@ -72,5 +75,4 @@ def params_r(df):
             'ANIblastall_percentage_identity': ('bluered', 0.9, 1),
             'ANIblastall_alignment_coverage': ('bluered', 0, 1),
             'ANIblastall_similarity_errors': (R_AFMHOT, df.values.min(),
-                                              df.values.max()),}
-
+                                              df.values.max())}
