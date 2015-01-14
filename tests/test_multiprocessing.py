@@ -21,7 +21,7 @@ def test_multiprocessing_run():
     """
     cmdlist = ['for i in %s; do echo "Thread %d: value ${i}"; done' %
                (' '.join([str(e) for e in range(v)]), v) for
-                            v in range(5)]
+               v in range(5)]
     run_multiprocessing.multiprocessing_run(cmdlist)
 
 

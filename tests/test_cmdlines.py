@@ -37,7 +37,7 @@ def test_anim_collection():
                            'nucmer -mum -p file2_vs_file4 file2 file4',
                            'nucmer -mum -p file3_vs_file4 file3 file4'])
     print(cmdlist)
-    
+
 
 # Run as script
 if __name__ == '__main__':
