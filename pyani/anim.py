@@ -1,7 +1,7 @@
 # Copyright 2013-2015, The James Hutton Insitute
 # Author: Leighton Pritchard
 #
-# This code is part of the pyani package, and is governed by its licence. 
+# This code is part of the pyani package, and is governed by its licence.
 # Please see the LICENSE file that should have been included as part of
 # this package.
 
@@ -10,7 +10,7 @@
 Calculates ANI by the ANIm method, as described in Richter et al (2009)
 Proc Natl Acad Sci USA 106: 19126-19131 doi:10.1073/pnas.0906412106.
 
-All input FASTA format files are compared against each other, pairwise, 
+All input FASTA format files are compared against each other, pairwise,
 using NUCmer (binary location must be provided). NUCmer output will be stored
 in a specified output directory.
 
@@ -25,7 +25,8 @@ import pandas as pd
 
 import os
 
-import pyani_config, pyani_files
+import pyani_config
+import pyani_files
 
 
 # Generate list of NUCmer pairwise comparison command lines from
@@ -45,8 +46,8 @@ def generate_nucmer_commands(filenames, outdir,
     """
     cmdlines = []
     for idx, f1 in enumerate(filenames[:-1]):
-        cmdlines.extend([construct_nucmer_cmdline(f1, f2, outdir, 
-                                                  nucmer_exe) for 
+        cmdlines.extend([construct_nucmer_cmdline(f1, f2, outdir,
+                                                  nucmer_exe) for
                          f2 in filenames[idx+1:]])
     return cmdlines
 
@@ -64,7 +65,7 @@ def construct_nucmer_cmdline(fname1, fname2, outdir,
     - maxmatch - Boolean flag indicating whether to use NUCmer's -maxmatch
     option. If not, the -mum option is used instead
     """
-    outprefix = os.path.join(outdir,"%s_vs_%s" %\
+    outprefix = os.path.join(outdir, "%s_vs_%s" %
                              (os.path.splitext(os.path.split(fname1)[-1])[0],
                               os.path.splitext(os.path.split(fname2)[-1])[0]))
     if maxmatch:
@@ -73,7 +74,7 @@ def construct_nucmer_cmdline(fname1, fname2, outdir,
         mode = "-mum"
     return "{0} {1} -p {2} {3} {4}".format(nucmer_exe, mode, outprefix,
                                            fname1, fname2)
-    
+
 
 # Parse NUCmer delta file to get total alignment length and total sim_errors
 def parse_delta(filename):
@@ -96,6 +97,7 @@ def parse_delta(filename):
     return aln_length, sim_errors
 
 
+# Parse all the .delta files in the passed directory
 def process_deltadir(delta_dir, org_lengths):
     """Returns a tuple of ANIm results for .deltas in passed directory.
 
@@ -104,7 +106,7 @@ def process_deltadir(delta_dir, org_lengths):
 
     Returns the following pandas dataframes in a tuple; query sequences are
     rows, subject sequences are columns:
-    
+
     - alignment_lengths - symmetrical: total length of alignment
     - percentage_identity - symmetrical: percentage identity of alignment
     - alignment_coverage - non-symmetrical: coverage of query and subject
@@ -136,13 +138,13 @@ def process_deltadir(delta_dir, org_lengths):
         tot_length, tot_sim_error = parse_delta(deltafile)
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
-        # Calculate percentage ID of aligned length. This may fail if 
+        # Calculate percentage ID of aligned length. This may fail if
         # total length is zero.
-        # The ZeroDivisionError that would arise should be handled 
-        # Common causes are that a NUCmer run failed, or that a very 
+        # The ZeroDivisionError that would arise should be handled
+        # Common causes are that a NUCmer run failed, or that a very
         # distant sequence was included in the analysis.
         perc_id = 1 - float(tot_sim_error) / tot_length
-        # Populate dataframes: when assigning data, pandas dataframes 
+        # Populate dataframes: when assigning data, pandas dataframes
         # take column, index order, i.e. df['column']['row'] - this only
         # matters for asymmetrical data
         alignment_lengths[qname][sname] = tot_length
@@ -155,7 +157,3 @@ def process_deltadir(delta_dir, org_lengths):
         alignment_coverage[qname][sname] = sbjct_cover
     return(alignment_lengths, percentage_identity, alignment_coverage,
            similarity_errors)
-            
-    
-
-    
