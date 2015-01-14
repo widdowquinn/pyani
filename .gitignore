@@ -6,4 +6,5 @@ dist/
 pyani.egg-info/
 *.log
 tests/test_*_out/
+tests/test_concordance_*/
 calculate_ani.py
