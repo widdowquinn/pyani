@@ -1,7 +1,7 @@
 # Copyright 2013-2015, The James Hutton Insitute
 # Author: Leighton Pritchard
 #
-# This code is part of the pyani package, and is governed by its licence. 
+# This code is part of the pyani package, and is governed by its licence.
 # Please see the LICENSE file that should have been included as part of
 # this package.
 
@@ -34,7 +34,7 @@ the entire sequence) over an alignable region of at least 70% of their
 length. This cut-off is above the 'twilight zone' of similarity searches in
 which an inference of homology is error prone because of low levels of
 Reverse searching, i.e. in which the reference genome is used as the
-query, was also performed to provide reciprocal values.''' 
+query, was also performed to provide reciprocal values.'''
 
 All input FASTA format files are used to construct BLAST databases.
 Each file's contents are also split into sequence fragments of length
@@ -58,7 +58,8 @@ import os
 import shutil
 import sys
 
-import pyani_config, pyani_files
+import pyani_config
+import pyani_files
 
 from Bio import SeqIO
 
@@ -99,11 +100,11 @@ def fragment_FASTA_files(infiles, outdirname, fragsize):
 # Get lengths of all sequences in all files
 def get_fraglength_dict(fastafiles):
     """Returns dictionary of sequence fragment lengths, keyed by query name.
-    
+
     - fastafiles - list of FASTA input whole sequence files
 
     Loops over input files and, for each, produces a dictionary with fragment
-    lengths, keyed by sequence ID. These are returned as a dictionary with 
+    lengths, keyed by sequence ID. These are returned as a dictionary with
     the keys being query IDs derived from filenames.
     """
     fraglength_dict = {}
@@ -139,17 +140,17 @@ def generate_blastdb_commands(filenames, outdir,
     - blastdb_exe - path to the makeblastdb executable
     """
     if mode == "ANIb":
-        construct_db_cmdline = construct_makeblastdb_cmdline
+        construct_db_cmdline = construct_makeblastdb_cmd
     else:
-        construct_db_cmdline = construct_formatdb_cmdline
-    cmdlines = [construct_db_cmdline(fname, outdir, blastdb_exe) for 
+        construct_db_cmdline = construct_formatdb_cmd
+    cmdlines = [construct_db_cmdline(fname, outdir, blastdb_exe) for
                 fname in filenames]
     return cmdlines
 
 
 # Generate single makeblastdb command line
-def construct_makeblastdb_cmdline(filename, outdir,
-                                  blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT):
+def construct_makeblastdb_cmd(filename, outdir,
+                              blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT):
     """Returns a single makeblastdb command.
 
     - filename - input filename
@@ -162,9 +163,10 @@ def construct_makeblastdb_cmdline(filename, outdir,
                                                                  title,
                                                                  outfilename)
 
+
 # Generate single makeblastdb command line
-def construct_formatdb_cmdline(filename, outdir,
-                               blastdb_exe=pyani_config.FORMATDB_DEFAULT):
+def construct_formatdb_cmd(filename, outdir,
+                           blastdb_exe=pyani_config.FORMATDB_DEFAULT):
     """Returns a single formatdb command.
 
     - filename - input filename
@@ -197,13 +199,13 @@ def generate_blastn_commands(filenames, outdir,
         construct_blast_cmdline = construct_blastall_cmdline
     cmdlines = []
     for idx, fname1 in enumerate(filenames[:-1]):
-        dbname1 = fname1.replace('-fragments','')
+        dbname1 = fname1.replace('-fragments', '')
         for fname2 in filenames[idx+1:]:
-            dbname2 = fname2.replace('-fragments','')
+            dbname2 = fname2.replace('-fragments', '')
             cmdlines.append(construct_blast_cmdline(fname1, dbname2,
-                                                       outdir, blastn_exe))
+                                                    outdir, blastn_exe))
             cmdlines.append(construct_blast_cmdline(fname2, dbname1,
-                                                       outdir, blastn_exe))
+                                                    outdir, blastn_exe))
     return cmdlines
 
 
@@ -224,7 +226,8 @@ def construct_blastn_cmdline(fname1, fname2, outdir,
         "-max_target_seqs 1 -outfmt '6 qseqid sseqid length mismatch " +\
         "pident nident qlen slen qstart qend sstart send positive " +\
         "ppos gaps' -task blastn"
-    return cmd.format(blastn_exe, prefix, fname1, fname2) 
+    return cmd.format(blastn_exe, prefix, fname1, fname2)
+
 
 # Generate single BLASTALL command line
 def construct_blastall_cmdline(fname1, fname2, outdir,
@@ -240,7 +243,7 @@ def construct_blastall_cmdline(fname1, fname2, outdir,
     cmd = "{0} -p blastn -o {1}.blast_tab -i {2} -d {3} " +\
         "-X 150 -q -1 -F F -e 1e-15 " +\
         "-b 1 -v 1 -m 8"
-    return cmd.format(blastall_exe, prefix, fname1, fname2) 
+    return cmd.format(blastall_exe, prefix, fname1, fname2)
 
 
 # Process pairwise BLASTN output
@@ -249,10 +252,10 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
 
     - blast_dir - path to the directory containing .blast_tab files
     - org_lengths - the base count for each input sequence
-    - fraglengths - dictionary of query sequence fragment lengths, only 
+    - fraglengths - dictionary of query sequence fragment lengths, only
     needed for BLASTALL output
     - mode - parsing BLASTN+ or BLASTALL output?
-    
+
     Returns the following pandas dataframes in a tuple:
 
     - alignment_lengths - non-symmetrical: total length of alignment
@@ -287,7 +290,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
                                                              fraglengths,
                                                              mode)
         query_cover = float(tot_length) / org_lengths[qname]
-        # Populate dataframes: when assigning data, pandas dataframes 
+        # Populate dataframes: when assigning data, pandas dataframes
         # take column, index order, i.e. df['column']['row'] - this only
         # matters for asymmetrical data
         alignment_lengths[sname][qname] = tot_length
@@ -296,7 +299,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
         alignment_coverage[sname][qname] = query_cover
     return(alignment_lengths, percentage_identity, alignment_coverage,
            similarity_errors)
-        
+
 
 # Parse BLASTALL output to get total alignment length and mismatches
 def parse_blast_tab(filename, fraglengths, mode="ANIb"):
@@ -308,7 +311,7 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     Calculate the alignment length and total number of similarity errors (as
     we would with ANIm), as well as the Goris et al.-defined mean identity
     of all valid BLAST matches for the passed BLASTALL alignment .blast_tab
-    file. 
+    file.
 
     '''ANI between the query genome and the reference genome was calculated as
     the mean identity of all BLASTN matches that showed more than 30% overall
@@ -326,7 +329,7 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
                    'blast_gaps', 'q_start', 'q_end', 's_start', 's_end',
                    'e_Value', 'bit_score']
     else:
-        columns = ['sbjct_id', 'blast_alnlen', 'blast_mismatch', 
+        columns = ['sbjct_id', 'blast_alnlen', 'blast_mismatch',
                    'blast_pid', 'blast_identities', 'qlen', 'slen',
                    'q_start', 'q_end', 's_start', 's_end', 'blast_pos',
                    'ppos', 'blast_gaps']
@@ -336,7 +339,7 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     if mode == "ANIblastall":
         data['qlen'] = pd.Series([qfraglengths[idx] for idx in data.index],
                                  index=data.index)
-    # Add new columns for recalculated alignment length, proportion, and 
+    # Add new columns for recalculated alignment length, proportion, and
     # percentage identity
     data['ani_alnlen'] = data['blast_alnlen'] - data['blast_gaps']
     data['ani_alnids'] = data['ani_alnlen'] - data['blast_mismatch']
@@ -352,13 +355,13 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     # We report total alignment length and the number of similarity errors
     # (mismatches and gaps), as for ANIm
     # NOTE: We report the mean of 'blast_pid' for concordance with JSpecies
-    # Despite this, the concordance is not exact. Manual inspection during 
-    # development indicated that a handful of fragments are differentially 
+    # Despite this, the concordance is not exact. Manual inspection during
+    # development indicated that a handful of fragments are differentially
     # filtered out in JSpecies and this script. This is often on the basis
     # of rounding differences (e.g. coverage being close to 70%).
     ani_pid = filtered['blast_pid'].mean()
     aln_length = filtered['ani_alnlen'].sum()
     sim_errors = filtered['blast_mismatch'].sum() +\
-                 filtered['blast_gaps'].sum()
+        filtered['blast_gaps'].sum()
     filtered.to_csv(filename + '.dataframe', sep="\t")
     return aln_length, sim_errors, ani_pid
