@@ -27,13 +27,14 @@
 # Methods differ on: (1) what alignment algorithm is used, and the choice of
 # parameters (this affects the aligned region boundaries); (2) what the input
 # is for alignment (typically either fragments of fixed size, or the most
-# complete assembly available).
+# complete assembly available); (3) whether a reciprocal comparison is 
+# necessary or desirable.
 #
 # ANIm: uses MUMmer (NUCmer) to align the input sequences.
 # ANIb: uses BLASTN to align 1000nt fragments of the input sequences
 # TETRA: calculates tetranucleotide frequencies of each input sequence
 #
-# This script takes as input a directory containing a set of
+# This script takes as main input a directory containing a set of
 # correctly-formatted FASTA multiple sequence files. All sequences for a
 # single organism should be contained in only one sequence file. The names of
 # these files are used for identification, so it would be advisable to name

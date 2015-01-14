@@ -10,6 +10,32 @@
 Calculates ANI by the ANIb method, as described in Goris et al. (2007)
 Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0.
 
+From Goris et al.
+
+'''The genomic sequence from one of the genomes in a pair (the query)
+was cut into consecutive 1020 nt fragments. The 1020 nt cut-off was used
+to correspond with the fragmentation of the genomic DNA to approximately
+1 kb fragments during the DDH experiments. [...] The 1020 nt fragments
+were then used to search against the whole genomic sequence of the other
+genome in the pair (the reference) by using the BLASTN algorithm;
+the best BLASTN match was saved for further analysis. The BLAST
+algorithm was run using the following settings: X=150 (where X is the
+drop-off value for gapped alignment), q=-1 (where q is the penalty
+for nucleotide mismatch) and F=F (where F is the filter for repeated
+sequences); the rest of the parameters were used at the default settings.
+These settings give better sensitivity than the default settings when
+more distantly related genomes are being compared, as the latter
+target sequences that are more similar to each other.
+[...]
+The ANI between the query genome and the reference genome was
+calculated as the mean identity of all BLASTN matches that showed more
+than 30% overall sequence identity (recalculated to an identity along
+the entire sequence) over an alignable region of at least 70% of their
+length. This cut-off is above the 'twilight zone' of similarity searches in
+which an inference of homology is error prone because of low levels of
+Reverse searching, i.e. in which the reference genome is used as the
+query, was also performed to provide reciprocal values.''' 
+
 All input FASTA format files are used to construct BLAST databases.
 Each file's contents are also split into sequence fragments of length
 options.fragsize, and the multiple FASTA file that results written to
@@ -212,7 +238,7 @@ def construct_blastall_cmdline(fname1, fname2, outdir,
     fstem1 = fstem1.replace('-fragments', '')
     prefix = os.path.join(outdir, "%s_vs_%s" % (fstem1, fstem2))
     cmd = "{0} -p blastn -o {1}.blast_tab -i {2} -d {3} " +\
-        "-X 150 -q 1 -F F -e 1e-15 " +\
+        "-X 150 -q -1 -F F -e 1e-15 " +\
         "-b 1 -v 1 -m 8"
     return cmd.format(blastall_exe, prefix, fname1, fname2) 
 
@@ -318,11 +344,21 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     data['ani_pid'] = data['ani_alnids']/data['qlen']
     # Filter rows on 'ani_coverage' > 0.7, 'ani_pid' > 0.3
     filtered = data[(data['ani_coverage'] > 0.7) & (data['ani_pid'] > 0.3)]
+    # Dedupe query hits, so we only take the best hit
+    filtered['index'] = filtered.index
+    filtered.drop_duplicates(cols='index', inplace=True)
+    del filtered['index']
     # The ANI value is then the mean percentage identity.
     # We report total alignment length and the number of similarity errors
     # (mismatches and gaps), as for ANIm
-    ani_pid = filtered['ani_pid'].mean()
+    # NOTE: We report the mean of 'blast_pid' for concordance with JSpecies
+    # Despite this, the concordance is not exact. Manual inspection during 
+    # development indicated that a handful of fragments are differentially 
+    # filtered out in JSpecies and this script. This is often on the basis
+    # of rounding differences (e.g. coverage being close to 70%).
+    ani_pid = filtered['blast_pid'].mean()
     aln_length = filtered['ani_alnlen'].sum()
     sim_errors = filtered['blast_mismatch'].sum() +\
                  filtered['blast_gaps'].sum()
+    filtered.to_csv(filename + '.dataframe', sep="\t")
     return aln_length, sim_errors, ani_pid
