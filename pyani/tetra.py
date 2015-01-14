@@ -1,3 +1,25 @@
+# Copyright 2013-2015, The James Hutton Insitute
+# Author: Leighton Pritchard
+#
+# This code is part of the pyani package, and is governed by its licence.
+# Please see the LICENSE file that should have been included as part of
+# this package.
+
+"""Code to implement the TETRA average nucleotide identity method.
+
+Provides functions for calculation of TETRA as described in:
+
+Richter M, Rossello-Mora R (2009) Shifting the genomic gold standard for the
+prokaryotic species definition. Proc Natl Acad Sci USA 106: 19126-19131.
+doi:10.1073/pnas.0906412106.
+
+and
+
+Teeling et al. (2004) Application of tetranucleotide frequencies for the
+assignment of genomic fragments. Env. Microbiol. 6(9): 938-947.
+doi:10.1111/j.1462-2920.2004.00624.x
+"""
+
 import pandas as pd
 
 import collections
@@ -95,6 +117,7 @@ def tetra_clean(s):
         return True
     return False
 
+
 # Calculate Pearson's correlation coefficient from the Z-scores for each
 # tetranucleotide. If we're forcing rpy2, might as well use that, though...
 def calculate_correlations(tetra_z):
@@ -105,7 +128,7 @@ def calculate_correlations(tetra_z):
     Calculates Pearson correlation coefficient from Z scores for each
     tetranucleotide. This is done longhand here, which is fast enough,
     but for robustness we might want to do something else... (TODO).
-    
+
     Note that we report a correlation by this method, rather than a
     percentage identity.
     """
