@@ -30,6 +30,7 @@ import pandas as pd
 import collections
 import os
 import shutil
+import sys
 
 import pyani_config, pyani_files
 
@@ -66,7 +67,39 @@ def fragment_FASTA_files(infiles, outdirname, fragsize):
                 idx += fragsize
         outfnames.append(outfname)
         SeqIO.write(outseqs, outfname, 'fasta')
-    return outfnames
+    return outfnames, get_fraglength_dict(outfnames)
+
+
+# Get lengths of all sequences in all files
+def get_fraglength_dict(fastafiles):
+    """Returns dictionary of sequence fragment lengths, keyed by query name.
+    
+    - fastafiles - list of FASTA input whole sequence files
+
+    Loops over input files and, for each, produces a dictionary with fragment
+    lengths, keyed by sequence ID. These are returned as a dictionary with 
+    the keys being query IDs derived from filenames.
+    """
+    fraglength_dict = {}
+    for filename in fastafiles:
+        qname = os.path.split(filename)[-1].split('-fragments')[0]
+        fraglength_dict[qname] = get_fragment_lengths(filename)
+    return fraglength_dict
+
+
+# Get lengths of all sequences in a file
+def get_fragment_lengths(fastafile):
+    """Returns dictionary of sequence fragment lengths, keyed by fragment ID.
+
+    Biopython's SeqIO module is used to parse all sequences in the FASTA
+    file.
+
+    NOTE: ambiguity symbols are not discounted.
+    """
+    fraglengths = {}
+    for seq in SeqIO.parse(fastafile, 'fasta'):
+        fraglengths[seq.id] = len(seq)
+    return fraglengths
 
 
 # Generate list of makeblastdb command lines from passed filenames
@@ -143,10 +176,13 @@ def generate_blastn_commands(filenames, outdir,
     """
     cmdlines = []
     for idx, fname1 in enumerate(filenames[:-1]):
+        dbname1 = fname1.replace('-fragments','')
         for fname2 in filenames[idx+1:]:
-            dbname = fname2.replace('-fragments','')
-            cmdlines.append(construct_blastn_cmdline(fname1, dbname,
-                                                     outdir, blastn_exe))
+            dbname2 = fname2.replace('-fragments','')
+            cmdlines.append(construct_blastn_cmdline(fname1, dbname2,
+                                                       outdir, blastn_exe))
+            cmdlines.append(construct_blastn_cmdline(fname2, dbname1,
+                                                       outdir, blastn_exe))
     return cmdlines
 
 
@@ -186,9 +222,12 @@ def generate_blastall_commands(filenames, outdir,
     """
     cmdlines = []
     for idx, fname1 in enumerate(filenames[:-1]):
+        dbname1 = fname1.replace('-fragments','')
         for fname2 in filenames[idx+1:]:
-            dbname = fname2.replace('-fragments','')
-            cmdlines.append(construct_blastall_cmdline(fname1, dbname,
+            dbname2 = fname2.replace('-fragments','')
+            cmdlines.append(construct_blastall_cmdline(fname1, dbname2,
+                                                       outdir, blastall_exe))
+            cmdlines.append(construct_blastall_cmdline(fname2, dbname1,
                                                        outdir, blastall_exe))
     return cmdlines
 
@@ -211,18 +250,21 @@ def construct_blastall_cmdline(fname1, fname2, outdir,
 
 
 # Process pairwise BLASTN output
-def process_blast(blast_dir, org_lengths, mode="BLASTN"):
+def process_blast(blast_dir, org_lengths, fraglengths=None, mode="BLASTN"):
     """Returns a tuple of ANIb results for .blast_tab files in the output dir.
 
     - blast_dir - path to the directory containing .blast_tab files
     - org_lengths - the base count for each input sequence
+    - fraglengths - dictionary of query sequence fragment lengths, only 
+    needed for BLASTALL output
+    - mode - parsing BLASTN+ or BLASTALL output?
     
     Returns the following pandas dataframes in a tuple:
 
-    - alignment_lengths - symmetrical: total length of alignment
-    - percentage_identity - symmetrical: percentage identity of alignment
-    - alignment_coverage - non-symmetrical: coverage of query and subject
-    - similarity_errors - symmetrical: count of similarity errors
+    - alignment_lengths - non-symmetrical: total length of alignment
+    - percentage_identity - non-symmetrical: ANIb (Goris) percentage identity
+    - alignment_coverage - non-symmetrical: coverage of query
+    - similarity_errors - non-symmetrical: count of similarity errors
 
     May throw a ZeroDivisionError if one or more BLAST runs failed, or a
     very distant sequence was included in the analysis.
@@ -230,11 +272,6 @@ def process_blast(blast_dir, org_lengths, mode="BLASTN"):
     # Process directory to identify input files
     blastfiles = pyani_files.get_input_files(blast_dir, '.blast_tab')
     labels = org_lengths.keys()
-    # Which parser are we using:
-    if mode == "BLASTN":
-        blast_parser = parse_blastn
-    else:
-        blast_parser = parse_blastall
     # Hold data in pandas dataframe
     alignment_lengths = pd.DataFrame(index=labels, columns=labels,
                                      dtype=float)
@@ -252,111 +289,72 @@ def process_blast(blast_dir, org_lengths, mode="BLASTN"):
     for blastfile in blastfiles:
         qname, sname = \
             os.path.splitext(os.path.split(blastfile)[-1])[0].split('_vs_')
-        tot_length, tot_sim_error = blast_parser(blastfile)
+        tot_length, tot_sim_error, ani_pid = parse_blast_tab(blastfile,
+                                                             fraglengths,
+                                                             mode)
         query_cover = float(tot_length) / org_lengths[qname]
-        sbjct_cover = float(tot_length) / org_lengths[sname]
-        # Calculate percentage ID of aligned length. This may fail if 
-        # total length is zero.
-        # The ZeroDivisionError that would arise should be handled 
-        # Common causes are that a BLASTN run failed, or that a very 
-        # distant sequence was included in the analysis.
-        perc_id = 1 - float(tot_sim_error) / tot_length
         # Populate dataframes: when assigning data, pandas dataframes 
         # take column, index order, i.e. df['column']['row'] - this only
         # matters for asymmetrical data
-        alignment_lengths[qname][sname] = tot_length
         alignment_lengths[sname][qname] = tot_length
-        similarity_errors[qname][sname] = tot_sim_error
         similarity_errors[sname][qname] = tot_sim_error
-        percentage_identity[qname][sname] = perc_id
-        percentage_identity[sname][qname] = perc_id
+        percentage_identity[sname][qname] = ani_pid
         alignment_coverage[sname][qname] = query_cover
-        alignment_coverage[qname][sname] = sbjct_cover
     return(alignment_lengths, percentage_identity, alignment_coverage,
            similarity_errors)
         
-# Parse BLASTN output to get total alignment length and mismatches
-def parse_blastn(filename):
-    """Returns (alignment length, similarity errors) tuple from .blast_tab
-
-    - filename - path to .blast_tab file
-
-    Calculate the alignment length and total number of similarity errors
-    for the passed BLASTN alignment .blast_tab file.
-    """
-    aln_length, sim_errors = 0, 0
-    # Assuming that the filename format holds org1_vs_org2.blast_tab:
-    qname, sname = \
-        os.path.splitext(os.path.split(filename)[-1])[0].split('_vs_')
-    qalnlen, qnumid, qlen, qerr = (collections.defaultdict(float),
-                                   collections.defaultdict(float),
-                                   collections.defaultdict(float),
-                                   collections.defaultdict(float))
-    seen = set()  # IDs of queries that have been processed
-    for line in [l.strip().split() for l in open(filename, 'rU').readlines()
-                 if len(l) and not l.startswith('#')]:
-        # We need to collate matches by query ID, to determine whether the
-        # match has > 30% identity and > 70% coverage.
-        # Following Goris et al (2007) we only use matches that contribute to
-        # a total match identity of at least 30% and a total match coverage
-        # of at least 70% of either query or reference length
-        # As of BLASTN 2.2.29+, the max_target_seqs/num_alignments still
-        # will not restrict to the best hit. We rely on BLAST output giving
-        # the best hit for any query first in the table, and check whether we
-        # have seen it before. If not, we carry on processing the data.
-        qid = line[0]
-        if qid in seen:
-            continue
-        seen.add(qid)
-        qalnlen[qid] += int(line[2])
-        qnumid[qid] += int(line[5])
-        qlen[qid] = int(line[6])
-        qerr[qid] += int(line[3])
-    for qid, ql in qlen.items():
-        if 1.*qalnlen[qid]/ql > 0.7 and 1.*qnumid[qid]/ql > 0.3:
-            aln_length += int(qalnlen[qid])
-            sim_errors += int(qerr[qid])
-    return aln_length, sim_errors
 
 # Parse BLASTALL output to get total alignment length and mismatches
-def parse_blastall(filename):
-    """Returns (alignment length, similarity errors) tuple from .blast_tab
+def parse_blast_tab(filename, fraglengths, mode="BLASTN"):
+    """Returns (alignment length, similarity errors, mean_pid) tuple
+    from .blast_tab
 
     - filename - path to .blast_tab file
 
-    Calculate the alignment length and total number of similarity errors
-    for the passed BLASTALL alignment .blast_tab file.
+    Calculate the alignment length and total number of similarity errors (as
+    we would with ANIm), as well as the Goris et al.-defined mean identity
+    of all valid BLAST matches for the passed BLASTALL alignment .blast_tab
+    file. 
+
+    '''ANI between the query genome and the reference genome was calculated as
+    the mean identity of all BLASTN matches that showed more than 30% overall
+    sequence identity (recalculated to an identity along the entire sequence)
+    over an alignable region of at least 70% of their length.
+    '''
     """
-    aln_length, sim_errors = 0, 0
     # Assuming that the filename format holds org1_vs_org2.blast_tab:
     qname, sname = \
         os.path.splitext(os.path.split(filename)[-1])[0].split('_vs_')
-    qalnlen, qnumid, qlen, qerr = (collections.defaultdict(float),
-                                   collections.defaultdict(float),
-                                   collections.defaultdict(float),
-                                   collections.defaultdict(float))
-    seen = set()  # IDs of queries that have been processed
-    for line in [l.strip().split() for l in open(filename, 'rU').readlines()
-                 if len(l) and not l.startswith('#')]:
-        # We need to collate matches by query ID, to determine whether the
-        # match has > 30% identity and > 70% coverage.
-        # Following Goris et al (2007) we only use matches that contribute to
-        # a total match identity of at least 30% and a total match coverage
-        # of at least 70% of either query or reference length
-        # As of BLASTN 2.2.29+, the max_target_seqs/num_alignments still
-        # will not restrict to the best hit. We rely on BLAST output giving
-        # the best hit for any query first in the table, and check whether we
-        # have seen it before. If not, we carry on processing the data.
-        qid = line[0]
-        if qid in seen:
-            continue
-        seen.add(qid)
-        qalnlen[qid] += int(line[3])
-        qnumid[qid] += int(line[3]) - int(line[4]) - int(line[5])
-        qlen[qid] = int(line[7])
-        qerr[qid] += int(line[4])
-    for qid, ql in qlen.items():
-        if 1.*qalnlen[qid]/ql > 0.7 and 1.*qnumid[qid]/ql > 0.3:
-            aln_length += int(qalnlen[qid])
-            sim_errors += int(qerr[qid])
-    return aln_length, sim_errors
+    qfraglengths = fraglengths[qname]
+    # Load output as dataframe
+    if mode == "BLASTALL":
+        columns = ['sid', 'blast_pid', 'blast_alnlen', 'blast_mismatch',
+                   'blast_gaps', 'q_start', 'q_end', 's_start', 's_end',
+                   'e_Value', 'bit_score']
+    else:
+        columns = ['sbjct_id', 'blast_alnlen', 'blast_mismatch', 
+                   'blast_pid', 'blast_identities', 'qlen', 'slen',
+                   'q_start', 'q_end', 's_start', 's_end', 'blast_pos',
+                   'ppos', 'blast_gaps']
+    data = pd.DataFrame.from_csv(filename, header=None, sep='\t')
+    data.columns = columns
+    # Add new column for fragment length, only for BLASTALL
+    if mode == "BLASTALL":
+        data['qlen'] = pd.Series([qfraglengths[idx] for idx in data.index],
+                                 index=data.index)
+    # Add new columns for recalculated alignment length, proportion, and 
+    # percentage identity
+    data['ani_alnlen'] = data['blast_alnlen'] - data['blast_gaps']
+    data['ani_alnids'] = data['ani_alnlen'] - data['blast_mismatch']
+    data['ani_coverage'] = data['ani_alnlen']/data['qlen']
+    data['ani_pid'] = data['ani_alnids']/data['qlen']
+    # Filter rows on 'ani_coverage' > 0.7, 'ani_pid' > 0.3
+    filtered = data[(data['ani_coverage'] > 0.7) & (data['ani_pid'] > 0.3)]
+    # The ANI value is then the mean percentage identity.
+    # We report total alignment length and the number of similarity errors
+    # (mismatches and gaps), as for ANIm
+    ani_pid = filtered['ani_pid'].mean()
+    aln_length = filtered['ani_alnlen'].sum()
+    sim_errors = filtered['blast_mismatch'].sum() +\
+                 filtered['blast_gaps'].sum()
+    return aln_length, sim_errors, ani_pid

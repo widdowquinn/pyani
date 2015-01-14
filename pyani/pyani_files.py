@@ -51,3 +51,5 @@ def get_sequence_lengths(fastafilenames):
         tot_lengths[os.path.splitext(os.path.split(fn)[-1])[0]] = \
             sum([len(s) for s in SeqIO.parse(fn, 'fasta')])
     return tot_lengths
+
+

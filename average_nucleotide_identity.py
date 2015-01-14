@@ -151,6 +151,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import json
 import logging
 import logging.handlers
 import os
@@ -320,8 +321,10 @@ def calculate_anib(infiles, org_lengths):
         # Make sequence fragments
         logger.info("Fragmenting input files, and writing to %s" %
                     args.outdirname)
-        fragfiles = anib.fragment_FASTA_files(infiles, args.outdirname,
-                                              args.fragsize)
+        # Fraglengths does not get reused with BLASTN
+        fragfiles, fraglengths = anib.fragment_FASTA_files(infiles,
+                                                           args.outdirname,
+                                                           args.fragsize)
 
         # Build BLASTN databases
         logger.info("Constructing BLASTN databases")
@@ -471,7 +474,31 @@ def calculate_aniblastall(infiles, org_lengths):
     - org_lengths - dictionary of input sequence lengths, keyed by sequence
 
     Calculates ANI by the ANIb method, as described in Goris et al. (2007)
-    Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0.
+    Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0 and below.
+
+    '''The genomic sequence from one of the genomes in a pair (the query)
+    was cut into consecutive 1020 nt fragments. The 1020 nt cut-off was used
+    to correspond with the fragmentation of the genomic DNA to approximately
+    1 kb fragments during the DDH experiments. [...] The 1020 nt fragments
+    were then used to search against the whole genomic sequence of the other
+    genome in the pair (the reference) by using the BLASTN algorithm;
+    the best BLASTN match was saved for further analysis. The BLAST
+    algorithm was run using the following settings: X=150 (where X is the
+    drop-off value for gapped alignment), q=-1 (where q is the penalty
+    for nucleotide mismatch) and F=F (where F is the filter for repeated
+    sequences); the rest of the parameters were used at the default settings.
+    These settings give better sensitivity than the default settings when
+    more distantly related genomes are being compared, as the latter
+    target sequences that are more similar to each other.
+    [...]
+    The ANI between the query genome and the reference genome was
+    calculated as the mean identity of all BLASTN matches that showed more
+    than 30% overall sequence identity (recalculated to an identity along
+    the entire sequence) over an alignable region of at least 70% of their
+    length. This cut-off is above the 'twilight zone' of similarity searches in
+    which an inference of homology is error prone because of low levels of
+    Reverse searching, i.e. in which the reference genome is used as the
+    query, was also performed to provide reciprocal values.''' 
 
     This method differs from calculate_anib() by using the deprecated 
     BLAST version, for compatibility with JSpecies.
@@ -503,8 +530,17 @@ def calculate_aniblastall(infiles, org_lengths):
         # Make sequence fragments
         logger.info("Fragmenting input files, and writing to %s" %
                     args.outdirname)
-        fragfiles = anib.fragment_FASTA_files(infiles, args.outdirname,
-                                              args.fragsize)
+        # We'll need the fragment lengths for BLASTALL, as the BLASTALL
+        # output does not record query length (which is not necessarily the 
+        # defined fragment length for all queries).
+        fragfiles, fraglengths = anib.fragment_FASTA_files(infiles,
+                                                           args.outdirname,
+                                                           args.fragsize)
+        # Export fragment lengths as JSON, in case we re-run, skipping
+        # BLASTN
+        with open(os.path.join(args.outdirname, 'fraglengths.json'), 'w')\
+             as outfile:
+            json.dump(fraglengths, outfile)
 
         # Build BLASTALL databases
         logger.info("Constructing BLASTALL databases")
@@ -539,13 +575,17 @@ def calculate_aniblastall(infiles, org_lengths):
         else:
             logger.info("Running jobs with SGE")
     else:
+        # Import fragment lengths from JSON
+        with open(os.path.join(args.outdirname, 'fraglengths.json'), 'rU')\
+             as infile:
+            fraglengths = json.load(infile)
         logger.warning("Skipping BLASTALL run (as instructed)!")
 
     # Process pairwise BLASTALL output
     logger.info("Processing pairwise BLASTALL output.")
     try:
         data = anib.process_blast(args.outdirname, org_lengths,
-                                   mode="BLASTALL")
+                                  fraglengths=fraglengths, mode="BLASTALL")
     except ZeroDivisionError:
         logger.error("One or more BLASTALL output files has a problem.")
         if not args.skip_blastn:
