@@ -284,103 +284,6 @@ def make_outdir():
             sys.exit(1)
 
 
-# Calculate ANIb for input
-def calculate_anib(infiles, org_lengths):
-    """Calculate ANIb for files in input directory.
-
-    - infiles - paths to each input file
-    - org_lengths - dictionary of input sequence lengths, keyed by sequence
-
-    Calculates ANI by the ANIb method, as described in Goris et al. (2007)
-    Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0.
-
-    All FASTA format files (selected by suffix) in the input directory are
-    used to construct BLAST databases, placed in the output directory.
-    Each file's contents are also split into sequence fragments of length
-    options.fragsize, and the multiple FASTA file that results written to
-    the output directory. These are BLASTNed, pairwise, against the
-    databases.
-    
-    The BLAST output is interrogated for all fragment matches that cover
-    at least 70% of the query sequence, with at least 30% nucleotide
-    identity over the full length of the query sequence. This is an odd
-    choice and doesn't correspond to the twilight zone limit as implied by
-    Goris et al. We persist with their definition, however.  Only these
-    qualifying matches contribute to the total aligned length, and total
-    aligned sequence identity used to calculate ANI.
-    
-    The results are processed to give matrices of aligned sequence length
-    (aln_lengths.tab), similarity error counts (sim_errors.tab), ANIs
-    (perc_ids.tab), and minimum aligned percentage (perc_aln.tab) of
-    each genome, for each pairwise comparison. These are written to the
-    output directory in plain text tab-separated format.
-    """
-    logger.info("Running ANIb")
-    # Build BLAST databases and run pairwise BLASTN
-    if not args.skip_blastn:
-        # Make sequence fragments
-        logger.info("Fragmenting input files, and writing to %s" %
-                    args.outdirname)
-        # Fraglengths does not get reused with BLASTN
-        fragfiles, fraglengths = anib.fragment_FASTA_files(infiles,
-                                                           args.outdirname,
-                                                           args.fragsize)
-
-        # Build BLASTN databases
-        logger.info("Constructing BLASTN databases")
-        cmdlist = anib.generate_blastdb_commands(infiles, args.outdirname,
-                                                 args.makeblastdb_exe)
-        logger.info("Generated commands:\n%s" % '\n'.join(cmdlist))
-        if args.scheduler == 'multiprocessing':
-            logger.info("Running jobs with multiprocessing")
-            cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
-            if 0 < cumval:
-                logger.warning("At least one makeblastdb run failed. " +\
-                               "ANIb may fail.")
-            else:
-                logger.info("All multiprocessing jobs complete.")
-        else:
-            logger.info("Running jobs with SGE")
-            raise NotImplementedError
-        
-        # Run pairwise BLASTN
-        cmdlist = anib.generate_blastn_commands(fragfiles,
-                                                args.outdirname,
-                                                args.blastn_exe)
-        logger.info("Generated commands:\n%s" % '\n'.join(cmdlist))
-        if args.scheduler == 'multiprocessing':
-            logger.info("Running jobs with multiprocessing")
-            cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
-            logger.info("Cumulative return value: %d" % cumval)
-            if 0 < cumval:
-                logger.warning("At least one BLASTN comparison failed. " +\
-                               "ANIb may fail.")
-            else:
-                logger.info("All multiprocessing jobs complete.")
-        else:
-            logger.info("Running jobs with SGE")
-            raise NotImplementedError
-    else:
-        logger.warning("Skipping BLASTN run (as instructed)!")
-
-    # Process pairwise BLASTN output
-    logger.info("Processing pairwise BLASTN output.")
-    try:
-        data = anib.process_blast(args.outdirname, org_lengths,
-                                  mode="BLASTN")
-    except ZeroDivisionError:
-        logger.error("One or more BLASTN output files has a problem.")
-        if not args.skip_blastn:
-            if 0 < cumval:
-                logger.error("This is possibly due to BLASTN run failure, " +
-                             "please investigate")
-            else:
-                logger.error("This is possibly due to a BLASTN comparison " +
-                             "being too distant for use.")
-        logger.error(last_exception())
-    return data
-
-
 # Calculate ANIm for input
 def calculate_anim(infiles, org_lengths):
     """Returns ANIm result dataframes for files in input directory.
@@ -467,14 +370,16 @@ def calculate_tetra(infiles, org_lengths):
 
 
 # Calculate ANIb for input
-def calculate_aniblastall(infiles, org_lengths):
-    """Calculate ANIblastall for files in input directory.
+def unified_anib(infiles, org_lengths):
+    """Calculate ANIb for files in input directory.
 
     - infiles - paths to each input file
     - org_lengths - dictionary of input sequence lengths, keyed by sequence
 
     Calculates ANI by the ANIb method, as described in Goris et al. (2007)
-    Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0 and below.
+    Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0. There are 
+    some minor differences depending on whether BLAST+ or legacy BLAST 
+    (BLASTALL) methods are used.
 
     '''The genomic sequence from one of the genomes in a pair (the query)
     was cut into consecutive 1020 nt fragments. The 1020 nt cut-off was used
@@ -500,9 +405,6 @@ def calculate_aniblastall(infiles, org_lengths):
     Reverse searching, i.e. in which the reference genome is used as the
     query, was also performed to provide reciprocal values.''' 
 
-    This method differs from calculate_anib() by using the deprecated 
-    BLAST version, for compatibility with JSpecies.
-
     All FASTA format files (selected by suffix) in the input directory are
     used to construct BLAST databases, placed in the output directory.
     Each file's contents are also split into sequence fragments of length
@@ -524,80 +426,92 @@ def calculate_aniblastall(infiles, org_lengths):
     each genome, for each pairwise comparison. These are written to the
     output directory in plain text tab-separated format.
     """
-    logger.info("Running ANIblastall")
-    # Build BLAST databases and run pairwise BLASTALL -P BLASTN
+    logger.info("Running %s" % args.method)
+    # Build BLAST databases and run pairwise BLASTN
     if not args.skip_blastn:
         # Make sequence fragments
         logger.info("Fragmenting input files, and writing to %s" %
                     args.outdirname)
-        # We'll need the fragment lengths for BLASTALL, as the BLASTALL
-        # output does not record query length (which is not necessarily the 
-        # defined fragment length for all queries).
+        # Fraglengths does not get reused with BLASTN
         fragfiles, fraglengths = anib.fragment_FASTA_files(infiles,
                                                            args.outdirname,
                                                            args.fragsize)
-        # Export fragment lengths as JSON, in case we re-run, skipping
-        # BLASTN
-        with open(os.path.join(args.outdirname, 'fraglengths.json'), 'w')\
-             as outfile:
-            json.dump(fraglengths, outfile)
+        # Export fragment lengths as JSON, in case we re-run BLASTALL with
+        # --skip_blastn
+        if args.method == "ANIblastall":
+            with open(os.path.join(args.outdirname,
+                                   'fraglengths.json'), 'w') as outfile:
+                json.dump(fraglengths, outfile)
 
-        # Build BLASTALL databases
-        logger.info("Constructing BLASTALL databases")
-        cmdlist = anib.generate_formatdb_commands(infiles, args.outdirname,
-                                                  args.formatdb_exe)
+        # Which executables are we using?
+        if args.method == "ANIblastall":
+            blastdb_exe = args.formatdb_exe
+            blastn_exe = args.blastall_exe
+        else:
+            blastdb_exe = args.makeblastdb_exe
+            blastn_exe = args.blastn_exe
+
+        # Build BLASTN databases
+        logger.info("Constructing %s BLAST databases" % args.method)
+        cmdlist = anib.generate_blastdb_commands(infiles, args.outdirname,
+                                                 blastdb_exe=blastdb_exe,
+                                                 mode=args.method)
         logger.info("Generated commands:\n%s" % '\n'.join(cmdlist))
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
             if 0 < cumval:
-                logger.warning("At least one formatdb run failed. " +\
-                               "ANIblastall may fail.")
+                logger.warning("At least one makeblastdb run failed. " +\
+                               "%s may fail." % args.method)
             else:
                 logger.info("All multiprocessing jobs complete.")
         else:
             logger.info("Running jobs with SGE")
+            raise NotImplementedError
         
-        # Run pairwise BLASTALL
-        cmdlist = anib.generate_blastall_commands(fragfiles,
-                                                  args.outdirname,
-                                                  args.blastall_exe)
+        # Run pairwise BLASTN
+        logger.info("Running %s BLASTN jobs" % args.method)
+        cmdlist = anib.generate_blastn_commands(fragfiles, args.outdirname,
+                                                blastn_exe, mode=args.method)
         logger.info("Generated commands:\n%s" % '\n'.join(cmdlist))
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
             logger.info("Cumulative return value: %d" % cumval)
             if 0 < cumval:
-                logger.warning("At least one BLASTALL comparison failed. " +\
-                               "ANIblastall may fail.")
+                logger.warning("At least one BLASTN comparison failed. " +\
+                               "%s may fail." % args.method)
             else:
                 logger.info("All multiprocessing jobs complete.")
         else:
             logger.info("Running jobs with SGE")
+            raise NotImplementedError
     else:
         # Import fragment lengths from JSON
-        with open(os.path.join(args.outdirname, 'fraglengths.json'), 'rU')\
-             as infile:
-            fraglengths = json.load(infile)
-        logger.warning("Skipping BLASTALL run (as instructed)!")
+        if args.method == "ANIblastall":
+            with open(os.path.join(args.outdirname, 'fraglengths.json'),
+                      'rU') as infile:
+                fraglengths = json.load(infile)        
+        else:
+            fraglengths = None
+        logger.warning("Skipping BLASTN runs (as instructed)!")
 
-    # Process pairwise BLASTALL output
-    logger.info("Processing pairwise BLASTALL output.")
+    # Process pairwise BLASTN output
+    logger.info("Processing pairwise %s BLAST output." % args.method)
     try:
         data = anib.process_blast(args.outdirname, org_lengths,
-                                  fraglengths=fraglengths, mode="BLASTALL")
+                                  fraglengths=fraglengths, mode=args.method)
     except ZeroDivisionError:
-        logger.error("One or more BLASTALL output files has a problem.")
+        logger.error("One or more BLAST output files has a problem.")
         if not args.skip_blastn:
             if 0 < cumval:
-                logger.error("This is possibly due to BLASTALL run failure, " +
+                logger.error("This is possibly due to BLASTN run failure, " +
                              "please investigate")
             else:
-                logger.error("This is possibly due to a BLASTALL comparison " +
+                logger.error("This is possibly due to a BLASTN comparison " +
                              "being too distant for use.")
         logger.error(last_exception())
     return data
-
 
 
 # Write ANIb/ANIm/TETRA output
@@ -699,11 +613,11 @@ if __name__ == '__main__':
     # functions/settings, dependent on selected method.
     methods = {"ANIm": (calculate_anim, 
                         pyani_config.ANIM_FILESTEMS),
-               "ANIb": (calculate_anib, 
+               "ANIb": (unified_anib, 
                         pyani_config.ANIB_FILESTEMS),
                "TETRA": (calculate_tetra, 
                          pyani_config.TETRA_FILESTEMS),
-               "ANIblastall": (calculate_aniblastall,
+               "ANIblastall": (unified_anib,
                                pyani_config.ANIBLASTALL_FILESTEMS)}
     if args.method not in methods:
         logger.error("ANI method %s not recognised (exiting)" % args.method)

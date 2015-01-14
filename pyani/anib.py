@@ -104,14 +104,19 @@ def get_fragment_lengths(fastafile):
 
 # Generate list of makeblastdb command lines from passed filenames
 def generate_blastdb_commands(filenames, outdir,
-                              blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT):
-    """Return a list of makeblastdb command-lines for ANIm
+                              blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT,
+                              mode="ANIb"):
+    """Return a list of makeblastdb command-lines for ANIb/ANIblastall
 
     - filenames - a list of paths to input FASTA files
     - outdir - path to output directory
     - blastdb_exe - path to the makeblastdb executable
     """
-    cmdlines = [construct_makeblastdb_cmdline(fname, outdir, blastdb_exe) for 
+    if mode == "ANIb":
+        construct_db_cmdline = construct_makeblastdb_cmdline
+    else:
+        construct_db_cmdline = construct_formatdb_cmdline
+    cmdlines = [construct_db_cmdline(fname, outdir, blastdb_exe) for 
                 fname in filenames]
     return cmdlines
 
@@ -131,21 +136,6 @@ def construct_makeblastdb_cmdline(filename, outdir,
                                                                  title,
                                                                  outfilename)
 
-
-# Generate list of makeblastdb command lines from passed filenames
-def generate_formatdb_commands(filenames, outdir,
-                               blastdb_exe=pyani_config.FORMATDB_DEFAULT):
-    """Return a list of formatdb command-lines for ANIm
-
-    - filenames - a list of paths to input FASTA files
-    - outdir - path to output directory
-    - blastdb_exe - path to the formatdb executable
-    """
-    cmdlines = [construct_formatdb_cmdline(fname, outdir, blastdb_exe) for 
-                fname in filenames]
-    return cmdlines
-
-
 # Generate single makeblastdb command line
 def construct_formatdb_cmdline(filename, outdir,
                                blastdb_exe=pyani_config.FORMATDB_DEFAULT):
@@ -162,7 +152,8 @@ def construct_formatdb_cmdline(filename, outdir,
 
 # Generate list of BLASTN command lines from passed filenames
 def generate_blastn_commands(filenames, outdir,
-                             blastn_exe=pyani_config.BLASTN_DEFAULT):
+                             blastn_exe=pyani_config.BLASTN_DEFAULT,
+                             mode="ANIb"):
     """Return a list of blastn command-lines for ANIm
 
     - filenames - a list of paths to fragmented input FASTA files
@@ -174,14 +165,18 @@ def generate_blastn_commands(filenames, outdir,
     have the form ACCESSION.ext. This is the convention followed by the
     fragment_FASTA_files() function above.
     """
+    if mode == "ANIb":
+        construct_blast_cmdline = construct_blastn_cmdline
+    else:
+        construct_blast_cmdline = construct_blastall_cmdline
     cmdlines = []
     for idx, fname1 in enumerate(filenames[:-1]):
         dbname1 = fname1.replace('-fragments','')
         for fname2 in filenames[idx+1:]:
             dbname2 = fname2.replace('-fragments','')
-            cmdlines.append(construct_blastn_cmdline(fname1, dbname2,
+            cmdlines.append(construct_blast_cmdline(fname1, dbname2,
                                                        outdir, blastn_exe))
-            cmdlines.append(construct_blastn_cmdline(fname2, dbname1,
+            cmdlines.append(construct_blast_cmdline(fname2, dbname1,
                                                        outdir, blastn_exe))
     return cmdlines
 
@@ -205,33 +200,6 @@ def construct_blastn_cmdline(fname1, fname2, outdir,
         "ppos gaps' -task blastn"
     return cmd.format(blastn_exe, prefix, fname1, fname2) 
 
-
-# Generate list of BLASTALL command lines from passed filenames
-def generate_blastall_commands(filenames, outdir,
-                               blastall_exe=pyani_config.BLASTALL_DEFAULT):
-    """Return a list of blastall command-lines for ANIm
-
-    - filenames - a list of paths to fragmented input FASTA files
-    - outdir - path to output directory
-    - blastall_exe - path to BLASTALL executable
-
-    Assumes that the fragment sequence input filenames have the form
-    ACCESSION-fragments.ext, where the corresponding BLAST database filenames
-    have the form ACCESSION.ext. This is the convention followed by the
-    fragment_FASTA_files() function above.
-    """
-    cmdlines = []
-    for idx, fname1 in enumerate(filenames[:-1]):
-        dbname1 = fname1.replace('-fragments','')
-        for fname2 in filenames[idx+1:]:
-            dbname2 = fname2.replace('-fragments','')
-            cmdlines.append(construct_blastall_cmdline(fname1, dbname2,
-                                                       outdir, blastall_exe))
-            cmdlines.append(construct_blastall_cmdline(fname2, dbname1,
-                                                       outdir, blastall_exe))
-    return cmdlines
-
-
 # Generate single BLASTALL command line
 def construct_blastall_cmdline(fname1, fname2, outdir,
                                blastall_exe=pyani_config.BLASTALL_DEFAULT):
@@ -250,7 +218,7 @@ def construct_blastall_cmdline(fname1, fname2, outdir,
 
 
 # Process pairwise BLASTN output
-def process_blast(blast_dir, org_lengths, fraglengths=None, mode="BLASTN"):
+def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
     """Returns a tuple of ANIb results for .blast_tab files in the output dir.
 
     - blast_dir - path to the directory containing .blast_tab files
@@ -305,7 +273,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="BLASTN"):
         
 
 # Parse BLASTALL output to get total alignment length and mismatches
-def parse_blast_tab(filename, fraglengths, mode="BLASTN"):
+def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     """Returns (alignment length, similarity errors, mean_pid) tuple
     from .blast_tab
 
@@ -325,9 +293,9 @@ def parse_blast_tab(filename, fraglengths, mode="BLASTN"):
     # Assuming that the filename format holds org1_vs_org2.blast_tab:
     qname, sname = \
         os.path.splitext(os.path.split(filename)[-1])[0].split('_vs_')
-    qfraglengths = fraglengths[qname]
     # Load output as dataframe
-    if mode == "BLASTALL":
+    if mode == "ANIblastall":
+        qfraglengths = fraglengths[qname]
         columns = ['sid', 'blast_pid', 'blast_alnlen', 'blast_mismatch',
                    'blast_gaps', 'q_start', 'q_end', 's_start', 's_end',
                    'e_Value', 'bit_score']
@@ -339,7 +307,7 @@ def parse_blast_tab(filename, fraglengths, mode="BLASTN"):
     data = pd.DataFrame.from_csv(filename, header=None, sep='\t')
     data.columns = columns
     # Add new column for fragment length, only for BLASTALL
-    if mode == "BLASTALL":
+    if mode == "ANIblastall":
         data['qlen'] = pd.Series([qfraglengths[idx] for idx in data.index],
                                  index=data.index)
     # Add new columns for recalculated alignment length, proportion, and 
