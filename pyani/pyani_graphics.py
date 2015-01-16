@@ -41,6 +41,8 @@ except ImportError:
         "will be unavailable."
     rpy2_import = False
 
+import pandas as pd
+
 from math import floor, log10
 
 # Define custom matplotlib colourmaps
@@ -88,12 +90,18 @@ def clean_axis(ax):
 
 
 def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
-                vmin=None, vmax=None):
+                vmin=None, vmax=None, labels=None, classes=None):
     """Returns matplotlib heatmap with cluster dendrograms.
 
     - df - pandas DataFrame with relevant data
     - outfilename - path to output file (indicates output format)
     - cmap - colourmap option
+    - vmin - float, minimum value on the heatmap scale
+    - vmax - float, maximum value on the heatmap scale
+    - labels - dictionary of alternative labels, keyed by default sequence
+               labels
+    - classes - dictionary of sequence classes, keyed by default sequence
+                labels
     """
     # Get indication of dataframe size and, if necessary, max and
     # min values for colormap
@@ -175,30 +183,73 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
 # Draw heatmap with R
 def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
-              vmin=None, vmax=None, gformat=None):
-    """Uses R to draw heatmap, and returns R code for rendering.
+              vmin=None, vmax=None, gformat=None, labels=None, classes=None):
+    """Uses R to draw heatmap, and returns R code used for rendering.
 
-    - df - pandas DataFrame with relevant data
     - infilename - path to tab-separated table with data
     - outfilename - path to output file
     - cmap - colourmap option
+    - vmin - float, minimum value on the heatmap scale
+    - vmax - float, maximum value on the heatmap scale
+    - gformat - string indicating graphics output format
+    - labels - dictionary of alternative labels, keyed by default sequence
+               labels
+    - classes - dictionary of sequence classes, keyed by default sequence
+                labels
     """
     vdiff = vmax - vmin
     vstep = 0.001 * vdiff
+
+    # Read the data in to get row/column information for labels and classes,
+    # and so we can guesstimate output image size
+    df = pd.DataFrame.from_csv(infilename, sep="\t", header=0)
 
     # Prepare R code
     rstr = ["library(gplots)", "library(RColorBrewer)"]  # R import
     rstr.append("ani = read.table('%s', header=T, sep='\\t', row.names=1)" %
                 infilename)
     rstr.append("%s('%s')" % (gformat, outfilename))
-    rstr.append("heatmap.2(as.matrix(ani), col=%s, " % cmap +
-                "breaks=seq(%.2f, %.2f, %f), " % (vmin, vmax, vstep) +
-                "trace='none', " +
-                "margins=c(15, 12), cexCol=1/log10(ncol(ani)), " +
-                "cexRow=1/log10(nrow(ani)), main='%s')" % title)
+    rstr.append("par(cex.main=0.75)")
+    if classes:  # Define colour list
+        lbls, cls = [], []
+        for lbl, cla in classes.items():
+            lbls.append(lbl)
+            cls.append(cla)
+        lablist = ','.join(['"%s"' % l for l in lbls])
+        clslist = ','.join(['"%s"' % c for c in cls])
+        rstr.append("labels = data.frame(row.names=c(%s), class=c(%s))" %
+                    (lablist, clslist))
+        rstr.append('lablist = sort(unique(labels[,"class"]))')
+        rstr.append("colourlist = rainbow(length(lablist))")
+        rstr.append("label_colours = data.frame(row.names=sort(lablist), " +
+                    "colours=colourlist)")
+        rstr.append("labels$colours = label_colours[labels$class,]")
+        rstr.append("levels(labels$colours) = label_colours$colours")
+        rstr.append("rowlabels = labels[rownames(ani),]")
+        rstr.append("collabels = labels[colnames(ani),]")
+    cmd = "heatmap.2(as.matrix(ani), col=%s, " % cmap +\
+          "breaks=seq(%.2f, %.2f, %f), " % (vmin, vmax, vstep) +\
+          "trace='none', " +\
+          "margins=c(15, 15), cexCol=0.05 + 1/log10(2 * ncol(ani)), " +\
+          "cexRow=0.05 + 1/log10(2 * nrow(ani)), " +\
+          "main='%s'" % title
+    if labels:  # Change labels from data to passed dict
+        labrow = ','.join(['"%s"' % labels[rowname] for rowname in df.index])
+        labcol = ','.join(['"%s"' % labels[colname] for colname in df.columns])
+        cmd += ", labRow=c(%s), labCol=c(%s)" % (labrow, labcol)
+    if classes:
+        cmd += ', RowSideColors=as.vector(rowlabels[,"colours"])'
+        cmd += ', ColSideColors=as.vector(collabels[,"colours"])'
+    cmd += ")"
+    rstr.append(cmd)
+    if classes:  # Add legend for colour labels
+        rstr.append('lablist = sort(unique(labels[,"class"]))')
+        rstr.append("par(lend=1)")
+        rstr.append('legend("topright", legend=sort(lablist), ' +
+                    "col=colourlist, lty=1, lwd=10)")
     rstr.append("dev.off()")
 
     # Execute R code
     rstr = '\n'.join(rstr)
     robjects.r(rstr)
-    return rstr
+    return rstr + '\n'

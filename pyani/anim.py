@@ -151,8 +151,8 @@ def process_deltadir(delta_dir, org_lengths):
         alignment_lengths.loc[sname, qname] = tot_length
         similarity_errors.loc[qname, sname] = tot_sim_error
         similarity_errors.loc[sname, qname] = tot_sim_error
-        percentage_identity.loc[qname, sname] = 100. * perc_id
-        percentage_identity.loc[sname, qname] = 100. * perc_id
+        percentage_identity.loc[qname, sname] = perc_id
+        percentage_identity.loc[sname, qname] = perc_id
         alignment_coverage.loc[sname, qname] = query_cover
         alignment_coverage.loc[qname, sname] = sbjct_cover
     return(alignment_lengths, percentage_identity, alignment_coverage,

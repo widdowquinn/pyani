@@ -295,7 +295,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
         # matters for asymmetrical data
         alignment_lengths.loc[qname, sname] = tot_length
         similarity_errors.loc[qname, sname] = tot_sim_error
-        percentage_identity.loc[qname, sname] = ani_pid
+        percentage_identity.loc[qname, sname] = 0.01 * ani_pid
         alignment_coverage.loc[qname, sname] = query_cover
     return(alignment_lengths, percentage_identity, alignment_coverage,
            similarity_errors)

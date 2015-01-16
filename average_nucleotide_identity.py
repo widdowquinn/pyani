@@ -203,12 +203,18 @@ def parse_cmdline(args):
     parser.add_argument("-g", "--graphics", dest="graphics",
                         action="store_true", default=False,
                         help="Generate heatmap of ANI")
-    parser.add_argument("--format", dest="gformat",
+    parser.add_argument("--gformat", dest="gformat",
                         action="store", default="pdf",
                         help="Graphics output format [pdf|png|jpg]")
     parser.add_argument("--gmethod", dest="gmethod",
                         action="store", default="mpl",
                         help="Graphics output method [mpl|R]")
+    parser.add_argument("--labels", dest="labels",
+                        action="store", default=None,
+                        help="Path to file containing sequence labels")
+    parser.add_argument("--classes", dest="classes",
+                        action="store", default=None,
+                        help="Path to file containing sequence classes")
     parser.add_argument("-m", "--method", dest="method",
                         action="store", default="ANIm",
                         help="ANI method [ANIm|ANIb|TETRA]")
@@ -504,6 +510,25 @@ def unified_anib(infiles, org_lengths):
     return data
 
 
+# Read sequence annotations in from file
+def get_labels(filename):
+    """Returns a dictionary of alternative sequence labels, or None
+
+    - filename - path to file containing tab-separated table of labels
+
+    Input files should be formatted as <key>\t<label>, one pair per line.
+    """
+    try:
+        labeldict = {}
+        with open(filename, 'rU') as fh:
+            for line in fh.readlines():
+                key, label = line.strip().split('\t')
+                labeldict[key] = label
+        return labeldict
+    except:
+        None
+               
+
 # Write ANIb/ANIm/TETRA output
 def write(results, filestems):
     """Write ANIb/ANIm/TETRA results to output directory.
@@ -540,14 +565,18 @@ def draw(results, filestems):
                                        title=filestem,
                                        cmap=params_mpl(df)[filestem][0],
                                        vmin=params_mpl(df)[filestem][1],
-                                       vmax=params_mpl(df)[filestem][2])
+                                       vmax=params_mpl(df)[filestem][2],
+                                       labels=get_labels(args.labels),
+                                       classes=get_labels(args.classes))
         elif args.gmethod == "R":
             rstr = pyani_graphics.heatmap_r(infilename, outfilename,
                                             gformat=args.gformat.lower(),
                                             title=filestem,
                                             cmap=params_r(df)[filestem][0],
                                             vmin=params_r(df)[filestem][1],
-                                            vmax=params_r(df)[filestem][2])
+                                            vmax=params_r(df)[filestem][2],
+                                            labels=get_labels(args.labels),
+                                            classes=get_labels(args.classes))
             logger.info("Executed R code:\n%s" % rstr)
 
 
