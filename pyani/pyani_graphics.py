@@ -224,7 +224,6 @@ def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
         rstr.append("label_colours = data.frame(row.names=sort(lablist), " +
                     "colours=colourlist)")
         rstr.append("labels$colours = label_colours[labels$class,]")
-        rstr.append("levels(labels$colours) = label_colours$colours")
         rstr.append("rowlabels = labels[rownames(ani),]")
         rstr.append("collabels = labels[colnames(ani),]")
     cmd = "heatmap.2(as.matrix(ani), col=%s, " % cmap +\
