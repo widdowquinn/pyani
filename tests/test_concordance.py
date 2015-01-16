@@ -66,6 +66,8 @@ def parse_table(filename, title):
                     for idx, val in enumerate(ldata[1:]):
                         if val != '---':
                             data[columns[idx]][row] = float(val)
+                        elif title in ("ANIb", "ANIm"):
+                            data[columns[idx]][row] = 100.0
                         else:
                             data[columns[idx]][row] = 1.0
             else:
@@ -112,7 +114,7 @@ def test_anib_concordance():
     # Process BLAST; the pid data is in anib_data[1]
     anib_data = anib.process_blast(outdirname, org_lengths, fraglengths,
                                    mode="ANIb")
-    anib_pid = anib_data[1].sort(axis=0).sort(axis=1)
+    anib_pid = anib_data[1].sort(axis=0).sort(axis=1) * 100.
 
     index, columns = anib_pid.index, anib_pid.columns
     diffmat = anib_pid.as_matrix() - anib_jspecies.as_matrix()
@@ -169,7 +171,7 @@ def test_aniblastall_concordance():
     aniblastall_data = anib.process_blast(outdirname, org_lengths,
                                           fraglengths,
                                           mode="ANIblastall")
-    aniblastall_pid = aniblastall_data[1].sort(axis=0).sort(axis=1)
+    aniblastall_pid = aniblastall_data[1].sort(axis=0).sort(axis=1) * 100.
 
     index, columns = aniblastall_pid.index, aniblastall_pid.columns
     diffmat = aniblastall_pid.as_matrix() - aniblastall_jspecies.as_matrix()
@@ -215,7 +217,7 @@ def test_anim_concordance():
     multiprocessing_run(cmdlist, verbose=False)
     # Process .delta files
     anim_data = anim.process_deltadir(outdirname, org_lengths)
-    anim_pid = anim_data[1].sort(axis=0).sort(axis=1)
+    anim_pid = anim_data[1].sort(axis=0).sort(axis=1) * 100.
 
     print anim_data
 
