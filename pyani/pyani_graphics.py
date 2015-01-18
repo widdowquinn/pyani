@@ -156,11 +156,23 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                                  aspect='auto')
     heatmap_axes.set_xticks(np.linspace(0, size-1, size))
     heatmap_axes.set_yticks(np.linspace(0, size-1, size))
-    heatmap_axes.set_xticklabels(df.index[coldend['leaves']])
-    heatmap_axes.set_yticklabels(df.index[rowdend['leaves']])
     heatmap_axes.grid('off')
     heatmap_axes.xaxis.tick_bottom()
     heatmap_axes.yaxis.tick_right()
+
+    # Add heatmap labels
+    rowticklabels = df.index[rowdend['leaves']]
+    colticklabels = df.index[coldend['leaves']]
+    if labels:
+        rowticklabels = [labels[lab] for lab in rowticklabels]
+        colticklabels = [labels[lab] for lab in colticklabels]
+    xlabs = heatmap_axes.set_xticklabels(colticklabels)
+    ylabs = heatmap_axes.set_yticklabels(rowticklabels)
+    for label in xlabs:  # Rotate column labels
+        label.set_rotation(90)
+    for labset in (xlabs, ylabs):  # Smaller font
+        for label in labset:
+            label.set_fontsize(8)
 
     # Add colour scale
     scale_subplot =\
@@ -175,6 +187,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     cb.outline.set_linewidth(0)
 
     # Return figure output, and write, if required
+    plt.subplots_adjust(top=0.85)  # Leave room for title
     fig.set_tight_layout(True)
     if outfilename:
         fig.savefig(outfilename)
