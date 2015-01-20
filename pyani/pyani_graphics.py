@@ -10,6 +10,7 @@
 try:
     import matplotlib.pyplot as plt
     import matplotlib.gridspec as gridspec
+    from matplotlib import cm
     from matplotlib.colors import LinearSegmentedColormap
     mpl_import = True
 except ImportError:
@@ -132,7 +133,11 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     colclusters = sch.linkage(coldists, method='complete')
 
     # Create column dendrogram axis
-    coldend_axes = fig.add_subplot(heatmapGS[0, 1])
+    colGS = gridspec.GridSpecFromSubplotSpec(2, 1, 
+                                             subplot_spec = heatmapGS[0, 1],
+                                             wspace = 0.0, hspace = 0.0,
+                                             height_ratios = [1, 0.25])
+    coldend_axes = fig.add_subplot(colGS[0, 0])
     coldend = sch.dendrogram(colclusters, color_threshold=np.inf)
     clean_axis(coldend_axes)
 
@@ -140,8 +145,12 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     rowdists = distance.squareform(distance.pdist(df))
     rowclusters = sch.linkage(rowdists, method='complete')
 
-    # Create column dendrogram axis
-    rowdend_axes = fig.add_subplot(heatmapGS[1, 0])
+    # Create row dendrogram axis
+    rowGS = gridspec.GridSpecFromSubplotSpec(1, 2,
+                                             subplot_spec = heatmapGS[1, 0],
+                                             wspace = 0.0, hspace = 0.0,
+                                             width_ratios = [1, 0.25])
+    rowdend_axes = fig.add_subplot(rowGS[0, 0])
     rowdend = sch.dendrogram(rowclusters, color_threshold=np.inf,
                              orientation="right")
     clean_axis(rowdend_axes)
@@ -159,6 +168,29 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     heatmap_axes.grid('off')
     heatmap_axes.xaxis.tick_bottom()
     heatmap_axes.yaxis.tick_right()
+
+    # Are there class colourbars to add?
+    if classes:
+        classdict = {cls:idx for (idx, cls) in enumerate(classes.values())}
+        # Column colourbar
+        col_cb = pd.Series([classdict[classes[name]] for name in
+                            df.index[coldend['leaves']]])
+        # Row colourbar
+        row_cb = pd.Series([classdict[classes[name]] for name in
+                            df.index[rowdend['leaves']]])        
+
+        # Create column colourbar axis
+        col_cbaxes = fig.add_subplot(colGS[1, 0])
+        col_axi = col_cbaxes.imshow([col_cb],
+                                    interpolation = 'nearest', aspect = 'auto',
+                                    origin='lower')
+        clean_axis(col_cbaxes)
+        # Create row colourbar axis
+        row_cbaxes = fig.add_subplot(rowGS[0, 1])
+        row_axi = row_cbaxes.imshow([[x] for x in row_cb.values],
+                                    interpolation = 'nearest', aspect = 'auto',
+                                    origin='lower')
+        clean_axis(row_cbaxes)        
 
     # Add heatmap labels
     rowticklabels = df.index[rowdend['leaves']]
