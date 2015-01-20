@@ -43,6 +43,7 @@ except ImportError:
     rpy2_import = False
 
 import pandas as pd
+import warnings
 
 from math import floor, log10
 
@@ -135,8 +136,8 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     # Create column dendrogram axis
     colGS = gridspec.GridSpecFromSubplotSpec(2, 1, 
                                              subplot_spec = heatmapGS[0, 1],
-                                             wspace = 0.0, hspace = 0.0,
-                                             height_ratios = [1, 0.25])
+                                             wspace = 0.0, hspace = 0.1,
+                                             height_ratios = [1, 0.15])
     coldend_axes = fig.add_subplot(colGS[0, 0])
     coldend = sch.dendrogram(colclusters, color_threshold=np.inf)
     clean_axis(coldend_axes)
@@ -148,8 +149,8 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     # Create row dendrogram axis
     rowGS = gridspec.GridSpecFromSubplotSpec(1, 2,
                                              subplot_spec = heatmapGS[1, 0],
-                                             wspace = 0.0, hspace = 0.0,
-                                             width_ratios = [1, 0.25])
+                                             wspace = 0.1, hspace = 0.0,
+                                             width_ratios = [1, 0.15])
     rowdend_axes = fig.add_subplot(rowGS[0, 0])
     rowdend = sch.dendrogram(rowclusters, color_threshold=np.inf,
                              orientation="right")
@@ -181,13 +182,14 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
         # Create column colourbar axis
         col_cbaxes = fig.add_subplot(colGS[1, 0])
-        col_axi = col_cbaxes.imshow([col_cb],
+        col_axi = col_cbaxes.imshow([col_cb], cmap=plt.get_cmap('Set3'),
                                     interpolation = 'nearest', aspect = 'auto',
                                     origin='lower')
         clean_axis(col_cbaxes)
         # Create row colourbar axis
         row_cbaxes = fig.add_subplot(rowGS[0, 1])
         row_axi = row_cbaxes.imshow([[x] for x in row_cb.values],
+                                    cmap=plt.get_cmap('Set3'),
                                     interpolation = 'nearest', aspect = 'auto',
                                     origin='lower')
         clean_axis(row_cbaxes)        
@@ -208,7 +210,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
     # Add colour scale
     scale_subplot =\
-        gridspec.GridSpecFromSubplotSpec(1, 2,
+        gridspec.GridSpecFromSubplotSpec(1, 3,
                                          subplot_spec=heatmapGS[0, 0],
                                          wspace=0.0, hspace=0.0)
     scale_ax = fig.add_subplot(scale_subplot[0, 1])
@@ -220,7 +222,12 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
     # Return figure output, and write, if required
     plt.subplots_adjust(top=0.85)  # Leave room for title
-    fig.set_tight_layout(True)
+    #fig.set_tight_layout(True)
+    # We know that there is a UserWarning here about tight_layout and
+    # using the Agg renderer on OSX, so catch and ignore it, for cleanliness.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        heatmapGS.tight_layout(fig, h_pad=0.1, w_pad=0.5)
     if outfilename:
         fig.savefig(outfilename)
     return fig
