@@ -5,94 +5,11 @@
 
 `pyani` also installs a script: `average_nucleotide_identity.py` that enables command-line ANI analysis.
 
-## DEPENDENCIES
+## Script: <a name="average_nucleotide_identity.py">`average_nucleotide_identity.py`</a>
 
-### For ANI analysis
+The `average_nucleotide_identity.py` script - part of this module - enables ANI analysis at the command-line, and uses the `pyani` module behind the scenes.
 
-* **Biopython** <http://www.biopython.org>
-* **NumPy** <http://www.numpy.org/>
-* **pandas** <http://pandas.pydata.org/>
-* **SciPy** <http://www.scipy.org/>
-
-* **BLAST+** executable in the `$PATH`, or available on the command line (required for **ANIb** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/>
-* **legacy BLAST** executable in the `$PATH` or available on the command line (required for **ANIblastall** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/>
-* **MUMmer** executables in the $PATH, or available on the command line (required for **ANIm** analysis) <http://mummer.sourceforge.net/>
-
-### For graphical output
-
-* **matplotlib** <http://matplotlib.org/>
-
-and/or
-
-* **R** with shared libraries installed on the system <http://cran.r-project.org/>
-* **Rpy2** <http://rpy.sourceforge.net/rpy2.html>
-
-
-# INSTALLATION
-
-If you have downloaded v0.1.0 or greater, and the dependencies above are satisfied, then installation should be as simple as downloading the latest release and uncompressing it, or cloning the repository as below:
-
-```
-$ git clone https://github.com/widdowquinn/pyani
-```
-
-then changing to the appropriate directory:
-
-```
-$ cd pyani
-```
-
-then issuing:
-
-```
-$ python setup.py install
-```
-
-(or whatever variant you wish, e.g. for a home directory-local installation) from the top directory in the repository (with root permissions, if necessary).
-
-## DESCRIPTION
-
-### Average Nucleotide Identity (ANI)
-
-This module calculates Average Nucleotide Identity (ANI) according to one of a number of alternative methods described in, e.g.
-
-* Richter M, Rossello-Mora R (2009) Shifting the genomic gold standard for the prokaryotic species definition. Proc Natl Acad Sci USA 106: 19126-19131. doi:10.1073/pnas.0906412106. (ANI1020, ANIm, ANIb)
-* Goris J, Konstantinidis KT, Klappenbach JA, Coenye T, Vandamme P, et al. (2007) DNA-DNA hybridization values and their relationship to whole-genome sequence similarities. Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0.
-
-ANI is proposed to be the appropriate *in silico* substitute for DNA-DNA 
-hybridisation (DDH), and so useful for delineating species boundaries. A 
-typical percentage threshold for species boundary in the literature is 95% 
-ANI (e.g. Richter et al. 2009).
-
-All ANI methods follow the basic algorithm:
-
-- Align the genome of organism 1 against that of organism 2, and identify the matching regions
-- Calculate the percentage nucleotide identity of the matching regions, as an average for all matching regions
-
-Methods differ on: (1) what alignment algorithm is used, and the choice of parameters (this affects the aligned region boundaries); (2) what the input is for alignment (typically either fragments of fixed size, or the most complete assembly available).
-
-* **ANIm**: uses MUMmer (NUCmer) to align the input sequences.
-* **ANIb**: uses BLASTN+ to align 1020nt fragments of the input sequences
-* **ANIblastall**: uses legacy BLASTN to align 1020nt fragments of the input sequences
-* **TETRA**: calculates tetranucleotide frequencies of each input sequence
-
-The algorithms takes as input correctly-formatted FASTA multiple sequence files. All sequences for a single organism should be contained in only one sequence file. Although it is possible to provide new labels for each input genome, for rendering graphical output, the names of these files are used for identification so it is best to name 
-them sensibly.
-
-Output is written to a named directory. The output files differ depending on the chosen ANI method.
-
-* **ANIm**: MUMmer/NUCmer .delta files, describing each pairwise sequence alignment. Output as tab-separated plain text and Excel format tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIm).
-* **ANIb** and **ANIblastall**: FASTA sequences describing 1020nt fragments of each input sequence; BLAST nucleotide databases - one for each set of fragments; and BLASTN output files (tab-separated tabular format plain text) - one for each pairwise comparison of input sequences. Output as tab-separated plain text and Excel format tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIb or ANIblastall).
-* **TETRA**: Tab-separated plain text and Excel format files describing the Pearson correlations between Z-score distributions for each tetranucleotide in each input sequence (TETRA).
-
-If graphical output is chosen, the output directory will also contain PDF files representing the similarity between sequences as a heatmap with row and column dendrograms.
-
-
-### <a name="average_nucleotide_identity.py">`average_nucleotide_identity.py`</a>
-
-The `average_nucleotide_identity.py` script enables ANI analysis at the command-line, and uses the `pyani` module.
-
-#### Usage
+### Script Usage
 
 ```
 average_nucleotide_identity.py [-h] [-o OUTDIRNAME] [-i INDIRNAME] [-v]
@@ -154,7 +71,7 @@ $ ./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIblas
 $ ./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_TETRA_output -m TETRA -g
 ```
 
-The following graphical output, supporting the assignment of `NC_002696` and `NC_011916` to the same species (*C.crescentus*), and the other two isolates to distinct species (`NC_014100`:*C.segnis*; `NC_010338`:*C.* sp K31), was generated with the command-line:
+The graphical output below, supporting assignment of `NC_002696` and `NC_011916` to the same species (*C.crescentus*), and the other two isolates to distinct species (`NC_014100`:*C.segnis*; `NC_010338`:*C.* sp K31), was generated with the command-line:
 
 ```
 ./average_nucleotide_identity.py -v -i tests/test_ani_data/ \
@@ -168,6 +85,88 @@ The following graphical output, supporting the assignment of `NC_002696` and `NC
 ![ANIm alignment coverage for *Caulobacter* test data](tests/test_ani_data/ANIm_alignment_coverage.png "ANIm alignment coverage")
 ![ANIm alignment length for *Caulobacter* test data](tests/test_ani_data/ANIm_alignment_lengths.png "ANIm alignment length")
 ![ANIm alignment similarity errors for *Caulobacter* test data](tests/test_ani_data/ANIm_similarity_errors.png "ANIm alignment similarity")
+
+## DEPENDENCIES
+
+### For ANI analysis
+
+* **Biopython** <http://www.biopython.org>
+* **NumPy** <http://www.numpy.org/>
+* **pandas** <http://pandas.pydata.org/>
+* **SciPy** <http://www.scipy.org/>
+
+* **BLAST+** executable in the `$PATH`, or available on the command line (required for **ANIb** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/>
+* **legacy BLAST** executable in the `$PATH` or available on the command line (required for **ANIblastall** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/>
+* **MUMmer** executables in the $PATH, or available on the command line (required for **ANIm** analysis) <http://mummer.sourceforge.net/>
+
+### For graphical output
+
+* **matplotlib** <http://matplotlib.org/>
+
+and/or
+
+* **R** with shared libraries installed on the system <http://cran.r-project.org/>
+* **Rpy2** <http://rpy.sourceforge.net/rpy2.html>
+
+
+# INSTALLATION
+
+If you have downloaded v0.1.0 or greater, and the dependencies above are satisfied, then installation should be as simple as downloading the latest release and uncompressing it, or cloning the repository as below:
+
+```
+$ git clone https://github.com/widdowquinn/pyani
+```
+
+then changing to the appropriate directory:
+
+```
+$ cd pyani
+```
+
+then issuing:
+
+```
+$ python setup.py install
+```
+
+(or whatever variant you wish, e.g. for a home directory-local installation) from the top directory in the repository (with root permissions, if necessary).
+
+## Method and Output Description
+
+### Average Nucleotide Identity (ANI)
+
+This module calculates Average Nucleotide Identity (ANI) according to one of a number of alternative methods described in, e.g.
+
+* Richter M, Rossello-Mora R (2009) Shifting the genomic gold standard for the prokaryotic species definition. Proc Natl Acad Sci USA 106: 19126-19131. doi:10.1073/pnas.0906412106. (ANI1020, ANIm, ANIb)
+* Goris J, Konstantinidis KT, Klappenbach JA, Coenye T, Vandamme P, et al. (2007) DNA-DNA hybridization values and their relationship to whole-genome sequence similarities. Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0.
+
+ANI is proposed to be the appropriate *in silico* substitute for DNA-DNA 
+hybridisation (DDH), and so useful for delineating species boundaries. A 
+typical percentage threshold for species boundary in the literature is 95% 
+ANI (e.g. Richter et al. 2009).
+
+All ANI methods follow the basic algorithm:
+
+- Align the genome of organism 1 against that of organism 2, and identify the matching regions
+- Calculate the percentage nucleotide identity of the matching regions, as an average for all matching regions
+
+Methods differ on: (1) what alignment algorithm is used, and the choice of parameters (this affects the aligned region boundaries); (2) what the input is for alignment (typically either fragments of fixed size, or the most complete assembly available).
+
+* **ANIm**: uses MUMmer (NUCmer) to align the input sequences.
+* **ANIb**: uses BLASTN+ to align 1020nt fragments of the input sequences
+* **ANIblastall**: uses legacy BLASTN to align 1020nt fragments of the input sequences
+* **TETRA**: calculates tetranucleotide frequencies of each input sequence
+
+The algorithms takes as input correctly-formatted FASTA multiple sequence files. All sequences for a single organism should be contained in only one sequence file. Although it is possible to provide new labels for each input genome, for rendering graphical output, the names of these files are used for identification so it is best to name 
+them sensibly.
+
+Output is written to a named directory. The output files differ depending on the chosen ANI method.
+
+* **ANIm**: MUMmer/NUCmer .delta files, describing each pairwise sequence alignment. Output as tab-separated plain text and Excel format tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIm).
+* **ANIb** and **ANIblastall**: FASTA sequences describing 1020nt fragments of each input sequence; BLAST nucleotide databases - one for each set of fragments; and BLASTN output files (tab-separated tabular format plain text) - one for each pairwise comparison of input sequences. Output as tab-separated plain text and Excel format tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIb or ANIblastall).
+* **TETRA**: Tab-separated plain text and Excel format files describing the Pearson correlations between Z-score distributions for each tetranucleotide in each input sequence (TETRA).
+
+If graphical output is chosen, the output directory will also contain PDF files representing the similarity between sequences as a heatmap with row and column dendrograms.
 
 
 
