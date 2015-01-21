@@ -31,7 +31,7 @@ import pyani_files
 
 # Generate list of NUCmer pairwise comparison command lines from
 # passed sequence filenames
-def generate_nucmer_commands(filenames, outdir,
+def generate_nucmer_commands(filenames, outdir='.',
                              nucmer_exe=pyani_config.NUCMER_DEFAULT,
                              maxmatch=False):
     """Return a list of NUCmer command-lines for ANIm
@@ -54,7 +54,7 @@ def generate_nucmer_commands(filenames, outdir,
 
 # Generate single NUCmer pairwise comparison command line from pair of
 # input filenames
-def construct_nucmer_cmdline(fname1, fname2, outdir,
+def construct_nucmer_cmdline(fname1, fname2, outdir='.',
                              nucmer_exe=pyani_config.NUCMER_DEFAULT,
                              maxmatch=False):
     """Returns a single NUCmer pairwise comparison command.
