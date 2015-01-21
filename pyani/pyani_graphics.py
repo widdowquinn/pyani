@@ -7,41 +7,14 @@
 
 """Code to implement graphics output for ANI analyses."""
 
-try:
-    import matplotlib.pyplot as plt
-    import matplotlib.gridspec as gridspec
-    from matplotlib import cm
-    from matplotlib.colors import LinearSegmentedColormap
-    mpl_import = True
-except ImportError:
-    print "Could not import matplotlib: some graphics options " +\
-        "will be unavailable."
-    mpl_import = False
-
-try:
-    import numpy as np
-    numpy_import = True
-except ImportError:
-    print "Could not import numpy: some graphics options " +\
-        "will be unavailable."
-    numpy_import = False
-
-try:
-    import scipy.cluster.hierarchy as sch
-    import scipy.spatial.distance as distance
-    scipy_import = True
-except ImportError:
-    print "Could not import scipy: some graphics options " +\
-        "will be unavailable."
-
-try:
-    import rpy2.robjects as robjects
-    rpy2_import = True
-except ImportError:
-    print "Could not import rpy2: some graphics options " +\
-        "will be unavailable."
-    rpy2_import = False
-
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from matplotlib import cm
+from matplotlib.colors import LinearSegmentedColormap
+import numpy as np
+import scipy.cluster.hierarchy as sch
+import scipy.spatial.distance as distance
+import rpy2.robjects as robjects
 import pyani_config
 import pandas as pd
 import warnings
