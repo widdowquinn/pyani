@@ -19,7 +19,6 @@ import shutil
 from pyani import anib, anim, tetra, pyani_files, pyani_config
 
 
-
 # Path to JSpecies output data. This data is pre-prepared. If you replace
 # the test data with your own data, you will need to replace this file,
 # or change the file path.
@@ -85,7 +84,10 @@ def make_outdir(mode):
 
 # Test concordance of this code with JSpecies output
 def test_anib_concordance():
-    """Test concordance of ANIb method with JSpecies output."""
+    """Test concordance of ANIb method with JSpecies output.
+
+    This may take some time. Please be patient.
+    """
     # Make/check output directory
     mode = "ANIb"
     outdirname = make_outdir(mode)
