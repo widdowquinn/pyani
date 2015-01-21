@@ -123,8 +123,8 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
     # Layout figure grid and add title
     fig = plt.figure()
-    if title:
-        fig.suptitle(title)
+    #if title:
+    #    fig.suptitle(title)
     heatmapGS = gridspec.GridSpec(2, 2, wspace=0.0, hspace=0.0,
                                   width_ratios=[0.3, 1],
                                   height_ratios=[0.3, 1])
@@ -214,10 +214,12 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                                          subplot_spec=heatmapGS[0, 0],
                                          wspace=0.0, hspace=0.0)
     scale_ax = fig.add_subplot(scale_subplot[0, 1])
-    cb = fig.colorbar(ax_map, scale_ax, ticks=cbticks, )
-    cb.set_label('Scale')
+    cb = fig.colorbar(ax_map, scale_ax, ticks=cbticks)
+    if title:
+        cb.set_label(title, fontsize=6)
     cb.ax.yaxis.set_ticks_position('left')
     cb.ax.yaxis.set_label_position('left')
+    cb.ax.tick_params(labelsize=6) 
     cb.outline.set_linewidth(0)
 
     # Return figure output, and write, if required
