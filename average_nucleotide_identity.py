@@ -205,7 +205,7 @@ def parse_cmdline(args):
                         help="Generate heatmap of ANI")
     parser.add_argument("--gformat", dest="gformat",
                         action="store", default="pdf",
-                        help="Graphics output format [pdf|png|jpg]")
+                        help="Graphics output format [pdf|png|jpg|svg]")
     parser.add_argument("--gmethod", dest="gmethod",
                         action="store", default="mpl",
                         help="Graphics output method [mpl|R]")
@@ -217,7 +217,7 @@ def parse_cmdline(args):
                         help="Path to file containing sequence classes")
     parser.add_argument("-m", "--method", dest="method",
                         action="store", default="ANIm",
-                        help="ANI method [ANIm|ANIb|TETRA]")
+                        help="ANI method [ANIm|ANIb|ANIblastall|TETRA]")
     parser.add_argument("--scheduler", dest="scheduler",
                         action="store", default="multiprocessing",
                         help="Job scheduler [multiprocessing|SGE]")
