@@ -26,8 +26,12 @@ ANIBLASTALL_FILESTEMS = ("ANIblastall_alignment_lengths",
                          "ANIblastall_alignment_coverage",
                          "ANIblastall_similarity_errors")
 
-# Colour gradients for use in R
+# Colour gradients for use in R and Matplotlib:
+# R_AFMHOT is a custom colour palette
 R_AFMHOT = 'colorRampPalette(c("black","red","yellow","white"))'
+# Any valid matplotlib colour map can be used here
+# See, e.g. http://matplotlib.org/xkcd/examples/color/colormaps_reference.html
+MPL_CBAR = 'Spectral'
 
 # Parameters for analyses
 FRAGSIZE = 1020

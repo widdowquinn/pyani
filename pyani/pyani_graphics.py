@@ -42,6 +42,7 @@ except ImportError:
         "will be unavailable."
     rpy2_import = False
 
+import pyani_config
 import pandas as pd
 import warnings
 
@@ -182,14 +183,15 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
         # Create column colourbar axis
         col_cbaxes = fig.add_subplot(colGS[1, 0])
-        col_axi = col_cbaxes.imshow([col_cb], cmap=plt.get_cmap('Set3'),
+        col_axi = col_cbaxes.imshow([col_cb],
+                                    cmap=plt.get_cmap(pyani_config.MPL_CBAR),
                                     interpolation = 'nearest', aspect = 'auto',
                                     origin='lower')
         clean_axis(col_cbaxes)
         # Create row colourbar axis
         row_cbaxes = fig.add_subplot(rowGS[0, 1])
         row_axi = row_cbaxes.imshow([[x] for x in row_cb.values],
-                                    cmap=plt.get_cmap('Set3'),
+                                    cmap=plt.get_cmap(pyani_config.MPL_CBAR),
                                     interpolation = 'nearest', aspect = 'auto',
                                     origin='lower')
         clean_axis(row_cbaxes)        
