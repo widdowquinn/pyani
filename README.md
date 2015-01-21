@@ -75,9 +75,9 @@ The graphical output below, supporting assignment of `NC_002696` and `NC_011916`
 
 ```
 ./average_nucleotide_identity.py -v -i tests/test_ani_data/ \
-    -o tests/test_ANIm_output/ -g -f --noclobber --skip_nucmer \
+    -o tests/test_ANIm_output/ -g -gformat png \
     --classes tests/test_ani_data/classes.tab \
-    --labels tests/test_ani_data/labels.tab --gformat png
+    --labels tests/test_ani_data/labels.tab
 ```
 
 
