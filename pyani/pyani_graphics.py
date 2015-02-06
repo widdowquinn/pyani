@@ -89,7 +89,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     vdiff = vmax - vmin
     cbticks = [vmin + e * vdiff for e in (0, 0.25, 0.5, 0.75, 1)]
     if vmax > 10:
-        exponent = int(floor(log10(vmax)))
+        exponent = int(floor(log10(vmax))) - 1
         cbticks = [int(round(e, -exponent)) for e in cbticks]
 
     # Obtain appropriate colour map
