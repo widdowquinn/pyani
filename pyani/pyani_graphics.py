@@ -96,7 +96,8 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     cmap = plt.get_cmap(cmap)
 
     # Layout figure grid and add title
-    fig = plt.figure()
+    # Set figure size by the number of rows in the dataframe
+    fig = plt.figure(figsize=(size*0.175, size*0.175))
     #if title:
     #    fig.suptitle(title)
     heatmapGS = gridspec.GridSpec(2, 2, wspace=0.0, hspace=0.0,
