@@ -146,7 +146,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     heatmap_axes.yaxis.tick_right()
 
     # Are there class colourbars to add?
-    if classes:
+    if classes is not None:
         classdict = {cls:idx for (idx, cls) in enumerate(classes.values())}
         # Column colourbar
         col_cb = pd.Series([classdict[classes[name]] for name in
