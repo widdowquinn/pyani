@@ -81,7 +81,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     """
     # Get indication of dataframe size and, if necessary, max and
     # min values for colormap
-    size = df.shape[0]
+    dfsize = df.shape[0]
     if vmin is None:
         vmin = df.values.min()
     if vmax is None:
@@ -97,7 +97,8 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
     # Layout figure grid and add title
     # Set figure size by the number of rows in the dataframe
-    fig = plt.figure(figsize=(size*0.175, size*0.175))
+    figsize = max(4, dfsize*0.225)
+    fig = plt.figure(figsize=(figsize, figsize))
     #if title:
     #    fig.suptitle(title)
     heatmapGS = gridspec.GridSpec(2, 2, wspace=0.0, hspace=0.0,
@@ -139,8 +140,8 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                                  cmap=cmap, origin='lower',
                                  vmin=vmin, vmax=vmax,
                                  aspect='auto')
-    heatmap_axes.set_xticks(np.linspace(0, size-1, size))
-    heatmap_axes.set_yticks(np.linspace(0, size-1, size))
+    heatmap_axes.set_xticks(np.linspace(0, dfsize-1, dfsize))
+    heatmap_axes.set_yticks(np.linspace(0, dfsize-1, dfsize))
     heatmap_axes.grid('off')
     heatmap_axes.xaxis.tick_bottom()
     heatmap_axes.yaxis.tick_right()
