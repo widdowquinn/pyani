@@ -9,3 +9,4 @@ tests/test_*_out/
 tests/test_*_output/
 tests/test_concordance_*/
 calculate_ani.py
+distribute*
