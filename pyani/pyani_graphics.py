@@ -97,7 +97,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
     # Layout figure grid and add title
     # Set figure size by the number of rows in the dataframe
-    figsize = max(8, size * 0.175)
+    figsize = max(8, dfsize * 0.175)
     fig = plt.figure(figsize=(figsize, figsize))
     #if title:
     #    fig.suptitle(title)
