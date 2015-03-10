@@ -81,7 +81,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     """
     # Get indication of dataframe size and, if necessary, max and
     # min values for colormap
-    size = df.shape[0]
+    dfsize = df.shape[0]
     if vmin is None:
         vmin = df.values.min()
     if vmax is None:
@@ -140,8 +140,8 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                                  cmap=cmap, origin='lower',
                                  vmin=vmin, vmax=vmax,
                                  aspect='auto')
-    heatmap_axes.set_xticks(np.linspace(0, size-1, size))
-    heatmap_axes.set_yticks(np.linspace(0, size-1, size))
+    heatmap_axes.set_xticks(np.linspace(0, dfsize-1, dfsize))
+    heatmap_axes.set_yticks(np.linspace(0, dfsize-1, dfsize))
     heatmap_axes.grid('off')
     heatmap_axes.xaxis.tick_bottom()
     heatmap_axes.yaxis.tick_right()
