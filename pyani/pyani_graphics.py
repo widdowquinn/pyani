@@ -7,6 +7,9 @@
 
 """Code to implement graphics output for ANI analyses."""
 
+import matplotlib
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib import cm
@@ -14,7 +17,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 import scipy.cluster.hierarchy as sch
 import scipy.spatial.distance as distance
-import rpy2.robjects as robjects
+# import rpy2.robjects as robjects
 import pyani_config
 import pandas as pd
 import warnings
@@ -110,7 +113,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     colclusters = sch.linkage(coldists, method='complete')
 
     # Create column dendrogram axis
-    colGS = gridspec.GridSpecFromSubplotSpec(2, 1, 
+    colGS = gridspec.GridSpecFromSubplotSpec(2, 1,
                                              subplot_spec = heatmapGS[0, 1],
                                              wspace = 0.0, hspace = 0.1,
                                              height_ratios = [1, 0.15])
@@ -154,7 +157,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                             df.index[coldend['leaves']]])
         # Row colourbar
         row_cb = pd.Series([classdict[classes[name]] for name in
-                            df.index[rowdend['leaves']]])        
+                            df.index[rowdend['leaves']]])
 
         # Create column colourbar axis
         col_cbaxes = fig.add_subplot(colGS[1, 0])
@@ -169,7 +172,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                                     cmap=plt.get_cmap(pyani_config.MPL_CBAR),
                                     interpolation = 'nearest', aspect = 'auto',
                                     origin='lower')
-        clean_axis(row_cbaxes)        
+        clean_axis(row_cbaxes)
 
     # Add heatmap labels
     rowticklabels = df.index[rowdend['leaves']]
@@ -196,7 +199,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
         cb.set_label(title, fontsize=6)
     cb.ax.yaxis.set_ticks_position('left')
     cb.ax.yaxis.set_label_position('left')
-    cb.ax.tick_params(labelsize=6) 
+    cb.ax.tick_params(labelsize=6)
     cb.outline.set_linewidth(0)
 
     # Return figure output, and write, if required
@@ -213,73 +216,73 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
 
 # Draw heatmap with R
-def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
-              vmin=None, vmax=None, gformat=None, labels=None, classes=None):
-    """Uses R to draw heatmap, and returns R code used for rendering.
-
-    - infilename - path to tab-separated table with data
-    - outfilename - path to output file
-    - cmap - colourmap option
-    - vmin - float, minimum value on the heatmap scale
-    - vmax - float, maximum value on the heatmap scale
-    - gformat - string indicating graphics output format
-    - labels - dictionary of alternative labels, keyed by default sequence
-               labels
-    - classes - dictionary of sequence classes, keyed by default sequence
-                labels
-    """
-    vdiff = vmax - vmin
-    vstep = 0.001 * vdiff
-
-    # Read the data in to get row/column information for labels and classes,
-    # and so we can guesstimate output image size
-    df = pd.DataFrame.from_csv(infilename, sep="\t", header=0)
-
-    # Prepare R code
-    rstr = ["library(gplots)", "library(RColorBrewer)"]  # R import
-    rstr.append("ani = read.table('%s', header=T, sep='\\t', row.names=1)" %
-                infilename)
-    rstr.append("%s('%s')" % (gformat, outfilename))
-    rstr.append("par(cex.main=0.75)")
-    if classes:  # Define colour list
-        lbls, cls = [], []
-        for lbl, cla in classes.items():
-            lbls.append(lbl)
-            cls.append(cla)
-        lablist = ','.join(['"%s"' % l for l in lbls])
-        clslist = ','.join(['"%s"' % c for c in cls])
-        rstr.append("labels = data.frame(row.names=c(%s), class=c(%s))" %
-                    (lablist, clslist))
-        rstr.append('lablist = sort(unique(labels[,"class"]))')
-        rstr.append("colourlist = rainbow(length(lablist))")
-        rstr.append("label_colours = data.frame(row.names=sort(lablist), " +
-                    "colours=colourlist)")
-        rstr.append("labels$colours = label_colours[labels$class,]")
-        rstr.append("rowlabels = labels[rownames(ani),]")
-        rstr.append("collabels = labels[colnames(ani),]")
-    cmd = "heatmap.2(as.matrix(ani), col=%s, " % cmap +\
-          "breaks=seq(%.2f, %.2f, %f), " % (vmin, vmax, vstep) +\
-          "trace='none', " +\
-          "margins=c(15, 15), cexCol=0.05 + 1/log10(2 * ncol(ani)), " +\
-          "cexRow=0.05 + 1/log10(2 * nrow(ani)), " +\
-          "main='%s'" % title
-    if labels:  # Change labels from data to passed dict
-        labrow = ','.join(['"%s"' % labels[rowname] for rowname in df.index])
-        labcol = ','.join(['"%s"' % labels[colname] for colname in df.columns])
-        cmd += ", labRow=c(%s), labCol=c(%s)" % (labrow, labcol)
-    if classes:
-        cmd += ', RowSideColors=as.vector(rowlabels[,"colours"])'
-        cmd += ', ColSideColors=as.vector(collabels[,"colours"])'
-    cmd += ")"
-    rstr.append(cmd)
-    if classes:  # Add legend for colour labels
-        rstr.append('lablist = sort(unique(labels[,"class"]))')
-        rstr.append("par(lend=1)")
-        rstr.append('legend("topright", legend=sort(lablist), ' +
-                    "col=colourlist, lty=1, lwd=10)")
-    rstr.append("dev.off()")
-
-    # Execute R code
-    rstr = '\n'.join(rstr)
-    robjects.r(rstr)
-    return rstr + '\n'
+# def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
+#               vmin=None, vmax=None, gformat=None, labels=None, classes=None):
+#     """Uses R to draw heatmap, and returns R code used for rendering.
+#
+#     - infilename - path to tab-separated table with data
+#     - outfilename - path to output file
+#     - cmap - colourmap option
+#     - vmin - float, minimum value on the heatmap scale
+#     - vmax - float, maximum value on the heatmap scale
+#     - gformat - string indicating graphics output format
+#     - labels - dictionary of alternative labels, keyed by default sequence
+#                labels
+#     - classes - dictionary of sequence classes, keyed by default sequence
+#                 labels
+#     """
+#     vdiff = vmax - vmin
+#     vstep = 0.001 * vdiff
+#
+#     # Read the data in to get row/column information for labels and classes,
+#     # and so we can guesstimate output image size
+#     df = pd.DataFrame.from_csv(infilename, sep="\t", header=0)
+#
+#     # Prepare R code
+#     rstr = ["library(gplots)", "library(RColorBrewer)"]  # R import
+#     rstr.append("ani = read.table('%s', header=T, sep='\\t', row.names=1)" %
+#                 infilename)
+#     rstr.append("%s('%s')" % (gformat, outfilename))
+#     rstr.append("par(cex.main=0.75)")
+#     if classes:  # Define colour list
+#         lbls, cls = [], []
+#         for lbl, cla in classes.items():
+#             lbls.append(lbl)
+#             cls.append(cla)
+#         lablist = ','.join(['"%s"' % l for l in lbls])
+#         clslist = ','.join(['"%s"' % c for c in cls])
+#         rstr.append("labels = data.frame(row.names=c(%s), class=c(%s))" %
+#                     (lablist, clslist))
+#         rstr.append('lablist = sort(unique(labels[,"class"]))')
+#         rstr.append("colourlist = rainbow(length(lablist))")
+#         rstr.append("label_colours = data.frame(row.names=sort(lablist), " +
+#                     "colours=colourlist)")
+#         rstr.append("labels$colours = label_colours[labels$class,]")
+#         rstr.append("rowlabels = labels[rownames(ani),]")
+#         rstr.append("collabels = labels[colnames(ani),]")
+#     cmd = "heatmap.2(as.matrix(ani), col=%s, " % cmap +\
+#           "breaks=seq(%.2f, %.2f, %f), " % (vmin, vmax, vstep) +\
+#           "trace='none', " +\
+#           "margins=c(15, 15), cexCol=0.05 + 1/log10(2 * ncol(ani)), " +\
+#           "cexRow=0.05 + 1/log10(2 * nrow(ani)), " +\
+#           "main='%s'" % title
+#     if labels:  # Change labels from data to passed dict
+#         labrow = ','.join(['"%s"' % labels[rowname] for rowname in df.index])
+#         labcol = ','.join(['"%s"' % labels[colname] for colname in df.columns])
+#         cmd += ", labRow=c(%s), labCol=c(%s)" % (labrow, labcol)
+#     if classes:
+#         cmd += ', RowSideColors=as.vector(rowlabels[,"colours"])'
+#         cmd += ', ColSideColors=as.vector(collabels[,"colours"])'
+#     cmd += ")"
+#     rstr.append(cmd)
+#     if classes:  # Add legend for colour labels
+#         rstr.append('lablist = sort(unique(labels[,"class"]))')
+#         rstr.append("par(lend=1)")
+#         rstr.append('legend("topright", legend=sort(lablist), ' +
+#                     "col=colourlist, lty=1, lwd=10)")
+#     rstr.append("dev.off()")
+#
+#     # Execute R code
+#     rstr = '\n'.join(rstr)
+#     robjects.r(rstr)
+#     return rstr + '\n'
