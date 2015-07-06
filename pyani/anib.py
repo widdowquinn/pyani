@@ -301,6 +301,15 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
            similarity_errors)
 
 
+def file_exists(fnames):
+    if isinstance(fnames, basestring):
+        fnames = [fnames]
+    for f in fnames:
+        if not os.path.exists(f) or os.path.getsize(f) == 0:
+            return False
+    return True
+
+
 # Parse BLASTALL output to get total alignment length and mismatches
 def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     """Returns (alignment length, similarity errors, mean_pid) tuple
@@ -319,6 +328,8 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     over an alignable region of at least 70% of their length.
     '''
     """
+    if not file_exists(filename):
+        return 0, 0, 0
     # Assuming that the filename format holds org1_vs_org2.blast_tab:
     qname, sname = \
         os.path.splitext(os.path.split(filename)[-1])[0].split('_vs_')
