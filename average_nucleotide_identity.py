@@ -164,7 +164,7 @@ from argparse import ArgumentParser
 
 from pyani import anib, anim, tetra, pyani_config, pyani_files, pyani_graphics
 from pyani.run_multiprocessing import multiprocessing_run
-from pyani.pyani_config import params_mpl, params_r
+from pyani.pyani_config import params_mpl
 
 
 # Process command-line arguments
@@ -206,9 +206,9 @@ def parse_cmdline(args):
     parser.add_argument("--gformat", dest="gformat",
                         action="store", default="pdf",
                         help="Graphics output format [pdf|png|jpg|svg]")
-    parser.add_argument("--gmethod", dest="gmethod",
-                        action="store", default="mpl",
-                        help="Graphics output method [mpl|R]")
+    # parser.add_argument("--gmethod", dest="gmethod",
+    #                     action="store", default="mpl",
+    #                     help="Graphics output method [mpl|R]")
     parser.add_argument("--labels", dest="labels",
                         action="store", default=None,
                         help="Path to file containing sequence labels")
@@ -527,7 +527,7 @@ def get_labels(filename):
         return labeldict
     except:
         None
-               
+
 
 # Write ANIb/ANIm/TETRA output
 def write(results, filestems):
@@ -560,24 +560,24 @@ def draw(results, filestems):
         outfilename = fullstem + '.%s' % args.gformat
         infilename = fullstem + '.tab'
         logger.info("Writing heatmap to %s" % outfilename)
-        if args.gmethod == "mpl":
-            pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
-                                       title=filestem,
-                                       cmap=params_mpl(df)[filestem][0],
-                                       vmin=params_mpl(df)[filestem][1],
-                                       vmax=params_mpl(df)[filestem][2],
-                                       labels=get_labels(args.labels),
-                                       classes=get_labels(args.classes))
-        elif args.gmethod == "R":
-            rstr = pyani_graphics.heatmap_r(infilename, outfilename,
-                                            gformat=args.gformat.lower(),
-                                            title=filestem,
-                                            cmap=params_r(df)[filestem][0],
-                                            vmin=params_r(df)[filestem][1],
-                                            vmax=params_r(df)[filestem][2],
-                                            labels=get_labels(args.labels),
-                                            classes=get_labels(args.classes))
-            logger.info("Executed R code:\n%s" % rstr)
+        # if args.gmethod == "mpl":
+        pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
+                                   title=filestem,
+                                   cmap=params_mpl(df)[filestem][0],
+                                   vmin=params_mpl(df)[filestem][1],
+                                   vmax=params_mpl(df)[filestem][2],
+                                   labels=get_labels(args.labels),
+                                   classes=get_labels(args.classes))
+        # elif args.gmethod == "R":
+        #     rstr = pyani_graphics.heatmap_r(infilename, outfilename,
+        #                                     gformat=args.gformat.lower(),
+        #                                     title=filestem,
+        #                                     cmap=params_r(df)[filestem][0],
+        #                                     vmin=params_r(df)[filestem][1],
+        #                                     vmax=params_r(df)[filestem][2],
+        #                                     labels=get_labels(args.labels),
+        #                                     classes=get_labels(args.classes))
+        #     logger.info("Executed R code:\n%s" % rstr)
 
 
 # Run as script
@@ -671,7 +671,7 @@ if __name__ == '__main__':
     if args.graphics:
         logger.info("Rendering output graphics")
         logger.info("Graphics format: %s" % args.gformat)
-        logger.info("Graphics method: %s" % args.gmethod)
+        # logger.info("Graphics method: %s" % args.gmethod)
         draw(results, methods[args.method][1])
 
     # Report that we've finished
