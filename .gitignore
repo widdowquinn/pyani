@@ -1,11 +1,20 @@
+# Mac-related dreck
 .DS_Store
+
+# Emacs edit files
 *~
+
+# Compiled Python modules
 *.pyc
+
+# Distribution files
 build/
 dist/
 pyani.egg-info/
+distribute*
+
+# Test output
 *.log
 tests/test_*_out/
 tests/test_*_output/
 tests/test_concordance_*/
-calculate_ani.py
