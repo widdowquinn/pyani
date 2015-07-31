@@ -60,8 +60,7 @@ def populate_cmdsets(job, cmdsets, depth):
     if len(job.dependencies) == 0:
         return cmdsets
     for j in job.dependencies:
-        d = depth + 1
-        cmdsets = populate_cmdsets(j, cmdsets, d)
+        cmdsets = populate_cmdsets(j, cmdsets, depth+1)
     return cmdsets
 
 

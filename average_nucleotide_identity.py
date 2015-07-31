@@ -465,45 +465,6 @@ def unified_anib(infiles, org_lengths):
         else:
             logger.info("Running jobs with SGE")
             raise NotImplementedError
-        sys.exit(0)
-
-        # TO DEPRECATE
-        # Build BLASTN databases
-        logger.info("Constructing %s BLAST databases" % args.method)
-        cmdlist = anib.generate_blastdb_commands(infiles, args.outdirname,
-                                                 blastdb_exe=blastdb_exe,
-                                                 mode=args.method)
-        logger.info("Generated commands:\n%s" % '\n'.join(cmdlist))
-        if args.scheduler == 'multiprocessing':
-            logger.info("Running jobs with multiprocessing")
-            cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
-            if 0 < cumval:
-                logger.warning("At least one makeblastdb run failed. " +
-                               "%s may fail." % args.method)
-            else:
-                logger.info("All multiprocessing jobs complete.")
-        else:
-            logger.info("Running jobs with SGE")
-            raise NotImplementedError
-
-        # Run pairwise BLASTN
-        logger.info("Running %s BLASTN jobs" % args.method)
-        cmdlist = anib.generate_blastn_commands(fragfiles, args.outdirname,
-                                                blastn_exe, mode=args.method)
-        logger.info("Generated commands:\n%s" % '\n'.join(cmdlist))
-        if args.scheduler == 'multiprocessing':
-            logger.info("Running jobs with multiprocessing")
-            cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
-            logger.info("Cumulative return value: %d" % cumval)
-            if 0 < cumval:
-                logger.warning("At least one BLASTN comparison failed. " +
-                               "%s may fail." % args.method)
-            else:
-                logger.info("All multiprocessing jobs complete.")
-        else:
-            logger.info("Running jobs with SGE")
-            raise NotImplementedError
-        # END OF DEPRECATION
     else:
         # Import fragment lengths from JSON
         if args.method == "ANIblastall":
