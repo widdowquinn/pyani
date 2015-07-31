@@ -18,6 +18,53 @@ import sys
 CUMRETVAL = 0
 
 
+# Run a job dependency graph with multiprocessing
+def run_dependency_graph(jobgraph, verbose=False, logger=None):
+    """Creates and runs pools of jobs based on the passed jobgraph.
+    
+    - jobgraph - list of jobs, which may have dependencies.
+    - verbose - flag for multiprocessing verbosity
+    - logger - a logger module logger (optional)
+
+    The strategy here is to loop over each job in the list of jobs (jobgraph),
+    and create/populate a series of Sets of commands, to be run in
+    reverse order with multiprocessing_run as asynchronous pools.
+    """
+    cmdsets = []
+    for job in jobgraph:
+        cmdsets = populate_cmdsets(job, cmdsets, depth=1)
+    
+    # Put command sets in reverse order, and submit to multiprocessing_run
+    cmdsets.reverse()
+    cumretval = 0
+    for cmdset in cmdsets:
+        if logger:  # Try to be informative, if the logger module is being used
+            logger.info("Command pool now running:")
+            for cmd in cmdset:
+                logger.info(cmd)
+        cumretval += multiprocessing_run(cmdset, verbose)
+        if logger:  # Try to be informative, if the logger module is being used
+            logger.info("Command pool done.")
+    return cumretval
+
+def populate_cmdsets(job, cmdsets, depth):
+    """Creates a list of sets containing jobs at different depths of the
+    dependency tree.
+
+    This is a recursive function (is there something quicker in the itertools
+    module?) that descends each 'root' job in turn, populating each
+    """
+    if len(cmdsets) < depth:
+        cmdsets.append(set())
+    cmdsets[depth-1].add(job.command)
+    if len(job.dependencies) == 0:
+        return cmdsets
+    for j in job.dependencies:
+        d = depth + 1
+        cmdsets = populate_cmdsets(j, cmdsets, d)
+    return cmdsets
+
+
 # Run a set of command lines using multiprocessing
 def multiprocessing_run(cmdlines, verbose=False):
     """Distributes passed command-line jobs using multiprocessing.

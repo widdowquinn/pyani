@@ -163,7 +163,7 @@ import traceback
 from argparse import ArgumentParser
 
 from pyani import anib, anim, tetra, pyani_config, pyani_files, pyani_graphics
-from pyani.run_multiprocessing import multiprocessing_run
+from pyani.run_multiprocessing import multiprocessing_run, run_dependency_graph
 from pyani.pyani_config import params_mpl, params_r
 
 
@@ -447,6 +447,27 @@ def unified_anib(infiles, org_lengths):
             blastdb_exe = args.makeblastdb_exe
             blastn_exe = args.blastn_exe
 
+        # Run BLAST database-building and executables from a jobgraph
+        logger.info("Creating job dependency graph")
+        jobgraph = anib.make_job_graph(infiles, fragfiles, args.outdirname,
+                                       blastdb_exe, blastn_exe,
+                                       args.method)
+        if args.scheduler == 'multiprocessing':
+            logger.info("Running jobs with multiprocessing")
+            logger.info("Running job dependency graph")
+            cumval = run_dependency_graph(jobgraph, verbose=args.verbose,
+                                          logger=logger)
+            if 0 < cumval:
+                logger.warning("At least one BLAST run failed. " +
+                               "%s may fail." % args.method)
+            else:
+                logger.info("All multiprocessing jobs complete.")
+        else:
+            logger.info("Running jobs with SGE")
+            raise NotImplementedError
+        sys.exit(0)
+
+        # TO DEPRECATE
         # Build BLASTN databases
         logger.info("Constructing %s BLAST databases" % args.method)
         cmdlist = anib.generate_blastdb_commands(infiles, args.outdirname,
@@ -482,6 +503,7 @@ def unified_anib(infiles, org_lengths):
         else:
             logger.info("Running jobs with SGE")
             raise NotImplementedError
+        # END OF DEPRECATION
     else:
         # Import fragment lengths from JSON
         if args.method == "ANIblastall":

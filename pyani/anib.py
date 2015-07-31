@@ -60,6 +60,7 @@ import sys
 
 import pyani_config
 import pyani_files
+import pyani_jobs
 
 from Bio import SeqIO
 
@@ -129,6 +130,60 @@ def get_fragment_lengths(fastafile):
     return fraglengths
 
 
+# Make a dependency graph of BLAST commands
+def make_job_graph(infiles, fragfiles, outdir,
+                   blastdb_exe, blastn_exe, mode):
+    """Return a job dependency graph, based on the passed lists of commands
+    to generate BLAST databases, and commands to run BLAST comparisons.
+
+    - infiles - a list of paths to input FASTA files
+    - fragfiles - a list of paths to fragmented input FASTA files
+    - outdir - path to output directory
+    - blastdb_exe - path to the database formatting executable
+    - blastn_exe - path to BLASTN executable
+    - mode - which BLAST mode are we running in: ANIb or ANIblastall
+    """
+    joblist = []   # Holds list of job dependency graphs
+    dbjobdict = {} # Dict of database construction jobs, keyed by filename
+
+    if mode == "ANIb":  # database format executable depends on mode
+        construct_db_cmdline = construct_makeblastdb_cmd
+    else:
+        construct_db_cmdline = construct_formatdb_cmd
+        
+    if mode == "ANIb":  # BLAST executable depends on mode
+        construct_blast_cmdline = construct_blastn_cmdline
+    else:
+        construct_blast_cmdline = construct_blastall_cmdline
+
+    # Create dictionary of database building jobs, keyed by db name
+    for idx, fname in enumerate(infiles):
+        dbcmd, dbname = construct_db_cmdline(fname, outdir, blastdb_exe)
+        job = pyani_jobs.Job("dbcmd_%06d" % idx, dbcmd)
+        dbjobdict[dbname] = job
+
+    # Create list of BLAST executable jobs, with dependencies
+    for idx, fname1 in enumerate(fragfiles[:-1]):
+        dbname1 = fname1.replace('-fragments', '')
+        for fname2 in fragfiles[idx+1:]:
+            dbname2 = fname2.replace('-fragments', '')
+            execmd1 = construct_blast_cmdline(fname1, dbname2,
+                                              outdir, blastn_exe)
+            execmd2 = construct_blast_cmdline(fname2, dbname1,
+                                              outdir, blastn_exe)
+            job1 = pyani_jobs.Job("execmd_%06d_a" % idx, execmd1)
+            job2 = pyani_jobs.Job("execmd_%06d_b" % idx, execmd2)
+            job1.add_dependency(dbjobdict[dbname2])
+            job2.add_dependency(dbjobdict[dbname1])
+            joblist.extend([job1, job2])
+
+    # Return the dependency graph. This is the joblist. All items in the
+    # list are BLAST executable jobs that must be run *after* the
+    # corresponding database creation. How those jobs are scheduled depends
+    # on the scheduler (see run_multiprocessing.py, run_sge.py)
+    return joblist
+
+
 # Generate list of makeblastdb command lines from passed filenames
 def generate_blastdb_commands(filenames, outdir,
                               blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT,
@@ -158,11 +213,11 @@ def construct_makeblastdb_cmd(filename, outdir,
     """
     title = os.path.splitext(os.path.split(filename)[-1])[0]
     outfilename = os.path.join(outdir, os.path.split(filename)[-1])
-    return "{0} -dbtype nucl -in {1} -title {2} -out {3}".format(blastdb_exe,
-                                                                 filename,
-                                                                 title,
-                                                                 outfilename)
-
+    return ("{0} -dbtype nucl -in {1} -title {2} -out {3}".format(blastdb_exe,
+                                                                  filename,
+                                                                  title,
+                                                                  outfilename),
+            outfilename)
 
 # Generate single makeblastdb command line
 def construct_formatdb_cmd(filename, outdir,
@@ -175,7 +230,8 @@ def construct_formatdb_cmd(filename, outdir,
     title = os.path.splitext(os.path.split(filename)[-1])[0]
     newfilename = os.path.join(outdir, os.path.split(filename)[-1])
     shutil.copy(filename, newfilename)
-    return "{0} -p F -i {1} -t {2}".format(blastdb_exe, newfilename, title)
+    return ("{0} -p F -i {1} -t {2}".format(blastdb_exe, newfilename, title),
+            newfilename)
 
 
 # Generate list of BLASTN command lines from passed filenames
@@ -207,7 +263,6 @@ def generate_blastn_commands(filenames, outdir,
             cmdlines.append(construct_blast_cmdline(fname2, dbname1,
                                                     outdir, blastn_exe))
     return cmdlines
-
 
 # Generate single BLASTN command line
 def construct_blastn_cmdline(fname1, fname2, outdir,
