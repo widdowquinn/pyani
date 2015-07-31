@@ -8,15 +8,24 @@ OUT_BLASTALL=tests/test_ANIblastall_output
 OUT_M=tests/test_ANIm_output
 OUT_TETRA=tests/test_TETRA_output
 
-clean :
-	rm -rf $(OUT_M) $(OUT_B) $(OUT_BLASTALL) $(OUT_TETRA)
+all : clean test
 
-test :
+ANIb :
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_M) -m ANIm -g -v
+
+ANIm :
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_B) -m ANIb -g -v 
+
+ANIblastall :
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_BLASTALL) \
 	  -m ANIblastall -g -v
+
+TETRA :
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_TETRA) \
 	  -m TETRA -g -v
 
-all : clean test
+clean :
+	rm -rf $(OUT_M) $(OUT_B) $(OUT_BLASTALL) $(OUT_TETRA)
+
+test : ANIm ANIb ANIblastall TETRA
+
