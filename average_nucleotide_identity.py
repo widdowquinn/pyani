@@ -450,7 +450,7 @@ def unified_anib(infiles, org_lengths):
         # Run BLAST database-building and executables from a jobgraph
         logger.info("Creating job dependency graph")
         jobgraph = anib.make_job_graph(infiles, fragfiles, args.outdirname,
-                                       format_exe, args.blast_exe, args.method)
+                                       format_exe, blast_exe, args.method)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             logger.info("Running job dependency graph")
