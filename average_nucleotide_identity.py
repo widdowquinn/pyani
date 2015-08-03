@@ -441,17 +441,16 @@ def unified_anib(infiles, org_lengths):
 
         # Which executables are we using?
         if args.method == "ANIblastall":
-            blastdb_exe = args.formatdb_exe
-            blastn_exe = args.blastall_exe
+            format_exe = args.formatdb_exe
+            blast_exe = args.blastall_exe
         else:
-            blastdb_exe = args.makeblastdb_exe
-            blastn_exe = args.blastn_exe
+            format_exe = args.makeblastdb_exe
+            blast_exe = args.blastn_exe
 
         # Run BLAST database-building and executables from a jobgraph
         logger.info("Creating job dependency graph")
         jobgraph = anib.make_job_graph(infiles, fragfiles, args.outdirname,
-                                       blastdb_exe, blastn_exe,
-                                       args.method)
+                                       format_exe, args.blast_exe, args.method)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             logger.info("Running job dependency graph")

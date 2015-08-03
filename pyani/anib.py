@@ -132,9 +132,8 @@ def get_fragment_lengths(fastafile):
 
 # Make a dependency graph of BLAST commands
 def make_job_graph(infiles, fragfiles, outdir,
-                   blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT,
-                   blastn_exe=pyani_config.BLASTN_DEFAULT,
-                   blastall_exe=pyani_config.BLASTALL_DEFAULT,
+                   format_exe=pyani_config.MAKEBLASTDB_DEFAULT,
+                   blast_exe=pyani_config.BLASTN_DEFAULT,
                    mode="ANIb"):
     """Return a job dependency graph, based on the passed input sequence files.
 
@@ -144,6 +143,9 @@ def make_job_graph(infiles, fragfiles, outdir,
     - blastdb_exe - path to the database formatting executable
     - blastn_exe - path to BLASTN executable
     - mode - which BLAST mode are we running in: ANIb or ANIblastall
+
+    By default, will run ANIb - it *is* possible to make a mess of passing the
+    wrong executable for the mode you're using.
     """
     joblist = []   # Holds list of job dependency graphs
     dbjobdict = {} # Dict of database construction jobs, keyed by filename
@@ -151,15 +153,13 @@ def make_job_graph(infiles, fragfiles, outdir,
     if mode == "ANIb":  # BLAST/formatting executable depends on mode
         construct_db_cmdline = construct_makeblastdb_cmd
         construct_blast_cmdline = construct_blastn_cmdline
-        blastcmd = blastn_exe
     else:
         construct_db_cmdline = construct_formatdb_cmd
         construct_blast_cmdline = construct_blastall_cmdline
-        blastcmd = blastall_exe
 
     # Create dictionary of database building jobs, keyed by db name
     for idx, fname in enumerate(infiles):
-        dbcmd, dbname = construct_db_cmdline(fname, outdir, blastdb_exe)
+        dbcmd, dbname = construct_db_cmdline(fname, outdir, format_exe)
         job = pyani_jobs.Job("dbcmd_%06d" % idx, dbcmd)
         dbjobdict[dbname] = job
 
@@ -169,9 +169,9 @@ def make_job_graph(infiles, fragfiles, outdir,
         for fname2 in fragfiles[idx+1:]:
             dbname2 = fname2.replace('-fragments', '')
             execmd1 = construct_blast_cmdline(fname1, dbname2,
-                                              outdir, blastcmd)
+                                              outdir, blast_exe)
             execmd2 = construct_blast_cmdline(fname2, dbname1,
-                                              outdir, blastcmd)
+                                              outdir, blast_exe)
             job1 = pyani_jobs.Job("execmd_%06d_a" % idx, execmd1)
             job2 = pyani_jobs.Job("execmd_%06d_b" % idx, execmd2)
             job1.add_dependency(dbjobdict[dbname2])
@@ -237,7 +237,7 @@ def construct_formatdb_cmd(filename, outdir,
 
 # Generate list of BLASTN command lines from passed filenames
 def generate_blastn_commands(filenames, outdir,
-                             blastn_exe=pyani_config.BLASTN_DEFAULT,
+                             blast_exe=pyani_config.BLASTN_DEFAULT,
                              mode="ANIb"):
     """Return a list of blastn command-lines for ANIm
 
@@ -260,9 +260,9 @@ def generate_blastn_commands(filenames, outdir,
         for fname2 in filenames[idx+1:]:
             dbname2 = fname2.replace('-fragments', '')
             cmdlines.append(construct_blast_cmdline(fname1, dbname2,
-                                                    outdir, blastn_exe))
+                                                    outdir, blast_exe))
             cmdlines.append(construct_blast_cmdline(fname2, dbname1,
-                                                    outdir, blastn_exe))
+                                                    outdir, blast_exe))
     return cmdlines
 
 # Generate single BLASTN command line
