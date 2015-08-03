@@ -146,6 +146,12 @@ def make_job_graph(infiles, fragfiles, outdir,
 
     By default, will run ANIb - it *is* possible to make a mess of passing the
     wrong executable for the mode you're using.
+
+    All items in the returned graph list are BLAST executable jobs that must
+    be run *after* the corresponding database creation. The Job objects
+    corresponding to the database creation are contained as dependencies.
+    How those jobs are scheduled depends on the scheduler (see
+    run_multiprocessing.py, run_sge.py)
     """
     joblist = []   # Holds list of job dependency graphs
     dbjobdict = {} # Dict of database construction jobs, keyed by filename
@@ -178,10 +184,7 @@ def make_job_graph(infiles, fragfiles, outdir,
             job2.add_dependency(dbjobdict[dbname1])
             joblist.extend([job1, job2])
 
-    # Return the dependency graph. This is the joblist. All items in the
-    # list are BLAST executable jobs that must be run *after* the
-    # corresponding database creation. How those jobs are scheduled depends
-    # on the scheduler (see run_multiprocessing.py, run_sge.py)
+    # Return the dependency graph. This is the joblist.
     return joblist
 
 

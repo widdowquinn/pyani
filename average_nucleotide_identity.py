@@ -319,13 +319,13 @@ def calculate_anim(infiles, org_lengths):
     logger.info("Generating NUCmer command-lines")
     # Schedule NUCmer runs
     if not args.skip_nucmer:
-        cmdlist = anim.generate_nucmer_commands(infiles, args.outdirname,
-                                                nucmer_exe=args.nucmer_exe,
-                                                maxmatch=args.maxmatch)
-        logger.info("NUCmer commands:\n" + os.linesep.join(cmdlist))
+        joblist = anim.generate_nucmer_jobs(infiles, args.outdirname,
+                                            nucmer_exe=args.nucmer_exe,
+                                            maxmatch=args.maxmatch)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
-            cumval = multiprocessing_run(cmdlist, verbose=args.verbose)
+            cumval = run_dependency_graph(joblist, verbose=args.verbose,
+                                          logger=logger)
             logger.info("Cumulative return value: %d" % cumval)
             if 0 < cumval:
                 logger.warning("At least one NUCmer comparison failed. " +
