@@ -3,6 +3,8 @@
 
 # Emacs edit files
 *~
+*#
+.#
 
 # Compiled Python modules
 *.pyc
