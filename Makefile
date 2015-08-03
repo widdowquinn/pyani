@@ -12,17 +12,19 @@ LABELS=$(DATA)/labels.tab
 
 all : clean test
 
-ANIb :
-	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_B) \
-	  -m ANIb --classes $(CLASSES) --labels $(LABELS) -g -v
-
 ANIm :
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_M) \
 	  -m ANIm --classes $(CLASSES) --labels $(LABELS) -g -v
 
+ANIb :
+	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_B) \
+	  -m ANIb --classes $(CLASSES) --labels $(LABELS) -g -v
+
 ANIblastall :
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_BLASTALL) \
 	  -m ANIblastall --classes $(CLASSES) --labels $(LABELS) -g -v
+
+BLAST : ANIb ANIblastall
 
 TETRA :
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_TETRA) \
