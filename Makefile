@@ -12,17 +12,34 @@ LABELS=$(DATA)/labels.tab
 
 all : clean test
 
+sge : clean test_sge
+
 ANIm :
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_M) \
 	  -m ANIm --classes $(CLASSES) --labels $(LABELS) -g -v
+
+ANIm_sge :
+	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_M) \
+	  -m ANIm --classes $(CLASSES) --labels $(LABELS) -g -v \
+	--scheduler SGE
 
 ANIb :
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_B) \
 	  -m ANIb --classes $(CLASSES) --labels $(LABELS) -g -v
 
+ANIb_sge :
+	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_B) \
+	  -m ANIb --classes $(CLASSES) --labels $(LABELS) -g -v \
+	--scheduler SGE
+
 ANIblastall :
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_BLASTALL) \
 	  -m ANIblastall --classes $(CLASSES) --labels $(LABELS) -g -v
+
+ANIblastall_sge :
+	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_BLASTALL) \
+	  -m ANIblastall --classes $(CLASSES) --labels $(LABELS) -g -v \
+	--scheduler SGE
 
 BLAST : ANIb ANIblastall
 
@@ -35,3 +52,4 @@ clean :
 
 test : ANIm ANIb ANIblastall TETRA
 
+test_sge : ANIm_sge ANIb_sge ANIblastall_sge

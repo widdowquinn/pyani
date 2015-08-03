@@ -163,7 +163,8 @@ import traceback
 from argparse import ArgumentParser
 
 from pyani import anib, anim, tetra, pyani_config, pyani_files, pyani_graphics
-from pyani.run_multiprocessing import multiprocessing_run, run_dependency_graph
+from pyani import run_multiprocessing as run_mp
+from pyani import run_sge
 from pyani.pyani_config import params_mpl, params_r
 
 
@@ -324,8 +325,8 @@ def calculate_anim(infiles, org_lengths):
                                             maxmatch=args.maxmatch)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
-            cumval = run_dependency_graph(joblist, verbose=args.verbose,
-                                          logger=logger)
+            cumval = run_mp.run_dependency_graph(joblist, verbose=args.verbose,
+                                                 logger=logger)
             logger.info("Cumulative return value: %d" % cumval)
             if 0 < cumval:
                 logger.warning("At least one NUCmer comparison failed. " +
@@ -334,6 +335,8 @@ def calculate_anim(infiles, org_lengths):
                 logger.info("All multiprocessing jobs complete.")
         else:
             logger.info("Running jobs with SGE")
+            run_sge.run_dependency_graph(joblist, verbose=args.verbose,
+                                         logger=logger)
             raise NotImplementedError
     else:
         logger.warning("Skipping NUCmer run (as instructed)!")
@@ -454,14 +457,16 @@ def unified_anib(infiles, org_lengths):
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             logger.info("Running job dependency graph")
-            cumval = run_dependency_graph(jobgraph, verbose=args.verbose,
-                                          logger=logger)
+            cumval = run_mp.run_dependency_graph(jobgraph, verbose=args.verbose,
+                                                 logger=logger)
             if 0 < cumval:
                 logger.warning("At least one BLAST run failed. " +
                                "%s may fail." % args.method)
             else:
                 logger.info("All multiprocessing jobs complete.")
         else:
+            run_sge.run_dependency_graph(jobgraph, verbose=args.verbose,
+                                         logger=logger)
             logger.info("Running jobs with SGE")
             raise NotImplementedError
     else:
