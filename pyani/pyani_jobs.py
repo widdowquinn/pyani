@@ -29,6 +29,9 @@ This code is essentially a frozen and cut-down version of pysge
 (https://github.com/widdowquinn/pysge)
 """
 
+import os
+import time
+
 ###
 # CLASSES
 
@@ -53,7 +56,7 @@ class Job:
     self.scriptPath = None           # Will hold path to the script file
     self.dependencies = []           # List of jobs that must be submitted
                                      # before this job may be submitted
-    self.submitted = True            # Flag indicating whether the job has
+    self.submitted = False           # Flag indicating whether the job has
                                      # already been submitted
 
   def add_dependency(self, job):
@@ -71,7 +74,7 @@ class Job:
     """
     self.dependencies.remove(job)
 
-  def wait(self, interval=5):
+  def wait(self, interval=0.5):
     """Wait for an interval
     """
     finished = False

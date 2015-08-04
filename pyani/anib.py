@@ -170,16 +170,18 @@ def make_job_graph(infiles, fragfiles, outdir,
         dbjobdict[dbname] = job
 
     # Create list of BLAST executable jobs, with dependencies
+    jobnum = 0
     for idx, fname1 in enumerate(fragfiles[:-1]):
         dbname1 = fname1.replace('-fragments', '')
         for fname2 in fragfiles[idx+1:]:
+            jobnum += 1
             dbname2 = fname2.replace('-fragments', '')
             execmd1 = construct_blast_cmdline(fname1, dbname2,
                                               outdir, blast_exe)
             execmd2 = construct_blast_cmdline(fname2, dbname1,
                                               outdir, blast_exe)
-            job1 = pyani_jobs.Job("execmd_%06d_a" % idx, execmd1)
-            job2 = pyani_jobs.Job("execmd_%06d_b" % idx, execmd2)
+            job1 = pyani_jobs.Job("execmd_%06d_a" % jobnum, execmd1)
+            job2 = pyani_jobs.Job("execmd_%06d_b" % jobnum, execmd2)
             job1.add_dependency(dbjobdict[dbname2])
             job2.add_dependency(dbjobdict[dbname1])
             joblist.extend([job1, job2])

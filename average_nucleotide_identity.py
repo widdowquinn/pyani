@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 #
 # average_nucleotide_identity.py
 #
@@ -341,7 +341,6 @@ def calculate_anim(infiles, org_lengths):
             logger.info("Running jobs with SGE")
             run_sge.run_dependency_graph(joblist, verbose=args.verbose,
                                          logger=logger)
-            raise NotImplementedError
     else:
         logger.warning("Skipping NUCmer run (as instructed)!")
 
@@ -472,7 +471,6 @@ def unified_anib(infiles, org_lengths):
             run_sge.run_dependency_graph(jobgraph, verbose=args.verbose,
                                          logger=logger)
             logger.info("Running jobs with SGE")
-            raise NotImplementedError
     else:
         # Import fragment lengths from JSON
         if args.method == "ANIblastall":

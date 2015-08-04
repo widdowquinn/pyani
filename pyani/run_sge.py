@@ -11,6 +11,8 @@ For parallelisation on multi-node system, we use some custom code to submit
 jobs.
 """
 
+import pyani_config
+
 import os
 
 # Run a job dependency graph, with SGE
@@ -30,15 +32,15 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
     add the job to a new list of jobs, swapping out the Job dependency for
     the name of the Job on which it depends.
     """
-    #jobset = set()
-    #for job in jobgraph:
-    #    jobset = populate_jobset(job, jobset, depth=1)
-    #joblist = list(jobset)
+    jobset = set()
+    for job in jobgraph:
+        jobset = populate_jobset(job, jobset, depth=1)
+    joblist = list(jobset)
 
     # Try to be informative
     if logger:
         logger.info("Jobs to run with scheduler")
-        for job in jobgraph:
+        for job in joblist:
             logger.info("{0}: {1}".format(job.name, job.command))
             if len(job.dependencies):
                 for dep in job.dependencies:
@@ -46,8 +48,10 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
 
     # Send jobs to scheduler
     logger.info("Running jobs with scheduler...")
-    build_and_submit_jobs(os.curdir, jobgraph)
-            
+    build_and_submit_jobs(os.curdir, joblist)
+    logger.info("Waiting for SGE-submitted jobs to finish (polling)")
+    for job in joblist:
+        job.wait()
     
 
 def populate_jobset(job, jobset, depth):
@@ -59,7 +63,6 @@ def populate_jobset(job, jobset, depth):
         return jobset
     for j in job.dependencies:
         jobset = populate_jobset(j, jobset, depth+1)
-    job.dependencies = [j.name for j in job.dependencies]
     return jobset
         
 
@@ -144,8 +147,8 @@ def submit_safe_jobs(root_dir, jobs):
           for dep in job.dependencies:
               args += dep.name + ","
           args = args[:-1]
-      # Build the qsub SGE commandline
-      qsubcmd = ("%s %s %s" % \
+      # Build the qsub SGE commandline (passing local environment)
+      qsubcmd = ("%s -V %s %s" % \
                  (pyani_config.QSUB_DEFAULT, args, job.scriptPath)) 
       #print qsubcmd                   # Show the command to the user
       os.system(qsubcmd)               # Run the command

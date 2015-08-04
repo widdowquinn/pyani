@@ -20,3 +20,9 @@ distribute*
 tests/test_*_out/
 tests/test_*_output/
 tests/test_concordance_*/
+
+# SGE output
+stderr/
+stdout/
+jobs/
+output/
