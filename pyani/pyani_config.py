@@ -14,6 +14,7 @@ BLASTN_DEFAULT = "blastn"
 MAKEBLASTDB_DEFAULT = "makeblastdb"
 BLASTALL_DEFAULT = "blastall"
 FORMATDB_DEFAULT = "formatdb"
+QSUB_DEFAULT = "qsub"
 
 # Stems for output files
 ANIM_FILESTEMS = ("ANIm_alignment_lengths", "ANIm_percentage_identity",

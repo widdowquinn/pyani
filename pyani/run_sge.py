@@ -30,19 +30,19 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
     add the job to a new list of jobs, swapping out the Job dependency for
     the name of the Job on which it depends.
     """
-    jobset = set()
-    for job in jobgraph:
-        jobset = populate_jobset(job, jobset, depth=1)
-    joblist = list(jobset)
+    #jobset = set()
+    #for job in jobgraph:
+    #    jobset = populate_jobset(job, jobset, depth=1)
+    #joblist = list(jobset)
 
     # Try to be informative
     if logger:
         logger.info("Jobs to run with scheduler")
-        for job in joblist:
+        for job in jobgraph:
             logger.info("{0}: {1}".format(job.name, job.command))
             if len(job.dependencies):
                 for dep in job.dependencies:
-                    logger.info("\t[^ depends on: %s]" % dep)
+                    logger.info("\t[^ depends on: %s]" % dep.name)
 
     # Send jobs to scheduler
     logger.info("Running jobs with scheduler...")
@@ -105,7 +105,7 @@ def extract_submittable_jobs(waiting):
 
   - waiting           List of Job objects
   """
-  submittable = []            # Holds jobs that are able to be submitted
+  submittable = set()            # Holds jobs that are able to be submitted
   # Loop over each job, and check all the subjobs in that job's dependency
   # list.  If there are any, and all of these have been submitted, then
   # append the job to the list of submittable jobs.
@@ -113,8 +113,8 @@ def extract_submittable_jobs(waiting):
       unsatisfied = sum([(subjob.submitted is False) for subjob in \
                          job.dependencies])
       if 0 == unsatisfied:
-          submittable.append(job)
-  return submittable
+          submittable.add(job)
+  return list(submittable)
 
 
 def submit_safe_jobs(root_dir, jobs):
@@ -145,8 +145,8 @@ def submit_safe_jobs(root_dir, jobs):
               args += dep.name + ","
           args = args[:-1]
       # Build the qsub SGE commandline
-      qsubcmd = ("/usr/nfs/sge_root/bin/lx24-x86/qsub %s %s" % \
-                 (args, job.scriptPath)) 
+      qsubcmd = ("%s %s %s" % \
+                 (pyani_config.QSUB_DEFAULT, args, job.scriptPath)) 
       #print qsubcmd                   # Show the command to the user
       os.system(qsubcmd)               # Run the command
       job.submitted = True             # Set the job's submitted flag to True
@@ -165,7 +165,7 @@ def submit_jobs(root_dir, jobs):
       # extract submittable jobs
       submittable = extract_submittable_jobs(waiting)
       # run those jobs
-      submit_safe_jobs(directory, submittable)
+      submit_safe_jobs(root_dir, submittable)
       # remove those from the waiting list
       map(waiting.remove, submittable)
 
