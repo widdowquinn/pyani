@@ -11,12 +11,23 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib import cm
 from matplotlib.colors import LinearSegmentedColormap
+# Force matplotlib NOT to use an Xwindows backend on *nix, so that
+# _tkinter.TclError is avoided when there is no $DISPLAY env: this can occur
+# when running the package/script via ssh
+# See http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
+matplotlib.use('Agg')
+
 import numpy as np
+
 import scipy.cluster.hierarchy as sch
 import scipy.spatial.distance as distance
+
 import rpy2.robjects as robjects
+
 import pyani_config
+
 import pandas as pd
+
 import warnings
 
 from math import floor, log10
