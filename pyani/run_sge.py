@@ -46,7 +46,7 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
 
     # Send jobs to scheduler
     logger.info("Running jobs with scheduler...")
-    build_and_submit_jobs(os.curdir, joblist)
+    build_and_submit_jobs(os.curdir, jobgraph)
             
     
 
