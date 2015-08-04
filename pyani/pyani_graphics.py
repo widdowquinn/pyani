@@ -7,15 +7,19 @@
 
 """Code to implement graphics output for ANI analyses."""
 
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from matplotlib import cm
-from matplotlib.colors import LinearSegmentedColormap
 # Force matplotlib NOT to use an Xwindows backend on *nix, so that
 # _tkinter.TclError is avoided when there is no $DISPLAY env: this can occur
 # when running the package/script via ssh
 # See http://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined
+# This needs to be done before importing pyplot
+import matplotlib
 matplotlib.use('Agg')
+
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from matplotlib import cm
+from matplotlib.colors import LinearSegmentedColormap
+
 
 import numpy as np
 
