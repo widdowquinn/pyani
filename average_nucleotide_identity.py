@@ -242,6 +242,10 @@ def parse_cmdline(args):
                         action="store",
                         default=pyani_config.FORMATDB_DEFAULT,
                         help="Path to BLAST formatdb executable")
+    parser.add_argument("--write_excel", dest="write_excel",
+                        action="store_true",
+                        default=False,
+                        help="Write Excel format output tables")
     return parser.parse_args()
 
 
@@ -522,15 +526,16 @@ def write(results, filestems):
 
     - results - tuple of dataframes from analysis
 
-    Each dataframe is written to an Excel-format file, and plain text
-    tab-separated file in the output directory. The order of result output
-    must be reflected in the order of filestems.
+    Each dataframe is written to an Excel-format file (if args.write_excel is
+    True), and plain text tab-separated file in the output directory. The
+    order of result output must be reflected in the order of filestems.
     """
     logger.info("Writing %s results to %s" % (args.method, args.outdirname))
     for df, filestem in zip(results, filestems):
         logger.info("\t%s" % filestem)
-        df.to_excel(os.path.join(args.outdirname, filestem) + '.xlsx',
-                    index=True)
+        if args.write_excel:
+            df.to_excel(os.path.join(args.outdirname, filestem) + '.xlsx',
+                        index=True)
         df.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
                   index=True, sep="\t")
 
