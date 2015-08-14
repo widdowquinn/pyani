@@ -1,9 +1,6 @@
 # Mac-related dreck
 .DS_Store
 
-# iPython auxiliaries
-.ipynb_checkpoints/
-
 # Emacs edit files
 *~
 *#
