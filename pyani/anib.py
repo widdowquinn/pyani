@@ -87,6 +87,7 @@ def fragment_FASTA_files(infiles, outdirname, fragsize):
         outseqs = []
         idx, count = 0, 0
         for seq in SeqIO.parse(fname, 'fasta'):
+            idx = 0
             while idx < len(seq):
                 count += 1
                 newseq = seq[idx:idx+fragsize]
