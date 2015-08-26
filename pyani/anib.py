@@ -85,7 +85,7 @@ def fragment_FASTA_files(infiles, outdirname, fragsize):
         outstem, outext = os.path.splitext(os.path.split(fname)[-1])
         outfname = os.path.join(outdirname, outstem) + '-fragments' + outext
         outseqs = []
-        idx, count = 0, 0
+        count = 0
         for seq in SeqIO.parse(fname, 'fasta'):
             idx = 0
             while idx < len(seq):
