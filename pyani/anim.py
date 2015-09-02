@@ -24,6 +24,7 @@ percentage (of whole genome) for each pairwise comparison.
 import pandas as pd
 
 import os
+import sys
 
 import pyani_config
 import pyani_files
@@ -119,7 +120,7 @@ def parse_delta(filename):
 
 
 # Parse all the .delta files in the passed directory
-def process_deltadir(delta_dir, org_lengths):
+def process_deltadir(delta_dir, org_lengths, logger=None):
     """Returns a tuple of ANIm results for .deltas in passed directory.
 
     - delta_dir - path to the directory containing .delta files
@@ -153,10 +154,13 @@ def process_deltadir(delta_dir, org_lengths):
         alignment_lengths[org][org] = length
     # Process .delta files assuming that the filename format holds:
     # org1_vs_org2.delta
+    zero_error = False  # flag to register a divide-by-zero error
     for deltafile in deltafiles:
         qname, sname = \
             os.path.splitext(os.path.split(deltafile)[-1])[0].split('_vs_')
         tot_length, tot_sim_error = parse_delta(deltafile)
+        if tot_length == 0 and logger is not None:
+            logger.warning("Total alignment length reported in %s is zero!" % deltafile)
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
         # Calculate percentage ID of aligned length. This may fail if
@@ -164,7 +168,17 @@ def process_deltadir(delta_dir, org_lengths):
         # The ZeroDivisionError that would arise should be handled
         # Common causes are that a NUCmer run failed, or that a very
         # distant sequence was included in the analysis.
-        perc_id = 1 - float(tot_sim_error) / tot_length
+        try:
+            perc_id = 1 - float(tot_sim_error) / tot_length
+        except ZeroDivisionError:
+            logger.error("One or more NUCmer output files has a problem.")
+            logger.error("This is possibly due to a NUCmer comparison " +
+                         "being too distant for use. If so, please consider " +
+                         "using the --maxmatch option.")
+            logger.error("Alternatively, this may be due to NUCmer run failure: " +
+                         "analysis may continue, but please investigate.")
+            perc_id = 0  # set arbitrary value of zero identity
+            zero_error = True
         # Populate dataframes: when assigning data, pandas dataframes
         # take column, index order, i.e. df['column']['row'] - this only
         # matters for asymmetrical data
@@ -177,4 +191,4 @@ def process_deltadir(delta_dir, org_lengths):
         alignment_coverage.loc[sname, qname] = query_cover
         alignment_coverage.loc[qname, sname] = sbjct_cover
     return(alignment_lengths, percentage_identity, alignment_coverage,
-           similarity_errors)
+           similarity_errors, zero_error)
