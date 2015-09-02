@@ -346,20 +346,21 @@ def calculate_anim(infiles, org_lengths):
 
     # Process resulting .delta files
     logger.info("Processing NUCmer .delta files.")
-    try:
-        data = anim.process_deltadir(args.outdirname, org_lengths)
-    except ZeroDivisionError:
-        logger.error("One or more NUCmer output files has a problem.")
-        if not args.skip_nucmer:
+    data = anim.process_deltadir(args.outdirname, org_lengths, logger=logger)
+    if data[-1]:  # zero percentage identity error
+        if not args.skip_nucmer and args.scheduler == 'multiprocessing':
             if 0 < cumval:
-                logger.error("This is possibly due to NUCmer run failure, " +
+                logger.error("This has possibly been a NUCmer run failure, " +
                              "please investigate")
+                logger.error(last_exception())
+                sys.exit(1)
             else:
                 logger.error("This is possibly due to a NUCmer comparison " +
                              "being too distant for use. Please consider " +
                              "using the --maxmatch option.")
-        logger.error(last_exception())
-    return data
+                logger.error("This is alternatively due to NUCmer run failure, " +
+                             "analysis will continue, but please investigate.")
+    return tuple(data[:-1])
 
 
 # Calculate TETRA for input
