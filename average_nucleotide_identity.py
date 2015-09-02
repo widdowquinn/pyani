@@ -350,7 +350,7 @@ def calculate_anim(infiles, org_lengths):
         data = anim.process_deltadir(args.outdirname, org_lengths)
     except ZeroDivisionError:
         logger.error("One or more NUCmer output files has a problem.")
-        if not args.skip_nucmer:
+        if not args.skip_nucmer and args.scheduler == 'multiprocessing':
             if 0 < cumval:
                 logger.error("This is possibly due to NUCmer run failure, " +
                              "please investigate")
