@@ -37,6 +37,8 @@ MPL_CBAR = 'Spectral'
 # Parameters for analyses
 FRAGSIZE = 1020
 
+# SGE/OGE scheduler parameters
+SGE_WAIT = 0.01
 
 # Graphics parameters for each output file. Note that this should be
 # in sync with the output file stems above

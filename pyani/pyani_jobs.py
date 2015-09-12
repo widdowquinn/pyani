@@ -32,6 +32,8 @@ This code is essentially a frozen and cut-down version of pysge
 import os
 import time
 
+from pyani_config import SGE_WAIT
+
 ###
 # CLASSES
 
@@ -74,14 +76,13 @@ class Job:
     """
     self.dependencies.remove(job)
 
-  def wait(self, interval=0.5):
-    """Wait for an interval
-    """
+  def wait(self, interval=SGE_WAIT):
+    """Wait until the job finishes."""
     finished = False
     while not finished:
         time.sleep(interval)
-        interval = min( 2 * interval, 60 )
-        finished = os.system( "qstat -j %s > /dev/null" % (self.name) )
+        interval = min(2 * interval, 60)
+        finished = os.system("qstat -j %s > /dev/null" % (self.name))
 
 
 
