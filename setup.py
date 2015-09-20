@@ -40,7 +40,7 @@ setup(
     platforms="Posix; MacOS X",
     url="https://github.com/widdowquinn/pyani",  # project home page
     download_url="https://github.com/widdowquinn/pyani/releases",
-    scripts=[],
+    scripts=['average_nucleotide_identity.py'],
     packages=['pyani'],
     install_requires=[],
     classifiers=[
