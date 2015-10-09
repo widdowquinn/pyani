@@ -10,6 +10,12 @@ This set of sequences should be a 'failing' data set, where at least one pair of
 * `NC_015216.fna`: Methanobacterium sp. AL-21 chromosome
 * `NC_023044.fna`: Methanobacterium sp. MB1 complete sequence
 
+## Command-line
+
+```
+./average_nucleotide_identity.py -i tests/test_failing_data/ -o ./test_out -m ANIm -g --gformat png
+```
+
 ## Expected error
 
 ```
