@@ -100,7 +100,8 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
         vmin = df.values.min()
     if vmax is None:
         vmax = df.values.max()
-    vdiff = vmax - vmin
+    # a vdiff of zero causes display problems in matplotlib, so we set a minval
+    vdiff = max(vmax - vmin, 0.01)
     cbticks = [vmin + e * vdiff for e in (0, 0.25, 0.5, 0.75, 1)]
     if vmax > 10:
         exponent = int(floor(log10(vmax))) - 1
@@ -205,6 +206,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                                          subplot_spec=heatmapGS[0, 0],
                                          wspace=0.0, hspace=0.0)
     scale_ax = fig.add_subplot(scale_subplot[0, 1])
+    print ax_map, scale_ax, cbticks
     cb = fig.colorbar(ax_map, scale_ax, ticks=cbticks)
     if title:
         cb.set_label(title, fontsize=6)
