@@ -25,7 +25,6 @@ import numpy as np
 
 import scipy.cluster.hierarchy as sch
 import scipy.spatial.distance as distance
-
 import rpy2.robjects as robjects
 
 import pyani_config
