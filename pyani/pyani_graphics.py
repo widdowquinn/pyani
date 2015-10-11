@@ -206,7 +206,6 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                                          subplot_spec=heatmapGS[0, 0],
                                          wspace=0.0, hspace=0.0)
     scale_ax = fig.add_subplot(scale_subplot[0, 1])
-    print ax_map, scale_ax, cbticks
     cb = fig.colorbar(ax_map, scale_ax, ticks=cbticks)
     if title:
         cb.set_label(title, fontsize=6)
