@@ -206,7 +206,7 @@ def parse_cmdline(args):
                         help="Generate heatmap of ANI")
     parser.add_argument("--gformat", dest="gformat",
                         action="store", default="pdf",
-                        help="Graphics output format [pdf|png|jpg|svg]")
+                        help="Graphics output format(s) [pdf|png|jpg|svg]")
     parser.add_argument("--gmethod", dest="gmethod",
                         action="store", default="mpl",
                         help="Graphics output method [mpl|R]")
@@ -540,7 +540,7 @@ def write(results, filestems):
 
 
 # Draw ANIb/ANIm/TETRA output
-def draw(results, filestems):
+def draw(results, filestems, gformat):
     """Draw ANIb/ANIm/TETRA results
 
     - results - tuple of dataframes from ANIb analysis
@@ -548,7 +548,7 @@ def draw(results, filestems):
     # Draw heatmaps
     for df, filestem in zip(results, filestems):
         fullstem = os.path.join(args.outdirname, filestem)
-        outfilename = fullstem + '.%s' % args.gformat
+        outfilename = fullstem + '.%s' % gformat
         infilename = fullstem + '.tab'
         logger.info("Writing heatmap to %s" % outfilename)
         if args.gmethod == "mpl":
@@ -661,9 +661,11 @@ if __name__ == '__main__':
     # Do we want graphical output?
     if args.graphics:
         logger.info("Rendering output graphics")
-        logger.info("Graphics format: %s" % args.gformat)
-        logger.info("Graphics method: %s" % args.gmethod)
-        draw(results, methods[args.method][1])
+        logger.info("Formats requested: %s" % args.gformat)
+        for gfmt in args.gformat.split(','):
+            logger.info("Graphics format: %s" % gfmt)
+            logger.info("Graphics method: %s" % args.gmethod)
+            draw(results, methods[args.method][1], gfmt)
 
     # Report that we've finished
     logger.info("Done.")
