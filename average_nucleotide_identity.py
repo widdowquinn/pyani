@@ -205,7 +205,7 @@ def parse_cmdline(args):
                         action="store_true", default=False,
                         help="Generate heatmap of ANI")
     parser.add_argument("--gformat", dest="gformat",
-                        action="store", default="pdf",
+                        action="store", default="pdf,png,eps",
                         help="Graphics output format(s) [pdf|png|jpg|svg]")
     parser.add_argument("--gmethod", dest="gmethod",
                         action="store", default="mpl",
