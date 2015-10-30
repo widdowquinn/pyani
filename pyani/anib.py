@@ -411,7 +411,7 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     filtered = data[(data['ani_coverage'] > 0.7) & (data['ani_pid'] > 0.3)]
     # Dedupe query hits, so we only take the best hit
     filtered['index'] = filtered.index
-    filtered.drop_duplicates(cols='index', inplace=True)
+    filtered.drop_duplicates(subset='index', inplace=True)
     del filtered['index']
     # The ANI value is then the mean percentage identity.
     # We report total alignment length and the number of similarity errors
