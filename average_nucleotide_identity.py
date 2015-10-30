@@ -618,6 +618,16 @@ if __name__ == '__main__':
     make_outdir()
     logger.info("Output directory: %s" % args.outdirname)
 
+    # Check for the presence of space characters in any of the input filenames
+    # or output directory. If we have any, abort here and now.
+    filenames = [args.outdirname] + os.listdir(args.indirname)
+    for fname in filenames:
+        if ' ' in  os.path.abspath(fname):
+            logger.error("File or directory '%s' contains whitespace" % fname)
+            logger.error("This will cause issues with MUMmer and BLAST")
+            logger.error("(exiting)")
+            sys.exit(1)
+
     # Have we got a valid method choice?
     # Dictionary below defines analysis function, and output presentation
     # functions/settings, dependent on selected method.
