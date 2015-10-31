@@ -13,7 +13,7 @@ The easiest way to install `pyani` is to use `pip`:
 pip install pyani
 ```
 
-From version 0.1.3.2 onwards, this should also install all the required dependencies. Prior to this version (i.e. 0.1.3.1 and earlier), you can acquire these dependencies with `pip -r`, and pointing at `requirements.txt` from this repository:
+From version 0.1.3.2 onwards, this should also install all the required Python package dependencies. Prior to this version (i.e. 0.1.3.1 and earlier), you can acquire these dependencies with `pip -r`, and pointing at `requirements.txt` from this repository:
 
 ```
 pip install -r requirements.txt
@@ -70,7 +70,7 @@ The graphical output below, supporting assignment of `NC_002696` and `NC_011916`
 
 ## DEPENDENCIES
 
-Note that dependencies should automatically be installed if you are using version 0.1.3.2 or greater, and installing with `pip install pyani`.
+Note that Python package dependencies should automatically be installed if you are using version 0.1.3.2 or greater, and installing with `pip install pyani`.
 
 For earlier versions, you can satisfy dependencies by using `pip install -r requirements.txt` (using the `requirements.txt` file in this repository).
 
@@ -80,6 +80,8 @@ For earlier versions, you can satisfy dependencies by using `pip install -r requ
 * **NumPy** <http://www.numpy.org/>
 * **pandas** <http://pandas.pydata.org/>
 * **SciPy** <http://www.scipy.org/>
+
+#### Alignment tools
 
 * **BLAST+** executable in the `$PATH`, or available on the command line (required for **ANIb** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/>
 * **legacy BLAST** executable in the `$PATH` or available on the command line (required for **ANIblastall** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/>
@@ -126,11 +128,11 @@ them sensibly.
 
 Output is written to a named directory. The output files differ depending on the chosen ANI method.
 
-* **ANIm**: MUMmer/NUCmer .delta files, describing each pairwise sequence alignment. Output as tab-separated plain text and Excel format tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIm).
-* **ANIb** and **ANIblastall**: FASTA sequences describing 1020nt fragments of each input sequence; BLAST nucleotide databases - one for each set of fragments; and BLASTN output files (tab-separated tabular format plain text) - one for each pairwise comparison of input sequences. Output as tab-separated plain text and Excel format tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIb or ANIblastall).
-* **TETRA**: Tab-separated plain text and Excel format files describing the Pearson correlations between Z-score distributions for each tetranucleotide in each input sequence (TETRA).
+* **ANIm**: MUMmer/NUCmer .delta files, describing each pairwise sequence alignment. Output as tab-separated plain text format tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIm).
+* **ANIb** and **ANIblastall**: FASTA sequences describing 1020nt fragments of each input sequence; BLAST nucleotide databases - one for each set of fragments; and BLASTN output files (tab-separated tabular format plain text) - one for each pairwise comparison of input sequences. Output as tab-separated plain text tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIb or ANIblastall).
+* **TETRA**: Tab-separated plain text files describing the Pearson correlations between Z-score distributions for each tetranucleotide in each input sequence (TETRA).
 
-If graphical output is chosen, the output directory will also contain PDF files representing the similarity between sequences as a heatmap with row and column dendrograms.
+If graphical output is chosen, the output directory will also contain PDF, PNG and EPS files representing the various output measures as a heatmap with row and column dendrograms. Other output formats (e.g. SVG) can be specified with the `--gformat` argument.
 
 
 
