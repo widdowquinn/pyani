@@ -561,7 +561,7 @@ def draw(results, filestems, gformat):
                                        classes=get_labels(args.classes))
         elif args.gmethod == "R":
             rstr = pyani_graphics.heatmap_r(infilename, outfilename,
-                                            gformat=args.gformat.lower(),
+                                            gformat=gformat.lower(),
                                             title=filestem,
                                             cmap=params_r(df)[filestem][0],
                                             vmin=params_r(df)[filestem][1],
