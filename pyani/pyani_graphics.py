@@ -246,6 +246,10 @@ def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
     vdiff = vmax - vmin
     vstep = 0.001 * vdiff
 
+    # If we're asking for EPS format, we need to convert this to postscript
+    if gformat == 'eps':
+        gformat = 'setEPS(); postscript'
+
     # Read the data in to get row/column information for labels and classes,
     # and so we can guesstimate output image size
     df = pd.DataFrame.from_csv(infilename, sep="\t", header=0)

@@ -93,7 +93,7 @@ For earlier versions, you can satisfy dependencies by using `pip install -r requ
 
 and/or
 
-* **R** with shared libraries installed on the system <http://cran.r-project.org/>
+* **R** with shared libraries installed on the system <http://cran.r-project.org/>; you will also need to have installed both the `gplots` and `RColorBrewer` packages.
 * **Rpy2** <http://rpy.sourceforge.net/rpy2.html>
 
 
