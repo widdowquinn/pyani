@@ -33,24 +33,25 @@ setup(
     author="Leighton Pritchard",
     author_email="leighton.pritchard@hutton.ac.uk",
     description=''.join(["pyani provides a package and script for " +
-                         "calculation of average nucleotide identity " +
-                         "on genome scales"]),
+                         "calculation of genome-scale average nucleotide " +
+                         "identity."]),
     license="MIT",
     keywords="genome bioinformatics sequence",
     platforms="Posix; MacOS X",
-    url="https://github.com/widdowquinn/pyani",  # project home page
+    url="http://widdowquinn.github.io/pyani/",  # project home page
     download_url="https://github.com/widdowquinn/pyani/releases",
     scripts=['average_nucleotide_identity.py'],
     packages=['pyani'],
     install_requires=[],
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         ],
     )
