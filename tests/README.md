@@ -61,7 +61,7 @@ Tests whether `pyani`'s dependencies are installed.
 
 Tests correct functioning of the `run_multiprocessing` module.
 
-### `test_pasing.py`
+### `test_parsing.py`
 
 Tests correct parsing of `nucmer` `.delta` files by `anim`.
 
