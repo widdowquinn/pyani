@@ -11,7 +11,7 @@ For parallelisation on multi-node system, we use some custom code to submit
 jobs.
 """
 
-import pyani_config
+from . import pyani_config
 
 import os
 
@@ -170,7 +170,8 @@ def submit_jobs(root_dir, jobs):
       # run those jobs
       submit_safe_jobs(root_dir, submittable)
       # remove those from the waiting list
-      map(waiting.remove, submittable)
+      for job in submittable:
+          waiting.remove(job)
 
 
 def build_and_submit_jobs(root_dir, jobs):

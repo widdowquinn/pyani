@@ -32,7 +32,7 @@ This code is essentially a frozen and cut-down version of pysge
 import os
 import time
 
-from pyani_config import SGE_WAIT
+from .pyani_config import SGE_WAIT
 
 ###
 # CLASSES
