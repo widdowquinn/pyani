@@ -5,14 +5,31 @@
 
 `pyani` also installs a script: `average_nucleotide_identity.py` that enables command-line ANI analysis.
 
-## Script: <a name="average_nucleotide_identity.py">`average_nucleotide_identity.py`</a>
+## Installation
 
-The `average_nucleotide_identity.py` script - part of this module - enables ANI analysis at the command-line, and uses the `pyani` module behind the scenes.
-
-### Script Usage
+The easiest way to install `pyani` is to use `pip`:
 
 ```
-average_nucleotide_identity.py [-h] [-o OUTDIRNAME] [-i INDIRNAME] [-v]
+pip install pyani
+```
+
+From version 0.1.3.2 onwards, this should also install all the required dependencies. Prior to this version (i.e. 0.1.3.1 and earlier), you can acquire these dependencies with `pip -r`, and pointing at `requirements.txt` from this repository:
+
+```
+pip install -r requirements.txt
+```
+
+## Running `pyani`
+
+### Script: <a name="average_nucleotide_identity.py">`average_nucleotide_identity.py`</a>
+
+The `average_nucleotide_identity.py` script - installed as part of this package - enables straightforward ANI analysis at the command-line, and uses the `pyani` module behind the scenes.
+
+You can get a summary of available command-line options with `average_nucleotide_identity.py -h`
+
+```
+$ average_nucleotide_identity.py -h
+usage: average_nucleotide_identity.py [-h] [-o OUTDIRNAME] [-i INDIRNAME] [-v]
                                       [-f] [-s] [-l LOGFILE] [--skip_nucmer]
                                       [--skip_blastn] [--noclobber] [-g]
                                       [--gformat GFORMAT] [--gmethod GMETHOD]
@@ -23,43 +40,8 @@ average_nucleotide_identity.py [-h] [-o OUTDIRNAME] [-i INDIRNAME] [-v]
                                       [--makeblastdb_exe MAKEBLASTDB_EXE]
                                       [--blastall_exe BLASTALL_EXE]
                                       [--formatdb_exe FORMATDB_EXE]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -o OUTDIRNAME, --outdir OUTDIRNAME
-                        Output directory
-  -i INDIRNAME, --indir INDIRNAME
-                        Input directory name
-  -v, --verbose         Give verbose output
-  -f, --force           Force file overwriting
-  -s, --fragsize        Sequence fragment size for ANIb
-  -l LOGFILE, --logfile LOGFILE
-                        Logfile location
-  --skip_nucmer         Skip NUCmer runs, for testing (e.g. if output already
-                        present)
-  --skip_blastn         Skip BLASTN runs, for testing (e.g. if output already
-                        present)
-  --noclobber           Don't nuke existing files
-  -g, --graphics        Generate heatmap of ANI
-  --gformat GFORMAT     Graphics output format [pdf|png|jpg|svg]
-  --gmethod GMETHOD     Graphics output method [mpl|R]
-  --labels LABELS       Path to file containing sequence labels
-  --classes CLASSES     Path to file containing sequence classes
-  -m METHOD, --method METHOD
-                        ANI method [ANIm|ANIb|ANIblastall|TETRA]
-  --scheduler SCHEDULER
-                        Job scheduler [multiprocessing|SGE]
-  --maxmatch            Override MUMmer to allow all NUCmer matches
-  --nucmer_exe NUCMER_EXE
-                        Path to NUCmer executable
-  --blastn_exe BLASTN_EXE
-                        Path to BLASTN+ executable
-  --makeblastdb_exe MAKEBLASTDB_EXE
-                        Path to BLAST+ makeblastdb executable
-  --blastall_exe BLASTALL_EXE
-                        Path to BLASTALL executable
-  --formatdb_exe FORMATDB_EXE
-                        Path to BLAST formatdb executable
+                                      [--write_excel]
+[…]
 ```
 
 Example data and output can be found in the directory `test_ani_data`. The data are chromosomes of four isolates of *Caulobacter*. Basic analyses can be performed with the command lines:
@@ -88,6 +70,10 @@ The graphical output below, supporting assignment of `NC_002696` and `NC_011916`
 
 ## DEPENDENCIES
 
+Note that dependencies should automatically be installed if you are using version 0.1.3.2 or greater, and installing with `pip install pyani`.
+
+For earlier versions, you can satisfy dependencies by using `pip install -r requirements.txt` (using the `requirements.txt` file in this repository).
+
 ### For ANI analysis
 
 * **Biopython** <http://www.biopython.org>
@@ -108,28 +94,6 @@ and/or
 * **R** with shared libraries installed on the system <http://cran.r-project.org/>
 * **Rpy2** <http://rpy.sourceforge.net/rpy2.html>
 
-
-# INSTALLATION
-
-If you have downloaded v0.1.0 or greater, and the dependencies above are satisfied, then installation should be as simple as downloading the latest release and uncompressing it, or cloning the repository as below:
-
-```
-$ git clone https://github.com/widdowquinn/pyani
-```
-
-then changing to the appropriate directory:
-
-```
-$ cd pyani
-```
-
-then issuing:
-
-```
-$ python setup.py install
-```
-
-(or whatever variant you wish, e.g. for a home directory-local installation) from the top directory in the repository (with root permissions, if necessary).
 
 ## Method and Output Description
 
