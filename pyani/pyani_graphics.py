@@ -27,7 +27,7 @@ import scipy.cluster.hierarchy as sch
 import scipy.spatial.distance as distance
 import rpy2.robjects as robjects
 
-import pyani_config
+from . import pyani_config
 
 import pandas as pd
 
@@ -75,7 +75,7 @@ def clean_axis(ax):
     """Remove ticks, tick labels, and frame from axis"""
     ax.get_xaxis().set_ticks([])
     ax.get_yaxis().set_ticks([])
-    for sp in ax.spines.values():
+    for sp in list(ax.spines.values()):
         sp.set_visible(False)
 
 
@@ -258,7 +258,7 @@ def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
     rstr.append("par(cex.main=0.75)")
     if classes:  # Define colour list
         lbls, cls = [], []
-        for lbl, cla in classes.items():
+        for lbl, cla in list(classes.items()):
             lbls.append(lbl)
             cls.append(cla)
         lablist = ','.join(['"%s"' % l for l in lbls])
