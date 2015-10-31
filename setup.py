@@ -42,7 +42,11 @@ setup(
     download_url="https://github.com/widdowquinn/pyani/releases",
     scripts=['average_nucleotide_identity.py'],
     packages=['pyani'],
-    install_requires=[],
+    install_requires=['biopython',
+                      'matplotlib',
+                      'pandas',
+                      'rpy2',
+                      'scipy'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -52,6 +56,9 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         ],
     )
