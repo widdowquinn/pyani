@@ -58,9 +58,9 @@ import os
 import shutil
 import sys
 
-import pyani_config
-import pyani_files
-import pyani_jobs
+from . import pyani_config
+from . import pyani_files
+from . import pyani_jobs
 
 from Bio import SeqIO
 
@@ -330,7 +330,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
     """
     # Process directory to identify input files
     blastfiles = pyani_files.get_input_files(blast_dir, '.blast_tab')
-    labels = org_lengths.keys()
+    labels = list(org_lengths.keys())
     # Hold data in pandas dataframe
     alignment_lengths = pd.DataFrame(index=labels, columns=labels,
                                      dtype=float)
@@ -341,7 +341,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
     alignment_coverage = pd.DataFrame(index=labels, columns=labels,
                                       dtype=float).fillna(1.0)
     # Fill diagonal NA values for alignment_length with org_lengths
-    for org, length in org_lengths.items():
+    for org, length in list(org_lengths.items()):
         alignment_lengths[org][org] = length
     # Process .blast_tab files assuming that the filename format holds:
     # org1_vs_org2.blast_tab:
