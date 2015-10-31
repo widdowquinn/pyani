@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 #
 # average_nucleotide_identity.py
 #
@@ -638,7 +638,7 @@ if __name__ == '__main__':
                                pyani_config.ANIBLASTALL_FILESTEMS)}
     if args.method not in methods:
         logger.error("ANI method %s not recognised (exiting)" % args.method)
-        logger.error("Valid methods are: %s" % methods.keys())
+        logger.error("Valid methods are: %s" % list(methods.keys()))
         sys.exit(1)
     logger.info("Using ANI method: %s" % args.method)
 
@@ -660,7 +660,7 @@ if __name__ == '__main__':
     org_lengths = pyani_files.get_sequence_lengths(infiles)
     logger.info("Sequence lengths:\n" +
                 os.linesep.join(["\t%s: %d" % (k, v) for
-                                 k, v in org_lengths.items()]))
+                                 k, v in list(org_lengths.items()])))
 
     # Run appropriate method on the contents of the input directory,
     # and write out corresponding results.
