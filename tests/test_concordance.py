@@ -58,7 +58,7 @@ def parse_table(filename, title):
                 in_table, header = True, False
             elif in_table:
                 if not len(line.strip()):
-                    return data.sort(axis=0).sort(axis=1)
+                    return data.sort_index(axis=0).sort_index(axis=1)
                 else:
                     ldata = line.strip().split('\t')
                     row = ldata[0]
