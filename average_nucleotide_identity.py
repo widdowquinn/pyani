@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # average_nucleotide_identity.py
 #
@@ -660,7 +660,7 @@ if __name__ == '__main__':
     org_lengths = pyani_files.get_sequence_lengths(infiles)
     logger.info("Sequence lengths:\n" +
                 os.linesep.join(["\t%s: %d" % (k, v) for
-                                 k, v in list(org_lengths.items()])))
+                                 k, v in list(org_lengths.items())]))
 
     # Run appropriate method on the contents of the input directory,
     # and write out corresponding results.
