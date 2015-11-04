@@ -288,22 +288,22 @@ if __name__ == '__main__':
     asm_dict = defaultdict(set)
     for tid in taxon_ids:
         asm_dict[tid] = get_asm_uids(tid)
-    for tid, asm_uids in asm_dict.items():
+    for tid, asm_uids in list(asm_dict.items()):
         logger.info("Taxon %s: %d assemblies" % (tid, len(asm_uids)))
 
     # Get links to the nucleotide database for each assembly UID
     contig_dict = defaultdict(set)
-    for tid, asm_uids in asm_dict.items():
+    for tid, asm_uids in list(asm_dict.items()):
         for asm_uid in asm_uids:
             contig_dict[asm_uid] = get_contig_uids(asm_uid)
-    for asm_uid, contig_uids in contig_dict.items():
+    for asm_uid, contig_uids in list(contig_dict.items()):
         logger.info("Assembly %s: %d contigs" % (asm_uid, len(contig_uids)))
 
     # Write each recovered assembly's contig set to a file in the 
     # specified output directory, and collect string labels to write in
     # class and label files (e.g. for use with pyani).
     classes, labels = [], []
-    for asm_uid, contig_uids in contig_dict.items():
+    for asm_uid, contig_uids in list(contig_dict.items()):
         classtxt, labeltxt = write_contigs(asm_uid, contig_uids)
         classes.append(classtxt)
         labels.append(labeltxt)
