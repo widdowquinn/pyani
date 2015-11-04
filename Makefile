@@ -21,6 +21,8 @@ OUT_M=tests/test_ANIm_output
 OUT_TETRA=tests/test_TETRA_output
 CLASSES=$(DATA)/classes.tab
 LABELS=$(DATA)/labels.tab
+GFORMAT=pdf
+GMETHOD=seaborn
 
 # Decide whether we're skipping generation of intermediate files
 ifeq ($(LAZY), 1)
@@ -41,7 +43,7 @@ ANIm :
 	@echo "Testing ANIm analysis..."
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_M) \
 	  -m ANIm --classes $(CLASSES) --labels $(LABELS) -g -v \
-	  $(LAZYMUMMER)
+	  $(LAZYMUMMER) --gformat $(GFORMAT) --gmethod $(GMETHOD)
 	@echo "ANIm analysis test done"
 	@echo
 
@@ -49,7 +51,8 @@ ANIm_sge :
 	@echo "Testing ANIm analysis with SGE..."
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_M) \
 	  -m ANIm --classes $(CLASSES) --labels $(LABELS) -g -v \
-	  --scheduler SGE $(LAZYMUMMER)
+	  --scheduler SGE $(LAZYMUMMER) --gformat $(GFORMAT)\
+	  --gmethod $(GMETHOD)
 	@echo "ANIm analysis test done"
 	@echo
 
@@ -57,7 +60,7 @@ ANIb :
 	@echo "Testing ANIb analysis..."
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_B) \
 	  -m ANIb --classes $(CLASSES) --labels $(LABELS) -g -v \
-	  $(LAZYBLAST)
+	  $(LAZYBLAST) --gformat $(GFORMAT) --gmethod $(GMETHOD)
 	@echo "ANIb analysis test done"
 	@echo
 
@@ -65,7 +68,8 @@ ANIb_sge :
 	@echo "Testing ANIb analysis with SGE..."
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_B) \
 	  -m ANIb --classes $(CLASSES) --labels $(LABELS) -g -v \
-	  --scheduler SGE $(LAZYBLAST)
+	  --scheduler SGE $(LAZYBLAST) --gformat $(GFORMAT) \
+	  --gmethod $(GMETHOD)
 	@echo "ANIb analysis test done"
 	@echo
 
@@ -73,7 +77,7 @@ ANIblastall :
 	@echo "Testing ANIblastall analysis..."
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_BLASTALL) \
 	  -m ANIblastall --classes $(CLASSES) --labels $(LABELS) -g -v \
-	  $(LAZYBLAST)
+	  $(LAZYBLAST) --gformat $(GFORMAT) --gmethod $(GMETHOD)
 	@echo "ANIblastall analysis test done"
 	@echo
 
@@ -81,7 +85,8 @@ ANIblastall_sge :
 	@echo "Testing ANIblastall analysis with SGE..."
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_BLASTALL) \
 	  -m ANIblastall --classes $(CLASSES) --labels $(LABELS) -g -v \
-	  --scheduler SGE $(LAZYBLAST)
+	  --scheduler SGE $(LAZYBLAST) --gformat $(GFORMAT)
+	  --gmethod $(GMETHOD)
 	@echo "ANIblastall analysis test done"
 	@echo
 
@@ -91,7 +96,7 @@ TETRA :
 	@echo "Testing TETRA analysis..."
 	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_TETRA) \
 	  -m TETRA --classes $(CLASSES) --labels $(LABELS) -g -v \
-	  $(LAZYTETRA)
+	  $(LAZYTETRA) --gformat $(GFORMAT) --gmethod $(GMETHOD)
 	@echo "TETRA analysis test done"
 	@echo
 

@@ -158,6 +158,7 @@ import logging.handlers
 import os
 import shutil
 import sys
+import time
 import traceback
 
 from argparse import ArgumentParser
@@ -569,7 +570,14 @@ def draw(results, filestems, gformat):
                                             labels=get_labels(args.labels),
                                             classes=get_labels(args.classes))
             logger.info("Executed R code:\n%s" % rstr)
-
+        elif args.gmethod == "seaborn":
+            pyani_graphics.heatmap_seaborn(df, outfilename=outfilename,
+                                           title=filestem,
+                                           cmap=params_mpl(df)[filestem][0],
+                                           vmin=params_mpl(df)[filestem][1],
+                                           vmax=params_mpl(df)[filestem][2],
+                                           labels=get_labels(args.labels),
+                                           classes=get_labels(args.classes))
 
 # Run as script
 if __name__ == '__main__':
@@ -578,7 +586,8 @@ if __name__ == '__main__':
     args = parse_cmdline(sys.argv)
 
     # Set up logging
-    logger = logging.getLogger('average_nucleotide_identity.py')
+    logger = logging.getLogger('average_nucleotide_identity.py: %s' %
+                               time.asctime())
     logger.setLevel(logging.DEBUG)
     err_handler = logging.StreamHandler(sys.stderr)
     err_formatter = logging.Formatter('%(levelname)s: %(message)s')
@@ -606,6 +615,7 @@ if __name__ == '__main__':
 
     # Report arguments, if verbose
     logger.info(args)
+    logger.info("command-line: %s" % ' '.join(sys.argv))
 
     # Have we got an input and output directory? If not, exit.
     if args.indirname is None:

@@ -40,7 +40,8 @@ setup(
     platforms="Posix; MacOS X",
     url="http://widdowquinn.github.io/pyani/",  # project home page
     download_url="https://github.com/widdowquinn/pyani/releases",
-    scripts=['average_nucleotide_identity.py'],
+    scripts=['average_nucleotide_identity.py',
+             'genbank_get_genomes_by_taxon.py'],
     packages=['pyani'],
     install_requires=['biopython',
                       'matplotlib',

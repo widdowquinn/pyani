@@ -20,12 +20,13 @@ import matplotlib.gridspec as gridspec
 from matplotlib import cm
 from matplotlib.colors import LinearSegmentedColormap
 
-
 import numpy as np
 
 import scipy.cluster.hierarchy as sch
 import scipy.spatial.distance as distance
 import rpy2.robjects as robjects
+
+import seaborn as sns
 
 from . import pyani_config
 
@@ -78,6 +79,64 @@ def clean_axis(ax):
     for sp in list(ax.spines.values()):
         sp.set_visible(False)
 
+def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
+                    vmin=None, vmax=None, labels=None, classes=None):
+    """Returns seaborn heatmap with cluster dendrograms.
+
+    - df - pandas DataFrame with relevant data
+    - outfilename - path to output file (indicates output format)
+    - cmap - colourmap option
+    - vmin - float, minimum value on the heatmap scale
+    - vmax - float, maximum value on the heatmap scale
+    - labels - dictionary of alternative labels, keyed by default sequence
+               labels
+    - classes - dictionary of sequence classes, keyed by default sequence
+                labels
+    """
+    # Obtain colour map
+    cmap = plt.get_cmap(cmap)
+
+    # Add class colour bar. The aim is to get a pd.Series for the columns
+    # of the form:
+    # 0    colour for class in col 0
+    # 1    colour for class in col 1
+    # ...  colour for class in col ...
+    # n    colour for class in col n
+    # This is in col_cb when we're finished
+    if classes is not None:
+        levels = sorted(list(set(classes.values())))
+        pal = sns.cubehelix_palette(len(levels),
+                                    light=.9, dark=.1, reverse=True,
+                                    start=1, rot=-2)
+        paldict = {str(val+1):pal for (val, pal) in enumerate(pal)}
+        lvl_pal = {cls:paldict[lvl] for (cls, lvl) in list(classes.items())}
+        col_cb = pd.Series(df.index).map(lvl_pal)
+
+    # Labels are defined before we build the clustering
+    newlabels = [labels[i] for i in df.index]
+
+    # Plot heatmap
+    fig = sns.clustermap(df, cmap=cmap, vmin=vmin, vmax=vmax,
+                         col_colors=col_cb, row_colors=col_cb,
+                         linewidths=0.5,
+                         xticklabels=newlabels,
+                         yticklabels=newlabels,
+                         annot=True)
+
+    fig.cax.yaxis.set_label_position('left')
+    fig.cax.set_ylabel(title)
+
+    # Rotate ticklabels
+    fig.ax_heatmap.set_xticklabels(fig.ax_heatmap.get_xticklabels(),
+                                   rotation=90)
+    fig.ax_heatmap.set_yticklabels(fig.ax_heatmap.get_yticklabels(),
+                                   rotation=0)
+
+
+    # Save to file
+    if outfilename:
+        fig.savefig(outfilename)
+    return fig
 
 def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                 vmin=None, vmax=None, labels=None, classes=None):
