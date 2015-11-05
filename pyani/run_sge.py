@@ -37,14 +37,21 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
         jobset = populate_jobset(job, jobset, depth=1)
     joblist = list(jobset)
 
-    # Try to be informative
+    # Try to be informative by telling the user what jobs will run
+    dep_count = 0  # how many dependencies are there
     if logger:
         logger.info("Jobs to run with scheduler")
         for job in joblist:
             logger.info("{0}: {1}".format(job.name, job.command))
             if len(job.dependencies):
+                dep_count += len(job.dependencies)
                 for dep in job.dependencies:
                     logger.info("\t[^ depends on: %s]" % dep.name)
+    logger.info("There are %d job dependencies" % dep_count)
+
+    # If there are no job dependencies, we can use an array (or series of
+    # arrays) to schedule our jobs. This cuts down on problems with long
+    # job lists choking up the queue.
 
     # Send jobs to scheduler
     logger.info("Running jobs with scheduler...")
