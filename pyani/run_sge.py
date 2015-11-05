@@ -14,7 +14,7 @@ jobs.
 from collections import defaultdict
 
 from . import pyani_config
-from ./pyani_jobs import JobGroup
+from .pyani_jobs import JobGroup
 
 import os
 
