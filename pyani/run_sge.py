@@ -11,9 +11,13 @@ For parallelisation on multi-node system, we use some custom code to submit
 jobs.
 """
 
+from collections import defaultdict
+
 from . import pyani_config
+from .pyani_jobs import JobGroup
 
 import os
+
 
 # Run a job dependency graph, with SGE
 def run_dependency_graph(jobgraph, verbose=False, logger=None):
@@ -52,6 +56,21 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
     # If there are no job dependencies, we can use an array (or series of
     # arrays) to schedule our jobs. This cuts down on problems with long
     # job lists choking up the queue.
+    print(joblist)
+    if dep_count == 0:
+        logger.info("Compiling jobs into JobGroups")
+        arglists = defaultdict(list)
+        for job in joblist:
+            cmd, args = job.command.split(' ', 1)
+            arglists[cmd].append(args)
+        print(arglists)
+        jobgroups = []
+        for cmd, arglist in list(arglists.items()):
+            sge_arglist = ['\"%s\"' % a for a in arglist]
+            jobgroups.append(JobGroup(cmd, "%s $SGE_TASK_ID $args" % cmd, 
+                                      arguments={'args': sge_arglist}))
+        joblist = jobgroups
+    print(joblist)
 
     # Send jobs to scheduler
     logger.info("Running jobs with scheduler...")
@@ -138,15 +157,22 @@ def submit_safe_jobs(root_dir, jobs):
   for job in jobs:
       job.out = os.path.join(root_dir, "stdout")
       job.err = os.path.join(root_dir, "stderr")
+
       # Add the job name, current working directory, and SGE stdout and stderr
       # directories to the SGE command line
       args = " -N %s " % (job.name)
       args += " -cwd "
       args += " -o %s -e %s " % (job.out, job.err)
+
       # If a queue is specified, add this to the SGE command line
       if job.queue != None and job.queue in local_queues:
           args += local_queues[job.queue]
           #args += "-q %s " % job.queue
+
+      # If the job is actually a JobGroup, add the task numbering argument
+      if isinstance(job, JobGroup):
+          args += "-t 1:%d " % ( job.tasks )
+
       # If there are dependencies for this job, hold the job until they are
       # complete
       if len(job.dependencies) > 0:
@@ -154,10 +180,10 @@ def submit_safe_jobs(root_dir, jobs):
           for dep in job.dependencies:
               args += dep.name + ","
           args = args[:-1]
+
       # Build the qsub SGE commandline (passing local environment)
       qsubcmd = ("%s -V %s %s" % \
                  (pyani_config.QSUB_DEFAULT, args, job.scriptPath)) 
-      #print qsubcmd                   # Show the command to the user
       os.system(qsubcmd)               # Run the command
       job.submitted = True             # Set the job's submitted flag to True
 
@@ -193,8 +219,12 @@ def build_and_submit_jobs(root_dir, jobs):
   # use of a single JobGroup a little more intutitive
   if type(jobs) != type([1]):
       jobs = [jobs]
-    
+
+  print(jobs)
+
   # Build and submit the passed jobs
+  print("Building jobs")
   build_directories(root_dir)       # build all necessary directories
   build_job_scripts(root_dir, jobs) # build job scripts
   submit_jobs(root_dir, jobs)       # submit the jobs to SGE
+  print("Submitted jobs")
