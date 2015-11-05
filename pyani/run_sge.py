@@ -218,10 +218,12 @@ def build_and_submit_jobs(root_dir, jobs):
   # use of a single JobGroup a little more intutitive
   if type(jobs) != type([1]):
       jobs = [jobs]
-    
+
+  print(jobs)
+
   # Build and submit the passed jobs
-  logger.info("Building jobs")
+  print("Building jobs")
   build_directories(root_dir)       # build all necessary directories
   build_job_scripts(root_dir, jobs) # build job scripts
   submit_jobs(root_dir, jobs)       # submit the jobs to SGE
-  logger.info("Submitted jobs")
+  print("Submitted jobs")
