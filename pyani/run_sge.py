@@ -16,7 +16,16 @@ from collections import defaultdict
 from . import pyani_config
 from .pyani_jobs import JobGroup
 
+import itertools
 import os
+
+
+def split_seq(iterable, size):
+    it = iter(iterable)
+    item = list(itertools.islice(it, size))
+    while item:
+        yield item
+        item = list(itertools.islice(it, size))
 
 
 # Run a job dependency graph, with SGE
@@ -56,21 +65,24 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
     # If there are no job dependencies, we can use an array (or series of
     # arrays) to schedule our jobs. This cuts down on problems with long
     # job lists choking up the queue.
-    print(joblist)
     if dep_count == 0:
         logger.info("Compiling jobs into JobGroups")
         arglists = defaultdict(list)
         for job in joblist:
             cmd, args = job.command.split(' ', 1)
             arglists[cmd].append(args)
-        print(arglists)
         jobgroups = []
         for cmd, arglist in list(arglists.items()):
-            sge_arglist = ['\"%s\"' % a for a in arglist]
-            jobgroups.append(JobGroup(cmd, "%s $SGE_TASK_ID $args" % cmd, 
-                                      arguments={'args': sge_arglist}))
+            # Break arglist up into batches of 10,000
+            sublists = split_seq(arglist, 10000)
+            count = 0
+            for sublist in sublists:
+                count += 1
+                sge_arglist = ['\"%s\"' % a for a in arglist]
+                jobgroups.append(JobGroup("%s_%d" % (cmd, count),
+                                          "%s $args" % cmd, 
+                                          arguments={'args': sge_arglist}))
         joblist = jobgroups
-    print(joblist)
 
     # Send jobs to scheduler
     logger.info("Running jobs with scheduler...")
@@ -220,11 +232,7 @@ def build_and_submit_jobs(root_dir, jobs):
   if type(jobs) != type([1]):
       jobs = [jobs]
 
-  print(jobs)
-
   # Build and submit the passed jobs
-  print("Building jobs")
   build_directories(root_dir)       # build all necessary directories
   build_job_scripts(root_dir, jobs) # build job scripts
   submit_jobs(root_dir, jobs)       # submit the jobs to SGE
-  print("Submitted jobs")
