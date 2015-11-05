@@ -53,23 +53,24 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
                     logger.info("\t[^ depends on: %s]" % dep.name)
     logger.info("There are %d job dependencies" % dep_count)
 
-    # If there are no dependencies, place all jobs in JobGroups
-    # This should only happen for MUMmer jobs
+    # If there are no job dependencies, we can use an array (or series of
+    # arrays) to schedule our jobs. This cuts down on problems with long
+    # job lists choking up the queue.
+    print(joblist)
     if dep_count == 0:
         logger.info("Compiling jobs into JobGroups")
         arglists = defaultdict(list)
         for job in joblist:
             cmd, args = job.command.split(' ', 1)
             arglists[cmd].append(args)
+        print(arglists)
         jobgroups = []
         for cmd, arglist in list(arglists.items()):
+            print(cmd, arglist)
             jg = JobGroup(cmd, "%s $SGE_TASK_ID $args" % cmd, 
                           arguments={'args': arglist})
         joblist = jobgroups
-
-    # If there are no job dependencies, we can use an array (or series of
-    # arrays) to schedule our jobs. This cuts down on problems with long
-    # job lists choking up the queue.
+    print(joblist)
 
     # Send jobs to scheduler
     logger.info("Running jobs with scheduler...")
