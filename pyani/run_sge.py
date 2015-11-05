@@ -63,7 +63,8 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
             arglists[cmd].append(args)
     jobgroups = []
     for cmd, arglist in list(arglists.items()):
-        jg = JobGroup(cmd, cmd, arguments=arglist)
+        jg = JobGroup(cmd, "cmd $SGE_TASK_ID $args" , 
+                      arguments={'args': arglist})
     joblist = jobgroups
 
     # If there are no job dependencies, we can use an array (or series of
