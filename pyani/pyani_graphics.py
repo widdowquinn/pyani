@@ -108,7 +108,7 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
         pal = sns.cubehelix_palette(len(levels),
                                     light=.9, dark=.1, reverse=True,
                                     start=1, rot=-2)
-        paldict = {str(val+1):pal for (val, pal) in enumerate(pal)}
+        paldict = {lvl:pal for (lvl, pal) in zip(levels, pal)}
         lvl_pal = {cls:paldict[lvl] for (cls, lvl) in list(classes.items())}
         col_cb = pd.Series(df.index).map(lvl_pal)
 
