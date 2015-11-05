@@ -169,7 +169,7 @@ def submit_safe_jobs(root_dir, jobs):
           #args += "-q %s " % job.queue
 
       # If the job is actually a JobGroup, add the task numbering argument
-      if isinstance( job, JobGroup ):
+      if isinstance(job, JobGroup):
           args += "-t 1:%d " % ( job.tasks )
 
       # If there are dependencies for this job, hold the job until they are
@@ -220,6 +220,8 @@ def build_and_submit_jobs(root_dir, jobs):
       jobs = [jobs]
     
   # Build and submit the passed jobs
+  logger.info("Building jobs")
   build_directories(root_dir)       # build all necessary directories
   build_job_scripts(root_dir, jobs) # build job scripts
   submit_jobs(root_dir, jobs)       # submit the jobs to SGE
+  logger.info("Submitted jobs")
