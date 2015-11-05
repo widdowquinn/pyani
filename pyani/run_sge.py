@@ -66,9 +66,9 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
         print(arglists)
         jobgroups = []
         for cmd, arglist in list(arglists.items()):
-            print(cmd, arglist)
+            sge_arglist = ['\"%s\"' % a for a in arglist]
             jobgroups.append(JobGroup(cmd, "%s $SGE_TASK_ID $args" % cmd, 
-                                      arguments={'args': arglist}))
+                                      arguments={'args': sge_arglist}))
         joblist = jobgroups
     print(joblist)
 
