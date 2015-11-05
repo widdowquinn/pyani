@@ -171,10 +171,9 @@ class JobGroup:
     self.dependencies.remove(job)
     
 
-  def wait( self ):
+  def wait(self, interval=SGE_WAIT):
     """Wait for a defined period."""
     finished = False
-    interval = 5
     while not finished:
       time.sleep(interval)
       interval = min( 2 * interval, 60 )

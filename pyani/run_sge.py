@@ -156,15 +156,22 @@ def submit_safe_jobs(root_dir, jobs):
   for job in jobs:
       job.out = os.path.join(root_dir, "stdout")
       job.err = os.path.join(root_dir, "stderr")
+
       # Add the job name, current working directory, and SGE stdout and stderr
       # directories to the SGE command line
       args = " -N %s " % (job.name)
       args += " -cwd "
       args += " -o %s -e %s " % (job.out, job.err)
+
       # If a queue is specified, add this to the SGE command line
       if job.queue != None and job.queue in local_queues:
           args += local_queues[job.queue]
           #args += "-q %s " % job.queue
+
+      # If the job is actually a JobGroup, add the task numbering argument
+      if isinstance( job, JobGroup ):
+          args += "-t 1:%d " % ( job.tasks )
+
       # If there are dependencies for this job, hold the job until they are
       # complete
       if len(job.dependencies) > 0:
@@ -172,10 +179,10 @@ def submit_safe_jobs(root_dir, jobs):
           for dep in job.dependencies:
               args += dep.name + ","
           args = args[:-1]
+
       # Build the qsub SGE commandline (passing local environment)
       qsubcmd = ("%s -V %s %s" % \
                  (pyani_config.QSUB_DEFAULT, args, job.scriptPath)) 
-      #print qsubcmd                   # Show the command to the user
       os.system(qsubcmd)               # Run the command
       job.submitted = True             # Set the job's submitted flag to True
 
