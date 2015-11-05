@@ -61,11 +61,11 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
         for job in joblist:
             cmd, args = job.command.split(' ', 1)
             arglists[cmd].append(args)
-    jobgroups = []
-    for cmd, arglist in list(arglists.items()):
-        jg = JobGroup(cmd, "%s $SGE_TASK_ID $args" % cmd, 
-                      arguments={'args': arglist})
-    joblist = jobgroups
+        jobgroups = []
+        for cmd, arglist in list(arglists.items()):
+            jg = JobGroup(cmd, "%s $SGE_TASK_ID $args" % cmd, 
+                          arguments={'args': arglist})
+        joblist = jobgroups
 
     # If there are no job dependencies, we can use an array (or series of
     # arrays) to schedule our jobs. This cuts down on problems with long
