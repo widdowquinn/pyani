@@ -21,6 +21,7 @@ import os
 
 
 def split_seq(iterable, size):
+    """Splits a passed iterable into chunks of a given size."""
     it = iter(iterable)
     item = list(itertools.islice(it, size))
     while item:
@@ -67,21 +68,21 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
     # job lists choking up the queue.
     if dep_count == 0:
         logger.info("Compiling jobs into JobGroups")
-        arglists = defaultdict(list)
+        jobcmds = defaultdict(list)
         for job in joblist:
-            cmd, args = job.command.split(' ', 1)
-            arglists[cmd].append(args)
+            cmd = job.command.split(' ', 1)[0]
+            jobcmds[cmd].append(job.command)
         jobgroups = []
-        for cmd, arglist in list(arglists.items()):
+        for cmd, jobcmd in list(jobcmds.items()):
             # Break arglist up into batches of 10,000
-            sublists = split_seq(arglist, 10000)
+            sublists = split_seq(jobcmd, 10000)
             count = 0
             for sublist in sublists:
                 count += 1
-                sge_arglist = ['\"%s\"' % a for a in arglist]
+                sge_jobcmdlist = ['\"%s\"' % jc for jc in sublist]
                 jobgroups.append(JobGroup("%s_%d" % (cmd, count),
-                                          "%s $args" % cmd, 
-                                          arguments={'args': sge_arglist}))
+                                          "$cmds", 
+                                          arguments={'cmds': sge_jobcmdlist}))
         joblist = jobgroups
 
     # Send jobs to scheduler
