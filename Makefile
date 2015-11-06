@@ -21,8 +21,8 @@ OUT_M=tests/test_ANIm_output
 OUT_TETRA=tests/test_TETRA_output
 CLASSES=$(DATA)/classes.tab
 LABELS=$(DATA)/labels.tab
-GFORMAT=pdf
-GMETHOD=seaborn
+GFORMAT=pdf,png,eps
+GMETHOD=mpl
 
 # Decide whether we're skipping generation of intermediate files
 ifeq ($(LAZY), 1)
