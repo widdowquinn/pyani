@@ -96,6 +96,10 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
     # Obtain colour map
     cmap = plt.get_cmap(cmap)
 
+    # Decide on figure layout size
+    figsize = max(8, df.shape[0] * 1.1)
+    print(figsize)
+
     # Add class colour bar. The aim is to get a pd.Series for the columns
     # of the form:
     # 0    colour for class in col 0
@@ -118,6 +122,7 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
     # Plot heatmap
     fig = sns.clustermap(df, cmap=cmap, vmin=vmin, vmax=vmax,
                          col_colors=col_cb, row_colors=col_cb,
+                         figsize=(figsize, figsize),
                          linewidths=0.5,
                          xticklabels=newlabels,
                          yticklabels=newlabels,
@@ -131,7 +136,6 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
                                    rotation=90)
     fig.ax_heatmap.set_yticklabels(fig.ax_heatmap.get_yticklabels(),
                                    rotation=0)
-
 
     # Save to file
     if outfilename:
