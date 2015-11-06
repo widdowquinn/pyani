@@ -51,6 +51,9 @@ def parse_cmdline(args):
     parser.add_argument("--email", dest="email",
                         action="store", default=None,
                         help="Email associated with NCBI queries")
+    parser.add_argument("--count", dest="count",
+                        action="store_true", default=False,
+                        help="Return only the count of genomes available.")
     return parser.parse_args()
 
 
@@ -298,6 +301,12 @@ if __name__ == '__main__':
             contig_dict[asm_uid] = get_contig_uids(asm_uid)
     for asm_uid, contig_uids in list(contig_dict.items()):
         logger.info("Assembly %s: %d contigs" % (asm_uid, len(contig_uids)))
+
+    # Bail out here if we're only counting
+    if args.count:
+        logger.info("--count option selected, only counting, not downloading")
+        logger.info("(exiting)")
+        sys.exit(0)
 
     # Write each recovered assembly's contig set to a file in the 
     # specified output directory, and collect string labels to write in
