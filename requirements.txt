@@ -1,6 +1,6 @@
-biopython>=1.65
-matplotlib>=1.4.3
 numpy>=1.10.0.post2
+scipy>=0.16.0
+matplotlib>=1.4.3
+biopython>=1.65
 pandas>=0.17.0
 rpy2>=2.7.0
-scipy>=0.16.0
