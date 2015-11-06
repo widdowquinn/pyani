@@ -98,7 +98,6 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
 
     # Decide on figure layout size
     figsize = max(8, df.shape[0] * 1.1)
-    print(figsize)
 
     # Add class colour bar. The aim is to get a pd.Series for the columns
     # of the form:
