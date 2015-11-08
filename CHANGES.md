@@ -7,3 +7,5 @@
 * Added `seaborn` graphics output to `--gformat` for `average_nucleotide_identity.py`.
 * Added `heatmap_seaborn()` function to `pyani_graphics.py`.
 * Removed `eps` from the default graphics output formats in `average_nucleotide_identity.py`.
+* Added subsampling option to `average_nucleotide_identity.py` (`--subsample` option), with PRNG seeding for reproducibility.
+* SGE now puts `ANIm` jobs in an array, to avoid swamping local queues.
