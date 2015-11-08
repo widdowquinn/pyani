@@ -252,6 +252,9 @@ def parse_cmdline(args):
                         action="store", default=None,
                         help="Subsample a percentage [0-1] or specific " +
                         "number (1-n) of input sequences")
+    parser.add_argument("--seed", dest="seed",
+                        action="store", default=None,
+                        help="Set random seed for reproducible subsampling.")
     return parser.parse_args()
 
 
@@ -690,6 +693,12 @@ if __name__ == '__main__':
         else:
             k = int(min(samplesize, 1.0) * len(infiles))
         logger.info("Randomly subsampling %d sequences for analysis" % k)
+        if args.seed:
+            logger.info("Setting random seed with: %s" % args.seed)
+            random.seed(args.seed)
+        else:
+            logger.warning("Subsampling without specified random seed!")
+            logger.warning("Subsampling may NOT be easily reproducible!")
         infiles = random.sample(infiles, k)
         logger.info("Sampled input files:\n\t%s" % '\n\t'.join(infiles))
 
