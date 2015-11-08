@@ -309,7 +309,8 @@ def construct_blastall_cmdline(fname1, fname2, outdir,
 
 
 # Process pairwise BLASTN output
-def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
+def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
+                  logger=None):
     """Returns a tuple of ANIb results for .blast_tab files in the output dir.
 
     - blast_dir - path to the directory containing .blast_tab files
@@ -317,6 +318,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
     - fraglengths - dictionary of query sequence fragment lengths, only
     needed for BLASTALL output
     - mode - parsing BLASTN+ or BLASTALL output?
+    - logger - a logger for messages
 
     Returns the following pandas dataframes in a tuple:
 
@@ -348,6 +350,18 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
     for blastfile in blastfiles:
         qname, sname = \
             os.path.splitext(os.path.split(blastfile)[-1])[0].split('_vs_')
+        # We may have BLAST files from other analyses in the same directory
+        # If this occurs, we raise a warning, and skip the file
+        if qname not in list(org_lengths.keys()):
+            if logger:
+                logger.warning("Query name %s not in input " % qname +
+                               "sequence list, skipping %s" % deltafile)
+            continue
+        if sname not in list(org_lengths.keys()):
+            if logger:
+                logger.warning("Subject name %s not in input " % sname +
+                               "sequence list, skipping %s" % deltafile)
+            continue
         tot_length, tot_sim_error, ani_pid = parse_blast_tab(blastfile,
                                                              fraglengths,
                                                              mode)

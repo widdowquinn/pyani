@@ -158,9 +158,23 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     for deltafile in deltafiles:
         qname, sname = \
             os.path.splitext(os.path.split(deltafile)[-1])[0].split('_vs_')
+        # We may have .delta files from other analyses in the same directory
+        # If this occurs, we raise a warning, and skip the .delta file
+        if qname not in list(org_lengths.keys()):
+            if logger:
+                logger.warning("Query name %s not in input " % qname +
+                               "sequence list, skipping %s" % deltafile)
+            continue
+        if sname not in list(org_lengths.keys()):
+            if logger:
+                logger.warning("Subject name %s not in input " % sname +
+                               "sequence list, skipping %s" % deltafile)
+            continue
         tot_length, tot_sim_error = parse_delta(deltafile)
         if tot_length == 0 and logger is not None:
-            logger.warning("Total alignment length reported in %s is zero!" % deltafile)
+            if logger:
+                logger.warning("Total alignment length reported in " +
+                               "%s is zero!" % deltafile)
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
         # Calculate percentage ID of aligned length. This may fail if
@@ -171,12 +185,14 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
         try:
             perc_id = 1 - float(tot_sim_error) / tot_length
         except ZeroDivisionError:
-            logger.error("One or more NUCmer output files has a problem.")
-            logger.error("This is possibly due to a NUCmer comparison " +
-                         "being too distant for use. If so, please consider " +
-                         "using the --maxmatch option.")
-            logger.error("Alternatively, this may be due to NUCmer run failure: " +
-                         "analysis may continue, but please investigate.")
+            if logger:
+                logger.error("One or more NUCmer output files has a problem.")
+                logger.error("This is possibly due to a NUCmer comparison " +
+                             "being too distant for use. If so, please " +
+                             "consider using the --maxmatch option.")
+                logger.error("Alternatively, this may be due to NUCmer " +
+                             "run failure: analysis may continue, but " +
+                             "please investigate.")
             perc_id = 0  # set arbitrary value of zero identity
             zero_error = True
         # Populate dataframes: when assigning data, pandas dataframes

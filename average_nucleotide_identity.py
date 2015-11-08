@@ -156,6 +156,7 @@ import json
 import logging
 import logging.handlers
 import os
+import random
 import shutil
 import sys
 import time
@@ -247,6 +248,10 @@ def parse_cmdline(args):
                         action="store_true",
                         default=False,
                         help="Write Excel format output tables")
+    parser.add_argument("--subsample", dest="subsample",
+                        action="store", default=None,
+                        help="Subsample a percentage [0-1] or specific " +
+                        "number (1-n) of input sequences")
     return parser.parse_args()
 
 
@@ -588,6 +593,7 @@ if __name__ == '__main__':
     # Set up logging
     logger = logging.getLogger('average_nucleotide_identity.py: %s' %
                                time.asctime())
+    t0 = time.time()
     logger.setLevel(logging.DEBUG)
     err_handler = logging.StreamHandler(sys.stderr)
     err_formatter = logging.Formatter('%(levelname)s: %(message)s')
@@ -665,6 +671,28 @@ if __name__ == '__main__':
     infiles = pyani_files.get_fasta_files(args.indirname)
     logger.info("Input files:\n\t%s" % '\n\t'.join(infiles))
 
+    # Are we subsampling? If so, make the selection here
+    if args.subsample:
+        logger.info("--subsample: %s" % args.subsample)
+        try:
+            samplesize = float(args.subsample)
+        except TypeError:  # Not a number
+            logger.error("--subsample must be int or float, got %s (exiting)" %
+                         type(args.subsample))
+            sys.exit(1)
+        if samplesize <= 0: # Not a positive value
+            logger.error("--subsample must be positive value, got %s" %
+                         str(args.subsample))
+            sys.exit(1)
+        if int(samplesize) > 1:
+            logger.info
+            k = min(int(samplesize), len(infiles))
+        else:
+            k = int(min(samplesize, 1.0) * len(infiles))
+        logger.info("Randomly subsampling %d sequences for analysis" % k)
+        infiles = random.sample(infiles, k)
+        logger.info("Sampled input files:\n\t%s" % '\n\t'.join(infiles))
+
     # Get lengths of input sequences
     logger.info("Processing input sequence lengths")
     org_lengths = pyani_files.get_sequence_lengths(infiles)
@@ -688,4 +716,5 @@ if __name__ == '__main__':
             draw(results, methods[args.method][1], gfmt)
 
     # Report that we've finished
-    logger.info("Done.")
+    logger.info("Done: %s." % time.asctime())
+    logger.info("Time taken: %.2fs" % (time.time() - t0)) 
