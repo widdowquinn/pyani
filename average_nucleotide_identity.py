@@ -255,6 +255,9 @@ def parse_cmdline(args):
     parser.add_argument("--seed", dest="seed",
                         action="store", default=None,
                         help="Set random seed for reproducible subsampling.")
+    parser.add_argument("--jobprefix", dest="jobprefix",
+                        action="store", default="ANI",
+                        help="Prefix for SGE jobs.")
     return parser.parse_args()
 
 
@@ -335,7 +338,8 @@ def calculate_anim(infiles, org_lengths):
     if not args.skip_nucmer:
         joblist = anim.generate_nucmer_jobs(infiles, args.outdirname,
                                             nucmer_exe=args.nucmer_exe,
-                                            maxmatch=args.maxmatch)
+                                            maxmatch=args.maxmatch,
+                                            jobprefix=args.jobprefix)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             cumval = run_mp.run_dependency_graph(joblist, verbose=args.verbose,
@@ -466,7 +470,8 @@ def unified_anib(infiles, org_lengths):
         # Run BLAST database-building and executables from a jobgraph
         logger.info("Creating job dependency graph")
         jobgraph = anib.make_job_graph(infiles, fragfiles, args.outdirname,
-                                       format_exe, blast_exe, args.method)
+                                       format_exe, blast_exe, args.method,
+                                       jobprefix=args.jobprefix)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             logger.info("Running job dependency graph")

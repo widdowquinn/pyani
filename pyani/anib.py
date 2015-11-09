@@ -135,7 +135,7 @@ def get_fragment_lengths(fastafile):
 def make_job_graph(infiles, fragfiles, outdir,
                    format_exe=pyani_config.MAKEBLASTDB_DEFAULT,
                    blast_exe=pyani_config.BLASTN_DEFAULT,
-                   mode="ANIb"):
+                   mode="ANIb", jobprefix="ANIBLAST"):
     """Return a job dependency graph, based on the passed input sequence files.
 
     - infiles - a list of paths to input FASTA files
@@ -167,11 +167,12 @@ def make_job_graph(infiles, fragfiles, outdir,
     # Create dictionary of database building jobs, keyed by db name
     for idx, fname in enumerate(infiles):
         dbcmd, dbname = construct_db_cmdline(fname, outdir, format_exe)
-        job = pyani_jobs.Job("dbcmd_%06d" % idx, dbcmd)
+        job = pyani_jobs.Job("%s_db_%06d" % (jobprefix, idx), dbcmd)
         dbjobdict[dbname] = job
+    job_offset = idx
 
     # Create list of BLAST executable jobs, with dependencies
-    jobnum = 0
+    jobnum = job_offset
     for idx, fname1 in enumerate(fragfiles[:-1]):
         dbname1 = fname1.replace('-fragments', '')
         for fname2 in fragfiles[idx+1:]:
@@ -181,8 +182,10 @@ def make_job_graph(infiles, fragfiles, outdir,
                                               outdir, blast_exe)
             execmd2 = construct_blast_cmdline(fname2, dbname1,
                                               outdir, blast_exe)
-            job1 = pyani_jobs.Job("execmd_%06d_a" % jobnum, execmd1)
-            job2 = pyani_jobs.Job("execmd_%06d_b" % jobnum, execmd2)
+            job1 = pyani_jobs.Job("%s_exe_%06d_a" %
+                                  (jobprefix, jobnum), execmd1)
+            job2 = pyani_jobs.Job("%s_exe_%06d_b" %
+                                  (jobprefix, jobnum), execmd2)
             job1.add_dependency(dbjobdict[dbname2])
             job2.add_dependency(dbjobdict[dbname1])
             joblist.extend([job1, job2])
