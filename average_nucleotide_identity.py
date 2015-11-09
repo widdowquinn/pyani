@@ -343,8 +343,7 @@ def calculate_anim(infiles, org_lengths):
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             cumval = run_mp.run_dependency_graph(joblist, verbose=args.verbose,
-                                                 logger=logger,
-                                                 jgprefix=args.jobprefix)
+                                                 logger=logger)
             logger.info("Cumulative return value: %d" % cumval)
             if 0 < cumval:
                 logger.warning("At least one NUCmer comparison failed. " +
@@ -354,7 +353,7 @@ def calculate_anim(infiles, org_lengths):
         else:
             logger.info("Running jobs with SGE")
             run_sge.run_dependency_graph(joblist, verbose=args.verbose,
-                                         logger=logger)
+                                         logger=logger, jgprefix=args.jobprefix)
     else:
         logger.warning("Skipping NUCmer run (as instructed)!")
 
