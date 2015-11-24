@@ -177,13 +177,32 @@ def get_contig_uids(asm_uid):
     linklist = entrez_retry(Entrez.elink, dbfrom="assembly", db="nucleotide",
                             retmode="gb", from_uid=asm_uid)
     links = Entrez.read(linklist)
+    linknames = [l['LinkName'] for l in links[0]['LinkSetDb']]
+    # Assemblies may be in 'assembly_nuccore_insdc', 'nuccore', or
+    # 'assembly_nuccore_wgsmaster' databases. For a list of link names:
+    # http://www.ncbi.nlm.nih.gov/entrez/query/static/entrezlinks.html
+    # If we have 'assembly_nuccore_insdc' or 'assembly_nuccore_refseq'
+    # in the links, then we can get contigs directly.
+    # If we have 'assembly_nuccore_wgsmaster' in the links, then we need
+    # to munge a URL to download a gzipped multi-FASTA file, and extract
+    # it. Use get_wgsmaster_contig_uids() [e.g. taxon 763924]
+    # We prefer insdc > refseq > wgsmaster
     try:
-        contigs = [l for l in links[0]['LinkSetDb'] \
+        if 'assembly_nuccore_insdc' in linknames:
+            logger.info("Using assembly_nuccore_insdc links")
+            contigs = [l for l in links[0]['LinkSetDb']
                        if l['LinkName'] == 'assembly_nuccore_insdc'][0]
+        elif 'assembly_nuccore_refseq' in linknames:
+            logger.info("Using assembly_nuccore_refseq links")
+            contigs = [l for l in links[0]['LinkSetDb']
+                       if l['LinkName'] == 'assembly_nuccore_refseq'][0]
+        else:
+            logger.error("No recognised contig link (exiting)")
+            logger.error("Available links: %s" % linknames)
+            sys.exit(1)
     except:
         logger.error("Could not recover contigs (exiting)")
-        logger.error("Assembly UID: %s" % asm_uid)
-        logger.error("Links: %s" % links[0])
+        logger.error("Links: %s" % links[0]['LinkSetDb'])
         sys.exit(1)
     contig_uids = set([e['Id'] for e in contigs['Link']])
     logger.info("Identified %d contig UIDs" % len(contig_uids))
