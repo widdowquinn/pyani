@@ -54,8 +54,18 @@ def parse_cmdline(args):
     parser.add_argument("--count", dest="count",
                         action="store_true", default=False,
                         help="Return only the count of genomes available.")
+    parser.add_argument("--retries", dest="retries",
+                        action="store", default=20,
+                        help="Number of Entrez retry attempts per request.")
     return parser.parse_args()
 
+
+# Report last exception as string
+def last_exception():
+    """ Returns last exception as a string, or use in logging."""
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    return ''.join(traceback.format_exception(exc_type, exc_value,
+                                              exc_traceback))
 
 # Set contact email for NCBI
 def set_ncbi_email():
@@ -102,6 +112,28 @@ def make_outdir():
             logger.error(last_exception)
             sys.exit(1)
 
+# Retry Entrez requests (or any other function)
+def entrez_retry(fn, *fnargs, **fnkwargs):
+    """Retries the passed function up to the number of times specified
+    by args.retries
+    """
+    tries, success = 0, False
+    while not success and tries < args.retries:
+        try:
+            output = fn(*fnargs, **fnkwargs)
+            success = True
+        except:
+            tries += 1
+            logger.warning("Entrez query %s(%s, %s) failed (%d/%d)" % (fn, fnargs,
+                                                                   fnkwargs, 
+                                                                   tries+1,
+                                                                   args.retries))
+            logger.warning(last_exception())
+    if not success:
+        logger.error("Too many Entrez failures (exiting)")
+        sys.exit(1)
+    return output
+
 
 # Get assembly UIDs for the root taxon
 def get_asm_uids(taxon_uid):
@@ -115,8 +147,8 @@ def get_asm_uids(taxon_uid):
     logger.info("ESearch for %s" % query)
     
     # Perform initial search with usehistory
-    handle = Entrez.esearch(db="assembly", term=query, format="xml",
-                            usehistory="y")
+    handle = entrez_retry(Entrez.esearch, db="assembly", term=query, format="xml",
+                          usehistory="y")
     record = Entrez.read(handle)
     result_count = int(record['Count'])
     logger.info("Entrez ESearch returns %d assembly IDs" % result_count)
@@ -124,23 +156,12 @@ def get_asm_uids(taxon_uid):
     # Recover all child nodes
     batch_size = 250
     for start in range(0, result_count, batch_size):
-        tries, success = 0, False
-        while not success and tries < 20:
-            try:
-                batch_handle = Entrez.efetch(db="assembly", retmode="xml",
-                                             retstart=start,
-                                             retmax=batch_size,
-                                             webenv=record["WebEnv"],
-                                             query_key=record["QueryKey"])
-                batch_record = Entrez.read(batch_handle)
-                asm_ids = asm_ids.union(set(batch_record))
-                success = True
-            except:
-                tries += 1
-                logger.warning("Entrez batch query failed (#%d)" % tries)
-        if not success:
-            logger.error("Too many download attempt failures (exiting)")
-            sys.exit(1)
+        batch_handle = entrez_retry(Entrez.efetch, db="assembly", retmode="xml",
+                                    retstart=start, retmax=batch_size,
+                                    webenv=record["WebEnv"], 
+                                    query_key=record["QueryKey"])
+        batch_record = Entrez.read(batch_handle)
+        asm_ids = asm_ids.union(set(batch_record))
     logger.info("Identified %d unique assemblies" % len(asm_ids))
     return asm_ids
 
@@ -153,10 +174,17 @@ def get_contig_uids(asm_uid):
     assembly contigs."""
     logger.info("Finding contig UIDs for assembly %s" % asm_uid)
     contig_ids = set()  # Holds unique contig UIDs
-    links = Entrez.read(Entrez.elink(dbfrom="assembly", db="nucleotide",
-                                     retmode="gb", from_uid=asm_uid))
-    contigs = [l for l in links[0]['LinkSetDb'] \
-               if l['LinkName'] == 'assembly_nuccore_insdc'][0]
+    linklist = entrez_retry(Entrez.elink, dbfrom="assembly", db="nucleotide",
+                            retmode="gb", from_uid=asm_uid)
+    links = Entrez.read(linklist)
+    try:
+        contigs = [l for l in links[0]['LinkSetDb'] \
+                       if l['LinkName'] == 'assembly_nuccore_insdc'][0]
+    except:
+        logger.error("Could not recover contigs (exiting)")
+        logger.error("Assembly UID: %s" % asm_uid)
+        logger.error("Links: %s" % links[0])
+        sys.exit(1)
     contig_uids = set([e['Id'] for e in contigs['Link']])
     logger.info("Identified %d contig UIDs" % len(contig_uids))
     return contig_uids
@@ -175,8 +203,9 @@ def write_contigs(asm_uid, contig_uids):
     """
     logger.info("Collecting contig data for %s" % asm_uid)
     # Assembly record - get binomial and strain names
-    asm_record = Entrez.read(Entrez.esummary(db='assembly', id=asm_uid,
-                                             rettype='text'))
+    asm_summary = entrez_retry(Entrez.esummary, db='assembly', id=asm_uid,
+                               rettype='text')
+    asm_record = Entrez.read(asm_summary)
     asm_organism = asm_record['DocumentSummarySet']['DocumentSummary']\
                    [0]['SpeciesName']
     try:
@@ -186,7 +215,7 @@ def write_contigs(asm_uid, contig_uids):
         asm_strain = ""
     # Assembly UID (long form) for the output filename
     gname = asm_record['DocumentSummarySet']['DocumentSummary']\
-            [0]['AssemblyAccession'].split('.')[0]
+            [0]['AssemblyAccession']
     outfilename = "%s.fasta" % os.path.join(args.outdirname, gname)
 
     # Create label and class strings
@@ -199,14 +228,16 @@ def write_contigs(asm_uid, contig_uids):
     logger.info("Downloading FASTA records for assembly %s (%s)" %
                 (asm_uid, ' '.join([ginit, species, asm_strain])))
     query_uids = ','.join(contig_uids)
+    # We're doing an explicit retry loop here because we want to confirm we
+    # have the correct data, as well as test for Entrez connection errors,
+    # which is all the entrez_retry function does.
     tries, success = 0, False
-    while not success and tries < 20:
+    while not success and tries < args.retries:
         try:
+            seqdata = entrez_retry(Entrez.efetch, db='nucleotide', id=query_uids,
+                                   rettype='fasta', retmode='text')
+            records = list(SeqIO.parse(seqdata, 'fasta'))
             tries += 1
-            records = list(SeqIO.parse(Entrez.efetch(db='nucleotide', 
-                                                     id=query_uids,
-                                                     rettype='fasta',
-                                                     retmode='text'), 'fasta'))
             # Check only that correct number of records returned.
             if len(records) == len(contig_uids):  
                 success = True
