@@ -53,12 +53,12 @@ def parse_cmdline(args):
     parser.add_argument("--email", dest="email",
                         action="store", default=None,
                         help="Email associated with NCBI queries")
-    parser.add_argument("--count", dest="count",
-                        action="store_true", default=False,
-                        help="Return only the count of genomes available.")
     parser.add_argument("--retries", dest="retries",
                         action="store", default=20,
                         help="Number of Entrez retry attempts per request.")
+    parser.add_argument("--batchsize", dest="batchsize",
+                        action="store", default=10000,
+                        help="Entrez record return batch size")
     return parser.parse_args()
 
 
@@ -185,67 +185,93 @@ def get_asm_uids(taxon_uid):
 
 # Get contig UIDs for a specified assembly UID
 def get_contig_uids(asm_uid):
-    """Returns a set of NCBI UIDs associated with the passed assembly.
+    """Returns a set of NCBI UIDs for each contig belonging to the assembly
+    with passsed UID.
 
-    The UIDs returns are for assembly_nuccore_insdc sequences - the 
-    assembly contigs."""
-    logger.info("Finding contig UIDs for assembly %s" % asm_uid)
-    contig_ids = set()  # Holds unique contig UIDs
+    Assemblies are linked to contigs through Elink in three ways:
+    assembly_nuccore_insdc; assembly_nuccore_refseq; and
+    assembly_nuccore_wgsmaster. For most insdc and refseq links, we can
+    use the results of an Elink query directly, recovering contigs with
+    a (history/batch) Entrez ESearch. For wgsmaster-only links, we need
+    to download from a URL that is not given in the Esummary, and which we
+    have to munge together from information in the summary.
+
+    For insdc/refseq Elink queries that report 100000 contig links, this is
+    a capped return value result, and forces us to download contigs as though
+    we use the wgsmaster links.
+    """
+    logger.info("Finding contig UID links for assembly %s" % asm_uid)
+    # The Elink search returns a single result, so we don't need to batch
     linklist = entrez_retry(Entrez.elink, dbfrom="assembly", db="nucleotide",
                             retmode="gb", from_uid=asm_uid)
     links = Entrez.read(linklist) 
-    linknames = [l['LinkName'] for l in links[0]['LinkSetDb']]
     # Assemblies may be in 'assembly_nuccore_insdc', 'nuccore', or
     # 'assembly_nuccore_wgsmaster' databases. For a list of link names:
     # http://www.ncbi.nlm.nih.gov/entrez/query/static/entrezlinks.html
-    # If we have 'assembly_nuccore_insdc' or 'assembly_nuccore_refseq'
-    # in the links, then we can get contigs directly.
-    # If we have 'assembly_nuccore_wgsmaster' in the links, then we need
-    # to munge a URL to download a gzipped multi-FASTA file, and extract
-    # it. Use get_wgsmaster_contig_uids() [e.g. taxon 763924]
-    # We prefer insdc > refseq > wgsmaster
-    wgsmaster, fastafilename = False, None
+    # We prefer insdc > refseq > wgsmaster, but if there are 100000 contig 
+    # UIDs returned, this indicates that not all contigs will be downloaded,
+    # so we revert to wgsmaster
     try:
-        if 'assembly_nuccore_insdc' in linknames:
-            logger.info("Using assembly_nuccore_insdc links")
-            contigs = [l for l in links[0]['LinkSetDb']
-                       if l['LinkName'] == 'assembly_nuccore_insdc'][0]
-        elif 'assembly_nuccore_refseq' in linknames:
-            logger.info("Using assembly_nuccore_refseq links")
-            contigs = [l for l in links[0]['LinkSetDb']
-                       if l['LinkName'] == 'assembly_nuccore_refseq'][0]
-        elif 'assembly_nuccore_wgsmaster' in linknames:
-            # This breaks downstream logic at the moment, as we 
-            # download into a local directory and uncompress
+        wgsmaster, fastafilename = False, None
+        linktype = guess_linktype(links)
+        logger.info("Using %s links" % linktype)
+        if linktype in ['assembly_nuccore_insdc', 'assembly_nuccore_inrefseq']:
+            contig_uids = retrieve_contig_uids(links, linktype)
+            logger.info("Recovered %d contig UIDs" % len(contig_uids))
+            if len(contig_uids) == 100000:
+                logger.info("insdc/refseq result cap: reverting to wgsmaster")
+                wgsmaster = True
+                contig_uids, fastafilename = download_wgsmaster_contigs(links)
+            else:
+                write_contigs(asm_uid, contig_uids)
+        if linktype == 'assembly_nuccore_wgsmaster':
             wgsmaster = True
-            logger.info("Using assembly_nuccore_wgsmaster links")
-            wgsmaster_uid = [l['Link'][0]['Id'] for l in links[0]['LinkSetDb']
-                             if l['LinkName']=='assembly_nuccore_wgsmaster'][0]
-            contig_uids, fastafilename = retrieve_wgsmaster_contigs(wgsmaster_uid)
-        else:
-            logger.error("No recognised contig link (exiting)")
-            logger.error("Available links: %s" % linknames)
-            sys.exit(1)
+            contig_uids, fastafilename = download_wgsmaster_contigs(links)
     except:
         logger.error("Could not recover contigs (exiting)")
-        logger.error("Links: %s" % links[0]['LinkSetDb'])
         logger.error(last_exception())
         sys.exit(1)
-    if not wgsmaster:
-        contig_uids = set([e['Id'] for e in contigs['Link']])
     logger.info("Identified %d contig UIDs" % len(contig_uids))
-    if len(contig_uids) == 100000:  # Hit retmax limit
-        # At the retmax limit, do a direct download. Refactor here
-        # as repeats above code
-        wgsmaster = True
-        logger.info("Using assembly_nuccore_wgsmaster links")
-        wgsmaster_uid = [l['Link'][0]['Id'] for l in links[0]['LinkSetDb']
-                         if l['LinkName'] == 'assembly_nuccore_wgsmaster'][0]
-        contig_uids, fastafilename = retrieve_wgsmaster_contigs(wgsmaster_uid)
     return {'wgsmaster': wgsmaster,
             'filename': fastafilename,
             'contig_uids': contig_uids}
 
+# Download contigs from wgsmaster record indicated in Elink result
+def download_wgsmaster_contigs(links):
+    """Download assembly contigs from the wgsmaster record in the passed
+    Elink results, and extract the archive. Returns a list of IDs for the
+    contigs, and path to the extracted FASTA file.
+    """
+    wgsmaster_uid = [l['Link'][0]['Id'] for l in links[0]['LinkSetDb']
+                     if l['LinkName']=='assembly_nuccore_wgsmaster'][0]
+    return retrieve_wgsmaster_contigs(wgsmaster_uid)
+
+# Retrieves contigs from Entrez by links from assembly entries
+def retrieve_contig_uids(links, linktype):
+    """Passed the returned 'assembly_nuccore_insdc' or
+    'assembly_nuccore_refseq' links for an assembly, retrieves the contig
+    UIDs.
+
+    - links: returned links from an Elink query
+    - linktype: the kind of links we want to use for contig UIDs
+    """
+    contigs = [l for l in links[0]['LinkSetDb'] 
+               if l['LinkName'] == linktype][0]
+    contig_uids = set([e['Id'] for e in contigs['Link']])
+    return contig_uids
+
+# Returns the linktype to be used for downloading contigs
+def guess_linktype(links):
+    """Returns the type of link to be used for downloading contigs, from an
+    Entrez Elink list. We prefer insdc > refseq > wgsmaster
+    """
+    for linktype in ['assembly_nuccore_insdc', 'assembly_nuccore_inrefseq',
+                     'assembly_nuccore_wgsmaster']:
+        if linktype in [l['LinkName'] for l in links[0]['LinkSetDb']]:
+            return linktype
+    # If we're here, then there's no valid linktype
+    logger.error("No valid linktype found (exiting)")
+    sys.exit(1)
 
 # Download and uncompress the wgsmaster contig archive
 def retrieve_wgsmaster_contigs(uid):
@@ -280,14 +306,14 @@ def retrieve_wgsmaster_contigs(uid):
             logger.info("Downloading: %s Bytes: %s" % (fname, fsize))
             fsize_dl = 0
             bsize = 1048576
-        except:
+        except:  # Download didn't work. Assuming it's because of version
             fsize = None
             logger.error("Download failed for (%s)" % url)
             if str(dlver) != '0':
                 dlver = int(dlver) - 1
                 logger.info("Retrying download with version = %s" % dlver)
             else:
-                logger.error("(exiting)")
+                logger.error("No more versions to try (exiting)")
                 sys.exit(1)
     # Download data
     try:
@@ -420,13 +446,7 @@ def write_contigs(asm_uid, contig_uids):
             # Check only that correct number of records returned.
             if len(records) == len(contig_uids):  
                 success = True
-            elif len(records) >= len(contig_uids):
-                logger.warning("%d contigs expected, %d contigs returned" %
-                               (len(contig_uids), len(records)))
-                logger.warning("(continuing)")
             else:  
-                # This isn't always a real failure - we need to batch
-                # download when len(contigs) > 10k
                 logger.warning("%d contigs expected, %d contigs returned" %
                                (len(contig_uids), len(records)))
                 logger.warning("FASTA download for assembly %s failed" %
@@ -512,31 +532,15 @@ if __name__ == '__main__':
     for tid, asm_uids in list(asm_dict.items()):
         logger.info("Taxon %s: %d assemblies" % (tid, len(asm_uids)))
 
-    # Get links to the nucleotide database for each assembly UID
+    # Download contigs for each assembly UID
+    classes, labels = [], []
     contig_dict = defaultdict(set)
     for tid, asm_uids in list(asm_dict.items()):
         for asm_uid in asm_uids:
             contig_dict[asm_uid] = get_contig_uids(asm_uid)
-    for asm_uid, contig_uids in list(contig_dict.items()):
-        logger.info("Assembly %s: %d contigs" %
-                    (asm_uid, len(contig_uids['contig_uids'])))
-
-    # Bail out here if we're only counting
-    if args.count:
-        logger.info("--count option selected, only counting, not downloading")
-        logger.info("(exiting)")
-        sys.exit(0)
-
-    # Write each recovered assembly's contig set to a file in the 
-    # specified output directory, and collect string labels to write in
-    # class and label files (e.g. for use with pyani).
-    classes, labels = [], []
-    for asm_uid, contig_uids in list(contig_dict.items()):
-        classtxt, labeltxt = get_class_label_info(asm_uid)
-        classes.append(classtxt)
-        labels.append(labeltxt)
-        if not contig_uids['wgsmaster']:
-            write_contigs(asm_uid, contig_uids['contig_uids'])
+            classtxt, labeltxt = get_class_label_info(asm_uid)
+            classes.append(classtxt)
+            labels.append(labeltxt)
 
     # Write class and label files
     classfilename = os.path.join(args.outdirname, 'classes.txt')
@@ -547,3 +551,12 @@ if __name__ == '__main__':
     logger.info("Writing labels file to %s" % labelfilename)
     with open(labelfilename, 'w') as fh:
         fh.write('\n'.join(labels))
+
+    # Report the number of contigs we got for each assembly
+    for asm_uid, contig_uids in list(contig_dict.items()):
+        logger.info("Assembly %s: %d contigs" %
+                    (asm_uid, len(contig_uids['contig_uids'])))
+
+    # Let the user know we're done
+    logger.info(time.asctime())
+    logger.info("Done.")
