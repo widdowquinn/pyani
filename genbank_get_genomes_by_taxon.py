@@ -135,6 +135,29 @@ def entrez_retry(fn, *fnargs, **fnkwargs):
     return output
 
 
+# Get results from NCBI web history, in batches
+def entrez_batch_webhistory(record, expected, batchsize, *fnargs, **fnkwargs):
+    """Recovers the Entrez data from a prior NCBI webhistory search, in 
+    batches of defined size, using Efetch. Returns all results as a list.
+
+    - record: Entrez webhistory record
+    - expected: number of expected search returns
+    - batchsize: how many search returns to retrieve in a batch
+    - *fnargs: arguments to Efetch
+    - **fnkwargs: keyword arguments to Efetch
+    """
+    results = []
+    for start in range(0, expected, batchsize):
+        batch_handle = entrez_retry(Entrez.efetch,
+                                    retstart=start, retmax=batchsize,
+                                    webenv=record["WebEnv"],
+                                    query_key=record["QueryKey"],
+                                    *fnargs, **fnkwargs)
+        batch_record = Entrez.read(batch_handle)
+        results.extend(batch_record)
+    return results
+
+
 # Get assembly UIDs for the root taxon
 def get_asm_uids(taxon_uid):
     """Returns a set of NCBI UIDs associated with the passed taxon.
@@ -142,26 +165,20 @@ def get_asm_uids(taxon_uid):
     This query at NCBI returns all assemblies for the taxon subtree
     rooted at the passed taxon_uid.
     """
-    asm_ids = set()  # Holds unique assembly UIDs
     query = "txid%s[Organism:exp]" % taxon_uid
-    logger.info("ESearch for %s" % query)
+    logger.info("Entrez ESearch with query: %s" % query)
     
-    # Perform initial search with usehistory
+    # Perform initial search for assembly UIDs with taxon ID as query.
+    # Use NCBI history for the search.
     handle = entrez_retry(Entrez.esearch, db="assembly", term=query,
                           format="xml", usehistory="y")
     record = Entrez.read(handle)
     result_count = int(record['Count'])
     logger.info("Entrez ESearch returns %d assembly IDs" % result_count)
     
-    # Recover all child nodes
-    batch_size = 250
-    for start in range(0, result_count, batch_size):
-        batch_handle = entrez_retry(Entrez.efetch, db="assembly", retmode="xml",
-                                    retstart=start, retmax=batch_size,
-                                    webenv=record["WebEnv"], 
-                                    query_key=record["QueryKey"])
-        batch_record = Entrez.read(batch_handle)
-        asm_ids = asm_ids.union(set(batch_record))
+    # Recover assembly UIDs from the web history
+    asm_ids = entrez_batch_webhistory(record, result_count, 250,
+                                      db="assembly", retmode="xml")
     logger.info("Identified %d unique assemblies" % len(asm_ids))
     return asm_ids
 
@@ -501,8 +518,8 @@ if __name__ == '__main__':
         for asm_uid in asm_uids:
             contig_dict[asm_uid] = get_contig_uids(asm_uid)
     for asm_uid, contig_uids in list(contig_dict.items()):
-        logger.info("Assembly %s: %d contigs" % (asm_uid,
-                                                 len(contig_uids['contig_uids'])))
+        logger.info("Assembly %s: %d contigs" %
+                    (asm_uid, len(contig_uids['contig_uids'])))
 
     # Bail out here if we're only counting
     if args.count:
