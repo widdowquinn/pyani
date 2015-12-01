@@ -124,10 +124,8 @@ def entrez_retry(fn, *fnargs, **fnkwargs):
             success = True
         except:
             tries += 1
-            logger.warning("Entrez query %s(%s, %s) failed (%d/%d)" % (fn, fnargs,
-                                                                   fnkwargs, 
-                                                                   tries+1,
-                                                                   args.retries))
+            logger.warning("Entrez query %s(%s, %s) failed (%d/%d)" %
+                           (fn, fnargs, fnkwargs, tries+1, args.retries))
             logger.warning(last_exception())
     if not success:
         logger.error("Too many Entrez failures (exiting)")
@@ -147,8 +145,8 @@ def get_asm_uids(taxon_uid):
     logger.info("ESearch for %s" % query)
     
     # Perform initial search with usehistory
-    handle = entrez_retry(Entrez.esearch, db="assembly", term=query, format="xml",
-                          usehistory="y")
+    handle = entrez_retry(Entrez.esearch, db="assembly", term=query,
+                          format="xml", usehistory="y")
     record = Entrez.read(handle)
     result_count = int(record['Count'])
     logger.info("Entrez ESearch returns %d assembly IDs" % result_count)
@@ -253,8 +251,9 @@ def write_contigs(asm_uid, contig_uids):
     tries, success = 0, False
     while not success and tries < args.retries:
         try:
-            seqdata = entrez_retry(Entrez.efetch, db='nucleotide', id=query_uids,
-                                   rettype='fasta', retmode='text')
+            seqdata = entrez_retry(Entrez.efetch, db='nucleotide', 
+                                   id=query_uids, rettype='fasta',
+                                   retmode='text')
             records = list(SeqIO.parse(seqdata, 'fasta'))
             tries += 1
             # Check only that correct number of records returned.
