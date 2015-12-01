@@ -20,7 +20,8 @@ def get_fasta_files(dirname=None):
     """
     if dirname is None:
         dirname = '.'
-    infiles = get_input_files(dirname, '.fasta', '.fas', '.fa', '.fna')
+    infiles = get_input_files(dirname, '.fasta', '.fas', '.fa', '.fna',
+                              '.fsa_nt')
     return infiles
 
 
