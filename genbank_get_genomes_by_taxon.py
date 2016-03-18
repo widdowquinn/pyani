@@ -153,7 +153,7 @@ def entrez_batch_webhistory(record, expected, batchsize, *fnargs, **fnkwargs):
                                     webenv=record["WebEnv"],
                                     query_key=record["QueryKey"],
                                     *fnargs, **fnkwargs)
-        batch_record = Entrez.read(batch_handle)
+        batch_record = Entrez.read(batch_handle, validate=False)
         results.extend(batch_record)
     return results
 
@@ -172,7 +172,7 @@ def get_asm_uids(taxon_uid):
     # Use NCBI history for the search.
     handle = entrez_retry(Entrez.esearch, db="assembly", term=query,
                           format="xml", usehistory="y")
-    record = Entrez.read(handle)
+    record = Entrez.read(handle, validate=False)
     result_count = int(record['Count'])
     logger.info("Entrez ESearch returns %d assembly IDs" % result_count)
     
@@ -204,7 +204,7 @@ def get_contig_uids(asm_uid):
     # The Elink search returns a single result, so we don't need to batch
     linklist = entrez_retry(Entrez.elink, dbfrom="assembly", db="nucleotide",
                             retmode="gb", from_uid=asm_uid)
-    links = Entrez.read(linklist) 
+    links = Entrez.read(linklist, validate=False) 
     # Assemblies may be in 'assembly_nuccore_insdc', 'nuccore', or
     # 'assembly_nuccore_wgsmaster' databases. For a list of link names:
     # http://www.ncbi.nlm.nih.gov/entrez/query/static/entrezlinks.html
@@ -281,7 +281,7 @@ def retrieve_wgsmaster_contigs(uid):
     """
     logger.info("Processing wgsmaster UID: %s" % uid)
     summary = Entrez.read(Entrez.esummary(db='nuccore', id=uid,
-                                          rettype='text'))
+                                          rettype='text', validate=False))
     # Assume that the 'Extra' field is present and is well-formatted.
     # Which means that the first six characters of the last part of
     # the 'Extra' string correspond to the download archive filestem.
@@ -334,7 +334,7 @@ def retrieve_wgsmaster_contigs(uid):
     # Extract archive
     asm_summary = entrez_retry(Entrez.esummary, db='assembly', id=asm_uid,
                                rettype='text')
-    asm_record = Entrez.read(asm_summary)
+    asm_record = Entrez.read(asm_summary, validate=False)
     gname = asm_record['DocumentSummarySet']['DocumentSummary']\
             [0]['AssemblyAccession']
     extractfname = os.path.join(args.outdirname,
@@ -362,7 +362,7 @@ def get_class_label_info(asm_uid):
     # Assembly record - get binomial and strain names
     asm_summary = entrez_retry(Entrez.esummary, db='assembly', id=asm_uid,
                                rettype='text')
-    asm_record = Entrez.read(asm_summary)
+    asm_record = Entrez.read(asm_summary, validate=False)
     asm_organism = asm_record['DocumentSummarySet']['DocumentSummary']\
                    [0]['SpeciesName']
     try:
@@ -403,7 +403,7 @@ def write_contigs(asm_uid, contig_uids):
     # Assembly record - get binomial and strain names
     asm_summary = entrez_retry(Entrez.esummary, db='assembly', id=asm_uid,
                                rettype='text')
-    asm_record = Entrez.read(asm_summary)
+    asm_record = Entrez.read(asm_summary, validate=False)
     asm_organism = asm_record['DocumentSummarySet']['DocumentSummary']\
                    [0]['SpeciesName']
     try:
