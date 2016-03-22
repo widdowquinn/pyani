@@ -206,7 +206,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                                              width_ratios = [1, 0.15])
     rowdend_axes = fig.add_subplot(rowGS[0, 0])
     rowdend = sch.dendrogram(rowclusters, color_threshold=np.inf,
-                             orientation="right")
+                             orientation="left")
     clean_axis(rowdend_axes)
 
     # Create heatmap axis
