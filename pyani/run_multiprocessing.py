@@ -19,7 +19,7 @@ CUMRETVAL = 0
 
 
 # Run a job dependency graph with multiprocessing
-def run_dependency_graph(jobgraph, verbose=False, logger=None):
+def run_dependency_graph(jobgraph, workers=None, verbose=False, logger=None):
     """Creates and runs pools of jobs based on the passed jobgraph.
     
     - jobgraph - list of jobs, which may have dependencies.
@@ -42,7 +42,7 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None):
             logger.info("Command pool now running:")
             for cmd in cmdset:
                 logger.info(cmd)
-        cumretval += multiprocessing_run(cmdset, verbose)
+        cumretval += multiprocessing_run(cmdset, workers, verbose)
         if logger:  # Try to be informative, if the logger module is being used
             logger.info("Command pool done.")
     return cumretval
@@ -65,7 +65,7 @@ def populate_cmdsets(job, cmdsets, depth):
 
 
 # Run a set of command lines using multiprocessing
-def multiprocessing_run(cmdlines, verbose=False):
+def multiprocessing_run(cmdlines, workers=None, verbose=False):
     """Distributes passed command-line jobs using multiprocessing.
 
     - cmdlines - an iterable of command line strings
@@ -77,7 +77,9 @@ def multiprocessing_run(cmdlines, verbose=False):
     # Keep track of return values for this pool, reset to zero
     global CUMRETVAL
     # Run jobs
-    pool = multiprocessing.Pool()
+    # If workers is None or greater than the number of cores available,
+    # it will be set to the maximum number of cores, according to 
+    pool = multiprocessing.Pool(processes=workers)
     completed = []
     if verbose:
         callback_fn = status_callback

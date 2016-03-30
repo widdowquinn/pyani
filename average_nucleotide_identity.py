@@ -224,6 +224,9 @@ def parse_cmdline(args):
     parser.add_argument("--scheduler", dest="scheduler",
                         action="store", default="multiprocessing",
                         help="Job scheduler [multiprocessing|SGE]")
+    parser.add_argument("--workers", dest="workers",
+                        action="store", default=None, type=int,
+                        help="Number of worker processes for multiprocessing")
     parser.add_argument("--maxmatch", dest="maxmatch",
                         action="store_true", default=False,
                         help="Override MUMmer to allow all NUCmer matches")
@@ -342,7 +345,14 @@ def calculate_anim(infiles, org_lengths):
                                             jobprefix=args.jobprefix)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
-            cumval = run_mp.run_dependency_graph(joblist, verbose=args.verbose,
+            if args.workers is None:
+                logger.info("(using maximum number of available " +
+                            "worker threads)")
+            else:
+                logger.info("(using %d worker threads)" % args.workers)
+            cumval = run_mp.run_dependency_graph(joblist,
+                                                 workers=args.workers, 
+                                                 verbose=args.verbose,
                                                  logger=logger)
             logger.info("Cumulative return value: %d" % cumval)
             if 0 < cumval:
