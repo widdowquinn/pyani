@@ -349,7 +349,8 @@ def calculate_anim(infiles, org_lengths):
                 logger.info("(using maximum number of available " +
                             "worker threads)")
             else:
-                logger.info("(using %d worker threads)" % args.workers)
+                logger.info("(using %d worker threads, if available)" %
+                            args.workers)
             cumval = run_mp.run_dependency_graph(joblist,
                                                  workers=args.workers, 
                                                  verbose=args.verbose,
