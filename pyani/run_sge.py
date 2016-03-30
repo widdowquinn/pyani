@@ -31,7 +31,7 @@ def split_seq(iterable, size):
 
 # Run a job dependency graph, with SGE
 def run_dependency_graph(jobgraph, verbose=False, logger=None,
-                         jgprefix="ANIm_SGE_JG"):
+                         jgprefix="ANIm_SGE_JG", sgegroupsize=10000):
     """Creates and runs GridEngine scripts for jobs based on the passed
     jobgraph.
     
@@ -75,8 +75,8 @@ def run_dependency_graph(jobgraph, verbose=False, logger=None,
             jobcmds[cmd].append(job.command)
         jobgroups = []
         for cmd, jobcmd in list(jobcmds.items()):
-            # Break arglist up into batches of 10,000
-            sublists = split_seq(jobcmd, 10000)
+            # Break arglist up into batches of sgegroupsize (default: 10,000)
+            sublists = split_seq(jobcmd, sgegroupsize)
             count = 0
             for sublist in sublists:
                 count += 1
