@@ -116,7 +116,8 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
         col_cb = pd.Series(df.index).map(lvl_pal)
 
     # Labels are defined before we build the clustering
-    newlabels = [labels[i] for i in df.index]
+    # If a label mapping is missing, use the key text as fall back
+    newlabels = [labels.get(i, i) for i in df.index]
 
     # Plot heatmap
     fig = sns.clustermap(df, cmap=cmap, vmin=vmin, vmax=vmax,
@@ -252,8 +253,9 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     rowticklabels = df.index[rowdend['leaves']]
     colticklabels = df.index[coldend['leaves']]
     if labels:
-        rowticklabels = [labels[lab] for lab in rowticklabels]
-        colticklabels = [labels[lab] for lab in colticklabels]
+        # If a label mapping is missing, use the key text as fall back
+        rowticklabels = [labels.get(lab, lab) for lab in rowticklabels]
+        colticklabels = [labels.get(lab, lab) for lab in colticklabels]
     xlabs = heatmap_axes.set_xticklabels(colticklabels)
     ylabs = heatmap_axes.set_yticklabels(rowticklabels)
     for label in xlabs:  # Rotate column labels
