@@ -139,9 +139,8 @@ def build_job_scripts(root_dir, jobs):
   # scriptPath to the Job object
   for job in jobs:
       scriptPath = os.path.join(root_dir, "jobs", job.name)
-      scriptFile = open(scriptPath, "w")
-      scriptFile.write("#!/bin/sh\n#$ -S /bin/bash\n%s\n" % job.script)
-      scriptFile.close()
+      with open(scriptPath, "w") as scriptFile:
+          scriptFile.write("#!/bin/sh\n#$ -S /bin/bash\n%s\n" % job.script)
       job.scriptPath = scriptPath
 
 
