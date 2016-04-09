@@ -184,8 +184,9 @@ def parse_cmdline(args):
     parser.add_argument("-f", "--force", dest="force",
                         action="store_true", default=False,
                         help="Force file overwriting")
-    parser.add_argument("-s", "--fragsize", const="fragsize",
-                        action="store_const", default=pyani_config.FRAGSIZE,
+    parser.add_argument("-s", "--fragsize", dest="fragsize",
+                        action="store", default=pyani_config.FRAGSIZE,
+                        type=int,
                         help="Sequence fragment size for ANIb")
     parser.add_argument("-l", "--logfile", dest="logfile",
                         action="store", default=None,
