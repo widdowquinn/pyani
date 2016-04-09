@@ -1,11 +1,6 @@
-# CHANGES.md - pyani
+# CHANGES.md
 
-## v0.2
+## 2016-04-09
 
-* Added `genbank_get_genomes_by_taxon.py` script for download of assembled genomes, by taxon ID
-* Translated code for Python3 compatibility
-* Added `seaborn` graphics output to `--gformat` for `average_nucleotide_identity.py`.
-* Added `heatmap_seaborn()` function to `pyani_graphics.py`.
-* Removed `eps` from the default graphics output formats in `average_nucleotide_identity.py`.
-* Added subsampling option to `average_nucleotide_identity.py` (`--subsample` option), with PRNG seeding for reproducibility.
-* SGE now puts `ANIm` jobs in an array, to avoid swamping local queues.
+* Merged [pull request](https://github.com/widdowquinn/pyani/pull/17) from peterjc to make printing from tests Python3-friendly.
+* Merged [pull request](https://github.com/widdowquinn/pyani/pull/21) from peterjc to use `open()` for opening files.
