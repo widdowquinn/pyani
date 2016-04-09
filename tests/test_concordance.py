@@ -9,6 +9,8 @@ If the test is run directly at the command-line, the output obtained by each
 test is returned to STDOUT.
 """
 
+from __future__ import print_function
+
 from nose.tools import assert_equal, assert_less
 from pyani.run_multiprocessing import multiprocessing_run
 
@@ -71,7 +73,7 @@ def parse_table(filename, title):
                             data[columns[idx]][row] = 1.0
             else:
                 pass
-    return data.sort(axis=0).sort(axis=1)
+    return data.sort_index(axis=0).sort_index(axis=1)
 
 
 # Make output directory if necessary
@@ -116,7 +118,7 @@ def test_anib_concordance():
     # Process BLAST; the pid data is in anib_data[1]
     anib_data = anib.process_blast(outdirname, org_lengths, fraglengths,
                                    mode="ANIb")
-    anib_pid = anib_data[1].sort(axis=0).sort(axis=1) * 100.
+    anib_pid = anib_data[1].sort_index(axis=0).sort_index(axis=1) * 100.
 
     index, columns = anib_pid.index, anib_pid.columns
     diffmat = anib_pid.as_matrix() - anib_jspecies.as_matrix()
@@ -132,12 +134,12 @@ def test_anib_concordance():
     anib_diff.to_csv(os.path.join(outdirname,
                                   'ANIb_diff.tab'),
                      sep='\t')
-    print "ANIb concordance test output placed in %s" % outdirname
-    print anib_pid, anib_jspecies, anib_diff
+    print("ANIb concordance test output placed in %s" % outdirname)
+    print(anib_pid, anib_jspecies, anib_diff)
 
     # We'd like the absolute difference reported to be < ANIB_THRESHOLD
     max_diff = anib_diff.abs().values.max()
-    print "Maximum difference for ANIb: %e" % max_diff
+    print("Maximum difference for ANIb: %e" % max_diff)
     assert_less(max_diff, ANIB_THRESHOLD)
 
 
@@ -173,7 +175,8 @@ def test_aniblastall_concordance():
     aniblastall_data = anib.process_blast(outdirname, org_lengths,
                                           fraglengths,
                                           mode="ANIblastall")
-    aniblastall_pid = aniblastall_data[1].sort(axis=0).sort(axis=1) * 100.
+    aniblastall_pid = \
+        aniblastall_data[1].sort_index(axis=0).sort_index(axis=1) * 100.
 
     index, columns = aniblastall_pid.index, aniblastall_pid.columns
     diffmat = aniblastall_pid.as_matrix() - aniblastall_jspecies.as_matrix()
@@ -189,12 +192,12 @@ def test_aniblastall_concordance():
     aniblastall_diff.to_csv(os.path.join(outdirname,
                                   'ANIblastall_diff.tab'),
                      sep='\t')
-    print "ANIblastall concordance test output placed in %s" % outdirname
-    print aniblastall_pid, aniblastall_jspecies, aniblastall_diff
+    print("ANIblastall concordance test output placed in %s" % outdirname)
+    print(aniblastall_pid, aniblastall_jspecies, aniblastall_diff)
 
     # We'd like the absolute difference reported to be < ANIBLASTALL_THRESHOLD
     max_diff = aniblastall_diff.abs().values.max()
-    print "Maximum difference for ANIblastall: %e" % max_diff
+    print("Maximum difference for ANIblastall: %e" % max_diff)
     assert_less(max_diff, ANIB_THRESHOLD)
 
 
@@ -219,9 +222,9 @@ def test_anim_concordance():
     multiprocessing_run(cmdlist, verbose=False)
     # Process .delta files
     anim_data = anim.process_deltadir(outdirname, org_lengths)
-    anim_pid = anim_data[1].sort(axis=0).sort(axis=1) * 100.
+    anim_pid = anim_data[1].sort_index(axis=0).sort_index(axis=1) * 100.
 
-    print anim_data
+    print(anim_data)
 
     index, columns = anim_pid.index, anim_pid.columns
     diffmat = anim_pid.as_matrix() - anim_jspecies.as_matrix()
@@ -237,12 +240,12 @@ def test_anim_concordance():
     anim_diff.to_csv(os.path.join(outdirname,
                                   'ANIm_diff.tab'),
                      sep='\t')
-    print "ANIm concordance test output placed in %s" % outdirname
-    print anim_pid, anim_jspecies, anim_diff
+    print("ANIm concordance test output placed in %s" % outdirname)
+    print(anim_pid, anim_jspecies, anim_diff)
 
     # We'd like the absolute difference reported to be < ANIB_THRESHOLD
     max_diff = anim_diff.abs().values.max()
-    print "Maximum difference for ANIm: %e" % max_diff
+    print("Maximum difference for ANIm: %e" % max_diff)
     assert_less(max_diff, ANIM_THRESHOLD)
 
 
@@ -281,12 +284,12 @@ def test_tetra_concordance():
     tetra_diff.to_csv(os.path.join(outdirname,
                                    'tetra_diff.tab'),
                       sep='\t')
-    print "TETRA concordance test output placed in %s" % outdirname
-    print tetra_correlations, tetra_jspecies, tetra_diff
+    print("TETRA concordance test output placed in %s" % outdirname)
+    print(tetra_correlations, tetra_jspecies, tetra_diff)
 
     # We'd like the absolute difference reported to be < TETRA_THRESHOLD
     max_diff = tetra_diff.abs().values.max()
-    print "Maximum difference for TETRA: %e" % max_diff
+    print("Maximum difference for TETRA: %e" % max_diff)
     assert_less(max_diff, TETRA_THRESHOLD)
     
 
