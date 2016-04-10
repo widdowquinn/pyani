@@ -168,7 +168,7 @@ from argparse import ArgumentParser
 from pyani import anib, anim, tetra, pyani_config, pyani_files, pyani_graphics
 from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
-from pyani.pyani_config import params_mpl, params_r, ALIGNDIR
+from pyani.pyani_config import params_mpl, params_r, ALIGNDIR, FRAGSIZE
 
 
 # Process command-line arguments
@@ -188,7 +188,7 @@ def parse_cmdline(args):
                         action="store_true", default=False,
                         help="Force file overwriting")
     parser.add_argument("-s", "--fragsize", dest="fragsize",
-                        action="store", default=pyani_config.FRAGSIZE,
+                        action="store", default=FRAGSIZE,
                         type=int,
                         help="Sequence fragment size for ANIb")
     parser.add_argument("-l", "--logfile", dest="logfile",
@@ -205,6 +205,9 @@ def parse_cmdline(args):
     parser.add_argument("--noclobber", dest="noclobber",
                         action="store_true", default=False,
                         help="Don't nuke existing files")
+    parser.add_argument("--nocompress", dest="nocompress",
+                        action="store_true", default=False,
+                        help="Don't compress/delete the comparison output")
     parser.add_argument("-g", "--graphics", dest="graphics",
                         action="store_true", default=False,
                         help="Generate heatmap of ANI")
@@ -326,10 +329,10 @@ def compress_delete_outdir(outdir):
     """Compress the contents of the passed directory to .tar.gz and delete."""
     # Compress output in .tar.gz file and remove raw output
     tarfn = outdir + '.tar.gz'
-    logger.info("Compressing output from %s to %s" % (outdir, tarfn))
+    logger.info("\tCompressing output from %s to %s" % (outdir, tarfn))
     with tarfile.open(tarfn, "w:gz") as fh:
         fh.add(outdir)
-    logger.info("Removing output directory %s" % outdir)
+    logger.info("\tRemoving output directory %s" % outdir)
     shutil.rmtree(outdir)
 
 
@@ -411,7 +414,9 @@ def calculate_anim(infiles, org_lengths):
                 logger.error("This is alternatively due to NUCmer run " +
                              "failure, analysis will continue, but please " +
                              "investigate.")
-    compress_delete_outdir(deltadir)
+    if not args.nocompress:
+        logger.info("Compressing/deleting %s" % deltadir)
+        compress_delete_outdir(deltadir)
 
     # Return processed data from .delta files
     return tuple(data[:-1])
@@ -484,6 +489,8 @@ def unified_anib(infiles, org_lengths):
     output directory in plain text tab-separated format.
     """
     logger.info("Running %s" % args.method)
+    blastdir = os.path.join(args.outdirname, ALIGNDIR[args.method])
+    logger.info("Writing BLAST output to %s" % blastdir)
     # Build BLAST databases and run pairwise BLASTN
     if not args.skip_blastn:
         # Make sequence fragments
@@ -491,14 +498,12 @@ def unified_anib(infiles, org_lengths):
                     args.outdirname)
         # Fraglengths does not get reused with BLASTN
         fragfiles, fraglengths = anib.fragment_FASTA_files(infiles,
-                                                           args.outdirname,
+                                                           blastdir,
                                                            args.fragsize)
-        # Export fragment lengths as JSON, in case we re-run BLASTALL with
-        # --skip_blastn
-        if args.method == "ANIblastall":
-            with open(os.path.join(args.outdirname,
-                                   'fraglengths.json'), 'w') as outfile:
-                json.dump(fraglengths, outfile)
+        # Export fragment lengths as JSON, in case we re-run with --skip_blastn
+        with open(os.path.join(blastdir,
+                               'fraglengths.json'), 'w') as outfile:
+            json.dump(fraglengths, outfile)
 
         # Which executables are we using?
         if args.method == "ANIblastall":
@@ -510,13 +515,14 @@ def unified_anib(infiles, org_lengths):
 
         # Run BLAST database-building and executables from a jobgraph
         logger.info("Creating job dependency graph")
-        jobgraph = anib.make_job_graph(infiles, fragfiles, args.outdirname,
+        jobgraph = anib.make_job_graph(infiles, fragfiles, blastdir,
                                        format_exe, blast_exe, args.method,
                                        jobprefix=args.jobprefix)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             logger.info("Running job dependency graph")
-            cumval = run_mp.run_dependency_graph(jobgraph, verbose=args.verbose,
+            cumval = run_mp.run_dependency_graph(jobgraph,
+                                                 verbose=args.verbose,
                                                  logger=logger)
             if 0 < cumval:
                 logger.warning("At least one BLAST run failed. " +
@@ -530,7 +536,7 @@ def unified_anib(infiles, org_lengths):
     else:
         # Import fragment lengths from JSON
         if args.method == "ANIblastall":
-            with open(os.path.join(args.outdirname, 'fraglengths.json'),
+            with open(os.path.join(blastdir, 'fraglengths.json'),
                       'rU') as infile:
                 fraglengths = json.load(infile)
         else:
@@ -540,7 +546,7 @@ def unified_anib(infiles, org_lengths):
     # Process pairwise BLASTN output
     logger.info("Processing pairwise %s BLAST output." % args.method)
     try:
-        data = anib.process_blast(args.outdirname, org_lengths,
+        data = anib.process_blast(blastdir, org_lengths,
                                   fraglengths=fraglengths, mode=args.method)
     except ZeroDivisionError:
         logger.error("One or more BLAST output files has a problem.")
@@ -552,6 +558,11 @@ def unified_anib(infiles, org_lengths):
                 logger.error("This is possibly due to a BLASTN comparison " +
                              "being too distant for use.")
         logger.error(last_exception())
+    if not args.nocompress:
+        logger.info("Compressing/deleting %s" % blastdir)
+        compress_delete_outdir(blastdir)
+
+    # Return processed BLAST data
     return data
 
 
