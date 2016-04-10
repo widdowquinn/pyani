@@ -21,6 +21,7 @@ from matplotlib import cm
 from matplotlib.colors import LinearSegmentedColormap
 
 import numpy as np
+import os
 
 import scipy.cluster.hierarchy as sch
 import scipy.spatial.distance as distance
@@ -114,10 +115,15 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
         paldict = {lvl:pal for (lvl, pal) in zip(levels, pal)}
         lvl_pal = {cls:paldict[lvl] for (cls, lvl) in list(classes.items())}
         col_cb = pd.Series(df.index).map(lvl_pal)
+    else:
+        col_cb = None
 
     # Labels are defined before we build the clustering
     # If a label mapping is missing, use the key text as fall back
-    newlabels = [labels.get(i, i) for i in df.index]
+    if labels is not None:
+        newlabels = [labels.get(i, i) for i in df.index]
+    else:
+        newlabels = [i for i in df.index]
 
     # Plot heatmap
     fig = sns.clustermap(df, cmap=cmap, vmin=vmin, vmax=vmax,
@@ -318,7 +324,12 @@ def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
     rstr = ["library(gplots)", "library(RColorBrewer)"]  # R import
     rstr.append("ani = read.table('%s', header=T, sep='\\t', row.names=1)" %
                 infilename)
-    rstr.append("%s('%s')" % (gformat, outfilename))
+    outfmt = os.path.splitext(outfilename)[-1][1:]
+    rfns = {'eps': 'setEPS(); postscript("%s")' % outfilename,
+            'pdf': 'pdf("%s")' % outfilename,
+            'png': 'png("%s", width=2000, height=2000)' % outfilename}
+    rstr.append("%s" % rfns[outfmt])
+#    rstr.append("%s('%s')" % (rfns[outfmt], outfilename))
     rstr.append("par(cex.main=0.75)")
     if classes:  # Define colour list
         lbls, cls = [], []
