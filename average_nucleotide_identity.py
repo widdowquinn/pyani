@@ -159,6 +159,7 @@ import os
 import random
 import shutil
 import sys
+import tarfile
 import time
 import traceback
 
@@ -167,7 +168,7 @@ from argparse import ArgumentParser
 from pyani import anib, anim, tetra, pyani_config, pyani_files, pyani_graphics
 from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
-from pyani.pyani_config import params_mpl, params_r
+from pyani.pyani_config import params_mpl, params_r, ALIGNDIR
 
 
 # Process command-line arguments
@@ -306,6 +307,10 @@ def make_outdir():
     logger.info("Creating directory %s" % args.outdirname)
     try:
         os.makedirs(args.outdirname)   # We make the directory recursively
+        # Depending on the choice of method, a subdirectory will be made for
+        # alignment output files
+        if args.method != 'TETRA':
+            os.makedirs(os.path.join(args.outdirname, ALIGNDIR[args.method]))
     except OSError:
         # This gets thrown if the directory exists. If we've forced overwrite/
         # delete and we're not clobbering, we let things slide
@@ -314,6 +319,18 @@ def make_outdir():
         else:
             logger.error(last_exception)
             sys.exit(1)
+
+
+# Compress output directory and delete it
+def compress_delete_outdir(outdir):
+    """Compress the contents of the passed directory to .tar.gz and delete."""
+    # Compress output in .tar.gz file and remove raw output
+    tarfn = outdir + '.tar.gz'
+    logger.info("Compressing output from %s to %s" % (outdir, tarfn))
+    with tarfile.open(tarfn, "w:gz") as fh:
+        fh.add(outdir)
+    logger.info("Removing output directory %s" % outdir)
+    shutil.rmtree(outdir)
 
 
 # Calculate ANIm for input
@@ -341,6 +358,8 @@ def calculate_anim(infiles, org_lengths):
     """
     logger.info("Running ANIm")
     logger.info("Generating NUCmer command-lines")
+    deltadir = os.path.join(args.outdirname, ALIGNDIR['ANIm'])
+    logger.info("Writing nucmer output to %s" % deltadir)
     # Schedule NUCmer runs
     if not args.skip_nucmer:
         joblist = anim.generate_nucmer_jobs(infiles, args.outdirname,
@@ -377,7 +396,7 @@ def calculate_anim(infiles, org_lengths):
 
     # Process resulting .delta files
     logger.info("Processing NUCmer .delta files.")
-    data = anim.process_deltadir(args.outdirname, org_lengths, logger=logger)
+    data = anim.process_deltadir(deltadir, org_lengths, logger=logger)
     if data[-1]:  # zero percentage identity error
         if not args.skip_nucmer and args.scheduler == 'multiprocessing':
             if 0 < cumval:
@@ -389,8 +408,12 @@ def calculate_anim(infiles, org_lengths):
                 logger.error("This is possibly due to a NUCmer comparison " +
                              "being too distant for use. Please consider " +
                              "using the --maxmatch option.")
-                logger.error("This is alternatively due to NUCmer run failure, " +
-                             "analysis will continue, but please investigate.")
+                logger.error("This is alternatively due to NUCmer run " +
+                             "failure, analysis will continue, but please " +
+                             "investigate.")
+    compress_delete_outdir(deltadir)
+
+    # Return processed data from .delta files
     return tuple(data[:-1])
 
 
@@ -403,9 +426,9 @@ def calculate_tetra(infiles, org_lengths):
 
     Calculates TETRA correlation scores, as described in:
 
-    Richter M, Rossello-Mora R (2009) Shifting the genomic gold standard for the
-    prokaryotic species definition. Proc Natl Acad Sci USA 106: 19126-19131.
-    doi:10.1073/pnas.0906412106.
+    Richter M, Rossello-Mora R (2009) Shifting the genomic gold standard for
+    the prokaryotic species definition. Proc Natl Acad Sci USA 106:
+    19126-19131. doi:10.1073/pnas.0906412106.
 
     and
 

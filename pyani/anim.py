@@ -81,13 +81,17 @@ def construct_nucmer_cmdline(fname1, fname2, outdir='.',
                              maxmatch=False):
     """Returns a single NUCmer pairwise comparison command.
 
+    NOTE: This command-line writes output data to a subdirectory of the passed
+    outdir, called "nucmer_output".
+
     - fname1 - query FASTA filepath
     - fname2 - subject FASTA filepath
     - outdir - path to output directory
     - maxmatch - Boolean flag indicating whether to use NUCmer's -maxmatch
     option. If not, the -mum option is used instead
     """
-    outprefix = os.path.join(outdir, "%s_vs_%s" %
+    outsubdir = os.path.join(outdir, pyani_config.ALIGNDIR['ANIm'])
+    outprefix = os.path.join(outsubdir, "%s_vs_%s" %
                              (os.path.splitext(os.path.split(fname1)[-1])[0],
                               os.path.splitext(os.path.split(fname2)[-1])[0]))
     if maxmatch:

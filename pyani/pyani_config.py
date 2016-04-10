@@ -27,6 +27,11 @@ ANIBLASTALL_FILESTEMS = ("ANIblastall_alignment_lengths",
                          "ANIblastall_alignment_coverage",
                          "ANIblastall_similarity_errors")
 
+# Output subdirectory names for each method
+ALIGNDIR = {'ANIm': 'nucmer_output',
+            'ANIb': 'blastn_output',
+            'ANIblastall': 'blastall_output'}
+
 # Colour gradients for use in R and Matplotlib:
 # R_AFMHOT is a custom colour palette
 R_AFMHOT = 'colorRampPalette(c("black","red","yellow","white"))'
