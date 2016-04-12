@@ -40,10 +40,11 @@ R_AFMHOT = 'colorRampPalette(c("black","red","yellow","white"))'
 MPL_CBAR = 'Spectral'
 
 # Parameters for analyses
-FRAGSIZE = 1020
+FRAGSIZE = 1020  # Default ANIb fragment size
 
 # SGE/OGE scheduler parameters
-SGE_WAIT = 0.01
+SGE_WAIT = 0.01  # Base unit of time (s) to wait between polling SGE
+
 
 # Graphics parameters for each output file. Note that this should be
 # in sync with the output file stems above

@@ -30,6 +30,7 @@ from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
 
+
 # Generate list of Job objects, one per NUCmer run
 def generate_nucmer_jobs(filenames, outdir='.',
                          nucmer_exe=pyani_config.NUCMER_DEFAULT,
@@ -50,6 +51,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
     for idx, cmd in enumerate(cmdlines):
         joblist.append(pyani_jobs.Job("%s_%06d" % (jobprefix, idx), cmd))
     return joblist
+
 
 # Generate list of NUCmer pairwise comparison command lines from
 # passed sequence filenames

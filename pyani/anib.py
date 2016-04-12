@@ -154,8 +154,8 @@ def make_job_graph(infiles, fragfiles, outdir,
     How those jobs are scheduled depends on the scheduler (see
     run_multiprocessing.py, run_sge.py)
     """
-    joblist = []   # Holds list of job dependency graphs
-    dbjobdict = {} # Dict of database construction jobs, keyed by filename
+    joblist = []    # Holds list of job dependency graphs
+    dbjobdict = {}  # Dict of database construction jobs, keyed by filename
 
     if mode == "ANIb":  # BLAST/formatting executable depends on mode
         construct_db_cmdline = construct_makeblastdb_cmd
@@ -229,6 +229,7 @@ def construct_makeblastdb_cmd(filename, outdir,
                                                                   outfilename),
             outfilename)
 
+
 # Generate single makeblastdb command line
 def construct_formatdb_cmd(filename, outdir,
                            blastdb_exe=pyani_config.FORMATDB_DEFAULT):
@@ -273,6 +274,7 @@ def generate_blastn_commands(filenames, outdir,
             cmdlines.append(construct_blast_cmdline(fname2, dbname1,
                                                     outdir, blast_exe))
     return cmdlines
+
 
 # Generate single BLASTN command line
 def construct_blastn_cmdline(fname1, fname2, outdir,
