@@ -188,8 +188,8 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     # Set figure size by the number of rows in the dataframe
     figsize = max(8, dfsize * 0.175)
     fig = plt.figure(figsize=(figsize, figsize))
-    #if title:
-    #    fig.suptitle(title)
+    # if title:
+    #     fig.suptitle(title)
     heatmapGS = gridspec.GridSpec(2, 2, wspace=0.0, hspace=0.0,
                                   width_ratios=[0.3, 1],
                                   height_ratios=[0.3, 1])
@@ -291,7 +291,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
     # Return figure output, and write, if required
     plt.subplots_adjust(top=0.85)  # Leave room for title
-    #fig.set_tight_layout(True)
+    # fig.set_tight_layout(True)
     # We know that there is a UserWarning here about tight_layout and
     # using the Agg renderer on OSX, so catch and ignore it, for cleanliness.
     with warnings.catch_warnings():

@@ -56,10 +56,8 @@ class Job:
         self.command = command           # Command line to run for this job
         self.script = command
         self.scriptPath = None           # Will hold path to the script file
-        self.dependencies = []           # List of jobs that must be submitted
-                                         # before this job may be submitted
-        self.submitted = False           # Flag indicating whether the job has
-                                         # already been submitted
+        self.dependencies = []           # List of jobs to be completed first
+        self.submitted = False           # Flag: is job submitted?
 
     def add_dependency(self, job):
         """Add the passed job to the dependency list for this Job.  This
@@ -113,8 +111,7 @@ class JobGroup:
         self.dependencies = []         # Create empty list for dependencies
         self.submitted = True          # Set submitted Boolean
         self.arguments = arguments     # Dictionary of arguments for command
-        self.generate_script()         # Make the SGE script for the parameter
-                                       # sweep/array
+        self.generate_script()         # Make SGE script for sweep/array
 
     def generate_script(self):
         """Create the SGE script that will run the jobs in the JobGroup, with

@@ -184,7 +184,7 @@ def submit_safe_jobs(root_dir, jobs):
         # If a queue is specified, add this to the SGE command line
         if job.queue is not None and job.queue in local_queues:
             args += local_queues[job.queue]
-            #args += "-q %s " % job.queue
+            # args += "-q %s " % job.queue
 
         # If the job is actually a JobGroup, add the task numbering argument
         if isinstance(job, JobGroup):
