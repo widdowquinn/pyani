@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 #
 # average_nucleotide_identity.py
 #
@@ -156,8 +156,11 @@ import json
 import logging
 import logging.handlers
 import os
+import random
 import shutil
 import sys
+import tarfile
+import time
 import traceback
 
 from argparse import ArgumentParser
@@ -165,7 +168,7 @@ from argparse import ArgumentParser
 from pyani import anib, anim, tetra, pyani_config, pyani_files, pyani_graphics
 from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
-from pyani.pyani_config import params_mpl, params_r
+from pyani.pyani_config import params_mpl, params_r, ALIGNDIR, FRAGSIZE
 
 
 # Process command-line arguments
@@ -185,7 +188,7 @@ def parse_cmdline(args):
                         action="store_true", default=False,
                         help="Force file overwriting")
     parser.add_argument("-s", "--fragsize", dest="fragsize",
-                        action="store", default=pyani_config.FRAGSIZE,
+                        action="store", default=FRAGSIZE,
                         type=int,
                         help="Sequence fragment size for ANIb")
     parser.add_argument("-l", "--logfile", dest="logfile",
@@ -202,6 +205,9 @@ def parse_cmdline(args):
     parser.add_argument("--noclobber", dest="noclobber",
                         action="store_true", default=False,
                         help="Don't nuke existing files")
+    parser.add_argument("--nocompress", dest="nocompress",
+                        action="store_true", default=False,
+                        help="Don't compress/delete the comparison output")
     parser.add_argument("-g", "--graphics", dest="graphics",
                         action="store_true", default=False,
                         help="Generate heatmap of ANI")
@@ -223,6 +229,12 @@ def parse_cmdline(args):
     parser.add_argument("--scheduler", dest="scheduler",
                         action="store", default="multiprocessing",
                         help="Job scheduler [multiprocessing|SGE]")
+    parser.add_argument("--workers", dest="workers",
+                        action="store", default=None, type=int,
+                        help="Number of worker processes for multiprocessing")
+    parser.add_argument("--SGEgroupsize", dest="sgegroupsize",
+                        action="store", default=10000, type=int,
+                        help="Number of jobs to place in an SGE array group")
     parser.add_argument("--maxmatch", dest="maxmatch",
                         action="store_true", default=False,
                         help="Override MUMmer to allow all NUCmer matches")
@@ -247,6 +259,16 @@ def parse_cmdline(args):
                         action="store_true",
                         default=False,
                         help="Write Excel format output tables")
+    parser.add_argument("--subsample", dest="subsample",
+                        action="store", default=None,
+                        help="Subsample a percentage [0-1] or specific " +
+                        "number (1-n) of input sequences")
+    parser.add_argument("--seed", dest="seed",
+                        action="store", default=None,
+                        help="Set random seed for reproducible subsampling.")
+    parser.add_argument("--jobprefix", dest="jobprefix",
+                        action="store", default="ANI",
+                        help="Prefix for SGE jobs.")
     return parser.parse_args()
 
 
@@ -288,6 +310,10 @@ def make_outdir():
     logger.info("Creating directory %s" % args.outdirname)
     try:
         os.makedirs(args.outdirname)   # We make the directory recursively
+        # Depending on the choice of method, a subdirectory will be made for
+        # alignment output files
+        if args.method != 'TETRA':
+            os.makedirs(os.path.join(args.outdirname, ALIGNDIR[args.method]))
     except OSError:
         # This gets thrown if the directory exists. If we've forced overwrite/
         # delete and we're not clobbering, we let things slide
@@ -296,6 +322,18 @@ def make_outdir():
         else:
             logger.error(last_exception)
             sys.exit(1)
+
+
+# Compress output directory and delete it
+def compress_delete_outdir(outdir):
+    """Compress the contents of the passed directory to .tar.gz and delete."""
+    # Compress output in .tar.gz file and remove raw output
+    tarfn = outdir + '.tar.gz'
+    logger.info("\tCompressing output from %s to %s" % (outdir, tarfn))
+    with tarfile.open(tarfn, "w:gz") as fh:
+        fh.add(outdir)
+    logger.info("\tRemoving output directory %s" % outdir)
+    shutil.rmtree(outdir)
 
 
 # Calculate ANIm for input
@@ -323,14 +361,25 @@ def calculate_anim(infiles, org_lengths):
     """
     logger.info("Running ANIm")
     logger.info("Generating NUCmer command-lines")
+    deltadir = os.path.join(args.outdirname, ALIGNDIR['ANIm'])
+    logger.info("Writing nucmer output to %s" % deltadir)
     # Schedule NUCmer runs
     if not args.skip_nucmer:
         joblist = anim.generate_nucmer_jobs(infiles, args.outdirname,
                                             nucmer_exe=args.nucmer_exe,
-                                            maxmatch=args.maxmatch)
+                                            maxmatch=args.maxmatch,
+                                            jobprefix=args.jobprefix)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
-            cumval = run_mp.run_dependency_graph(joblist, verbose=args.verbose,
+            if args.workers is None:
+                logger.info("(using maximum number of available " +
+                            "worker threads)")
+            else:
+                logger.info("(using %d worker threads, if available)" %
+                            args.workers)
+            cumval = run_mp.run_dependency_graph(joblist,
+                                                 workers=args.workers, 
+                                                 verbose=args.verbose,
                                                  logger=logger)
             logger.info("Cumulative return value: %d" % cumval)
             if 0 < cumval:
@@ -340,14 +389,17 @@ def calculate_anim(infiles, org_lengths):
                 logger.info("All multiprocessing jobs complete.")
         else:
             logger.info("Running jobs with SGE")
+            logger.info("Jobarray group size set to %d" % args.sgegroupsize)
             run_sge.run_dependency_graph(joblist, verbose=args.verbose,
-                                         logger=logger)
+                                         logger=logger,
+                                         jgprefix=args.jobprefix,
+                                         sgegroupsize=args.sgegroupsize)
     else:
         logger.warning("Skipping NUCmer run (as instructed)!")
 
     # Process resulting .delta files
     logger.info("Processing NUCmer .delta files.")
-    data = anim.process_deltadir(args.outdirname, org_lengths, logger=logger)
+    data = anim.process_deltadir(deltadir, org_lengths, logger=logger)
     if data[-1]:  # zero percentage identity error
         if not args.skip_nucmer and args.scheduler == 'multiprocessing':
             if 0 < cumval:
@@ -359,8 +411,14 @@ def calculate_anim(infiles, org_lengths):
                 logger.error("This is possibly due to a NUCmer comparison " +
                              "being too distant for use. Please consider " +
                              "using the --maxmatch option.")
-                logger.error("This is alternatively due to NUCmer run failure, " +
-                             "analysis will continue, but please investigate.")
+                logger.error("This is alternatively due to NUCmer run " +
+                             "failure, analysis will continue, but please " +
+                             "investigate.")
+    if not args.nocompress:
+        logger.info("Compressing/deleting %s" % deltadir)
+        compress_delete_outdir(deltadir)
+
+    # Return processed data from .delta files
     return tuple(data[:-1])
 
 
@@ -373,9 +431,9 @@ def calculate_tetra(infiles, org_lengths):
 
     Calculates TETRA correlation scores, as described in:
 
-    Richter M, Rossello-Mora R (2009) Shifting the genomic gold standard for the
-    prokaryotic species definition. Proc Natl Acad Sci USA 106: 19126-19131.
-    doi:10.1073/pnas.0906412106.
+    Richter M, Rossello-Mora R (2009) Shifting the genomic gold standard for
+    the prokaryotic species definition. Proc Natl Acad Sci USA 106:
+    19126-19131. doi:10.1073/pnas.0906412106.
 
     and
 
@@ -431,6 +489,8 @@ def unified_anib(infiles, org_lengths):
     output directory in plain text tab-separated format.
     """
     logger.info("Running %s" % args.method)
+    blastdir = os.path.join(args.outdirname, ALIGNDIR[args.method])
+    logger.info("Writing BLAST output to %s" % blastdir)
     # Build BLAST databases and run pairwise BLASTN
     if not args.skip_blastn:
         # Make sequence fragments
@@ -438,14 +498,12 @@ def unified_anib(infiles, org_lengths):
                     args.outdirname)
         # Fraglengths does not get reused with BLASTN
         fragfiles, fraglengths = anib.fragment_FASTA_files(infiles,
-                                                           args.outdirname,
+                                                           blastdir,
                                                            args.fragsize)
-        # Export fragment lengths as JSON, in case we re-run BLASTALL with
-        # --skip_blastn
-        if args.method == "ANIblastall":
-            with open(os.path.join(args.outdirname,
-                                   'fraglengths.json'), 'w') as outfile:
-                json.dump(fraglengths, outfile)
+        # Export fragment lengths as JSON, in case we re-run with --skip_blastn
+        with open(os.path.join(blastdir,
+                               'fraglengths.json'), 'w') as outfile:
+            json.dump(fraglengths, outfile)
 
         # Which executables are we using?
         if args.method == "ANIblastall":
@@ -457,12 +515,14 @@ def unified_anib(infiles, org_lengths):
 
         # Run BLAST database-building and executables from a jobgraph
         logger.info("Creating job dependency graph")
-        jobgraph = anib.make_job_graph(infiles, fragfiles, args.outdirname,
-                                       format_exe, blast_exe, args.method)
+        jobgraph = anib.make_job_graph(infiles, fragfiles, blastdir,
+                                       format_exe, blast_exe, args.method,
+                                       jobprefix=args.jobprefix)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             logger.info("Running job dependency graph")
-            cumval = run_mp.run_dependency_graph(jobgraph, verbose=args.verbose,
+            cumval = run_mp.run_dependency_graph(jobgraph,
+                                                 verbose=args.verbose,
                                                  logger=logger)
             if 0 < cumval:
                 logger.warning("At least one BLAST run failed. " +
@@ -476,7 +536,7 @@ def unified_anib(infiles, org_lengths):
     else:
         # Import fragment lengths from JSON
         if args.method == "ANIblastall":
-            with open(os.path.join(args.outdirname, 'fraglengths.json'),
+            with open(os.path.join(blastdir, 'fraglengths.json'),
                       'rU') as infile:
                 fraglengths = json.load(infile)
         else:
@@ -486,7 +546,7 @@ def unified_anib(infiles, org_lengths):
     # Process pairwise BLASTN output
     logger.info("Processing pairwise %s BLAST output." % args.method)
     try:
-        data = anib.process_blast(args.outdirname, org_lengths,
+        data = anib.process_blast(blastdir, org_lengths,
                                   fraglengths=fraglengths, mode=args.method)
     except ZeroDivisionError:
         logger.error("One or more BLAST output files has a problem.")
@@ -498,6 +558,11 @@ def unified_anib(infiles, org_lengths):
                 logger.error("This is possibly due to a BLASTN comparison " +
                              "being too distant for use.")
         logger.error(last_exception())
+    if not args.nocompress:
+        logger.info("Compressing/deleting %s" % blastdir)
+        compress_delete_outdir(blastdir)
+
+    # Return processed BLAST data
     return data
 
 
@@ -570,7 +635,14 @@ def draw(results, filestems, gformat):
                                             labels=get_labels(args.labels),
                                             classes=get_labels(args.classes))
             logger.info("Executed R code:\n%s" % rstr)
-
+        elif args.gmethod == "seaborn":
+            pyani_graphics.heatmap_seaborn(df, outfilename=outfilename,
+                                           title=filestem,
+                                           cmap=params_mpl(df)[filestem][0],
+                                           vmin=params_mpl(df)[filestem][1],
+                                           vmax=params_mpl(df)[filestem][2],
+                                           labels=get_labels(args.labels),
+                                           classes=get_labels(args.classes))
 
 # Run as script
 if __name__ == '__main__':
@@ -579,7 +651,9 @@ if __name__ == '__main__':
     args = parse_cmdline(sys.argv)
 
     # Set up logging
-    logger = logging.getLogger('average_nucleotide_identity.py')
+    logger = logging.getLogger('average_nucleotide_identity.py: %s' %
+                               time.asctime())
+    t0 = time.time()
     logger.setLevel(logging.DEBUG)
     err_handler = logging.StreamHandler(sys.stderr)
     err_formatter = logging.Formatter('%(levelname)s: %(message)s')
@@ -607,6 +681,7 @@ if __name__ == '__main__':
 
     # Report arguments, if verbose
     logger.info(args)
+    logger.info("command-line: %s" % ' '.join(sys.argv))
 
     # Have we got an input and output directory? If not, exit.
     if args.indirname is None:
@@ -639,7 +714,7 @@ if __name__ == '__main__':
                                pyani_config.ANIBLASTALL_FILESTEMS)}
     if args.method not in methods:
         logger.error("ANI method %s not recognised (exiting)" % args.method)
-        logger.error("Valid methods are: %s" % methods.keys())
+        logger.error("Valid methods are: %s" % list(methods.keys()))
         sys.exit(1)
     logger.info("Using ANI method: %s" % args.method)
 
@@ -656,12 +731,40 @@ if __name__ == '__main__':
     infiles = pyani_files.get_fasta_files(args.indirname)
     logger.info("Input files:\n\t%s" % '\n\t'.join(infiles))
 
+    # Are we subsampling? If so, make the selection here
+    if args.subsample:
+        logger.info("--subsample: %s" % args.subsample)
+        try:
+            samplesize = float(args.subsample)
+        except TypeError:  # Not a number
+            logger.error("--subsample must be int or float, got %s (exiting)" %
+                         type(args.subsample))
+            sys.exit(1)
+        if samplesize <= 0: # Not a positive value
+            logger.error("--subsample must be positive value, got %s" %
+                         str(args.subsample))
+            sys.exit(1)
+        if int(samplesize) > 1:
+            logger.info
+            k = min(int(samplesize), len(infiles))
+        else:
+            k = int(min(samplesize, 1.0) * len(infiles))
+        logger.info("Randomly subsampling %d sequences for analysis" % k)
+        if args.seed:
+            logger.info("Setting random seed with: %s" % args.seed)
+            random.seed(args.seed)
+        else:
+            logger.warning("Subsampling without specified random seed!")
+            logger.warning("Subsampling may NOT be easily reproducible!")
+        infiles = random.sample(infiles, k)
+        logger.info("Sampled input files:\n\t%s" % '\n\t'.join(infiles))
+
     # Get lengths of input sequences
     logger.info("Processing input sequence lengths")
     org_lengths = pyani_files.get_sequence_lengths(infiles)
     logger.info("Sequence lengths:\n" +
                 os.linesep.join(["\t%s: %d" % (k, v) for
-                                 k, v in org_lengths.items()]))
+                                 k, v in list(org_lengths.items())]))
 
     # Run appropriate method on the contents of the input directory,
     # and write out corresponding results.
@@ -679,4 +782,5 @@ if __name__ == '__main__':
             draw(results, methods[args.method][1], gfmt)
 
     # Report that we've finished
-    logger.info("Done.")
+    logger.info("Done: %s." % time.asctime())
+    logger.info("Time taken: %.2fs" % (time.time() - t0)) 

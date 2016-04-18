@@ -27,6 +27,11 @@ ANIBLASTALL_FILESTEMS = ("ANIblastall_alignment_lengths",
                          "ANIblastall_alignment_coverage",
                          "ANIblastall_similarity_errors")
 
+# Output subdirectory names for each method
+ALIGNDIR = {'ANIm': 'nucmer_output',
+            'ANIb': 'blastn_output',
+            'ANIblastall': 'blastall_output'}
+
 # Colour gradients for use in R and Matplotlib:
 # R_AFMHOT is a custom colour palette
 R_AFMHOT = 'colorRampPalette(c("black","red","yellow","white"))'
@@ -35,10 +40,11 @@ R_AFMHOT = 'colorRampPalette(c("black","red","yellow","white"))'
 MPL_CBAR = 'Spectral'
 
 # Parameters for analyses
-FRAGSIZE = 1020
+FRAGSIZE = 1020  # Default ANIb fragment size
 
 # SGE/OGE scheduler parameters
-SGE_WAIT = 0.01
+SGE_WAIT = 0.01  # Base unit of time (s) to wait between polling SGE
+
 
 # Graphics parameters for each output file. Note that this should be
 # in sync with the output file stems above

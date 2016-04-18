@@ -26,14 +26,15 @@ import pandas as pd
 import os
 import sys
 
-import pyani_config
-import pyani_files
-import pyani_jobs
+from . import pyani_config
+from . import pyani_files
+from . import pyani_jobs
+
 
 # Generate list of Job objects, one per NUCmer run
 def generate_nucmer_jobs(filenames, outdir='.',
                          nucmer_exe=pyani_config.NUCMER_DEFAULT,
-                         maxmatch=False):
+                         maxmatch=False, jobprefix="ANINUCmer"):
     """Return a list of Jobs describing NUCmer command-lines for ANIm
 
     - filenames - a list of paths to input FASTA files
@@ -48,8 +49,9 @@ def generate_nucmer_jobs(filenames, outdir='.',
                                         maxmatch)
     joblist = []
     for idx, cmd in enumerate(cmdlines):
-        joblist.append(pyani_jobs.Job("NUCmer_%06d" % idx, cmd))
+        joblist.append(pyani_jobs.Job("%s_%06d" % (jobprefix, idx), cmd))
     return joblist
+
 
 # Generate list of NUCmer pairwise comparison command lines from
 # passed sequence filenames
@@ -81,13 +83,17 @@ def construct_nucmer_cmdline(fname1, fname2, outdir='.',
                              maxmatch=False):
     """Returns a single NUCmer pairwise comparison command.
 
+    NOTE: This command-line writes output data to a subdirectory of the passed
+    outdir, called "nucmer_output".
+
     - fname1 - query FASTA filepath
     - fname2 - subject FASTA filepath
     - outdir - path to output directory
     - maxmatch - Boolean flag indicating whether to use NUCmer's -maxmatch
     option. If not, the -mum option is used instead
     """
-    outprefix = os.path.join(outdir, "%s_vs_%s" %
+    outsubdir = os.path.join(outdir, pyani_config.ALIGNDIR['ANIm'])
+    outprefix = os.path.join(outsubdir, "%s_vs_%s" %
                              (os.path.splitext(os.path.split(fname1)[-1])[0],
                               os.path.splitext(os.path.split(fname2)[-1])[0]))
     if maxmatch:
@@ -139,7 +145,7 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     """
     # Process directory to identify input files
     deltafiles = pyani_files.get_input_files(delta_dir, '.delta')
-    labels = org_lengths.keys()
+    labels = list(org_lengths.keys())
     # Hold data in pandas dataframe
     alignment_lengths = pd.DataFrame(index=labels, columns=labels,
                                      dtype=float)
@@ -150,7 +156,7 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     alignment_coverage = pd.DataFrame(index=labels, columns=labels,
                                       dtype=float).fillna(1.0)
     # Fill diagonal NA values for alignment_length with org_lengths
-    for org, length in org_lengths.items():
+    for org, length in list(org_lengths.items()):
         alignment_lengths[org][org] = length
     # Process .delta files assuming that the filename format holds:
     # org1_vs_org2.delta
@@ -158,9 +164,23 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     for deltafile in deltafiles:
         qname, sname = \
             os.path.splitext(os.path.split(deltafile)[-1])[0].split('_vs_')
+        # We may have .delta files from other analyses in the same directory
+        # If this occurs, we raise a warning, and skip the .delta file
+        if qname not in list(org_lengths.keys()):
+            if logger:
+                logger.warning("Query name %s not in input " % qname +
+                               "sequence list, skipping %s" % deltafile)
+            continue
+        if sname not in list(org_lengths.keys()):
+            if logger:
+                logger.warning("Subject name %s not in input " % sname +
+                               "sequence list, skipping %s" % deltafile)
+            continue
         tot_length, tot_sim_error = parse_delta(deltafile)
         if tot_length == 0 and logger is not None:
-            logger.warning("Total alignment length reported in %s is zero!" % deltafile)
+            if logger:
+                logger.warning("Total alignment length reported in " +
+                               "%s is zero!" % deltafile)
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
         # Calculate percentage ID of aligned length. This may fail if
@@ -171,12 +191,14 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
         try:
             perc_id = 1 - float(tot_sim_error) / tot_length
         except ZeroDivisionError:
-            logger.error("One or more NUCmer output files has a problem.")
-            logger.error("This is possibly due to a NUCmer comparison " +
-                         "being too distant for use. If so, please consider " +
-                         "using the --maxmatch option.")
-            logger.error("Alternatively, this may be due to NUCmer run failure: " +
-                         "analysis may continue, but please investigate.")
+            if logger:
+                logger.error("One or more NUCmer output files has a problem.")
+                logger.error("This is possibly due to a NUCmer comparison " +
+                             "being too distant for use. If so, please " +
+                             "consider using the --maxmatch option.")
+                logger.error("Alternatively, this may be due to NUCmer " +
+                             "run failure: analysis may continue, but " +
+                             "please investigate.")
             perc_id = 0  # set arbitrary value of zero identity
             zero_error = True
         # Populate dataframes: when assigning data, pandas dataframes

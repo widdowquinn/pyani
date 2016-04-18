@@ -58,9 +58,9 @@ import os
 import shutil
 import sys
 
-import pyani_config
-import pyani_files
-import pyani_jobs
+from . import pyani_config
+from . import pyani_files
+from . import pyani_jobs
 
 from Bio import SeqIO
 
@@ -135,7 +135,7 @@ def get_fragment_lengths(fastafile):
 def make_job_graph(infiles, fragfiles, outdir,
                    format_exe=pyani_config.MAKEBLASTDB_DEFAULT,
                    blast_exe=pyani_config.BLASTN_DEFAULT,
-                   mode="ANIb"):
+                   mode="ANIb", jobprefix="ANIBLAST"):
     """Return a job dependency graph, based on the passed input sequence files.
 
     - infiles - a list of paths to input FASTA files
@@ -154,8 +154,8 @@ def make_job_graph(infiles, fragfiles, outdir,
     How those jobs are scheduled depends on the scheduler (see
     run_multiprocessing.py, run_sge.py)
     """
-    joblist = []   # Holds list of job dependency graphs
-    dbjobdict = {} # Dict of database construction jobs, keyed by filename
+    joblist = []    # Holds list of job dependency graphs
+    dbjobdict = {}  # Dict of database construction jobs, keyed by filename
 
     if mode == "ANIb":  # BLAST/formatting executable depends on mode
         construct_db_cmdline = construct_makeblastdb_cmd
@@ -167,11 +167,12 @@ def make_job_graph(infiles, fragfiles, outdir,
     # Create dictionary of database building jobs, keyed by db name
     for idx, fname in enumerate(infiles):
         dbcmd, dbname = construct_db_cmdline(fname, outdir, format_exe)
-        job = pyani_jobs.Job("dbcmd_%06d" % idx, dbcmd)
+        job = pyani_jobs.Job("%s_db_%06d" % (jobprefix, idx), dbcmd)
         dbjobdict[dbname] = job
+    job_offset = idx
 
     # Create list of BLAST executable jobs, with dependencies
-    jobnum = 0
+    jobnum = job_offset
     for idx, fname1 in enumerate(fragfiles[:-1]):
         dbname1 = fname1.replace('-fragments', '')
         for fname2 in fragfiles[idx+1:]:
@@ -181,8 +182,10 @@ def make_job_graph(infiles, fragfiles, outdir,
                                               outdir, blast_exe)
             execmd2 = construct_blast_cmdline(fname2, dbname1,
                                               outdir, blast_exe)
-            job1 = pyani_jobs.Job("execmd_%06d_a" % jobnum, execmd1)
-            job2 = pyani_jobs.Job("execmd_%06d_b" % jobnum, execmd2)
+            job1 = pyani_jobs.Job("%s_exe_%06d_a" %
+                                  (jobprefix, jobnum), execmd1)
+            job2 = pyani_jobs.Job("%s_exe_%06d_b" %
+                                  (jobprefix, jobnum), execmd2)
             job1.add_dependency(dbjobdict[dbname2])
             job2.add_dependency(dbjobdict[dbname1])
             joblist.extend([job1, job2])
@@ -225,6 +228,7 @@ def construct_makeblastdb_cmd(filename, outdir,
                                                                   title,
                                                                   outfilename),
             outfilename)
+
 
 # Generate single makeblastdb command line
 def construct_formatdb_cmd(filename, outdir,
@@ -271,6 +275,7 @@ def generate_blastn_commands(filenames, outdir,
                                                     outdir, blast_exe))
     return cmdlines
 
+
 # Generate single BLASTN command line
 def construct_blastn_cmdline(fname1, fname2, outdir,
                              blastn_exe=pyani_config.BLASTN_DEFAULT):
@@ -309,7 +314,8 @@ def construct_blastall_cmdline(fname1, fname2, outdir,
 
 
 # Process pairwise BLASTN output
-def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
+def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
+                  logger=None):
     """Returns a tuple of ANIb results for .blast_tab files in the output dir.
 
     - blast_dir - path to the directory containing .blast_tab files
@@ -317,6 +323,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
     - fraglengths - dictionary of query sequence fragment lengths, only
     needed for BLASTALL output
     - mode - parsing BLASTN+ or BLASTALL output?
+    - logger - a logger for messages
 
     Returns the following pandas dataframes in a tuple:
 
@@ -330,7 +337,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
     """
     # Process directory to identify input files
     blastfiles = pyani_files.get_input_files(blast_dir, '.blast_tab')
-    labels = org_lengths.keys()
+    labels = list(org_lengths.keys())
     # Hold data in pandas dataframe
     alignment_lengths = pd.DataFrame(index=labels, columns=labels,
                                      dtype=float)
@@ -341,13 +348,25 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb"):
     alignment_coverage = pd.DataFrame(index=labels, columns=labels,
                                       dtype=float).fillna(1.0)
     # Fill diagonal NA values for alignment_length with org_lengths
-    for org, length in org_lengths.items():
+    for org, length in list(org_lengths.items()):
         alignment_lengths[org][org] = length
     # Process .blast_tab files assuming that the filename format holds:
     # org1_vs_org2.blast_tab:
     for blastfile in blastfiles:
         qname, sname = \
             os.path.splitext(os.path.split(blastfile)[-1])[0].split('_vs_')
+        # We may have BLAST files from other analyses in the same directory
+        # If this occurs, we raise a warning, and skip the file
+        if qname not in list(org_lengths.keys()):
+            if logger:
+                logger.warning("Query name %s not in input " % qname +
+                               "sequence list, skipping %s" % deltafile)
+            continue
+        if sname not in list(org_lengths.keys()):
+            if logger:
+                logger.warning("Subject name %s not in input " % sname +
+                               "sequence list, skipping %s" % deltafile)
+            continue
         tot_length, tot_sim_error, ani_pid = parse_blast_tab(blastfile,
                                                              fraglengths,
                                                              mode)

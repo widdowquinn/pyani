@@ -87,22 +87,23 @@ def calculate_tetra_zscore(filename):
     tetra_exp = {}
     for t in [tet for tet in tetracnt if tetra_clean(tet)]:
         tetra_exp[t] = 1.*tricnt[t[:3]]*tricnt[t[1:]]/dicnt[t[1:3]]
+    # TODO: Looks like we can collapse the two loops below into one
     # Following Teeling (2004) we approximate the std dev of each
     # tetranucleotide
     tetra_sd = {}
-    for t, exp in tetra_exp.items():
+    for t, exp in list(tetra_exp.items()):
         den = dicnt[t[1:3]]
         tetra_sd[t] = math.sqrt(exp * (den - tricnt[t[:3]]) *
                                 (den - tricnt[t[1:]]) / (den * den))
     # Following Teeling (2004) we calculate the Z-score for each
     # tetranucleotide
     tetra_z = {}
-    for t, exp in tetra_exp.items():
+    for t, exp in list(tetra_exp.items()):
         try:
             tetra_z[t] = (tetracnt[t] - exp)/tetra_sd[t]
         except ZeroDivisionError:
             # We hit a zero in the estimation of variance
-            zeroes = [k for k, v in tetra_sd.items() if v == 0]
+            zeroes = [k for k, v in list(tetra_sd.items()) if v == 0]
             tetra_z[t] = 1 / (dicnt[t[1:3]] * dicnt[t[1:3]])
     return tetra_z
 

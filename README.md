@@ -1,22 +1,25 @@
 # README.md (pyani)
 
 ## Overview
-`pyani` is a Python module that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
+`pyani` is a Python3 module that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
 
-`pyani` also installs a script: `average_nucleotide_identity.py` that enables command-line ANI analysis.
+`pyani` also installs two scripts:
+
+* `average_nucleotide_identity.py` that enables command-line ANI analysis.
+* `genbank_get_genomes_by_taxon.py` that downloads publicly-available genomes from NCBI.
 
 ## Installation
 
-The easiest way to install `pyani` is to use `pip`:
+The easiest way to install `pyani` is to use `pip3`:
 
 ```
-pip install pyani
+pip3 install pyani
 ```
 
 From version 0.1.3.2 onwards, this should also install all the required Python package dependencies. Prior to this version (i.e. 0.1.3.1 and earlier), you can acquire these dependencies with `pip -r`, and pointing at `requirements.txt` from this repository:
 
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ## Running `pyani`
@@ -28,19 +31,25 @@ The `average_nucleotide_identity.py` script - installed as part of this package 
 You can get a summary of available command-line options with `average_nucleotide_identity.py -h`
 
 ```
-$ average_nucleotide_identity.py -h
+$ ./average_nucleotide_identity.py -h
 usage: average_nucleotide_identity.py [-h] [-o OUTDIRNAME] [-i INDIRNAME] [-v]
-                                      [-f] [-s] [-l LOGFILE] [--skip_nucmer]
-                                      [--skip_blastn] [--noclobber] [-g]
+                                      [-f] [-s FRAGSIZE] [-l LOGFILE]
+                                      [--skip_nucmer] [--skip_blastn]
+                                      [--noclobber] [--nocompress] [-g]
                                       [--gformat GFORMAT] [--gmethod GMETHOD]
                                       [--labels LABELS] [--classes CLASSES]
                                       [-m METHOD] [--scheduler SCHEDULER]
+                                      [--workers WORKERS]
+                                      [--SGEgroupsize SGEGROUPSIZE]
                                       [--maxmatch] [--nucmer_exe NUCMER_EXE]
                                       [--blastn_exe BLASTN_EXE]
                                       [--makeblastdb_exe MAKEBLASTDB_EXE]
                                       [--blastall_exe BLASTALL_EXE]
                                       [--formatdb_exe FORMATDB_EXE]
-                                      [--write_excel]
+                                      [--write_excel] [--subsample SUBSAMPLE]
+                                      [--seed SEED] [--jobprefix JOBPREFIX]
+
+
 […]
 ```
 
@@ -67,6 +76,50 @@ The graphical output below, supporting assignment of `NC_002696` and `NC_011916`
 ![ANIm alignment coverage for *Caulobacter* test data](tests/test_ani_data/ANIm_alignment_coverage.png "ANIm alignment coverage")
 ![ANIm alignment length for *Caulobacter* test data](tests/test_ani_data/ANIm_alignment_lengths.png "ANIm alignment length")
 ![ANIm alignment similarity errors for *Caulobacter* test data](tests/test_ani_data/ANIm_similarity_errors.png "ANIm alignment similarity")
+
+### Script: <a name="genbank_get_genomes_by_taxon.py">`genbank_get_genomes_by_taxon.py`</a>
+
+The script `genbank_get_genomes_by_taxon.py`, installed by this package, enables download of genomes from NCBI, specified by taxon ID. The script will download all available assemblies for taxa at or below the specified node in the NCBI taxonomy tree.
+
+Command-line options can be viewed using:
+
+```
+$ genbank_get_genomes_by_taxon.py -h
+usage: genbacnk_get_genomes_by_taxon.py [-h] [-o OUTDIRNAME] [-t TAXON] [-v]
+                                        [-f] [--noclobber] [-l LOGFILE]
+                                        [--format FORMAT] [--email EMAIL]
+                                        [--retries RETRIES]
+                                        [--batchsize BATCHSIZE]
+[…]
+```
+
+For example, the NCBI taxonomy ID for *Caulobacter* is 75, so all publicly-available *Caulobacter* sequences can be obtained using the command-line:
+
+```
+$ genbank_get_genomes_by_taxon.py -o Caulobacter_downloads -v -t 75 -l Caulobacter_downloads.log --email me@my.email.domain
+INFO: genbank_get_genomes_by_taxon.py: Mon Apr 18 17:22:54 2016
+INFO: command-line: /Users/lpritc/Virtualenvs/pyani3/bin/genbank_get_genomes_by_taxon.py -o Caulobacter_downloads -v -t 75 -l Caulobacter_downloads.log --email me@my.email.domain
+INFO: Namespace(batchsize=10000, email='me@my.email.domain', force=False, format='gbk,fasta', logfile='Caulobacter_downloads.log', noclobber=False, outdirname='Caulobacter_downloads', retries=20, taxon='75', verbose=True)
+INFO: Set NCBI contact email to me@my.email.domain
+INFO: Creating directory Caulobacter_downloads
+INFO: Output directory: Caulobacter_downloads
+INFO: Passed taxon IDs: 75
+INFO: Entrez ESearch with query: txid75[Organism:exp]
+INFO: Entrez ESearch returns 29 assembly IDs
+INFO: Identified 29 unique assemblies
+INFO: Taxon 75: 29 assemblies
+[…]
+INFO: Assembly 639581: 271 contigs
+INFO: Assembly 233261: 17 contigs
+INFO: Assembly 575291: 48 contigs
+INFO: Mon Apr 18 17:25:46 2016
+INFO: Done.
+```
+
+**NOTE:** You must provide a valid email to identify yourself to NCBI for troubleshooting.
+
+The number of attempted retries for each download, and the size of a batch download can be modified. By default, the script will attempt 20 download retries, and obtain sequences in batches of 10000.
+
 
 ## DEPENDENCIES
 
