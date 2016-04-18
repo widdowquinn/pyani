@@ -18,7 +18,7 @@ import subprocess
 import sys
 import time
 import traceback
-import urllib.request import urlopen
+from urllib.request import urlopen
 
 from argparse import ArgumentParser
 from collections import defaultdict
