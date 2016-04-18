@@ -28,19 +28,25 @@ The `average_nucleotide_identity.py` script - installed as part of this package 
 You can get a summary of available command-line options with `average_nucleotide_identity.py -h`
 
 ```
-$ average_nucleotide_identity.py -h
+$ ./average_nucleotide_identity.py -h
 usage: average_nucleotide_identity.py [-h] [-o OUTDIRNAME] [-i INDIRNAME] [-v]
-                                      [-f] [-s] [-l LOGFILE] [--skip_nucmer]
-                                      [--skip_blastn] [--noclobber] [-g]
+                                      [-f] [-s FRAGSIZE] [-l LOGFILE]
+                                      [--skip_nucmer] [--skip_blastn]
+                                      [--noclobber] [--nocompress] [-g]
                                       [--gformat GFORMAT] [--gmethod GMETHOD]
                                       [--labels LABELS] [--classes CLASSES]
                                       [-m METHOD] [--scheduler SCHEDULER]
+                                      [--workers WORKERS]
+                                      [--SGEgroupsize SGEGROUPSIZE]
                                       [--maxmatch] [--nucmer_exe NUCMER_EXE]
                                       [--blastn_exe BLASTN_EXE]
                                       [--makeblastdb_exe MAKEBLASTDB_EXE]
                                       [--blastall_exe BLASTALL_EXE]
                                       [--formatdb_exe FORMATDB_EXE]
-                                      [--write_excel]
+                                      [--write_excel] [--subsample SUBSAMPLE]
+                                      [--seed SEED] [--jobprefix JOBPREFIX]
+
+
 […]
 ```
 

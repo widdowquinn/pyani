@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # genbank_get_genomes_by_taxon.py
 #
@@ -18,7 +18,7 @@ import subprocess
 import sys
 import time
 import traceback
-import urllib2
+import urllib.request import urlopen
 
 from argparse import ArgumentParser
 from collections import defaultdict
@@ -300,7 +300,7 @@ def retrieve_wgsmaster_contigs(uid):
             url = "http://www.ncbi.nlm.nih.gov/Traces/wgs/?download=%s" % \
                 fname
             logger.info("Trying URL: %s" % url)
-            response = urllib2.urlopen(url)
+            response = urlopen(url)
             meta = response.info()
             fsize = int(meta.getheaders("Content-length")[0])
             logger.info("Downloading: %s Bytes: %s" % (fname, fsize))
