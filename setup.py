@@ -22,8 +22,8 @@ with open('pyani/__init__.py') as fh:
             version = m.group('version')
             break
 
-if sys.version_info <= (2, 5):
-    sys.stderr.write("ERROR: pyani requires Python Version 2.6 " +
+if sys.version_info <= (3, 0):
+    sys.stderr.write("ERROR: pyani requires Python 3 " +
                      "or above...exiting.\n")
     sys.exit(1)
 
@@ -57,9 +57,8 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         ],
     )
