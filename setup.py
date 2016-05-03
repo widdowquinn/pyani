@@ -47,7 +47,8 @@ setup(
                       'matplotlib',
                       'pandas',
                       'rpy2',
-                      'scipy'],
+                      'scipy',
+                      'seaborn'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
