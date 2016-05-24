@@ -13,6 +13,7 @@
 # See http://stackoverflow.com/questions/2801882/\
 #            generating-a-png-with-matplotlib-when-display-is-undefined
 # This needs to be done before importing pyplot
+
 import matplotlib
 matplotlib.use('Agg')
 
@@ -20,13 +21,18 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib import cm
 from matplotlib.colors import LinearSegmentedColormap
-
+    
 import numpy as np
 import os
 
 import scipy.cluster.hierarchy as sch
 import scipy.spatial.distance as distance
-import rpy2.robjects as robjects
+
+try:
+    import rpy2.robjects as robjects
+    rpy2_present = True
+except ImportError:
+    rpy2_present = False
 
 import seaborn as sns
 
@@ -302,6 +308,16 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     return fig
 
 
+# Custom exception for Rpy2
+class RPyImportException(Exception):
+    """Custom exception to report on attempt to draw R heatmap when R not
+    present.
+    """
+    def __init__(self):
+        Exception.__init__(self, "R heatmap requested, but rpy2 not able " +
+                           "to be imported")
+
+
 # Draw heatmap with R
 def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
               vmin=None, vmax=None, gformat=None, labels=None, classes=None):
@@ -318,6 +334,10 @@ def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
     - classes - dictionary of sequence classes, keyed by default sequence
                 labels
     """
+    # Bail out if there's no rpy2
+    if not rpy2_present:
+        raise RPyImportException
+
     vdiff = vmax - vmin
     vstep = 0.001 * vdiff
 
