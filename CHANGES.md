@@ -4,6 +4,8 @@
 
 * `pyani` now requires `rpy2` v2.8.0 in order to satisfy running under Anaconda (see issue #26)
 * `pyani` now checks for presence of `rpy2` and - when run from source - if `rpy2` is not available, `pyani` doesn't throw an error until R graphical output is requested. If installed *via* `pip`, then `pyani` still raises `pkg_resources.DistributionNotFound` if `rpy2` is missing.
+* Updated `genbank_get_genomes_by_taxon.py` script to use the new FTP locations at NCBI for each assembly.
+
 
 ## v0.2.0
 

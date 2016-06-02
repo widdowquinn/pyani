@@ -13,6 +13,7 @@
 import logging
 import logging.handlers
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -24,6 +25,12 @@ from argparse import ArgumentParser
 from collections import defaultdict
 
 from Bio import Entrez, SeqIO
+
+
+class NCBIDownloadException(Exception):
+    def __init__(self):
+        Exception.__init__(self, "Error downloading file from NCBI")
+
 
 # Parse command-line
 def parse_cmdline(args):
@@ -183,209 +190,151 @@ def get_asm_uids(taxon_uid):
     return asm_ids
 
 
-# Get contig UIDs for a specified assembly UID
-def get_contig_uids(asm_uid):
-    """Returns a set of NCBI UIDs for each contig belonging to the assembly
-    with passsed UID.
+# Download NCBI assembly file for a passed Assembly UID
+def get_ncbi_asm(asm_uid):
+    """Returns the NCBI AssemblyAccession and AssemblyName for the assembly
+    with passed UID, and organism data for class/label files also.
 
-    Assemblies are linked to contigs through Elink in three ways:
-    assembly_nuccore_insdc; assembly_nuccore_refseq; and
-    assembly_nuccore_wgsmaster. For most insdc and refseq links, we can
-    use the results of an Elink query directly, recovering contigs with
-    a (history/batch) Entrez ESearch. For wgsmaster-only links, we need
-    to download from a URL that is not given in the Esummary, and which we
-    have to munge together from information in the summary.
-
-    For insdc/refseq Elink queries that report 100000 contig links, this is
-    a capped return value result, and forces us to download contigs as though
-    we use the wgsmaster links.
+    AssemblyAccession and AssemblyName are data fields in the eSummary record,
+    and correspond to downloadable files for each assembly at
+    ftp://ftp.ncbi.nlm.nih.gov/genomes/all/<AA>_<AN>
+    where <AA> is AssemblyAccession, and <AN> is AssemblyName.
     """
-    logger.info("Finding contig UID links for assembly %s" % asm_uid)
-    # The Elink search returns a single result, so we don't need to batch
-    linklist = entrez_retry(Entrez.elink, dbfrom="assembly", db="nucleotide",
-                            retmode="gb", from_uid=asm_uid)
-    links = Entrez.read(linklist, validate=False) 
-    # Assemblies may be in 'assembly_nuccore_insdc', 'nuccore', or
-    # 'assembly_nuccore_wgsmaster' databases. For a list of link names:
-    # http://www.ncbi.nlm.nih.gov/entrez/query/static/entrezlinks.html
-    # We prefer insdc > refseq > wgsmaster, but if there are 100000 contig 
-    # UIDs returned, this indicates that not all contigs will be downloaded,
-    # so we revert to wgsmaster
+    logger.info("Identifying assembly information from NCBI for %s" %
+                asm_uid)
+
+    # Obtain full eSummary data for the assembly
+    es_handle = entrez_retry(Entrez.esummary, db="assembly", id=asm_uid,
+                             report="full")
+    summary = Entrez.read(es_handle, validate=False)
+
+    # Extract filestem from assembly data
+    # Some illegal characters may occur in AssemblyName - a more robust
+    # regex replace/escape may be required.
+    escapes = re.compile("[\s/]")
+    data = summary['DocumentSummarySet']['DocumentSummary'][0]
+    accession = data['AssemblyAccession']
+    name = data['AssemblyName']
+    escname = re.sub(escapes, '_', name)
+    filestem = '_'.join([accession, escname])
+
+    # Report interesting things from the summary for those interested
+    logger.info("\tOrganism: %s" % data['Organism'])
+    logger.info("\tTaxid: %s" % data['SpeciesTaxid'])
+    logger.info("\tAccession: %s" % accession)
+    logger.info("\tName: %s" % name)
+    # NOTE: Maybe parse out the assembly stats here, in future?
+
+    # Get class and label text
+    organism = data['SpeciesName']
     try:
-        wgsmaster, fastafilename = False, None
-        linktype = guess_linktype(links)
-        logger.info("Using %s links" % linktype)
-        if linktype in ['assembly_nuccore_insdc', 'assembly_nuccore_inrefseq']:
-            contig_uids = retrieve_contig_uids(links, linktype)
-            logger.info("Recovered %d contig UIDs" % len(contig_uids))
-            if len(contig_uids) == 100000:
-                logger.info("insdc/refseq result cap: reverting to wgsmaster")
-                wgsmaster = True
-                contig_uids, fastafilename = download_wgsmaster_contigs(links)
-            else:
-                write_contigs(asm_uid, contig_uids)
-        if linktype == 'assembly_nuccore_wgsmaster':
-            wgsmaster = True
-            contig_uids, fastafilename = download_wgsmaster_contigs(links)
+        strain = data['Biosource']['InfraspeciesList'][0]['Sub_value']
     except:
-        logger.error("Could not recover contigs (exiting)")
-        logger.error(last_exception())
-        sys.exit(1)
-    logger.info("Identified %d contig UIDs" % len(contig_uids))
-    return {'wgsmaster': wgsmaster,
-            'filename': fastafilename,
-            'contig_uids': contig_uids}
-
-# Download contigs from wgsmaster record indicated in Elink result
-def download_wgsmaster_contigs(links):
-    """Download assembly contigs from the wgsmaster record in the passed
-    Elink results, and extract the archive. Returns a list of IDs for the
-    contigs, and path to the extracted FASTA file.
-    """
-    wgsmaster_uid = [l['Link'][0]['Id'] for l in links[0]['LinkSetDb']
-                     if l['LinkName']=='assembly_nuccore_wgsmaster'][0]
-    return retrieve_wgsmaster_contigs(wgsmaster_uid)
-
-# Retrieves contigs from Entrez by links from assembly entries
-def retrieve_contig_uids(links, linktype):
-    """Passed the returned 'assembly_nuccore_insdc' or
-    'assembly_nuccore_refseq' links for an assembly, retrieves the contig
-    UIDs.
-
-    - links: returned links from an Elink query
-    - linktype: the kind of links we want to use for contig UIDs
-    """
-    contigs = [l for l in links[0]['LinkSetDb'] 
-               if l['LinkName'] == linktype][0]
-    contig_uids = set([e['Id'] for e in contigs['Link']])
-    return contig_uids
-
-# Returns the linktype to be used for downloading contigs
-def guess_linktype(links):
-    """Returns the type of link to be used for downloading contigs, from an
-    Entrez Elink list. We prefer insdc > refseq > wgsmaster
-    """
-    for linktype in ['assembly_nuccore_insdc', 'assembly_nuccore_inrefseq',
-                     'assembly_nuccore_wgsmaster']:
-        if linktype in [l['LinkName'] for l in links[0]['LinkSetDb']]:
-            return linktype
-    # If we're here, then there's no valid linktype
-    logger.error("No valid linktype found (exiting)")
-    sys.exit(1)
-
-# Download and uncompress the wgsmaster contig archive
-def retrieve_wgsmaster_contigs(uid):
-    """Munges a download URL from the passed UID and downloads the
-    corresponding archive from NCBI, extracting it to the output
-    directory.
-    """
-    logger.info("Processing wgsmaster UID: %s" % uid)
-    summary = Entrez.read(Entrez.esummary(db='nuccore', id=uid,
-                                          rettype='text', validate=False))
-    # Assume that the 'Extra' field is present and is well-formatted.
-    # Which means that the first six characters of the last part of
-    # the 'Extra' string correspond to the download archive filestem.
-    dlstem = summary[0]['Extra'].split('|')[-1][:6]
-    dlver = summary[0]['Extra'].split('|')[3].split('.')[-1]
-    # Download archive to output directory
-    # Establish download size; if version number not in sync with
-    # download, try again with version number decremented by 1. This 
-    # may be necessary because genome sequence version and genome/
-    # assembly version numbers are not synchronised. 
-    fsize = None
-    while str(dlver) != '0' and not fsize:
-        try:
-            fname = "%s.%s.fsa_nt.gz" % (dlstem, dlver)
-            outfname = os.path.join(args.outdirname, fname)
-            url = "http://www.ncbi.nlm.nih.gov/Traces/wgs/?download=%s" % \
-                fname
-            logger.info("Trying URL: %s" % url)
-            response = urlopen(url)
-            meta = response.info()
-            fsize = int(meta.getheaders("Content-length")[0])
-            logger.info("Downloading: %s Bytes: %s" % (fname, fsize))
-            fsize_dl = 0
-            bsize = 1048576
-        except:  # Download didn't work. Assuming it's because of version
-            fsize = None
-            logger.error("Download failed for (%s)" % url)
-            if str(dlver) != '0':
-                dlver = int(dlver) - 1
-                logger.info("Retrying download with version = %s" % dlver)
-            else:
-                logger.error("No more versions to try (exiting)")
-                sys.exit(1)
-    # Download data
-    try:
-        with open(outfname, 'wb') as fh:
-            while True:
-                buffer = response.read(bsize)
-                if not buffer:
-                    break
-                fsize_dl += len(buffer)
-                fh.write(buffer)
-                status = r"%10d  [%3.2f%%]" % (fsize_dl,
-                                               fsize_dl * 100. / fsize)
-                logger.info(status)
-    except:
-        logger.error("Download failed for %s (exiting)" % fname)
-        logger.error(last_exception())
-        sys.exit(1)
-    # Extract archive
-    asm_summary = entrez_retry(Entrez.esummary, db='assembly', id=asm_uid,
-                               rettype='text')
-    asm_record = Entrez.read(asm_summary, validate=False)
-    gname = asm_record['DocumentSummarySet']['DocumentSummary']\
-            [0]['AssemblyAccession']
-    extractfname = os.path.join(args.outdirname,
-                                '.'.join([gname, 'fasta']))
-    try:
-        logger.info("Extracting archive %s to %s" %
-                    (outfname, extractfname))
-        with open(extractfname, 'w') as efh:
-            subprocess.call(['gunzip', '-c', outfname],
-                            stdout=efh)  # can be subprocess.run in Py3.5
-        logger.info("Archive extracted to %s" % extractfname)
-    except:
-        logger.error("Extracting archive %s failed (exiting)" % outfname)
-        logger.error(last_exception())
-        sys.exit(1)
-    # Get contig_uids
-    contig_uids = [s.description for s in SeqIO.parse(extractfname, 'fasta')]
-    return contig_uids, extractfname
-
-
-def get_class_label_info(asm_uid):
-    """Returns class and label strings for an assembly indicated by asm_uid."""
-    # Currently duplicated in write_contigs() - needs refactoring
-    logger.info("Recovering class and label info for assembly %s" % asm_uid)
-    # Assembly record - get binomial and strain names
-    asm_summary = entrez_retry(Entrez.esummary, db='assembly', id=asm_uid,
-                               rettype='text')
-    asm_record = Entrez.read(asm_summary, validate=False)
-    asm_organism = asm_record['DocumentSummarySet']['DocumentSummary']\
-                   [0]['SpeciesName']
-    try:
-        asm_strain = asm_record['DocumentSummarySet']['DocumentSummary']\
-                     [0]['Biosource']['InfraspeciesList'][0]['Sub_value']
-    except:
-        asm_strain = ""
-    # Assembly UID (long form) for the output filename 
-    gname = asm_record['DocumentSummarySet']['DocumentSummary']\
-            [0]['AssemblyAccession']
-    outfilename = "%s.fasta" % os.path.join(args.outdirname, gname)
+        strain = ""
 
     # Create label and class strings
-    genus, species = asm_organism.split(' ', 1)
+    genus, species = organism.split(' ', 1)
     ginit = genus[0] + '.'
-    labeltxt = "%s\t%s %s %s" % (gname, ginit, species, asm_strain)
-    classtxt = "%s\t%s" % (gname, asm_organism)
-    logger.info("UID: %s Label: %s" % (asm_uid, labeltxt))
-    logger.info("UID: %s Class: %s" % (asm_uid, classtxt))
+    labeltxt = "%s\t%s %s %s" % (accession, ginit, species, strain)
+    classtxt = "%s\t%s" % (accession, organism)
+    logger.info("\tLabel: %s" % labeltxt)
+    logger.info("\tClass: %s" % classtxt)
 
-    # Return labels
-    return classtxt, labeltxt
+    # Download and extract genome assembly
+    fastafilename = retrieve_assembly_contigs(filestem)
 
+    return (fastafilename, classtxt, labeltxt)
+
+
+# Download and extract an NCBI assembly file, given a filestem
+def retrieve_assembly_contigs(filestem):
+    """Downloads an assembly sequence to a local directory.
+
+    The filestem corresponds to <AA>_<AN>, where <AA> and <AN> are 
+    AssemblyAccession and AssemblyName: data fields in the eSummary record.
+    These correspond to downloadable files for each assembly at
+    ftp://ftp.ncbi.nlm.nih.gov/genomes/all/<AA>_<AN>
+    where <AA> is AssemblyAccession, and <AN> is AssemblyName.
+
+    The files in this directory all have the stem <AA>_<AN>_<suffix>, where
+    suffixes are:
+    assembly_report.txt
+    assembly_stats.txt
+    feature_table.txt.gz
+    genomic.fna.gz
+    genomic.gbff.gz
+    genomic.gff.gz
+    protein.faa.gz
+    protein.gpff.gz
+    rm_out.gz
+    rm.run
+    wgsmaster.gbff.gz
+
+    This function downloads the genomic_fna.gz file, and extracts it in the
+    output directory name specified when the script is called.
+    """
+    logger.info("Retrieving assembly sequence for %s" % filestem)
+
+    # Compile URL
+    ftpstem = "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/"
+    suffix = "genomic.fna.gz"
+    fname = '_'.join([filestem, suffix])
+    url = "{0}{1}/{2}".format(ftpstem, filestem, fname)
+    logger.info("Using URL: %s" % url)
+    
+    # Get data info
+    try:
+        response = urlopen(url)
+        meta = response.info()
+        fsize = int(meta.get("Content-length"))
+    except:
+        logger.error("Download failed for URL: %s" % url)
+        logger.error(last_exception())
+        raise NCBIDownloadException()
+
+    # Download data
+    outfname = os.path.join(args.outdirname, fname)
+    if os.path.exists(outfname):
+        logger.warning("Output file %s exists, not downloading" % outfname)
+    else:
+        logger.info("Downloading %s (%d bytes)" % (url, fsize))
+        bsize = 1048576  # buffer size
+        fsize_dl = 0     # bytes downloaded
+        try:
+            with open(outfname, "wb") as fh:
+                while True:
+                    buffer = response.read(bsize)
+                    if not buffer:
+                        break
+                    fsize_dl += len(buffer)
+                    fh.write(buffer)
+                    status = r"%10d  [%3.2f%%]" % (fsize_dl,
+                                                   fsize_dl * 100. / fsize)
+                    logger.info(status)
+        except:
+            logger.error("Download failed for %s" % url)
+            logger.error(last_exception())
+            raise NCBIDownloadException()
+
+    # Extract data
+    ename = os.path.splitext(outfname)[0]  # Strips only .gz from filename
+    if os.path.exists(ename):
+        logger.warning("Output file %s exists, not extracting" % ename)
+    else:
+        try:
+            logger.info("Extracting archive %s to %s" %
+                        (outfname, ename))
+            with open(ename, 'w') as efh:
+                subprocess.call(['gunzip', '-c', outfname],
+                                stdout=efh)  # can be subprocess.run in Py3.5
+                logger.info("Archive extracted to %s" % ename)
+        except:
+            logger.error("Extracting archive %s failed" % outfname)
+            logger.error(last_exception())
+            raise NCBIDownloadException()
+
+    return ename
+    
 
 # Write contigs for a single assembly out to file
 def write_contigs(asm_uid, contig_uids):
@@ -535,12 +484,16 @@ if __name__ == '__main__':
     # Download contigs for each assembly UID
     classes, labels = [], []
     contig_dict = defaultdict(set)
+    skippedlist = []
     for tid, asm_uids in list(asm_dict.items()):
-        for asm_uid in asm_uids:
-            contig_dict[asm_uid] = get_contig_uids(asm_uid)
-            classtxt, labeltxt = get_class_label_info(asm_uid)
-            classes.append(classtxt)
-            labels.append(labeltxt)
+        for uid in asm_uids:
+            try:
+                contig_dict[uid], classtxt, labeltxt = get_ncbi_asm(uid)
+                classes.append(classtxt)
+                labels.append(labeltxt)
+            except NCBIDownloadException:
+                logger.error("Skipping download for %s" % uid)
+                skippedlist.append(uid)
 
     # Write class and label files
     classfilename = os.path.join(args.outdirname, 'classes.txt')
@@ -552,10 +505,11 @@ if __name__ == '__main__':
     with open(labelfilename, 'w') as fh:
         fh.write('\n'.join(labels))
 
-    # Report the number of contigs we got for each assembly
-    for asm_uid, contig_uids in list(contig_dict.items()):
-        logger.info("Assembly %s: %d contigs" %
-                    (asm_uid, len(contig_uids['contig_uids'])))
+    # How many downloads did we do/have to skip?
+    logger.info("Obtained %d assemblies" % len(contig_dict))
+    if len(skippedlist):
+        logger.warning("Skipped %d downloads through error" % len(skippedlist))
+    logger.info("Skipped assembly UIDs: %s" % skippedlist)
 
     # Let the user know we're done
     logger.info(time.asctime())
