@@ -1,6 +1,10 @@
 # CHANGES.md
 
-## v0.2
+## v0.2.0.post2
+
+* Updated `genbank_get_genomes_by_taxon.py` script to use the new FTP locations at NCBI for each assembly.
+
+## v0.2.0
 
 * Merged [pull request](https://github.com/widdowquinn/pyani/pull/17) from peterjc to make printing from tests Python3-friendly.
 * Merged [pull request](https://github.com/widdowquinn/pyani/pull/21) from peterjc to use `open()` for opening files.
