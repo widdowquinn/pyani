@@ -213,4 +213,5 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
         alignment_coverage.loc[sname, qname] = query_cover
         alignment_coverage.loc[qname, sname] = sbjct_cover
     return(alignment_lengths, percentage_identity, alignment_coverage,
-           similarity_errors, zero_error)
+           similarity_errors, percentage_identity * alignment_coverage,
+           zero_error)

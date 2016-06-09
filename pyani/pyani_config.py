@@ -18,14 +18,17 @@ QSUB_DEFAULT = "qsub"
 
 # Stems for output files
 ANIM_FILESTEMS = ("ANIm_alignment_lengths", "ANIm_percentage_identity",
-                  "ANIm_alignment_coverage", "ANIm_similarity_errors")
+                  "ANIm_alignment_coverage", "ANIm_similarity_errors",
+                  "ANIm_hadamard")
 ANIB_FILESTEMS = ("ANIb_alignment_lengths", "ANIb_percentage_identity",
-                  "ANIb_alignment_coverage", "ANIb_similarity_errors")
+                  "ANIb_alignment_coverage", "ANIb_similarity_errors",
+                  "ANIb_hadamard")
 TETRA_FILESTEMS = ("TETRA_correlations",)
 ANIBLASTALL_FILESTEMS = ("ANIblastall_alignment_lengths",
                          "ANIblastall_percentage_identity",
                          "ANIblastall_alignment_coverage",
-                         "ANIblastall_similarity_errors")
+                         "ANIblastall_similarity_errors",
+                         "ANIblastall_hadamard")
 
 # Output subdirectory names for each method
 ALIGNDIR = {'ANIm': 'nucmer_output',
@@ -54,12 +57,14 @@ def params_mpl(df):
                                        df.values.max()),
             'ANIb_percentage_identity': ('spbnd_BuRd', 0, 1),
             'ANIb_alignment_coverage': ('BuRd', 0, 1),
+            'ANIb_hadamard': ('BuRd', 0, 1),
             'ANIb_similarity_errors': ('afmhot', df.values.min(),
                                        df.values.max()),
             'ANIm_alignment_lengths': ('afmhot', df.values.min(),
                                        df.values.max()),
             'ANIm_percentage_identity': ('spbnd_BuRd', 0, 1),
             'ANIm_alignment_coverage': ('BuRd', 0, 1),
+            'ANIm_hadamard': ('BuRd', 0, 1),
             'ANIm_similarity_errors': ('afmhot', df.values.min(),
                                        df.values.max()),
             'TETRA_correlations': ('spbnd_BuRd', 0, 1),
@@ -67,6 +72,7 @@ def params_mpl(df):
                                               df.values.max()),
             'ANIblastall_percentage_identity': ('spbnd_BuRd', 0, 1),
             'ANIblastall_alignment_coverage': ('BuRd', 0, 1),
+            'ANIblastall_hadamard': ('BuRd', 0, 1),
             'ANIblastall_similarity_errors': ('afmhot', df.values.min(),
                                               df.values.max())}
 

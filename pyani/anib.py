@@ -379,7 +379,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
         percentage_identity.loc[qname, sname] = 0.01 * ani_pid
         alignment_coverage.loc[qname, sname] = query_cover
     return(alignment_lengths, percentage_identity, alignment_coverage,
-           similarity_errors)
+           similarity_errors, percentage_identity * alignment_coverage)
 
 
 # Parse BLASTALL output to get total alignment length and mismatches
