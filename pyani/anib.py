@@ -414,8 +414,15 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
                    'blast_pid', 'blast_identities', 'qlen', 'slen',
                    'q_start', 'q_end', 's_start', 's_end', 'blast_pos',
                    'ppos', 'blast_gaps']
-    data = pd.DataFrame.from_csv(filename, header=None, sep='\t')
-    data.columns = columns
+    # We may receive an empty BLASTN output file, if there are no significant
+    # regions of homology. This causes pandas to throw an error on CSV import.
+    # To get past this, we create an empty dataframe with the appropriate
+    # columns.
+    try:
+        data = pd.DataFrame.from_csv(filename, header=None, sep='\t')
+        data.columns = columns
+    except pd.io.common.EmptyDataError:
+        data = pd.DataFrame(columns=columns)
     # Add new column for fragment length, only for BLASTALL
     if mode == "ANIblastall":
         data['qlen'] = pd.Series([qfraglengths[idx] for idx in data.index],
@@ -430,6 +437,8 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     filtered = data[(data['ani_coverage'] > 0.7) & (data['ani_pid'] > 0.3)]
     # Dedupe query hits, so we only take the best hit
     filtered = filtered.groupby(filtered.index).first()
+    # Replace NaNs with zero
+    filtered = filtered.fillna(value=0)  # Needed if no matches
     # The ANI value is then the mean percentage identity.
     # We report total alignment length and the number of similarity errors
     # (mismatches and gaps), as for ANIm
@@ -438,7 +447,11 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     # development indicated that a handful of fragments are differentially
     # filtered out in JSpecies and this script. This is often on the basis
     # of rounding differences (e.g. coverage being close to 70%).
+    # NOTE: If there are no hits, then ani_pid will be nan - we replace this
+    # with zero if that happens
     ani_pid = filtered['blast_pid'].mean()
+    if pd.isnull(ani_pid):  # Happens if there are no matches in ANIb
+        ani_pid = 0
     aln_length = filtered['ani_alnlen'].sum()
     sim_errors = filtered['blast_mismatch'].sum() +\
         filtered['blast_gaps'].sum()
