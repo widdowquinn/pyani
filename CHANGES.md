@@ -7,6 +7,7 @@
 * Updated `genbank_get_genomes_by_taxon.py` script to use the new FTP locations at NCBI for each assembly.
 * Fixed bug where `ANIb` would not go to completion if empty BLASTN files were generated (see issue #27)
 * Fixed bug where `ANIm` would not finish under `multiprocessing` if input sequences were highly divergent.
+* Added Hadamard product of percentage identity and alignment coverage as output.
 
 
 ## v0.2.0
