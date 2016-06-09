@@ -71,37 +71,19 @@ def multiprocessing_run(cmdlines, workers=None, verbose=False):
 
     - cmdlines - an iterable of command line strings
 
-    Returns CUMRETVAL, a sum of exit codes from each job that was run. If
-    all goes well, we should have CUMRETVAL==0. Anything else and the calling
+    Returns the sum of exit codes from each job that was run. If
+    all goes well, this should be 0. Anything else and the calling
     function should act accordingly.
     """
-    # Keep track of return values for this pool, reset to zero
-    global CUMRETVAL
     # Run jobs
     # If workers is None or greater than the number of cores available,
     # it will be set to the maximum number of cores
     pool = multiprocessing.Pool(processes=workers)
-    completed = []
-    if verbose:
-        callback_fn = status_callback
-    else:
-        callback_fn = completed.append
-    pool_outputs = [pool.apply_async(subprocess.call,
-                                     (str(cline), ),
-                                     {'stderr': subprocess.PIPE,
-                                      'shell': sys.platform != "win32"},
-                                     callback=callback_fn)
-                    for cline in cmdlines]
-    pool.close()        # Run jobs
-    pool.join()         # Collect output
-    return CUMRETVAL
-
-
-# Callback function with multiprocessing run status
-def status_callback(val):
-    """Basic callback for multiprocessing.
-
-    - val - return status indicated from multiprocessing
-    """
-    global CUMRETVAL
-    CUMRETVAL += val
+    results = [pool.apply_async(subprocess.run, (str(cline), ),
+                                {'shell': sys.platform != "win32",
+                                 'stdout': subprocess.PIPE,
+                                 'stderr': subprocess.PIPE})
+               for cline in cmdlines]
+    pool.close()
+    pool.join()
+    return sum([r.get().returncode for r in results])
