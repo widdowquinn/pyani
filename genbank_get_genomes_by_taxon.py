@@ -235,8 +235,8 @@ def get_ncbi_asm(asm_uid):
     # Create label and class strings
     genus, species = organism.split(' ', 1)
     ginit = genus[0] + '.'
-    labeltxt = "%s\t%s %s %s" % (accession, ginit, species, strain)
-    classtxt = "%s\t%s" % (accession, organism)
+    labeltxt = "%s_genomic\t%s %s %s" % (filestem, ginit, species, strain)
+    classtxt = "%s_genomic\t%s" % (filestem, organism)
     logger.info("\tLabel: %s" % labeltxt)
     logger.info("\tClass: %s" % classtxt)
 
@@ -318,6 +318,17 @@ def retrieve_assembly_contigs(filestem):
 
     # Extract data
     ename = os.path.splitext(outfname)[0]  # Strips only .gz from filename
+    # The code below mangles the extracted filename to suit the expected
+    # class/label from the old version of this script.
+    # The .gz file downloaded from NCBI will have format
+    # <assembly UID>_<string>_genomic.fna.gz - we wish to extract to 
+    # <assembly UID>.fna
+    #regex = ".{3}_[0-9]{9}.[0-9]"
+    #outparts = os.path.split(outfname)
+    #print(outparts[0])
+    #print(re.match(regex, outparts[-1]).group())
+    #ename = os.path.join(outparts[0],
+    #                     re.match(regex, outparts[-1]).group() + '.fna')
     if os.path.exists(ename):
         logger.warning("Output file %s exists, not extracting" % ename)
     else:
