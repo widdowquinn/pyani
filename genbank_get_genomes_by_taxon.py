@@ -19,10 +19,12 @@ import subprocess
 import sys
 import time
 import traceback
-from urllib.request import urlopen
 
 from argparse import ArgumentParser
 from collections import defaultdict
+from socket import timeout
+from urllib.error import HTTPError, URLError
+from urllib.request import urlopen
 
 from Bio import Entrez, SeqIO
 
@@ -66,6 +68,9 @@ def parse_cmdline(args):
     parser.add_argument("--batchsize", dest="batchsize",
                         action="store", default=10000,
                         help="Entrez record return batch size")
+    parser.add_argument("--timeout", dest="timeout",
+                        action="store", default=10,
+                        help="Timeout for URL connection (s)")
     return parser.parse_args()
 
 
@@ -284,13 +289,19 @@ def retrieve_assembly_contigs(filestem):
     
     # Get data info
     try:
-        response = urlopen(url)
+        response = urlopen(url, timeout=args.timeout)
         meta = response.info()
         fsize = int(meta.get("Content-length"))
-    except:
+    except (HTTPError, URLError) as error:
         logger.error("Download failed for URL: %s" % url)
         logger.error(last_exception())
         raise NCBIDownloadException()
+    except timeout:
+        logger.error("Download failed for URL: %s" % url)
+        logger.error(last_exception())
+        raise NCBIDownloadException()
+    else:
+        logger.info("Opened URL and parsed metadata.")
 
     # Download data
     outfname = os.path.join(args.outdirname, fname)
@@ -318,10 +329,10 @@ def retrieve_assembly_contigs(filestem):
 
     # Extract data
     ename = os.path.splitext(outfname)[0]  # Strips only .gz from filename
-    # The code below mangles the extracted filename to suit the expected
-    # class/label from the old version of this script.
-    # The .gz file downloaded from NCBI will have format
-    # <assembly UID>_<string>_genomic.fna.gz - we wish to extract to 
+    # The code below would munge the extracted filename to suit the expected
+    # class/label from the old version of this script. 
+    # The .gz file downloaded from NCBI has format
+    # <assembly UID>_<string>_genomic.fna.gz - which we would extract to 
     # <assembly UID>.fna
     #regex = ".{3}_[0-9]{9}.[0-9]"
     #outparts = os.path.split(outfname)
