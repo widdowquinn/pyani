@@ -259,6 +259,10 @@ def parse_cmdline(args):
                         action="store_true",
                         default=False,
                         help="Write Excel format output tables")
+    parser.add_argument("--rerender", dest="rerender",
+                        action="store_true",
+                        default=False,
+                        help="Rerender graphics output without recalculation")
     parser.add_argument("--subsample", dest="subsample",
                         action="store", default=None,
                         help="Subsample a percentage [0-1] or specific " +
@@ -606,10 +610,11 @@ def write(results, filestems):
 
 
 # Draw ANIb/ANIm/TETRA output
-def draw(results, filestems, gformat):
+def draw(results, filestems, gformat, rerender=False):
     """Draw ANIb/ANIm/TETRA results
 
     - results - tuple of dataframes from ANIb analysis
+    - filestems - 
     """
     # Draw heatmaps
     for df, filestem in zip(results, filestems):
@@ -643,6 +648,38 @@ def draw(results, filestems, gformat):
                                            vmax=params_mpl(df)[filestem][2],
                                            labels=get_labels(args.labels),
                                            classes=get_labels(args.classes))
+
+# Subsample the input files
+def subsample_input(infiles):
+    """Returns a random subsample of the input files.
+
+    - infiles: a list of input files for analysis
+    """
+    logger.info("--subsample: %s" % args.subsample)
+    try:
+        samplesize = float(args.subsample)
+    except TypeError:  # Not a number
+        logger.error("--subsample must be int or float, got %s (exiting)" %
+                     type(args.subsample))
+        sys.exit(1)
+    if samplesize <= 0: # Not a positive value
+        logger.error("--subsample must be positive value, got %s" %
+                     str(args.subsample))
+        sys.exit(1)
+    if int(samplesize) > 1:
+        logger.info
+        k = min(int(samplesize), len(infiles))
+    else:
+        k = int(min(samplesize, 1.0) * len(infiles))
+    logger.info("Randomly subsampling %d sequences for analysis" % k)
+    if args.seed:
+        logger.info("Setting random seed with: %s" % args.seed)
+        random.seed(args.seed)
+    else:
+        logger.warning("Subsampling without specified random seed!")
+        logger.warning("Subsampling may NOT be easily reproducible!")
+    return random.sample(infiles, k)
+
 
 # Run as script
 if __name__ == '__main__':
@@ -733,30 +770,7 @@ if __name__ == '__main__':
 
     # Are we subsampling? If so, make the selection here
     if args.subsample:
-        logger.info("--subsample: %s" % args.subsample)
-        try:
-            samplesize = float(args.subsample)
-        except TypeError:  # Not a number
-            logger.error("--subsample must be int or float, got %s (exiting)" %
-                         type(args.subsample))
-            sys.exit(1)
-        if samplesize <= 0: # Not a positive value
-            logger.error("--subsample must be positive value, got %s" %
-                         str(args.subsample))
-            sys.exit(1)
-        if int(samplesize) > 1:
-            logger.info
-            k = min(int(samplesize), len(infiles))
-        else:
-            k = int(min(samplesize, 1.0) * len(infiles))
-        logger.info("Randomly subsampling %d sequences for analysis" % k)
-        if args.seed:
-            logger.info("Setting random seed with: %s" % args.seed)
-            random.seed(args.seed)
-        else:
-            logger.warning("Subsampling without specified random seed!")
-            logger.warning("Subsampling may NOT be easily reproducible!")
-        infiles = random.sample(infiles, k)
+        infiles = subsample_input(infiles)
         logger.info("Sampled input files:\n\t%s" % '\n\t'.join(infiles))
 
     # Get lengths of input sequences
@@ -779,7 +793,7 @@ if __name__ == '__main__':
         for gfmt in args.gformat.split(','):
             logger.info("Graphics format: %s" % gfmt)
             logger.info("Graphics method: %s" % args.gmethod)
-            draw(results, methods[args.method][1], gfmt)
+            draw(results, methods[args.method][1], gfmt, args.rerender)
 
     # Report that we've finished
     logger.info("Done: %s." % time.asctime())
