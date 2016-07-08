@@ -156,6 +156,7 @@ import json
 import logging
 import logging.handlers
 import os
+import pandas as pd
 import random
 import shutil
 import sys
@@ -608,19 +609,20 @@ def write(results, filestems):
         df.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
                   index=True, sep="\t")
 
-
 # Draw ANIb/ANIm/TETRA output
-def draw(results, filestems, gformat, rerender=False):
+def draw(filestems, gformat, rerender=False):
     """Draw ANIb/ANIm/TETRA results
 
-    - results - tuple of dataframes from ANIb analysis
-    - filestems - 
+    - filestems - filestems for output files
+    - gformat - the format for output graphics
+    - rerender - do we rerender existing results?
     """
     # Draw heatmaps
-    for df, filestem in zip(results, filestems):
+    for filestem in filestems:
         fullstem = os.path.join(args.outdirname, filestem)
         outfilename = fullstem + '.%s' % gformat
         infilename = fullstem + '.tab'
+        df = pd.read_csv(infilename, index_col=0, sep="\t")
         logger.info("Writing heatmap to %s" % outfilename)
         if args.gmethod == "mpl":
             pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
@@ -728,6 +730,8 @@ if __name__ == '__main__':
     if args.outdirname is None:
         logger.error("No output directory name (exiting)")
         sys.exit(1)
+    if args.rerender: # Rerendering, we want to overwrite graphics
+        args.force, args.noclobber = True, True
     make_outdir()
     logger.info("Output directory: %s" % args.outdirname)
 
@@ -755,45 +759,51 @@ if __name__ == '__main__':
         sys.exit(1)
     logger.info("Using ANI method: %s" % args.method)
 
-    # Have we got a valid scheduler choice?
-    schedulers = ["multiprocessing", "SGE"]
-    if args.scheduler not in schedulers:
-        logger.error("scheduler %s not recognised (exiting)" % args.scheduler)
-        logger.error("Valid schedulers are: %s" % '; '.join(schedulers))
-        sys.exit(1)
-    logger.info("Using scheduler method: %s" % args.scheduler)
+    # Skip calculations (or not) depending on rerender option
+    if args.rerender:
+        logger.warning("--rerender option used")
+        logger.warning("Producing graphics with no new recalculations")
+    else:
+        # Have we got a valid scheduler choice?
+        schedulers = ["multiprocessing", "SGE"]
+        if args.scheduler not in schedulers:
+            logger.error("scheduler %s not recognised (exiting)" %
+                         args.scheduler)
+            logger.error("Valid schedulers are: %s" % '; '.join(schedulers))
+            sys.exit(1)
+        logger.info("Using scheduler method: %s" % args.scheduler)
+        
+        # Get input files
+        logger.info("Identifying FASTA files in %s" % args.indirname)
+        infiles = pyani_files.get_fasta_files(args.indirname)
+        logger.info("Input files:\n\t%s" % '\n\t'.join(infiles))
 
-    # Get input files
-    logger.info("Identifying FASTA files in %s" % args.indirname)
-    infiles = pyani_files.get_fasta_files(args.indirname)
-    logger.info("Input files:\n\t%s" % '\n\t'.join(infiles))
+        # Are we subsampling? If so, make the selection here
+        if args.subsample:
+            infiles = subsample_input(infiles)
+            logger.info("Sampled input files:\n\t%s" % '\n\t'.join(infiles))
 
-    # Are we subsampling? If so, make the selection here
-    if args.subsample:
-        infiles = subsample_input(infiles)
-        logger.info("Sampled input files:\n\t%s" % '\n\t'.join(infiles))
+        # Get lengths of input sequences
+        logger.info("Processing input sequence lengths")
+        org_lengths = pyani_files.get_sequence_lengths(infiles)
+        logger.info("Sequence lengths:\n" +
+                    os.linesep.join(["\t%s: %d" % (k, v) for
+                                     k, v in list(org_lengths.items())]))
 
-    # Get lengths of input sequences
-    logger.info("Processing input sequence lengths")
-    org_lengths = pyani_files.get_sequence_lengths(infiles)
-    logger.info("Sequence lengths:\n" +
-                os.linesep.join(["\t%s: %d" % (k, v) for
-                                 k, v in list(org_lengths.items())]))
-
-    # Run appropriate method on the contents of the input directory,
-    # and write out corresponding results.
-    logger.info("Carrying out %s analysis" % args.method)
-    results = methods[args.method][0](infiles, org_lengths)
-    write(results, methods[args.method][1])
+        # Run appropriate method on the contents of the input directory,
+        # and write out corresponding results.
+        logger.info("Carrying out %s analysis" % args.method)
+        results = methods[args.method][0](infiles, org_lengths)
+        write(results, methods[args.method][1])
 
     # Do we want graphical output?
-    if args.graphics:
+    if args.graphics or args.rerender:
         logger.info("Rendering output graphics")
         logger.info("Formats requested: %s" % args.gformat)
         for gfmt in args.gformat.split(','):
             logger.info("Graphics format: %s" % gfmt)
             logger.info("Graphics method: %s" % args.gmethod)
-            draw(results, methods[args.method][1], gfmt, args.rerender)
+            draw(methods[args.method][1], gfmt, args.rerender)
 
     # Report that we've finished
     logger.info("Done: %s." % time.asctime())
