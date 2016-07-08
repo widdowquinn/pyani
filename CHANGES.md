@@ -8,7 +8,8 @@
 * Fixed bug where `ANIb` would not go to completion if empty BLASTN files were generated (see issue #27)
 * Fixed bug where `ANIm` would not finish under `multiprocessing` if input sequences were highly divergent.
 * Added Hadamard product of percentage identity and alignment coverage as output.
-
+* Fixed bug where label/classes are out of sync with new NCBI downloaded filenames
+* Added --rerender option to draw (new) graphics from old output, without recalculation
 
 ## v0.2.0
 
