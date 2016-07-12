@@ -45,7 +45,7 @@ import warnings
 from math import floor, log10
 
 # Define custom matplotlib colourmaps
-# 1) Map for species boundaries (95%: 0.95), blue for values at
+# 1a) Map for species boundaries (95%: 0.95), blue for values at
 # 0.9 or below, red for values at 1.0; white at 0.95.
 # Also, anything below 0.7 is 70% grey
 cdict_spbnd_BuRd = {'red': ((0.0, 0.0, 0.7),
@@ -64,6 +64,26 @@ cdict_spbnd_BuRd = {'red': ((0.0, 0.0, 0.7),
                              (1.0, 0.0, 0.0))}
 cmap_spbnd_BuRd = LinearSegmentedColormap("spbnd_BuRd", cdict_spbnd_BuRd)
 plt.register_cmap(cmap=cmap_spbnd_BuRd)
+
+# 1b) Map for species boundaries (95%: 0.95), blue for values at
+# 0.9 or below, red for values at 1.0; white at 0.9.
+# Also, anything below 0.8 is 70% grey
+cdict_hadamard_BuRd = {'red': ((0.0, 0.0, 0.7),
+                            (0.8, 0.7, 0.0),
+                            (0.9, 0.0, 0.0),
+                            (0.9, 1.0, 1.0),
+                            (1.0, 1.0, 1.0)),
+                    'green': ((0.0, 0.0, 0.7),
+                              (0.8, 0.7, 0.0),
+                              (0.9, 0.0, 0.0),
+                              (0.9, 1.0, 1.0),
+                              (1.0, 0.0, 0.0)),
+                    'blue': ((0.0, 0.0, 0.7),
+                             (0.8, 0.7, 1.0),
+                             (0.9, 1.0, 1.0),
+                             (1.0, 0.0, 0.0))}
+cmap_hadamard_BuRd = LinearSegmentedColormap("hadamard_BuRd", cdict_hadamard_BuRd)
+plt.register_cmap(cmap=cmap_hadamard_BuRd)
 
 # 2) Blue for values at 0.0, red for values at 1.0; white at 0.5
 cdict_BuRd = {'red': ((0.0, 0.0, 0.0),
@@ -224,7 +244,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                                              width_ratios=[1, 0.15])
     rowdend_axes = fig.add_subplot(rowGS[0, 0])
     rowdend = sch.dendrogram(rowclusters, color_threshold=np.inf,
-                             orientation="right")
+                             orientation="left")
     clean_axis(rowdend_axes)
 
     # Create heatmap axis
