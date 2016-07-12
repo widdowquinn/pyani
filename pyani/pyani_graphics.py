@@ -126,8 +126,15 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
     # Obtain colour map
     cmap = plt.get_cmap(cmap)
 
-    # Decide on figure layout size
-    figsize = max(8, df.shape[0] * 1.1)
+    # Decide on figure layout size: a minimum size is required for
+    # aesthetics, and a maximum to avoid core dumps on rendering.
+    # If we hit the maximum size, we should modify font size.
+    maxfigsize = 120
+    calcfigsize = df.shape[0] * 1.1
+    figsize = min(max(8, calcfigsize), maxfigsize)
+    if figsize == maxfigsize:
+        scale = maxfigsize/calcfigsize
+        sns.set_context("notebook", font_scale=scale)
 
     # Add class colour bar. The aim is to get a pd.Series for the columns
     # of the form:
@@ -144,6 +151,10 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
         paldict = {lvl: pal for (lvl, pal) in zip(levels, pal)}
         lvl_pal = {cls: paldict[lvl] for (cls, lvl) in list(classes.items())}
         col_cb = pd.Series(df.index).map(lvl_pal)
+        # The col_cb Series index now has to match the df.index, but
+        # we don't create the Series with this (and if we try, it
+        # fails) - so change it, here.
+        col_cb.index = df.index
     else:
         col_cb = None
 
@@ -155,14 +166,14 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
         newlabels = [i for i in df.index]
 
     # Plot heatmap
-    fig = sns.clustermap(df, cmap=cmap, vmin=vmin, vmax=vmax,
+    fig = sns.clustermap(df,
+                         cmap=cmap, vmin=vmin, vmax=vmax,
                          col_colors=col_cb, row_colors=col_cb,
                          figsize=(figsize, figsize),
-                         linewidths=0.5,
+                         linewidths=0.25,
                          xticklabels=newlabels,
                          yticklabels=newlabels,
                          annot=True)
-
     fig.cax.yaxis.set_label_position('left')
     fig.cax.set_ylabel(title)
 
