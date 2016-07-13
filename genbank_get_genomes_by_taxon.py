@@ -198,7 +198,9 @@ def get_asm_uids(taxon_uid):
 # Download NCBI assembly file for a passed Assembly UID
 def get_ncbi_asm(asm_uid):
     """Returns the NCBI AssemblyAccession and AssemblyName for the assembly
-    with passed UID, and organism data for class/label files also.
+    with passed UID, and organism data for class/label files also, as well
+    as accession, so we can track whether downloads fail because only the
+    most recent version is available..
 
     AssemblyAccession and AssemblyName are data fields in the eSummary record,
     and correspond to downloadable files for each assembly at
@@ -215,8 +217,10 @@ def get_ncbi_asm(asm_uid):
 
     # Extract filestem from assembly data
     # Some illegal characters may occur in AssemblyName - a more robust
-    # regex replace/escape may be required.
-    escapes = re.compile("[\s/]")
+    # regex replace/escape may be required. Sadly, NCBI don't just
+    # use standard percent escapes, but instead replace certain
+    # characters with underscores.
+    escapes = re.compile("[\s/,]")
     data = summary['DocumentSummarySet']['DocumentSummary'][0]
     accession = data['AssemblyAccession']
     name = data['AssemblyName']
@@ -228,6 +232,7 @@ def get_ncbi_asm(asm_uid):
     logger.info("\tTaxid: %s" % data['SpeciesTaxid'])
     logger.info("\tAccession: %s" % accession)
     logger.info("\tName: %s" % name)
+    logger.info("\tEscaped name: %s" % escname)
     # NOTE: Maybe parse out the assembly stats here, in future?
 
     # Get class and label text
@@ -246,9 +251,24 @@ def get_ncbi_asm(asm_uid):
     logger.info("\tClass: %s" % classtxt)
 
     # Download and extract genome assembly
-    fastafilename = retrieve_assembly_contigs(filestem)
+    try:
+        fastafilename = retrieve_assembly_contigs(filestem)
+    except NCBIDownloadException:
+        # This is a little hacky. Sometimes, RefSeq assemblies are
+        # suppressed (presumably because they are non-redundant),
+        # but the GenBank assembly persists. In those cases, we
+        # *assume* (because it may not be true) that the corresponding
+        # genbank sequence shares the same accession number, except
+        # that GCF is replaced by GCA
+        gbfilestem = re.sub('^GCF_', 'GCA_', filestem)
+        logger.warning("Could not download %s, trying %s" %
+                       (filestem, gbfilestem))
+        try:
+            fastafilename = retrieve_assembly_contigs(gbfilestem)
+        except NCBIDownloadException:
+            fastafilename = None
 
-    return (fastafilename, classtxt, labeltxt)
+    return (fastafilename, classtxt, labeltxt, accession)
 
 
 # Download and extract an NCBI assembly file, given a filestem
@@ -290,8 +310,6 @@ def retrieve_assembly_contigs(filestem):
     # Get data info
     try:
         response = urlopen(url, timeout=args.timeout)
-        meta = response.info()
-        fsize = int(meta.get("Content-length"))
     except (HTTPError, URLError) as error:
         logger.error("Download failed for URL: %s" % url)
         logger.error(last_exception())
@@ -301,6 +319,8 @@ def retrieve_assembly_contigs(filestem):
         logger.error(last_exception())
         raise NCBIDownloadException()
     else:
+        meta = response.info()
+        fsize = int(meta.get("Content-length"))
         logger.info("Opened URL and parsed metadata.")
 
     # Download data
@@ -506,16 +526,23 @@ if __name__ == '__main__':
     # Download contigs for each assembly UID
     classes, labels = [], []
     contig_dict = defaultdict(set)
+    accessiondict = defaultdict(list)  # UIDs, keyed by accession
+    uidaccdict = {}  # accessions, keyed by UID
     skippedlist = []
     for tid, asm_uids in list(asm_dict.items()):
         for uid in asm_uids:
-            try:
-                contig_dict[uid], classtxt, labeltxt = get_ncbi_asm(uid)
-                classes.append(classtxt)
-                labels.append(labeltxt)
-            except NCBIDownloadException:
+            fastafilename, classtxt, labeltxt, accession = get_ncbi_asm(uid)
+            # fastafilename is None if there was an error thrown
+            if fastafilename is not None:
+                contig_dict[uid] = fastafilename
+            else:
                 logger.error("Skipping download for %s" % uid)
                 skippedlist.append(uid)
+            # Populate dictionaries for all attempted downloads
+            classes.append(classtxt)
+            labels.append(labeltxt)
+            accessiondict[accession.split('.')[0]].append(uid)
+            uidaccdict[uid] = accession
 
     # Write class and label files
     classfilename = os.path.join(args.outdirname, 'classes.txt')
@@ -531,6 +558,53 @@ if __name__ == '__main__':
     logger.info("Obtained %d assemblies" % len(contig_dict))
     if len(skippedlist):
         logger.warning("Skipped %d downloads through error" % len(skippedlist))
+        for uid in sorted(skippedlist):
+            logger.warning("Assembly UID %s skipped" % uid)
+            acc = uidaccdict[uid]
+            logger.warning("\tUID: %s - accession: %s" %
+                           (uid, acc))
+            # Has another version of this genome been successfully dl'ed
+            logger.warning("\tAccession %s has versions:" %
+                           acc.split('.')[0])
+            for vid in accessiondict[acc.split('.')[0]]:
+                if vid in skippedlist:
+                    status = "NOT DOWNLOADED"
+                else:
+                    status = "DOWNLOADED"
+                logger.warning("\t\t%s: %s - %s" % (vid, uidaccdict[vid],
+                                                    status))
+            url = "http://www.ncbi.nlm.nih.gov/assembly/%s" % vid
+            # Is this a GenBank sequence with no RefSeq counterpart?
+            # e.g. http://www.ncbi.nlm.nih.gov/assembly/196191/
+            if acc.startswith('GCA'):
+                logger.warning("\tAccession is GenBank: does RefSeq exist?")
+                logger.warning("\tCheck under 'history' at %s" % url)
+                # Check for RefSeq counterparts
+                acc = re.sub('^GCA_', 'GCF_', uidaccdict[uid])
+                logger.warning("\tAlternative RefSeq candidate accession: %s" %
+                               acc.split('.')[0])
+                for vid in accessiondict[acc.split('.')[0]]:
+                    if vid in skippedlist:
+                        status = "NOT DOWNLOADED"
+                    else:
+                        status = "DOWNLOADED"
+                    logger.warning("\t\t%s: %s - %s" % (vid, uidaccdict[vid],
+                                                        status))
+            if acc.startswith('GCF'):
+                logger.warning("\tAccession is RefSeq: is it suppressed?")
+                logger.warning("\tCheck under 'history' at %s" % url)
+                # Check for GenBank counterparts
+                # Check for RefSeq counterparts
+                acc = re.sub('^GCF_', 'GCA_', uidaccdict[uid])
+                logger.warning("\tAlternative GenBank candidate accession: %s" %
+                               acc.split('.')[0])
+                for vid in accessiondict[acc.split('.')[0]]:
+                    if vid in skippedlist:
+                        status = "NOT DOWNLOADED"
+                    else:
+                        status = "DOWNLOADED"
+                    logger.warning("\t\t%s: %s - %s" % (vid, uidaccdict[vid],
+                                                        status))                
     logger.info("Skipped assembly UIDs: %s" % skippedlist)
 
     # Let the user know we're done
