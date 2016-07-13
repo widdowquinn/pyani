@@ -10,6 +10,8 @@
 * Added Hadamard product of percentage identity and alignment coverage as output.
 * Fixed bug where label/classes are out of sync with new NCBI downloaded filenames
 * Added --rerender option to draw (new) graphics from old output, without recalculation
+* Corrected matplotlib row dendrogram orientation
+* Seaborn output no longer dumps core on large (ca. 500 genome) datasets
 
 ## v0.2.0
 
