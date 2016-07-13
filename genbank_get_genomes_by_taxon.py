@@ -461,6 +461,19 @@ def write_contigs(asm_uid, contig_uids):
     logger.info("Wrote %d contigs to %s" % (retval, outfilename))
 
 
+# Function to report whether an accession has been downloaded
+def logreport_downloaded(accession, skippedlist, accessiondict, uidaccdict):
+    """Reports to logger whether alternative assemblies for an accession that
+    was missing have been downloaded
+    """
+    for vid in accessiondict[accession.split('.')[0]]:
+        if vid in skippedlist:
+            status = "NOT DOWNLOADED"
+        else:
+            status = "DOWNLOADED"
+        logger.warning("\t\t%s: %s - %s" % (vid, uidaccdict[vid],
+                                            status))
+
 # Run as script
 if __name__ == '__main__':
 
@@ -566,45 +579,31 @@ if __name__ == '__main__':
             # Has another version of this genome been successfully dl'ed
             logger.warning("\tAccession %s has versions:" %
                            acc.split('.')[0])
-            for vid in accessiondict[acc.split('.')[0]]:
-                if vid in skippedlist:
-                    status = "NOT DOWNLOADED"
-                else:
-                    status = "DOWNLOADED"
-                logger.warning("\t\t%s: %s - %s" % (vid, uidaccdict[vid],
-                                                    status))
-            url = "http://www.ncbi.nlm.nih.gov/assembly/%s" % vid
+            logreport_downloaded(acc, skippedlist, accessiondict, uidaccdict)
+            url = "http://www.ncbi.nlm.nih.gov/assembly/%s" % uid
             # Is this a GenBank sequence with no RefSeq counterpart?
             # e.g. http://www.ncbi.nlm.nih.gov/assembly/196191/
             if acc.startswith('GCA'):
                 logger.warning("\tAccession is GenBank: does RefSeq exist?")
                 logger.warning("\tCheck under 'history' at %s" % url)
                 # Check for RefSeq counterparts
-                acc = re.sub('^GCA_', 'GCF_', uidaccdict[uid])
+                rsacc = re.sub('^GCA_', 'GCF_', uidaccdict[uid])
                 logger.warning("\tAlternative RefSeq candidate accession: %s" %
-                               acc.split('.')[0])
-                for vid in accessiondict[acc.split('.')[0]]:
-                    if vid in skippedlist:
-                        status = "NOT DOWNLOADED"
-                    else:
-                        status = "DOWNLOADED"
-                    logger.warning("\t\t%s: %s - %s" % (vid, uidaccdict[vid],
-                                                        status))
+                               rsacc.split('.')[0])
+                logger.warning("\tWere alternative assemblies downloaded?")
+                logreport_downloaded(rsacc, skippedlist,
+                                     accessiondict, uidaccdict)
+            # Is this a suppressed RefSeq sequence?
             if acc.startswith('GCF'):
                 logger.warning("\tAccession is RefSeq: is it suppressed?")
                 logger.warning("\tCheck under 'history' at %s" % url)
                 # Check for GenBank counterparts
-                # Check for RefSeq counterparts
-                acc = re.sub('^GCF_', 'GCA_', uidaccdict[uid])
+                gbacc = re.sub('^GCF_', 'GCA_', uidaccdict[uid])
                 logger.warning("\tAlternative GenBank candidate accession: %s" %
-                               acc.split('.')[0])
-                for vid in accessiondict[acc.split('.')[0]]:
-                    if vid in skippedlist:
-                        status = "NOT DOWNLOADED"
-                    else:
-                        status = "DOWNLOADED"
-                    logger.warning("\t\t%s: %s - %s" % (vid, uidaccdict[vid],
-                                                        status))                
+                               gbacc.split('.')[0])
+                logger.warning("\tWere alternative assemblies downloaded?")
+                logreport_downloaded(gbacc, skippedlist,
+                                     accessiondict, uidaccdict)
     logger.info("Skipped assembly UIDs: %s" % skippedlist)
 
     # Let the user know we're done
