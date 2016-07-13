@@ -45,7 +45,7 @@ import warnings
 from math import floor, log10
 
 # Define custom matplotlib colourmaps
-# 1) Map for species boundaries (95%: 0.95), blue for values at
+# 1a) Map for species boundaries (95%: 0.95), blue for values at
 # 0.9 or below, red for values at 1.0; white at 0.95.
 # Also, anything below 0.7 is 70% grey
 cdict_spbnd_BuRd = {'red': ((0.0, 0.0, 0.7),
@@ -64,6 +64,26 @@ cdict_spbnd_BuRd = {'red': ((0.0, 0.0, 0.7),
                              (1.0, 0.0, 0.0))}
 cmap_spbnd_BuRd = LinearSegmentedColormap("spbnd_BuRd", cdict_spbnd_BuRd)
 plt.register_cmap(cmap=cmap_spbnd_BuRd)
+
+# 1b) Map for species boundaries (95%: 0.95), blue for values at
+# 0.9 or below, red for values at 1.0; white at 0.9.
+# Also, anything below 0.8 is 70% grey
+cdict_hadamard_BuRd = {'red': ((0.0, 0.0, 0.7),
+                            (0.8, 0.7, 0.0),
+                            (0.9, 0.0, 0.0),
+                            (0.9, 1.0, 1.0),
+                            (1.0, 1.0, 1.0)),
+                    'green': ((0.0, 0.0, 0.7),
+                              (0.8, 0.7, 0.0),
+                              (0.9, 0.0, 0.0),
+                              (0.9, 1.0, 1.0),
+                              (1.0, 0.0, 0.0)),
+                    'blue': ((0.0, 0.0, 0.7),
+                             (0.8, 0.7, 1.0),
+                             (0.9, 1.0, 1.0),
+                             (1.0, 0.0, 0.0))}
+cmap_hadamard_BuRd = LinearSegmentedColormap("hadamard_BuRd", cdict_hadamard_BuRd)
+plt.register_cmap(cmap=cmap_hadamard_BuRd)
 
 # 2) Blue for values at 0.0, red for values at 1.0; white at 0.5
 cdict_BuRd = {'red': ((0.0, 0.0, 0.0),
@@ -106,8 +126,15 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
     # Obtain colour map
     cmap = plt.get_cmap(cmap)
 
-    # Decide on figure layout size
-    figsize = max(8, df.shape[0] * 1.1)
+    # Decide on figure layout size: a minimum size is required for
+    # aesthetics, and a maximum to avoid core dumps on rendering.
+    # If we hit the maximum size, we should modify font size.
+    maxfigsize = 120
+    calcfigsize = df.shape[0] * 1.1
+    figsize = min(max(8, calcfigsize), maxfigsize)
+    if figsize == maxfigsize:
+        scale = maxfigsize/calcfigsize
+        sns.set_context("notebook", font_scale=scale)
 
     # Add class colour bar. The aim is to get a pd.Series for the columns
     # of the form:
@@ -124,6 +151,10 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
         paldict = {lvl: pal for (lvl, pal) in zip(levels, pal)}
         lvl_pal = {cls: paldict[lvl] for (cls, lvl) in list(classes.items())}
         col_cb = pd.Series(df.index).map(lvl_pal)
+        # The col_cb Series index now has to match the df.index, but
+        # we don't create the Series with this (and if we try, it
+        # fails) - so change it, here.
+        col_cb.index = df.index
     else:
         col_cb = None
 
@@ -135,14 +166,14 @@ def heatmap_seaborn(df, outfilename=None, title=None, cmap=None,
         newlabels = [i for i in df.index]
 
     # Plot heatmap
-    fig = sns.clustermap(df, cmap=cmap, vmin=vmin, vmax=vmax,
+    fig = sns.clustermap(df,
+                         cmap=cmap, vmin=vmin, vmax=vmax,
                          col_colors=col_cb, row_colors=col_cb,
                          figsize=(figsize, figsize),
-                         linewidths=0.5,
+                         linewidths=0.25,
                          xticklabels=newlabels,
                          yticklabels=newlabels,
                          annot=True)
-
     fig.cax.yaxis.set_label_position('left')
     fig.cax.set_ylabel(title)
 
@@ -224,7 +255,7 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
                                              width_ratios=[1, 0.15])
     rowdend_axes = fig.add_subplot(rowGS[0, 0])
     rowdend = sch.dendrogram(rowclusters, color_threshold=np.inf,
-                             orientation="right")
+                             orientation="left")
     clean_axis(rowdend_axes)
 
     # Create heatmap axis
