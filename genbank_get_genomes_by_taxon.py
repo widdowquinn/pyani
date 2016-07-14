@@ -562,10 +562,10 @@ if __name__ == '__main__':
     labelfilename = os.path.join(args.outdirname, 'labels.txt')
     logger.info("Writing classes file to %s" % classfilename)
     with open(classfilename, 'w') as fh:
-        fh.write('\n'.join(classes))
+        fh.write('\n'.join(classes) + '\n')
     logger.info("Writing labels file to %s" % labelfilename)
     with open(labelfilename, 'w') as fh:
-        fh.write('\n'.join(labels))
+        fh.write('\n'.join(labels) + '\n')
 
     # How many downloads did we do/have to skip?
     logger.info("Obtained %d assemblies" % len(contig_dict))

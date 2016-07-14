@@ -274,13 +274,30 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
     # Are there class colourbars to add?
     if classes is not None:
+        # If not all dendrogram leaves are present, extend classes
+        for name in df.index[coldend['leaves']]:
+            if name not in classes:
+                classes[name] = name
+
+        # Assign a numerical value to each class, for mpl
         classdict = {cls: idx for (idx, cls) in enumerate(classes.values())}
         # Column colourbar
-        col_cb = pd.Series([classdict[classes[name]] for name in
-                            df.index[coldend['leaves']]])
+        col_cblist = []
+        for name in df.index[coldend['leaves']]:
+            try:
+                col_cblist.append(classdict[classes[name]])
+            except KeyError:
+                col_cblist.append(classdict[name])
+        col_cb = pd.Series(col_cblist)
+
         # Row colourbar
-        row_cb = pd.Series([classdict[classes[name]] for name in
-                            df.index[rowdend['leaves']]])
+        row_cblist = []
+        for name in df.index[rowdend['leaves']]:
+            try:
+                row_cblist.append(classdict[classes[name]])
+            except KeyError:
+                row_cblist.append(classdict[name])
+        row_cb = pd.Series(row_cblist)
 
         # Create column colourbar axis
         col_cbaxes = fig.add_subplot(colGS[1, 0])

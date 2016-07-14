@@ -579,15 +579,21 @@ def get_labels(filename):
 
     Input files should be formatted as <key>\t<label>, one pair per line.
     """
-    try:
-        labeldict = {}
-        with open(filename, 'rU') as fh:
-            for line in fh.readlines():
+    labeldict = {}
+    with open(filename, 'rU') as fh:
+        count = 0
+        for line in fh.readlines():
+            count += 1
+            try:
                 key, label = line.strip().split('\t')
+            except ValueError:
+                logger.warning("Problem with class file: %s" % filename)
+                logger.warning("%d: %s" % (count, line.strip()))
+                logger.warning("(skipping line)")
+                continue
+            else:
                 labeldict[key] = label
-        return labeldict
-    except:
-        None
+    return labeldict
                
 
 # Write ANIb/ANIm/TETRA output
