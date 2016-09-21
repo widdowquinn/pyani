@@ -13,6 +13,7 @@
 * Corrected matplotlib row dendrogram orientation
 * Seaborn output no longer dumps core on large (ca. 500 genome) datasets
 * `genbank_get_genomes_by_taxon.py` attempts to identify cause for failed downloads and correct, where nomenclature/versions are at fault
+* graceful replacement of classes that are not present in `classes.txt`
 
 ## v0.2.0
 
