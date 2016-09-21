@@ -170,6 +170,7 @@ from pyani import anib, anim, tetra, pyani_config, pyani_files, pyani_graphics
 from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
 from pyani.pyani_config import params_mpl, params_r, ALIGNDIR, FRAGSIZE
+from pyani import __version__ as VERSION
 
 
 # Process command-line arguments
@@ -580,19 +581,21 @@ def get_labels(filename):
     Input files should be formatted as <key>\t<label>, one pair per line.
     """
     labeldict = {}
-    with open(filename, 'rU') as fh:
-        count = 0
-        for line in fh.readlines():
-            count += 1
-            try:
-                key, label = line.strip().split('\t')
-            except ValueError:
-                logger.warning("Problem with class file: %s" % filename)
-                logger.warning("%d: %s" % (count, line.strip()))
-                logger.warning("(skipping line)")
-                continue
-            else:
-                labeldict[key] = label
+    if filename is not None:
+        logger.info("Reading labels from %s" % filename)
+        with open(filename, 'rU') as fh:
+            count = 0
+            for line in fh.readlines():
+                count += 1
+                try:
+                    key, label = line.strip().split('\t')
+                except ValueError:
+                    logger.warning("Problem with class file: %s" % filename)
+                    logger.warning("%d: %s" % (count, line.strip()))
+                    logger.warning("(skipping line)")
+                    continue
+                else:
+                    labeldict[key] = label
     return labeldict
                
 
@@ -725,6 +728,7 @@ if __name__ == '__main__':
     logger.addHandler(err_handler)
 
     # Report arguments, if verbose
+    logger.info("pyani version: %s" % VERSION)
     logger.info(args)
     logger.info("command-line: %s" % ' '.join(sys.argv))
 
