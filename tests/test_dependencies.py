@@ -11,35 +11,47 @@ If the test is run directly at the command-line, the output obtained by each
 test is returned to STDOUT.
 """
 
+import subprocess
+import sys
 
-def test_dependency_biopython():
+def test_import_biopython():
     """Test Biopython import."""
     import Bio
 
 
-def test_dependency_matplotlib():
+def test_import_matplotlib():
     """Test matplotlib import."""
     import matplotlib
 
 
-def test_dependency_numpy():
+def test_import_numpy():
     """Test numpy import."""
     import numpy
 
 
-def test_dependency_pandas():
+def test_import_pandas():
     """Test pandas import."""
-    import rpy2
+    import pandas
 
 
-def test_dependency_rpy2():
-    """Test rpy2 import."""
-    import rpy2
-
-
-def test_dependency_scipy():
+def test_import_scipy():
     """Test scipy import."""
     import scipy
+
+
+def test_run_blast():
+    """Test that BLAST+ is runnable."""
+    cmd = "blastn -version"
+    subprocess.run(cmd, shell=sys.platform != "win32",
+                   stdout=subprocess.PIPE,
+                   stderr=subprocess.PIPE)
+
+def test_run_nucmer():
+    """Test that NUCmer is runnable."""
+    cmd = "nucmer --version"
+    subprocess.run(cmd, shell=sys.platform != "win32",
+                   stdout=subprocess.PIPE,
+                   stderr=subprocess.PIPE)
 
 
 # Run as script

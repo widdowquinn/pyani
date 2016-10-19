@@ -1,0 +1,32 @@
+language: python
+python:
+  - "3.5"
+  - "3.5-dev" # 3.5 development branch
+#  - "3.6-dev" # 3.6 development branch
+#  - "nightly" # currently points to 3.7-dev
+
+# command to install dependencies
+install:
+  - "pip install -r requirements.txt"
+  - "pip install codecov"
+
+# command to run tests
+script:
+  - nosetests -v --with-coverage
+
+# application dependencies: BLAST, BLASTALL, MUMMER
+#before_install:
+#  - sudo apt-get -qq update
+#  - sudo apt-get install -y ncbi-blast+
+#  - sudo apt-get install -y blastall
+#  - sudo apt-get install -y mummer
+sudo: false
+addons:
+  apt:
+    packages:
+    - ncbi-blast+
+    - mummer
+
+# Use codecov for code coverage
+after_success:
+  - codecov
