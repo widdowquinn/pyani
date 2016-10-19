@@ -12,6 +12,7 @@ test is returned to STDOUT.
 """
 
 import subprocess
+import sys
 
 def test_import_biopython():
     """Test Biopython import."""
