@@ -44,14 +44,16 @@ def test_run_blast():
     cmd = "blastn -version"
     subprocess.run(cmd, shell=sys.platform != "win32",
                    stdout=subprocess.PIPE,
-                   stderr=subprocess.PIPE)
+                   stderr=subprocess.PIPE,
+                   check=True)
 
 def test_run_nucmer():
     """Test that NUCmer is runnable."""
     cmd = "nucmer --version"
     subprocess.run(cmd, shell=sys.platform != "win32",
                    stdout=subprocess.PIPE,
-                   stderr=subprocess.PIPE)
+                   stderr=subprocess.PIPE,
+                   check=True)
 
 
 # Run as script
