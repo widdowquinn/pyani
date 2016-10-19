@@ -206,7 +206,6 @@ def test_aniblastall_concordance():
 
 
 # Test concordance of this code with JSpecies output
-@nottest
 def test_anim_concordance():
     """Test concordance of ANIm method with JSpecies output."""
     # Make/check output directory
