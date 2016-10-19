@@ -8,7 +8,7 @@ These tests are intended to be run using the nose package
 If the test is run directly at the command-line, the output obtained by each
 test is returned to STDOUT.
 """
-from nose.tools import assert_equal, assert_less
+from nose.tools import assert_equal, assert_less, nottest
 from pyani.run_multiprocessing import multiprocessing_run
 
 import os
