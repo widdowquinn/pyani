@@ -12,7 +12,7 @@ install:
 
 # command to run tests
 script:
-  - nosetests -v --with-coverage
+  - nosetests -v --with-coverage --nocapture
 
 # application dependencies: BLAST, BLASTALL, MUMMER
 #before_install:
