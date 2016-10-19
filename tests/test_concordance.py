@@ -231,6 +231,8 @@ def test_anim_concordance():
     print(parts[-1])
     print(os.path.isfile(parts[-1]))
     multiprocessing_run(cmdlist, verbose=False)
+    print(outdirname)
+    print(os.listdir(outdirname))
     # Process .delta files
     anim_data = anim.process_deltadir(outdirname, org_lengths)
     anim_pid = anim_data[1].sort_index(axis=0).sort_index(axis=1) * 100.
