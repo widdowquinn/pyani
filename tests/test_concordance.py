@@ -225,7 +225,7 @@ def test_anim_concordance():
                                             pyani_config.NUCMER_DEFAULT)
     print('\n'.join(cmdlist))
     cmd = cmdlist[0]
-    parts = cmdlist.split()
+    parts = cmd.split()
     print(parts[-2])
 #    print(os.path.isfile(parts[-2]))
     print(parts[-1])
