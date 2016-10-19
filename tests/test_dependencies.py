@@ -29,12 +29,7 @@ def test_dependency_numpy():
 
 def test_dependency_pandas():
     """Test pandas import."""
-    import rpy2
-
-
-def test_dependency_rpy2():
-    """Test rpy2 import."""
-    import rpy2
+    import pandas
 
 
 def test_dependency_scipy():

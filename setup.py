@@ -48,7 +48,6 @@ setup(
     install_requires=['biopython',
                       'matplotlib',
                       'pandas',
-                      'rpy2',
                       'scipy',
                       'seaborn'],
     classifiers=[
