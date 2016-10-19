@@ -20,17 +20,20 @@ import shutil
 
 from pyani import anib, anim, tetra, pyani_files, pyani_config
 
+# Work out where we are. We need to do this to find related data files
+# for testing
+curdir = os.path.dirname(os.path.abspath(__file__))
 
 # Path to JSpecies output data. This data is pre-prepared. If you replace
 # the test data with your own data, you will need to replace this file,
 # or change the file path.
-JSPECIES_OUTFILE = 'test_JSpecies/jspecies_results.tab'
+JSPECIES_OUTFILE = os.path.join(curdir, './test_JSpecies/jspecies_results.tab')
 
 # Path to test input data
-INDIRNAME = 'test_ani_data'
+INDIRNAME = os.path.join(curdir, 'test_ani_data')
 
 # Path to directory for concordance test output
-OUTDIRNAME = 'test_concordance'
+OUTDIRNAME = os.path.join(curdir, 'test_concordance')
 
 # Thresholds for allowable difference
 TETRA_THRESHOLD = 0.1
@@ -83,6 +86,7 @@ def make_outdir(mode):
     if not os.path.isdir(outdirname):
         os.mkdir(outdirname)
     return outdirname
+
 
 # Test concordance of this code with JSpecies output
 def test_anib_concordance():
