@@ -12,20 +12,19 @@ install:
 
 # command to run tests
 script:
-  - nosetests -v --with-coverage --nocapture
+  - nosetests -v --with-coverage --cover-erase --cover-package=pyani --cover-html --nocapture
 
 # application dependencies: BLAST, BLASTALL, MUMMER
 before_install:
   - cd $HOME
   - mkdir bin
-  - export PATH=$HOME/bin:$PATH
   - cd bin
   - wget http://downloads.sourceforge.net/project/mummer/mummer/3.23/MUMmer3.23.tar.gz
   - tar -zxf MUMmer3.23.tar.gz
   - cd MUMmer3.23
   - make
   - cd ..
-  - for x in `find MUMmer3.23/ -maxdepth 1 -executable -type f`; do cp -s $x . ; done
+  - export PATH=$HOME/bin/MUMmer3.23:$PATH
   - cd $TRAVIS_BUILD_DIR
 
 sudo: false
