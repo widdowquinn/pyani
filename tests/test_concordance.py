@@ -226,8 +226,10 @@ def test_anim_concordance():
     print('\n'.join(cmdlist))
     cmd = cmdlist[0]
     parts = cmdlist.split()
-    print(parts[-2], os.path.isfile(parts[-2]))
-    print(parts[-1], os.path.isfile(parts[-1]))
+    print(parts[-2])
+    print(os.path.isfile(parts[-2]))
+    print(parts[-1])
+    print(os.path.isfile(parts[-1]))
     multiprocessing_run(cmdlist, verbose=False)
     # Process .delta files
     anim_data = anim.process_deltadir(outdirname, org_lengths)
