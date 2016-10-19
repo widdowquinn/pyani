@@ -24,7 +24,8 @@ curdir = os.path.dirname(os.path.abspath(__file__))
 # Path to JSpecies output data. This data is pre-prepared. If you replace
 # the test data with your own data, you will need to replace this file,
 # or change the file path.
-JSPECIES_OUTFILE = os.path.join(curdir, './test_JSpecies/jspecies_results.tab')
+JSPECIES_OUTFILE = os.path.join(curdir, 'test_JSpecies',
+                                'jspecies_results.tab')
 
 # Path to test input data
 INDIRNAME = os.path.join(curdir, 'test_ani_data')
@@ -146,7 +147,7 @@ def test_anib_concordance():
 
 # Test concordance of this code with JSpecies output
 def test_aniblastall_concordance():
-    """Test concordance of ANIb method with JSpecies output."""
+    """Test concordance of ANIblastall method with JSpecies output."""
     # Make/check output directory
     mode = "ANIblastall"
     outdirname = make_outdir(mode)
