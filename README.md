@@ -24,6 +24,16 @@ From version 0.1.3.2 onwards, this should also install all the required Python p
 pip3 install -r requirements.txt
 ```
 
+## Testing `pyani`
+
+`pyani` includes tests that can be run with `nosetest` (including coverage measurement using `coverage.py`) with the following command, executed from the repository root directory:
+
+```
+nosetests --cover-erase --cover-package=pyani --cover-html --with-coverage
+```
+
+Coverage output will be placed (by default) in the `cover` subdirectory, and can be loaded into the web browser.
+
 ## Running `pyani`
 
 ### Script: <a name="average_nucleotide_identity.py">`average_nucleotide_identity.py`</a>
