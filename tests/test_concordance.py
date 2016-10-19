@@ -24,14 +24,14 @@ curdir = os.path.dirname(os.path.abspath(__file__))
 # Path to JSpecies output data. This data is pre-prepared. If you replace
 # the test data with your own data, you will need to replace this file,
 # or change the file path.
-JSPECIES_OUTFILE = os.path.join(curdir, 'test_JSpecies',
-                                'jspecies_results.tab')
+JSPECIES_OUTFILE = os.path.relpath(os.path.join(curdir, 'test_JSpecies',
+                                               'jspecies_results.tab'))
 
 # Path to test input data
-INDIRNAME = os.path.join(curdir, 'test_ani_data')
+INDIRNAME = os.path.relpath(os.path.join(curdir, 'test_ani_data'))
 
 # Path to directory for concordance test output
-OUTDIRNAME = os.path.join(curdir, 'test_concordance')
+OUTDIRNAME = os.path.relpath(os.path.join(curdir, 'test_concordance'))
 
 # Thresholds for allowable difference
 TETRA_THRESHOLD = 0.1
@@ -206,7 +206,6 @@ def test_aniblastall_concordance():
 
 
 # Test concordance of this code with JSpecies output
-@nottest
 def test_anim_concordance():
     """Test concordance of ANIm method with JSpecies output."""
     # Make/check output directory
@@ -224,6 +223,7 @@ def test_anim_concordance():
     # Run pairwise NUCmer
     cmdlist = anim.generate_nucmer_commands(infiles, outdirname,
                                             pyani_config.NUCMER_DEFAULT)
+    print('\n'.join(cmdlist))
     multiprocessing_run(cmdlist, verbose=False)
     # Process .delta files
     anim_data = anim.process_deltadir(outdirname, org_lengths)
@@ -297,13 +297,3 @@ def test_tetra_concordance():
     print("Maximum difference for TETRA: %e" % max_diff)
     assert_less(max_diff, TETRA_THRESHOLD)
     
-
-# Run as script
-if __name__ == '__main__':
-    import inspect
-    import test_concordance
-    functions = [o[0] for o in inspect.getmembers(test_concordance) if
-                 inspect.isfunction(o[1]) and o[0].startswith('test')]
-    for fn in functions:
-        print("\nFunction called: {}()".format(fn))
-        locals()[fn]()
