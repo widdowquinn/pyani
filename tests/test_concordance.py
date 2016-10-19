@@ -87,6 +87,7 @@ def make_outdir(mode):
 
 
 # Test concordance of this code with JSpecies output
+@nottest
 def test_anib_concordance():
     """Test concordance of ANIb method with JSpecies output.
 
@@ -146,6 +147,7 @@ def test_anib_concordance():
 
 
 # Test concordance of this code with JSpecies output
+@nottest
 def test_aniblastall_concordance():
     """Test concordance of ANIblastall method with JSpecies output."""
     # Make/check output directory
@@ -204,6 +206,7 @@ def test_aniblastall_concordance():
 
 
 # Test concordance of this code with JSpecies output
+@nottest
 def test_anim_concordance():
     """Test concordance of ANIm method with JSpecies output."""
     # Make/check output directory
