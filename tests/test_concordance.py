@@ -176,6 +176,7 @@ def test_aniblastall_concordance():
     jobgraph = anib.make_job_graph(infiles, fragfiles, outdirname,
                                    mode="ANIblastall")
     print("\nJobgraph:\n", jobgraph)
+    print("\nJob 0:\n", jobgraph[0].script)
 
     # Run jobgraph with multiprocessing
     run_dependency_graph(jobgraph)
