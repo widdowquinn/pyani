@@ -93,7 +93,6 @@ def delete_and_remake_outdir(mode):
 
 
 # Test concordance of this code with JSpecies output
-@nottest
 def test_anib_concordance():
     """Test concordance of ANIb method with JSpecies output.
 
@@ -145,7 +144,9 @@ def test_anib_concordance():
                                   'ANIb_diff.tab'),
                      sep='\t')
     print("ANIb concordance test output placed in %s" % outdirname)
-    print(anib_pid, anib_jspecies, anib_diff)
+    print("ANIb PID: \n", anib_pid)
+    print("ANIb JSpecies: \n", anib_jspecies)
+    print("ANIb diff: \n", anib_diff)
 
     # We'd like the absolute difference reported to be < ANIB_THRESHOLD
     max_diff = anib_diff.abs().values.max()
@@ -154,7 +155,6 @@ def test_anib_concordance():
 
 
 # Test concordance of this code with JSpecies output
-@nottest
 def test_aniblastall_concordance():
     """Test concordance of ANIblastall method with JSpecies output."""
     # Make/check output directory
@@ -178,12 +178,6 @@ def test_aniblastall_concordance():
                                    mode="ANIblastall")
     print("\nJobgraph:\n", jobgraph)
     print("\nJob 0:\n", jobgraph[0].script)
-    #result = subprocess.run(jobgraph[0].script,
-    #                        shell=sys.platform != "win32",
-    #                        stdout=subprocess.PIPE,
-    #                        stderr=subprocess.PIPE)
-    #print(result.stdout)
-    #print(result.stderr)
 
     # Run jobgraph with multiprocessing
     run_dependency_graph(jobgraph)
@@ -211,7 +205,9 @@ def test_aniblastall_concordance():
                                   'ANIblastall_diff.tab'),
                      sep='\t')
     print("ANIblastall concordance test output placed in %s" % outdirname)
-    print(aniblastall_pid, aniblastall_jspecies, aniblastall_diff)
+    print("ANIblastall PID:\n", aniblastall_pid)
+    print("ANIblastall JSpecies:\n", aniblastall_jspecies)
+    print("ANIblastall diff:\n", aniblastall_diff)
 
     # We'd like the absolute difference reported to be < ANIBLASTALL_THRESHOLD
     max_diff = aniblastall_diff.abs().values.max()
@@ -220,7 +216,6 @@ def test_aniblastall_concordance():
 
 
 # Test concordance of this code with JSpecies output
-@nottest
 def test_anim_concordance():
     """Test concordance of ANIm method with JSpecies output."""
     # Make/check output directory
@@ -241,15 +236,8 @@ def test_anim_concordance():
     cmdlist = anim.generate_nucmer_commands(infiles, outdirname,
                                             pyani_config.NUCMER_DEFAULT)
     print('\n'.join(cmdlist))
-    cmd = cmdlist[0]
     parts = cmd.split()
-    print(parts[-2])
-    print(os.path.isfile(parts[-2]))
-    print(parts[-1])
-    print(os.path.isfile(parts[-1]))
     multiprocessing_run(cmdlist, verbose=False)
-    print(outdirname)
-    print(os.listdir(outdirname))
     # Process .delta files
     anim_data = anim.process_deltadir(nucmername, org_lengths)
     anim_pid = anim_data[1].sort_index(axis=0).sort_index(axis=1) * 100.
@@ -317,7 +305,9 @@ def test_tetra_concordance():
                                    'tetra_diff.tab'),
                       sep='\t')
     print("TETRA concordance test output placed in %s" % outdirname)
-    print(tetra_correlations, tetra_jspecies, tetra_diff)
+    print("TETRA correlations:\n", tetra_correlations)
+    print("TETRA JSpecies:\n", tetra_jspecies)
+    print("TETRA diff:\n", tetra_diff)
 
     # We'd like the absolute difference reported to be < TETRA_THRESHOLD
     max_diff = tetra_diff.abs().values.max()
