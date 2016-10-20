@@ -14,6 +14,8 @@ test is returned to STDOUT.
 import subprocess
 import sys
 
+from nose.tools import assert_equal
+
 def test_import_biopython():
     """Test Biopython import."""
     import Bio
@@ -42,16 +44,34 @@ def test_import_scipy():
 def test_run_blast():
     """Test that BLAST+ is runnable."""
     cmd = "blastn -version"
-    subprocess.run(cmd, shell=sys.platform != "win32",
-                   stdout=subprocess.PIPE,
-                   stderr=subprocess.PIPE)
+    result = subprocess.run(cmd, shell=sys.platform != "win32",
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            check=True)
+    print(result.stdout)
+    assert_equal(result.stdout[:6], b'blastn')
+
+
+def test_run_blastall():
+    """Test that legacy BLAST is runnable."""
+    cmd = "blastall"
+    # Can't use check=True, as blastall without arguments returns 1!
+    result = subprocess.run(cmd, shell=sys.platform != "win32",
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    print(result.stdout)
+    assert_equal(result.stdout[1:9], b'blastall')
+
 
 def test_run_nucmer():
     """Test that NUCmer is runnable."""
     cmd = "nucmer --version"
-    subprocess.run(cmd, shell=sys.platform != "win32",
-                   stdout=subprocess.PIPE,
-                   stderr=subprocess.PIPE)
+    result = subprocess.run(cmd, shell=sys.platform != "win32",
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            check=True)
+    print(result.stderr)  # NUCmer puts output to STDERR!
+    assert_equal(result.stderr[:6], b'nucmer')
 
 
 # Run as script
