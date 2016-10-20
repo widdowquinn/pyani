@@ -14,17 +14,18 @@ install:
 script:
   - nosetests -v --with-coverage --cover-erase --cover-package=pyani --cover-html --nocapture tests/test_concordance.py
 
-# application dependencies: BLAST, BLASTALL, MUMMER
+# application dependencies: BLAST+, legacy BLAST, MUMMER
 before_install:
   - cd $HOME
-  - mkdir bin
-  - cd bin
   - wget http://downloads.sourceforge.net/project/mummer/mummer/3.23/MUMmer3.23.tar.gz
   - tar -zxf MUMmer3.23.tar.gz
   - cd MUMmer3.23
   - make
   - cd ..
-  - export PATH=$HOME/bin/MUMmer3.23:$PATH
+  - export PATH=$HOME/MUMmer3.23:$PATH
+  - cd $HOME
+  - wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy/2.2.26/blast-2.2.26-x64-linux.tar.gz
+  - export PATH=blast-2.2.26/bin:$PATH
   - cd $TRAVIS_BUILD_DIR
 
 sudo: false

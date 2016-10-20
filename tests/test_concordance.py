@@ -93,6 +93,7 @@ def delete_and_remake_outdir(mode):
 
 
 # Test concordance of this code with JSpecies output
+@nottest
 def test_anib_concordance():
     """Test concordance of ANIb method with JSpecies output.
 
@@ -153,7 +154,6 @@ def test_anib_concordance():
 
 
 # Test concordance of this code with JSpecies output
-@nottest
 def test_aniblastall_concordance():
     """Test concordance of ANIblastall method with JSpecies output."""
     # Make/check output directory
@@ -171,16 +171,16 @@ def test_aniblastall_concordance():
     # Make fragments
     fragfiles, fraglengths = anib.fragment_FASTA_files(infiles, outdirname,
                                                        pyani_config.FRAGSIZE)
-    # Build databases
-    cmdlist = anib.generate_blastdb_commands(infiles, outdirname,
-                                             pyani_config.FORMATDB_DEFAULT,
-                                             mode="ANIblastall")
-    multiprocessing_run(cmdlist)
-    # Run pairwise BLASTN
-    cmdlist = anib.generate_blastn_commands(fragfiles, outdirname,
-                                            pyani_config.BLASTALL_DEFAULT,
-                                            mode="ANIblastall")
-    multiprocessing_run(cmdlist, verbose=False)
+
+    # Build jobgraph
+    jobgraph = anib.make_job_graph(infiles, fragfiles, outdirname,
+                                   mode="ANIblastall")
+    print("\nJobgraph:\n", jobgraph)
+
+    # Run jobgraph with multiprocessing
+    run_dependency_graph(jobgraph)
+    print("Ran multiprocessing jobs")
+
     # Process BLAST; the pid data is in anib_data[1]
     aniblastall_data = anib.process_blast(outdirname, org_lengths,
                                           fraglengths,

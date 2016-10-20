@@ -51,6 +51,18 @@ def test_run_blast():
     print(result.stdout)
     assert_equal(result.stdout[:6], b'blastn')
 
+
+def test_run_blastall():
+    """Test that legacy BLAST is runnable."""
+    cmd = "blastall"
+    # Can't use check=True, as blastall without arguments returns 1!
+    result = subprocess.run(cmd, shell=sys.platform != "win32",
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    print(result.stdout)
+    assert_equal(result.stdout[1:9], b'blastall')
+
+
 def test_run_nucmer():
     """Test that NUCmer is runnable."""
     cmd = "nucmer --version"
