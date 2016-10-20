@@ -154,6 +154,7 @@ def test_anib_concordance():
 
 
 # Test concordance of this code with JSpecies output
+@nottest
 def test_aniblastall_concordance():
     """Test concordance of ANIblastall method with JSpecies output."""
     # Make/check output directory
@@ -281,7 +282,6 @@ def test_anim_concordance():
 
 
 # Test concordance of this code with JSpecies output
-@nottest
 def test_tetra_concordance():
     """Test concordance of TETRA method with JSpecies output."""
     # Make/check output directory
