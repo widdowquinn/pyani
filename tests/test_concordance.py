@@ -9,7 +9,8 @@ If the test is run directly at the command-line, the output obtained by each
 test is returned to STDOUT.
 """
 from nose.tools import assert_equal, assert_less, nottest
-from pyani.run_multiprocessing import run_dependency_graph
+from pyani.run_multiprocessing import run_dependency_graph, \
+    multiprocessing_run
 
 import os
 import pandas as pd
@@ -92,7 +93,8 @@ def delete_and_remake_outdir(mode):
     return outdirname
 
 
-# Test concordance of this code with JSpecies output
+# Test concordance of ANIb with JSpecies output
+@nottest
 def test_anib_concordance():
     """Test concordance of ANIb method with JSpecies output.
 
@@ -154,7 +156,8 @@ def test_anib_concordance():
     assert_less(max_diff, ANIB_THRESHOLD)
 
 
-# Test concordance of this code with JSpecies output
+# Test concordance of ANIblastall with JSpecies output
+@nottest
 def test_aniblastall_concordance():
     """Test concordance of ANIblastall method with JSpecies output."""
     # Make/check output directory
@@ -215,7 +218,7 @@ def test_aniblastall_concordance():
     assert_less(max_diff, ANIB_THRESHOLD)
 
 
-# Test concordance of this code with JSpecies output
+# Test concordance of ANIm with JSpecies output
 def test_anim_concordance():
     """Test concordance of ANIm method with JSpecies output."""
     # Make/check output directory
@@ -268,7 +271,8 @@ def test_anim_concordance():
     assert_less(max_diff, ANIM_THRESHOLD)
 
 
-# Test concordance of this code with JSpecies output
+# Test concordance of TETRA code with JSpecies output
+@nottest
 def test_tetra_concordance():
     """Test concordance of TETRA method with JSpecies output."""
     # Make/check output directory
