@@ -177,15 +177,15 @@ def test_aniblastall_concordance():
                                    mode="ANIblastall")
     print("\nJobgraph:\n", jobgraph)
     print("\nJob 0:\n", jobgraph[0].script)
-    result = subprocess.run(jobgraph[0].script,
-                            shell=sys.platform != "win32",
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    print(result.stdout)
-    print(result.stderr)
+    #result = subprocess.run(jobgraph[0].script,
+    #                        shell=sys.platform != "win32",
+    #                        stdout=subprocess.PIPE,
+    #                        stderr=subprocess.PIPE)
+    #print(result.stdout)
+    #print(result.stderr)
 
     # Run jobgraph with multiprocessing
-    #run_dependency_graph(jobgraph)
+    run_dependency_graph(jobgraph)
     print("Ran multiprocessing jobs")
 
     # Process BLAST; the pid data is in anib_data[1]
