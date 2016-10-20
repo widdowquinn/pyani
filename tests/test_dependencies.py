@@ -49,7 +49,7 @@ def test_run_blast():
                             stderr=subprocess.PIPE,
                             check=True)
     print(result.stdout)
-    assert_equal(result.stdout[:6] == 'blastn')
+    assert_equal(result.stdout[:6], b'blastn')
 
 def test_run_nucmer():
     """Test that NUCmer is runnable."""
@@ -58,8 +58,8 @@ def test_run_nucmer():
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             check=True)
-    print(result.stdout)
-    assert_equal(result.stdout[:6] == 'nucmer')
+    print(result.stderr)  # NUCmer puts output to STDERR!
+    assert_equal(result.stderr[:6], b'nucmer')
 
 
 # Run as script
