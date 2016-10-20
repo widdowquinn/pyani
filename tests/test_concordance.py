@@ -177,7 +177,8 @@ def test_aniblastall_concordance():
                                    mode="ANIblastall")
     print("\nJobgraph:\n", jobgraph)
     print("\nJob 0:\n", jobgraph[0].script)
-    subprocess.run(jobgraph[0].script, shell=sys.platform != "win32",
+    result = subprocess.run(jobgraph[0].script,
+                            shell=sys.platform != "win32",
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     print(result.stdout)
