@@ -54,14 +54,3 @@ def test_anim_collection():
                            'nucmer -mum -p ./nucmer_output/file3_vs_file4 ' +
                            'file3 file4'])
     print(cmdlist)
-
-
-# Run as script
-if __name__ == '__main__':
-    import inspect
-    import test_cmdlines
-    functions = [o[0] for o in inspect.getmembers(test_cmdlines) if
-                 inspect.isfunction(o[1])]
-    for fn in functions:
-        print("\nFunction called: {}()".format(fn))
-        locals()[fn]()
