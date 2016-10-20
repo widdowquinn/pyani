@@ -22,7 +22,7 @@ import sys
 # Thresholds for testing
 ANIM_THRESHOLD = 1e-3
 ANIB_THRESHOLD = 1e-3
-ANIBLASTALL_THRESHOLD = 1e-3
+ANIBLASTALL_THRESHOLD = 5e-2
 TETRA_THRESHOLD = 1e-3
 
 
@@ -52,6 +52,8 @@ def test_anim_script():
                     "-l %s" % logfile,
                     "--classes %s" % os.path.join(indir, "classes.tab"),
                     "--labels %s" % os.path.join(indir, "labels.tab"),
+                    "-g",
+                    "--gformat png,pdf,svg",
                     "-m ANIm"])
     print(cmd)
     result = subprocess.run(cmd, shell=sys.platform != "win32",
@@ -99,6 +101,8 @@ def test_anib_script():
                     "-l %s" % logfile,
                     "--classes %s" % os.path.join(indir, "classes.tab"),
                     "--labels %s" % os.path.join(indir, "labels.tab"),
+                    "-g",
+                    "--gmethod seaborn",
                     "-m ANIb"])
     print(cmd)
     result = subprocess.run(cmd, shell=sys.platform != "win32",
