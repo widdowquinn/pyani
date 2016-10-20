@@ -94,7 +94,6 @@ def delete_and_remake_outdir(mode):
 
 
 # Test concordance of ANIb with JSpecies output
-@nottest
 def test_anib_concordance():
     """Test concordance of ANIb method with JSpecies output.
 
@@ -157,7 +156,6 @@ def test_anib_concordance():
 
 
 # Test concordance of ANIblastall with JSpecies output
-@nottest
 def test_aniblastall_concordance():
     """Test concordance of ANIblastall method with JSpecies output."""
     # Make/check output directory
@@ -272,7 +270,6 @@ def test_anim_concordance():
 
 
 # Test concordance of TETRA code with JSpecies output
-@nottest
 def test_tetra_concordance():
     """Test concordance of TETRA method with JSpecies output."""
     # Make/check output directory
