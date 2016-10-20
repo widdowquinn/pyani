@@ -9,7 +9,7 @@ If the test is run directly at the command-line, the output obtained by each
 test is returned to STDOUT.
 """
 from nose.tools import assert_equal, assert_less, nottest
-from pyani.run_multiprocessing import multiprocessing_run
+from pyani.run_multiprocessing import run_dependency_graph
 
 import os
 import pandas as pd
@@ -86,14 +86,13 @@ def delete_and_remake_outdir(mode):
     try:
         shutil.rmtree(outdirname, ignore_errors=True)
     except FileNotFoundError:
-        print("Did not find %s to delete it (continuing)")
+        print("Did not find %s to delete it (not an error, continuing)")
         pass
     os.makedirs(outdirname, exist_ok=True)
     return outdirname
 
 
 # Test concordance of this code with JSpecies output
-@nottest
 def test_anib_concordance():
     """Test concordance of ANIb method with JSpecies output.
 
@@ -102,7 +101,6 @@ def test_anib_concordance():
     # Make/check output directories
     mode = "ANIb"
     outdirname = delete_and_remake_outdir(mode)
-    os.makedirs(os.path.join(outdirname, 'nucmer_output'))
 
     # Get dataframes of JSpecies output
     anib_jspecies = parse_table(JSPECIES_OUTFILE, 'ANIb')
@@ -115,16 +113,17 @@ def test_anib_concordance():
     # Make fragments
     fragfiles, fraglengths = anib.fragment_FASTA_files(infiles, outdirname,
                                                        pyani_config.FRAGSIZE)
-    # Build databases
-    cmdlist = anib.generate_blastdb_commands(infiles, outdirname,
-                                             pyani_config.MAKEBLASTDB_DEFAULT,
-                                             mode="ANIb")
-    multiprocessing_run(cmdlist)
-    # Run pairwise BLASTN
-    cmdlist = anib.generate_blastn_commands(fragfiles, outdirname,
-                                            pyani_config.BLASTN_DEFAULT,
-                                            mode="ANIb")
-    multiprocessing_run(cmdlist, verbose=False)
+
+    
+    # Build jobgraph
+    jobgraph = anib.make_job_graph(infiles, fragfiles, outdirname,
+                                   mode="ANIb")
+    print("\nJobgraph:\n", jobgraph)
+
+    # Run jobgraph with multiprocessing
+    run_dependency_graph(jobgraph)
+    print("Ran multiprocessing jobs")
+
     # Process BLAST; the pid data is in anib_data[1]
     anib_data = anib.process_blast(outdirname, org_lengths, fraglengths,
                                    mode="ANIb")
@@ -213,6 +212,7 @@ def test_aniblastall_concordance():
 
 
 # Test concordance of this code with JSpecies output
+@nottest
 def test_anim_concordance():
     """Test concordance of ANIm method with JSpecies output."""
     # Make/check output directory
@@ -240,12 +240,6 @@ def test_anim_concordance():
     print(parts[-1])
     print(os.path.isfile(parts[-1]))
     multiprocessing_run(cmdlist, verbose=False)
-    result = subprocess.run(cmd, shell=sys.platform != "win32",
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            check=True)
-    #print(result.stdout)
-    #print(result.stderr)
     print(outdirname)
     print(os.listdir(outdirname))
     # Process .delta files
