@@ -25,7 +25,7 @@ before_install:
   - export PATH=$HOME/MUMmer3.23:$PATH
   - cd $HOME
   - wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy/2.2.26/blast-2.2.26-x64-linux.tar.gz
-  - export PATH=blast-2.2.26/bin:$PATH
+  - export PATH=$HOME/blast-2.2.26/bin:$PATH
   - cd $TRAVIS_BUILD_DIR
 
 sudo: false
