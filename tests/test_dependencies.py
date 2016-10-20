@@ -14,6 +14,8 @@ test is returned to STDOUT.
 import subprocess
 import sys
 
+from nose.tools import assert_equal
+
 def test_import_biopython():
     """Test Biopython import."""
     import Bio
@@ -42,18 +44,22 @@ def test_import_scipy():
 def test_run_blast():
     """Test that BLAST+ is runnable."""
     cmd = "blastn -version"
-    subprocess.run(cmd, shell=sys.platform != "win32",
-                   stdout=subprocess.PIPE,
-                   stderr=subprocess.PIPE,
-                   check=True)
+    result = subprocess.run(cmd, shell=sys.platform != "win32",
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            check=True)
+    print(result.stdout)
+    assert_equal(result.stdout[:6] == 'blastn')
 
 def test_run_nucmer():
     """Test that NUCmer is runnable."""
     cmd = "nucmer --version"
-    subprocess.run(cmd, shell=sys.platform != "win32",
-                   stdout=subprocess.PIPE,
-                   stderr=subprocess.PIPE,
-                   check=True)
+    result = subprocess.run(cmd, shell=sys.platform != "win32",
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            check=True)
+    print(result.stdout)
+    assert_equal(result.stdout[:6] == 'nucmer')
 
 
 # Run as script

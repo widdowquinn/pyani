@@ -12,7 +12,7 @@ install:
 
 # command to run tests
 script:
-  - nosetests -v --with-coverage --cover-erase --cover-package=pyani --cover-html --nocapture
+  - nosetests -v --with-coverage --cover-erase --cover-package=pyani --cover-html --nocapture tests/test_dependencies.py
 
 # application dependencies: BLAST, BLASTALL, MUMMER
 before_install:
