@@ -218,7 +218,7 @@ def parse_cmdline(args):
                         help="Graphics output format(s) [pdf|png|jpg|svg]")
     parser.add_argument("--gmethod", dest="gmethod",
                         action="store", default="mpl",
-                        help="Graphics output method [mpl|R]")
+                        help="Graphics output method [mpl|seaborn]")
     parser.add_argument("--labels", dest="labels",
                         action="store", default=None,
                         help="Path to file containing sequence labels")
