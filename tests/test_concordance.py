@@ -206,7 +206,6 @@ def test_aniblastall_concordance():
 
 
 # Test concordance of this code with JSpecies output
-@nottest
 def test_anim_concordance():
     """Test concordance of ANIm method with JSpecies output."""
     # Make/check output directory
@@ -231,7 +230,13 @@ def test_anim_concordance():
     print(os.path.isfile(parts[-2]))
     print(parts[-1])
     print(os.path.isfile(parts[-1]))
-    multiprocessing_run(cmdlist, verbose=False)
+    #multiprocessing_run(cmdlist, verbose=False)
+    result = subprocess.run(cmd, shell=sys.platform != "win32",
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            check=True)
+    print(result.stdout)
+    print(result.stderr)
     print(outdirname)
     print(os.listdir(outdirname))
     # Process .delta files
