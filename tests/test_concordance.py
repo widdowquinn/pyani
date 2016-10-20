@@ -81,9 +81,13 @@ def parse_table(filename, title):
 
 # Make output directory if necessary
 def delete_and_remake_outdir(mode):
-    """Make concordance test output directory."""
+    """Make concordance test output directories."""
     outdirname = '_'.join([OUTDIRNAME, mode])
-    shutil.rmtree(outdirname)
+    try:
+        shutil.rmtree(outdirname, ignore_errors=True)
+    except FileNotFoundError:
+        print("Did not find %s to delete it (continuing)")
+        pass
     os.makedirs(outdirname, exist_ok=True)
     return outdirname
 
