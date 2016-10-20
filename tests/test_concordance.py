@@ -14,6 +14,8 @@ from pyani.run_multiprocessing import multiprocessing_run
 import os
 import pandas as pd
 import shutil
+import subprocess
+import sys
 
 from pyani import anib, anim, tetra, pyani_files, pyani_config
 
@@ -78,11 +80,11 @@ def parse_table(filename, title):
 
 
 # Make output directory if necessary
-def make_outdir(mode):
+def delete_and_remake_outdir(mode):
     """Make concordance test output directory."""
     outdirname = '_'.join([OUTDIRNAME, mode])
-    if not os.path.isdir(outdirname):
-        os.mkdir(outdirname)
+    shutil.rmtree(outdirname)
+    os.makedirs(outdirname, exist_ok=True)
     return outdirname
 
 
@@ -93,9 +95,10 @@ def test_anib_concordance():
 
     This may take some time. Please be patient.
     """
-    # Make/check output directory
+    # Make/check output directories
     mode = "ANIb"
-    outdirname = make_outdir(mode)
+    outdirname = delete_and_remake_outdir(mode)
+    os.makedirs(os.path.join(outdirname, 'nucmer_output'))
 
     # Get dataframes of JSpecies output
     anib_jspecies = parse_table(JSPECIES_OUTFILE, 'ANIb')
@@ -152,7 +155,7 @@ def test_aniblastall_concordance():
     """Test concordance of ANIblastall method with JSpecies output."""
     # Make/check output directory
     mode = "ANIblastall"
-    outdirname = make_outdir(mode)
+    outdirname = delete_and_remake_outdir(mode)
 
     # Get dataframes of JSpecies output
     aniblastall_jspecies = parse_table(JSPECIES_OUTFILE, 'ANIb')
@@ -210,7 +213,9 @@ def test_anim_concordance():
     """Test concordance of ANIm method with JSpecies output."""
     # Make/check output directory
     mode = "ANIm"
-    outdirname = make_outdir(mode)
+    outdirname = delete_and_remake_outdir(mode)
+    nucmername = os.path.join(outdirname, 'nucmer_output') 
+    os.makedirs(nucmername, exist_ok=True)
 
     # Get dataframes of JSpecies output
     anim_jspecies = parse_table(JSPECIES_OUTFILE, 'ANIm')
@@ -230,20 +235,20 @@ def test_anim_concordance():
     print(os.path.isfile(parts[-2]))
     print(parts[-1])
     print(os.path.isfile(parts[-1]))
-    #multiprocessing_run(cmdlist, verbose=False)
+    multiprocessing_run(cmdlist, verbose=False)
     result = subprocess.run(cmd, shell=sys.platform != "win32",
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             check=True)
-    print(result.stdout)
-    print(result.stderr)
+    #print(result.stdout)
+    #print(result.stderr)
     print(outdirname)
     print(os.listdir(outdirname))
     # Process .delta files
-    anim_data = anim.process_deltadir(outdirname, org_lengths)
+    anim_data = anim.process_deltadir(nucmername, org_lengths)
     anim_pid = anim_data[1].sort_index(axis=0).sort_index(axis=1) * 100.
 
-    print(anim_data)
+    print("ANIm data\n", anim_data)
 
     index, columns = anim_pid.index, anim_pid.columns
     diffmat = anim_pid.as_matrix() - anim_jspecies.as_matrix()
@@ -260,7 +265,9 @@ def test_anim_concordance():
                                   'ANIm_diff.tab'),
                      sep='\t')
     print("ANIm concordance test output placed in %s" % outdirname)
-    print(anim_pid, anim_jspecies, anim_diff)
+    print("ANIm PID\n", anim_pid)
+    print("ANIm JSpecies\n", anim_jspecies)
+    print("ANIm diff\n", anim_diff)
 
     # We'd like the absolute difference reported to be < ANIB_THRESHOLD
     max_diff = anim_diff.abs().values.max()
@@ -274,7 +281,7 @@ def test_tetra_concordance():
     """Test concordance of TETRA method with JSpecies output."""
     # Make/check output directory
     mode = "TETRA"
-    outdirname = make_outdir(mode)
+    outdirname = delete_and_remake_outdir(mode)
 
     # Get dataframes of JSpecies output
     tetra_jspecies = parse_table(JSPECIES_OUTFILE, 'Tetra')
