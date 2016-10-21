@@ -37,7 +37,7 @@ class NCBIDownloadException(Exception):
 # Parse command-line
 def parse_cmdline(args):
     """Parse command-line arguments"""
-    parser = ArgumentParser(prog="genbacnk_get_genomes_by_taxon.py")
+    parser = ArgumentParser(prog="genbank_get_genomes_by_taxon.py")
     parser.add_argument("-o", "--outdir", dest="outdirname",
                         action="store", default=None,
                         help="Output directory")
