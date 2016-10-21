@@ -13,17 +13,10 @@ install:
 # command to run tests
 # Use --nocapture with nosetests to get extra verbose output for debugging on Travis
 script:
-  - nosetests -v --with-coverage --cover-package=pyani
+  - nosetests -v --with-coverage --cover-package=pyani tests/test_dependencies.py
 
 # application dependencies: BLAST+, legacy BLAST, MUMMER
 before_install:
-  - cd $HOME
-  - wget http://downloads.sourceforge.net/project/mummer/mummer/3.23/MUMmer3.23.tar.gz
-  - tar -zxf MUMmer3.23.tar.gz
-  - cd MUMmer3.23
-  - make
-  - cd ..
-  - export PATH=$HOME/MUMmer3.23:$PATH
   - cd $HOME
   - wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy/2.2.26/blast-2.2.26-x64-linux.tar.gz
   - tar -zxvf blast-2.2.26-x64-linux.tar.gz
