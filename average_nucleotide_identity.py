@@ -573,7 +573,7 @@ def unified_anib(infiles, org_lengths):
 
 
 # Read sequence annotations in from file
-def get_labels(filename):
+def get_labels(filename, logger=None):
     """Returns a dictionary of alternative sequence labels, or None
 
     - filename - path to file containing tab-separated table of labels
@@ -582,7 +582,8 @@ def get_labels(filename):
     """
     labeldict = {}
     if filename is not None:
-        logger.info("Reading labels from %s" % filename)
+        if logger:
+            logger.info("Reading labels from %s" % filename)
         with open(filename, 'rU') as fh:
             count = 0
             for line in fh.readlines():
@@ -590,9 +591,11 @@ def get_labels(filename):
                 try:
                     key, label = line.strip().split('\t')
                 except ValueError:
-                    logger.warning("Problem with class file: %s" % filename)
-                    logger.warning("%d: %s" % (count, line.strip()))
-                    logger.warning("(skipping line)")
+                    if logger:
+                        logger.warning("Problem with class file: %s" %
+                                       filename)
+                        logger.warning("%d: %s" % (count, line.strip()))
+                        logger.warning("(skipping line)")
                     continue
                 else:
                     labeldict[key] = label
@@ -619,7 +622,7 @@ def write(results, filestems):
                   index=True, sep="\t")
 
 # Draw ANIb/ANIm/TETRA output
-def draw(filestems, gformat):
+def draw(filestems, gformat, logger=None):
     """Draw ANIb/ANIm/TETRA results
 
     - filestems - filestems for output files
@@ -631,7 +634,8 @@ def draw(filestems, gformat):
         outfilename = fullstem + '.%s' % gformat
         infilename = fullstem + '.tab'
         df = pd.read_csv(infilename, index_col=0, sep="\t")
-        logger.info("Writing heatmap to %s" % outfilename)
+        if logger:
+            logger.info("Writing heatmap to %s" % outfilename)
         if args.gmethod == "mpl":
             pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
                                        title=filestem,
@@ -649,7 +653,8 @@ def draw(filestems, gformat):
                                             vmax=params_r(df)[filestem][2],
                                             labels=get_labels(args.labels),
                                             classes=get_labels(args.classes))
-            logger.info("Executed R code:\n%s" % rstr)
+            if logger:
+                logger.info("Executed R code:\n%s" % rstr)
         elif args.gmethod == "seaborn":
             pyani_graphics.heatmap_seaborn(df, outfilename=outfilename,
                                            title=filestem,
