@@ -619,12 +619,11 @@ def write(results, filestems):
                   index=True, sep="\t")
 
 # Draw ANIb/ANIm/TETRA output
-def draw(filestems, gformat, rerender=False):
+def draw(filestems, gformat):
     """Draw ANIb/ANIm/TETRA results
 
     - filestems - filestems for output files
     - gformat - the format for output graphics
-    - rerender - do we rerender existing results?
     """
     # Draw heatmaps
     for filestem in filestems:
