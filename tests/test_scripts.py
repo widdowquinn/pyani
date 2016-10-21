@@ -11,7 +11,7 @@ test is returned to STDOUT.
 """
 
 
-from nose.tools import assert_equal, assert_less
+from nose.tools import assert_equal, assert_less, nottest
 
 import os
 import pandas as pd
@@ -31,19 +31,20 @@ TETRA_THRESHOLD = 1e-3
 curdir = os.path.dirname(os.path.abspath(__file__))
 
 
-def test_anim_script():
-    """Test average_nucleotide_identity.py script with ANIm"""
+# template for testing scripts with each input
+def run_ani_script(mode):
+    """Run average_nucleotide_identity.py script for the passed mode."""
     # Remove output directory
-    outdir = os.path.join("tests", "test_script_ANIm")
+    outdir = os.path.join("tests", "test_script_%s" % mode)
     try:
         shutil.rmtree(outdir, ignore_errors=True)
     except FileNotFoundError:
         print("Did not find %s to delete it (not an error, continuing)")
         pass    
-
-    # Run ANIm script
+    
+    # Run script
     indir = os.path.join("tests", "test_ani_data")
-    logfile = os.path.join("tests", "test_ANIm_script.log")
+    logfile = os.path.join("tests", "test_%s_script.log" % mode)
     cmd = ' '.join(["python",
                     "average_nucleotide_identity.py",
                     "-v",
@@ -52,18 +53,30 @@ def test_anim_script():
                     "-l %s" % logfile,
                     "--classes %s" % os.path.join(indir, "classes.tab"),
                     "--labels %s" % os.path.join(indir, "labels.tab"),
-                    "-g",
-                    "--gformat png,pdf,svg",
-                    "-m ANIm"])
+                    "-m %s" % mode])
+
     print(cmd)
     result = subprocess.run(cmd, shell=sys.platform != "win32",
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
-    
-    # Test result
-    expected_file = os.path.join("tests", "target_ANIm_output",
-                                 "ANIm_percentage_identity.tab")
-    returned_file = os.path.join(outdir, "ANIm_percentage_identity.tab")
+
+    # Calculate and return the maximum difference in reported PID against
+    # the target.
+    if mode != "TETRA":
+        expected_file = os.path.join("tests", "target_%s_output" % mode,
+                                     "%s_percentage_identity.tab" % mode)
+        returned_file = os.path.join(outdir,
+                                     "%s_percentage_identity.tab" % mode)
+    else:
+        expected_file = os.path.join("tests", "target_%s_output" % mode,
+                                     "%s_correlations.tab" % mode)
+        returned_file = os.path.join(outdir,
+                                     "%s_correlations.tab" % mode)
+    return calculate_run_diff(expected_file, returned_file)
+
+
+def calculate_run_diff(expected_file, returned_file):
+    """Return maximum difference between two PID files"""
     expected = pd.read_csv(expected_file, index_col=0,
                            sep="\t").sort_index(axis=0).sort_index(axis=1)
     index, columns = expected.index, expected.columns
@@ -77,149 +90,30 @@ def test_anim_script():
                            index=index, columns=columns)
     max_diff = diffmat.abs().values.max()
     print("Maximum observed difference: %e" % max_diff)
+    return max_diff
+
+
+def test_anim_script():
+    """Test average_nucleotide_identity.py script with ANIm"""
+    max_diff = run_ani_script("ANIm")
     assert_less(max_diff, ANIM_THRESHOLD)
 
 
 def test_anib_script():
     """Test average_nucleotide_identity.py script with ANIb"""
-    # Remove output directory
-    outdir = os.path.join("tests", "test_script_ANIb")
-    try:
-        shutil.rmtree(outdir, ignore_errors=True)
-    except FileNotFoundError:
-        print("Did not find %s to delete it (not an error, continuing)")
-        pass    
-
-    # Run ANIb script
-    indir = os.path.join("tests", "test_ani_data")
-    logfile = os.path.join("tests", "test_ANIb_script.log")
-    cmd = ' '.join(["python",
-                    "average_nucleotide_identity.py",
-                    "-v",
-                    "-i %s" % indir,
-                    "-o %s" % outdir,
-                    "-l %s" % logfile,
-                    "--classes %s" % os.path.join(indir, "classes.tab"),
-                    "--labels %s" % os.path.join(indir, "labels.tab"),
-                    "-g",
-                    "--gmethod seaborn",
-                    "-m ANIb"])
-    print(cmd)
-    result = subprocess.run(cmd, shell=sys.platform != "win32",
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    
-    # Test result
-    expected_file = os.path.join("tests", "target_ANIb_output",
-                                 "ANIb_percentage_identity.tab")
-    returned_file = os.path.join(outdir, "ANIb_percentage_identity.tab")
-    expected = pd.read_csv(expected_file, index_col=0,
-                           sep="\t").sort_index(axis=0).sort_index(axis=1)
-    index, columns = expected.index, expected.columns
-    expected = expected.as_matrix() * 100
-    print(expected)
-    returned = pd.read_csv(returned_file, index_col=0,
-                           sep="\t").sort_index(axis=0).sort_index(axis=1)
-    returned = returned.as_matrix() * 100
-    print(returned)
-    diffmat = pd.DataFrame(expected - returned,
-                           index=index, columns=columns)
-    max_diff = diffmat.abs().values.max()
-    print("Maximum observed difference: %e" % max_diff)
+    max_diff = run_ani_script("ANIb")
     assert_less(max_diff, ANIB_THRESHOLD)
 
 
 def test_aniblastall_script():
     """Test average_nucleotide_identity.py script with ANIblastall"""
-    # Remove output directory
-    outdir = os.path.join("tests", "test_script_ANIblastall")
-    try:
-        shutil.rmtree(outdir, ignore_errors=True)
-    except FileNotFoundError:
-        print("Did not find %s to delete it (not an error, continuing)")
-        pass    
-
-    # Run ANIblastall script
-    indir = os.path.join("tests", "test_ani_data")
-    logfile = os.path.join("tests", "test_ANIblastall_script.log")
-    cmd = ' '.join(["python",
-                    "average_nucleotide_identity.py",
-                    "-v",
-                    "-i %s" % indir,
-                    "-o %s" % outdir,
-                    "-l %s" % logfile,
-                    "--classes %s" % os.path.join(indir, "classes.tab"),
-                    "--labels %s" % os.path.join(indir, "labels.tab"),
-                    "-m ANIblastall"])
-    print(cmd)
-    result = subprocess.run(cmd, shell=sys.platform != "win32",
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    
-    # Test result
-    expected_file = os.path.join("tests", "target_ANIblastall_output",
-                                 "ANIblastall_percentage_identity.tab")
-    returned_file = os.path.join(outdir, "ANIblastall_percentage_identity.tab")
-    expected = pd.read_csv(expected_file, index_col=0,
-                           sep="\t").sort_index(axis=0).sort_index(axis=1)
-    index, columns = expected.index, expected.columns
-    expected = expected.as_matrix() * 100
-    print(expected)
-    returned = pd.read_csv(returned_file, index_col=0,
-                           sep="\t").sort_index(axis=0).sort_index(axis=1)
-    returned = returned.as_matrix() * 100
-    print(returned)
-    diffmat = pd.DataFrame(expected - returned,
-                           index=index, columns=columns)
-    max_diff = diffmat.abs().values.max()
-    print("Maximum observed difference: %e" % max_diff)
+    max_diff = run_ani_script("ANIblastall")
     assert_less(max_diff, ANIBLASTALL_THRESHOLD)
     
 
 def test_tetra_script():
     """Test average_nucleotide_identity.py script with TETRA"""
-    # Remove output directory
-    outdir = os.path.join("tests", "test_script_TETRA")
-    try:
-        shutil.rmtree(outdir, ignore_errors=True)
-    except FileNotFoundError:
-        print("Did not find %s to delete it (not an error, continuing)")
-        pass    
-
-    # Run TETRA script
-    indir = os.path.join("tests", "test_ani_data")
-    logfile = os.path.join("tests", "test_tetra_script.log")
-    cmd = ' '.join(["python",
-                    "average_nucleotide_identity.py",
-                    "-v",
-                    "-i %s" % indir,
-                    "-o %s" % outdir,
-                    "-l %s" % logfile,
-                    "--classes %s" % os.path.join(indir, "classes.tab"),
-                    "--labels %s" % os.path.join(indir, "labels.tab"),
-                    "-m TETRA"])
-    print(cmd)
-    result = subprocess.run(cmd, shell=sys.platform != "win32",
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    
-    # Test result
-    expected_file = os.path.join("tests", "target_TETRA_output",
-                                 "TETRA_correlations.tab")
-    returned_file = os.path.join(outdir, "TETRA_correlations.tab")
-    expected = pd.read_csv(expected_file, index_col=0,
-                           sep="\t").sort_index(axis=0).sort_index(axis=1)
-    index, columns = expected.index, expected.columns
-    expected = expected.as_matrix() * 100
-    print(expected)
-    returned = pd.read_csv(returned_file, index_col=0,
-                           sep="\t").sort_index(axis=0).sort_index(axis=1)
-    returned = returned.as_matrix() * 100
-    print(returned)
-    diffmat = pd.DataFrame(expected - returned,
-                           index=index, columns=columns)
-    max_diff = diffmat.abs().values.max()
-    print("Maximum observed difference: %e" % max_diff)
+    max_diff = run_ani_script("TETRA")
     assert_less(max_diff, TETRA_THRESHOLD)
 
 
