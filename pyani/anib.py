@@ -133,16 +133,15 @@ def get_fragment_lengths(fastafile):
 
 # Make a dependency graph of BLAST commands
 def make_job_graph(infiles, fragfiles, outdir,
-                   format_exe=pyani_config.MAKEBLASTDB_DEFAULT,
-                   blast_exe=pyani_config.BLASTN_DEFAULT,
+                   format_exe=None, blast_exe=None,
                    mode="ANIb", jobprefix="ANIBLAST"):
     """Return a job dependency graph, based on the passed input sequence files.
 
     - infiles - a list of paths to input FASTA files
     - fragfiles - a list of paths to fragmented input FASTA files
     - outdir - path to output directory
-    - blastdb_exe - path to the database formatting executable
-    - blastn_exe - path to BLASTN executable
+    - format_exe - path to the database formatting executable
+    - blast_exe - path to BLASTN executable
     - mode - which BLAST mode are we running in: ANIb or ANIblastall
 
     By default, will run ANIb - it *is* possible to make a mess of passing the
@@ -160,9 +159,17 @@ def make_job_graph(infiles, fragfiles, outdir,
     if mode == "ANIb":  # BLAST/formatting executable depends on mode
         construct_db_cmdline = construct_makeblastdb_cmd
         construct_blast_cmdline = construct_blastn_cmdline
+        if format_exe is None:
+            format_exe = pyani_config.MAKEBLASTDB_DEFAULT
+        if blast_exe is None:
+            blast_exe = pyani_config.BLASTN_DEFAULT
     else:
         construct_db_cmdline = construct_formatdb_cmd
         construct_blast_cmdline = construct_blastall_cmdline
+        if format_exe is None:
+            format_exe = pyani_config.FORMATDB_DEFAULT
+        if blast_exe is None:
+            blast_exe = pyani_config.BLASTALL_DEFAULT
 
     # Create dictionary of database building jobs, keyed by db name
     for idx, fname in enumerate(infiles):

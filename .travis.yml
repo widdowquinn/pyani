@@ -1,0 +1,36 @@
+language: python
+python:
+  - "3.5"
+  - "3.5-dev" # 3.5 development branch
+#  - "3.6-dev" # 3.6 development branch
+#  - "nightly" # currently points to 3.7-dev
+
+# command to install dependencies
+install:
+  - "pip install -r requirements.txt"
+  - "pip install codecov"
+
+# command to run tests
+# Use --nocapture with nosetests to get extra verbose output for debugging on Travis
+script:
+  - nosetests -v --with-coverage --cover-package=pyani
+
+# application dependencies: BLAST+, legacy BLAST, MUMMER
+before_install:
+  - cd $HOME
+  - wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy/2.2.26/blast-2.2.26-x64-linux.tar.gz
+  - tar -zxvf blast-2.2.26-x64-linux.tar.gz
+  - export PATH=$HOME/blast-2.2.26/bin:$PATH
+  - cd $TRAVIS_BUILD_DIR
+
+sudo: false
+addons:
+  apt:
+    packages:
+    - csh
+    - ncbi-blast+
+    - mummer
+
+# Use codecov for code coverage
+after_success:
+  - codecov

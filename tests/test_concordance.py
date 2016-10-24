@@ -8,29 +8,33 @@ These tests are intended to be run using the nose package
 If the test is run directly at the command-line, the output obtained by each
 test is returned to STDOUT.
 """
-
-from __future__ import print_function
-
-from nose.tools import assert_equal, assert_less
-from pyani.run_multiprocessing import multiprocessing_run
+from nose.tools import assert_equal, assert_less, nottest
+from pyani.run_multiprocessing import run_dependency_graph, \
+    multiprocessing_run
 
 import os
 import pandas as pd
 import shutil
+import subprocess
+import sys
 
 from pyani import anib, anim, tetra, pyani_files, pyani_config
 
+# Work out where we are. We need to do this to find related data files
+# for testing
+curdir = os.path.dirname(os.path.abspath(__file__))
 
 # Path to JSpecies output data. This data is pre-prepared. If you replace
 # the test data with your own data, you will need to replace this file,
 # or change the file path.
-JSPECIES_OUTFILE = 'test_JSpecies/jspecies_results.tab'
+JSPECIES_OUTFILE = os.path.relpath(os.path.join(curdir, 'test_JSpecies',
+                                               'jspecies_results.tab'))
 
 # Path to test input data
-INDIRNAME = 'test_ani_data'
+INDIRNAME = os.path.relpath(os.path.join(curdir, 'test_ani_data'))
 
 # Path to directory for concordance test output
-OUTDIRNAME = 'test_concordance'
+OUTDIRNAME = os.path.relpath(os.path.join(curdir, 'test_concordance'))
 
 # Thresholds for allowable difference
 TETRA_THRESHOLD = 0.1
@@ -77,22 +81,27 @@ def parse_table(filename, title):
 
 
 # Make output directory if necessary
-def make_outdir(mode):
-    """Make concordance test output directory."""
+def delete_and_remake_outdir(mode):
+    """Make concordance test output directories."""
     outdirname = '_'.join([OUTDIRNAME, mode])
-    if not os.path.isdir(outdirname):
-        os.mkdir(outdirname)
+    try:
+        shutil.rmtree(outdirname, ignore_errors=True)
+    except FileNotFoundError:
+        print("Did not find %s to delete it (not an error, continuing)")
+        pass
+    os.makedirs(outdirname, exist_ok=True)
     return outdirname
 
-# Test concordance of this code with JSpecies output
+
+# Test concordance of ANIb with JSpecies output
 def test_anib_concordance():
     """Test concordance of ANIb method with JSpecies output.
 
     This may take some time. Please be patient.
     """
-    # Make/check output directory
+    # Make/check output directories
     mode = "ANIb"
-    outdirname = make_outdir(mode)
+    outdirname = delete_and_remake_outdir(mode)
 
     # Get dataframes of JSpecies output
     anib_jspecies = parse_table(JSPECIES_OUTFILE, 'ANIb')
@@ -105,16 +114,17 @@ def test_anib_concordance():
     # Make fragments
     fragfiles, fraglengths = anib.fragment_FASTA_files(infiles, outdirname,
                                                        pyani_config.FRAGSIZE)
-    # Build databases
-    cmdlist = anib.generate_blastdb_commands(infiles, outdirname,
-                                             pyani_config.MAKEBLASTDB_DEFAULT,
-                                             mode="ANIb")
-    multiprocessing_run(cmdlist)
-    # Run pairwise BLASTN
-    cmdlist = anib.generate_blastn_commands(fragfiles, outdirname,
-                                            pyani_config.BLASTN_DEFAULT,
-                                            mode="ANIb")
-    multiprocessing_run(cmdlist, verbose=False)
+
+    
+    # Build jobgraph
+    jobgraph = anib.make_job_graph(infiles, fragfiles, outdirname,
+                                   mode="ANIb")
+    print("\nJobgraph:\n", jobgraph)
+
+    # Run jobgraph with multiprocessing
+    run_dependency_graph(jobgraph)
+    print("Ran multiprocessing jobs")
+
     # Process BLAST; the pid data is in anib_data[1]
     anib_data = anib.process_blast(outdirname, org_lengths, fraglengths,
                                    mode="ANIb")
@@ -135,7 +145,9 @@ def test_anib_concordance():
                                   'ANIb_diff.tab'),
                      sep='\t')
     print("ANIb concordance test output placed in %s" % outdirname)
-    print(anib_pid, anib_jspecies, anib_diff)
+    print("ANIb PID: \n", anib_pid)
+    print("ANIb JSpecies: \n", anib_jspecies)
+    print("ANIb diff: \n", anib_diff)
 
     # We'd like the absolute difference reported to be < ANIB_THRESHOLD
     max_diff = anib_diff.abs().values.max()
@@ -143,12 +155,12 @@ def test_anib_concordance():
     assert_less(max_diff, ANIB_THRESHOLD)
 
 
-# Test concordance of this code with JSpecies output
+# Test concordance of ANIblastall with JSpecies output
 def test_aniblastall_concordance():
-    """Test concordance of ANIb method with JSpecies output."""
+    """Test concordance of ANIblastall method with JSpecies output."""
     # Make/check output directory
     mode = "ANIblastall"
-    outdirname = make_outdir(mode)
+    outdirname = delete_and_remake_outdir(mode)
 
     # Get dataframes of JSpecies output
     aniblastall_jspecies = parse_table(JSPECIES_OUTFILE, 'ANIb')
@@ -161,16 +173,17 @@ def test_aniblastall_concordance():
     # Make fragments
     fragfiles, fraglengths = anib.fragment_FASTA_files(infiles, outdirname,
                                                        pyani_config.FRAGSIZE)
-    # Build databases
-    cmdlist = anib.generate_blastdb_commands(infiles, outdirname,
-                                             pyani_config.FORMATDB_DEFAULT,
-                                             mode="ANIblastall")
-    multiprocessing_run(cmdlist)
-    # Run pairwise BLASTN
-    cmdlist = anib.generate_blastn_commands(fragfiles, outdirname,
-                                            pyani_config.BLASTALL_DEFAULT,
-                                            mode="ANIblastall")
-    multiprocessing_run(cmdlist, verbose=False)
+
+    # Build jobgraph
+    jobgraph = anib.make_job_graph(infiles, fragfiles, outdirname,
+                                   mode="ANIblastall")
+    print("\nJobgraph:\n", jobgraph)
+    print("\nJob 0:\n", jobgraph[0].script)
+
+    # Run jobgraph with multiprocessing
+    run_dependency_graph(jobgraph)
+    print("Ran multiprocessing jobs")
+
     # Process BLAST; the pid data is in anib_data[1]
     aniblastall_data = anib.process_blast(outdirname, org_lengths,
                                           fraglengths,
@@ -193,7 +206,9 @@ def test_aniblastall_concordance():
                                   'ANIblastall_diff.tab'),
                      sep='\t')
     print("ANIblastall concordance test output placed in %s" % outdirname)
-    print(aniblastall_pid, aniblastall_jspecies, aniblastall_diff)
+    print("ANIblastall PID:\n", aniblastall_pid)
+    print("ANIblastall JSpecies:\n", aniblastall_jspecies)
+    print("ANIblastall diff:\n", aniblastall_diff)
 
     # We'd like the absolute difference reported to be < ANIBLASTALL_THRESHOLD
     max_diff = aniblastall_diff.abs().values.max()
@@ -201,12 +216,14 @@ def test_aniblastall_concordance():
     assert_less(max_diff, ANIB_THRESHOLD)
 
 
-# Test concordance of this code with JSpecies output
+# Test concordance of ANIm with JSpecies output
 def test_anim_concordance():
     """Test concordance of ANIm method with JSpecies output."""
     # Make/check output directory
     mode = "ANIm"
-    outdirname = make_outdir(mode)
+    outdirname = delete_and_remake_outdir(mode)
+    nucmername = os.path.join(outdirname, 'nucmer_output') 
+    os.makedirs(nucmername, exist_ok=True)
 
     # Get dataframes of JSpecies output
     anim_jspecies = parse_table(JSPECIES_OUTFILE, 'ANIm')
@@ -219,12 +236,13 @@ def test_anim_concordance():
     # Run pairwise NUCmer
     cmdlist = anim.generate_nucmer_commands(infiles, outdirname,
                                             pyani_config.NUCMER_DEFAULT)
+    print('\n'.join(cmdlist))
     multiprocessing_run(cmdlist, verbose=False)
     # Process .delta files
-    anim_data = anim.process_deltadir(outdirname, org_lengths)
+    anim_data = anim.process_deltadir(nucmername, org_lengths)
     anim_pid = anim_data[1].sort_index(axis=0).sort_index(axis=1) * 100.
 
-    print(anim_data)
+    print("ANIm data\n", anim_data)
 
     index, columns = anim_pid.index, anim_pid.columns
     diffmat = anim_pid.as_matrix() - anim_jspecies.as_matrix()
@@ -241,7 +259,9 @@ def test_anim_concordance():
                                   'ANIm_diff.tab'),
                      sep='\t')
     print("ANIm concordance test output placed in %s" % outdirname)
-    print(anim_pid, anim_jspecies, anim_diff)
+    print("ANIm PID\n", anim_pid)
+    print("ANIm JSpecies\n", anim_jspecies)
+    print("ANIm diff\n", anim_diff)
 
     # We'd like the absolute difference reported to be < ANIB_THRESHOLD
     max_diff = anim_diff.abs().values.max()
@@ -249,12 +269,12 @@ def test_anim_concordance():
     assert_less(max_diff, ANIM_THRESHOLD)
 
 
-# Test concordance of this code with JSpecies output
+# Test concordance of TETRA code with JSpecies output
 def test_tetra_concordance():
     """Test concordance of TETRA method with JSpecies output."""
     # Make/check output directory
     mode = "TETRA"
-    outdirname = make_outdir(mode)
+    outdirname = delete_and_remake_outdir(mode)
 
     # Get dataframes of JSpecies output
     tetra_jspecies = parse_table(JSPECIES_OUTFILE, 'Tetra')
@@ -285,20 +305,12 @@ def test_tetra_concordance():
                                    'tetra_diff.tab'),
                       sep='\t')
     print("TETRA concordance test output placed in %s" % outdirname)
-    print(tetra_correlations, tetra_jspecies, tetra_diff)
+    print("TETRA correlations:\n", tetra_correlations)
+    print("TETRA JSpecies:\n", tetra_jspecies)
+    print("TETRA diff:\n", tetra_diff)
 
     # We'd like the absolute difference reported to be < TETRA_THRESHOLD
     max_diff = tetra_diff.abs().values.max()
     print("Maximum difference for TETRA: %e" % max_diff)
     assert_less(max_diff, TETRA_THRESHOLD)
     
-
-# Run as script
-if __name__ == '__main__':
-    import inspect
-    import test_concordance
-    functions = [o[0] for o in inspect.getmembers(test_concordance) if
-                 inspect.isfunction(o[1]) and o[0].startswith('test')]
-    for fn in functions:
-        print("\nFunction called: {}()".format(fn))
-        locals()[fn]()

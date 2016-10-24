@@ -3,5 +3,4 @@ scipy>=0.16.0
 matplotlib>=1.4.3
 biopython>=1.65
 pandas>=0.17.0
-rpy2>=2.8.0
 seaborn>=0.7.0

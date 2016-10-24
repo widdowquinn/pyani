@@ -1,6 +1,6 @@
 # README.md (pyani)
 
-![pyani PyPi verison](https://img.shields.io/pypi/v/pyani.svg "PyPi version") ![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence") 
+![pyani PyPi version](https://img.shields.io/pypi/v/pyani.svg "PyPi version") ![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence") ![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=master) ![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)
 
 ## Overview
 `pyani` is a Python3 module that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
@@ -23,6 +23,16 @@ From version 0.1.3.2 onwards, this should also install all the required Python p
 ```
 pip3 install -r requirements.txt
 ```
+
+## Testing `pyani`
+
+`pyani` includes tests that can be run with `nosetest` (including coverage measurement using `coverage.py`) with the following command, executed from the repository root directory:
+
+```
+nosetests --cover-erase --cover-package=pyani --cover-html --with-coverage
+```
+
+Coverage output will be placed (by default) in the `cover` subdirectory, and can be loaded into the web browser.
 
 ## Running `pyani`
 

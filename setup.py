@@ -43,10 +43,11 @@ setup(
     scripts=['average_nucleotide_identity.py',
              'genbank_get_genomes_by_taxon.py'],
     packages=['pyani'],
+    package_data={'pyani': ['tests/test_JSpecies/*.tab']},
+    include_package_date=True,
     install_requires=['biopython',
                       'matplotlib',
                       'pandas',
-                      'rpy2',
                       'scipy',
                       'seaborn'],
     classifiers=[
