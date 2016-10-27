@@ -395,7 +395,7 @@ def calculate_anim(infiles, org_lengths):
         else:
             logger.info("Running jobs with SGE")
             logger.info("Jobarray group size set to %d", args.sgegroupsize)
-            run_sge.run_dependency_graph(joblist, verbose=args.verbose,
+            run_sge.run_dependency_graph(joblist,
                                          logger=logger,
                                          jgprefix=args.jobprefix,
                                          sgegroupsize=args.sgegroupsize)
