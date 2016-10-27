@@ -51,12 +51,10 @@ qualifying matches contribute to the total aligned length, and total
 aligned sequence identity used to calculate ANI.
 """
 
-import pandas as pd
-
-import collections
 import os
 import shutil
-import sys
+
+import pandas as pd
 
 from . import pyani_config
 from . import pyani_files
@@ -172,11 +170,12 @@ def make_job_graph(infiles, fragfiles, outdir,
             blast_exe = pyani_config.BLASTALL_DEFAULT
 
     # Create dictionary of database building jobs, keyed by db name
+    # define job_offset for later use as last job index used
     for idx, fname in enumerate(infiles):
         dbcmd, dbname = construct_db_cmdline(fname, outdir, format_exe)
         job = pyani_jobs.Job("%s_db_%06d" % (jobprefix, idx), dbcmd)
         dbjobdict[dbname] = job
-    job_offset = idx
+        job_offset = idx
 
     # Create list of BLAST executable jobs, with dependencies
     jobnum = job_offset
@@ -367,12 +366,12 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
         if qname not in list(org_lengths.keys()):
             if logger:
                 logger.warning("Query name %s not in input " % qname +
-                               "sequence list, skipping %s" % deltafile)
+                               "sequence list, skipping %s" % blastfile)
             continue
         if sname not in list(org_lengths.keys()):
             if logger:
                 logger.warning("Subject name %s not in input " % sname +
-                               "sequence list, skipping %s" % deltafile)
+                               "sequence list, skipping %s" % blastfile)
             continue
         tot_length, tot_sim_error, ani_pid = parse_blast_tab(blastfile,
                                                              fraglengths,
@@ -408,8 +407,7 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     '''
     """
     # Assuming that the filename format holds org1_vs_org2.blast_tab:
-    qname, sname = \
-        os.path.splitext(os.path.split(filename)[-1])[0].split('_vs_')
+    qname = os.path.splitext(os.path.split(filename)[-1])[0].split('_vs_')[0]
     # Load output as dataframe
     if mode == "ANIblastall":
         qfraglengths = fraglengths[qname]
