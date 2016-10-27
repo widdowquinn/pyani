@@ -806,7 +806,10 @@ if __name__ == '__main__':
         # Run appropriate method on the contents of the input directory,
         # and write out corresponding results.
         logger.info("Carrying out %s analysis", args.method)
-        results = methods[args.method][0](infiles, org_lengths)
+        if args.method == "TETRA":
+            results = methods[args.method][0](infiles)
+        else:
+            results = methods[args.method][0](infiles, org_lengths)
         write(results, methods[args.method][1])
 
     # Do we want graphical output?
