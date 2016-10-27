@@ -642,17 +642,6 @@ def draw(filestems, gformat, logger=None):
                                        vmax=params_mpl(df)[filestem][2],
                                        labels=get_labels(args.labels),
                                        classes=get_labels(args.classes))
-        elif args.gmethod == "R":
-            rstr = pyani_graphics.heatmap_r(infilename, outfilename,
-                                            gformat=gformat.lower(),
-                                            title=filestem,
-                                            cmap=params_r(df)[filestem][0],
-                                            vmin=params_r(df)[filestem][1],
-                                            vmax=params_r(df)[filestem][2],
-                                            labels=get_labels(args.labels),
-                                            classes=get_labels(args.classes))
-            if logger:
-                logger.info("Executed R code:\n%s", rstr)
         elif args.gmethod == "seaborn":
             pyani_graphics.heatmap_seaborn(df, outfilename=outfilename,
                                            title=filestem,

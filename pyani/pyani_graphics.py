@@ -1,4 +1,4 @@
-# Copyright 2013-2015, The James Hutton Insitute
+# Copyright 2013-2016, The James Hutton Insitute
 # Author: Leighton Pritchard
 #
 # This code is part of the pyani package, and is governed by its licence.
@@ -27,12 +27,6 @@ import warnings
 
 import scipy.cluster.hierarchy as sch
 import scipy.spatial.distance as distance
-
-try:
-    import rpy2.robjects as robjects
-    rpy2_present = True
-except ImportError:
-    rpy2_present = False
 
 import seaborn as sns
 import pandas as pd
@@ -79,7 +73,8 @@ cdict_hadamard_BuRd = {'red': ((0.0, 0.0, 0.7),
                              (0.8, 0.7, 1.0),
                              (0.9, 1.0, 1.0),
                              (1.0, 0.0, 0.0))}
-cmap_hadamard_BuRd = LinearSegmentedColormap("hadamard_BuRd", cdict_hadamard_BuRd)
+cmap_hadamard_BuRd = LinearSegmentedColormap("hadamard_BuRd",
+                                             cdict_hadamard_BuRd)
 plt.register_cmap(cmap=cmap_hadamard_BuRd)
 
 # 2) Blue for values at 0.0, red for values at 1.0; white at 0.5
@@ -351,98 +346,3 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
     if outfilename:
         fig.savefig(outfilename)
     return fig
-
-
-# Custom exception for Rpy2
-class RPyImportException(Exception):
-    """Custom exception to report on attempt to draw R heatmap when R not
-    present.
-    """
-    def __init__(self):
-        Exception.__init__(self, "R heatmap requested, but rpy2 not able " +
-                           "to be imported")
-
-
-# Draw heatmap with R
-def heatmap_r(infilename, outfilename, title=None, cmap="bluered",
-              vmin=None, vmax=None, gformat=None, labels=None, classes=None):
-    """Uses R to draw heatmap, and returns R code used for rendering.
-
-    - infilename - path to tab-separated table with data
-    - outfilename - path to output file
-    - cmap - colourmap option
-    - vmin - float, minimum value on the heatmap scale
-    - vmax - float, maximum value on the heatmap scale
-    - gformat - string indicating graphics output format
-    - labels - dictionary of alternative labels, keyed by default sequence
-               labels
-    - classes - dictionary of sequence classes, keyed by default sequence
-                labels
-    """
-    # Bail out if there's no rpy2
-    if not rpy2_present:
-        raise RPyImportException
-
-    vdiff = vmax - vmin
-    vstep = 0.001 * vdiff
-
-    # If we're asking for EPS format, we need to convert this to postscript
-    if gformat == 'eps':
-        gformat = 'setEPS(); postscript'
-
-    # Read the data in to get row/column information for labels and classes,
-    # and so we can guesstimate output image size
-    df = pd.DataFrame.from_csv(infilename, sep="\t", header=0)
-
-    # Prepare R code
-    rstr = ["library(gplots)", "library(RColorBrewer)"]  # R import
-    rstr.append("ani = read.table('%s', header=T, sep='\\t', row.names=1)" %
-                infilename)
-    outfmt = os.path.splitext(outfilename)[-1][1:]
-    rfns = {'eps': 'setEPS(); postscript("%s")' % outfilename,
-            'pdf': 'pdf("%s")' % outfilename,
-            'png': 'png("%s", width=2000, height=2000)' % outfilename}
-    rstr.append("%s" % rfns[outfmt])
-    rstr.append("par(cex.main=0.75)")
-    if classes:  # Define colour list
-        lbls, cls = [], []
-        for lbl, cla in list(classes.items()):
-            lbls.append(lbl)
-            cls.append(cla)
-        lablist = ','.join(['"%s"' % l for l in lbls])
-        clslist = ','.join(['"%s"' % c for c in cls])
-        rstr.append("labels = data.frame(row.names=c(%s), class=c(%s))" %
-                    (lablist, clslist))
-        rstr.append('lablist = sort(unique(labels[,"class"]))')
-        rstr.append("colourlist = rainbow(length(lablist))")
-        rstr.append("label_colours = data.frame(row.names=sort(lablist), " +
-                    "colours=colourlist)")
-        rstr.append("labels$colours = label_colours[labels$class,]")
-        rstr.append("rowlabels = labels[rownames(ani),]")
-        rstr.append("collabels = labels[colnames(ani),]")
-    cmd = "heatmap.2(as.matrix(ani), col=%s, " % cmap +\
-          "breaks=seq(%.2f, %.2f, %f), " % (vmin, vmax, vstep) +\
-          "trace='none', " +\
-          "margins=c(15, 15), cexCol=0.05 + 1/log10(2 * ncol(ani)), " +\
-          "cexRow=0.05 + 1/log10(2 * nrow(ani)), " +\
-          "main='%s'" % title
-    if labels:  # Change labels from data to passed dict
-        labrow = ','.join(['"%s"' % labels[rowname] for rowname in df.index])
-        labcol = ','.join(['"%s"' % labels[colname] for colname in df.columns])
-        cmd += ", labRow=c(%s), labCol=c(%s)" % (labrow, labcol)
-    if classes:
-        cmd += ', RowSideColors=as.vector(rowlabels[,"colours"])'
-        cmd += ', ColSideColors=as.vector(collabels[,"colours"])'
-    cmd += ")"
-    rstr.append(cmd)
-    if classes:  # Add legend for colour labels
-        rstr.append('lablist = sort(unique(labels[,"class"]))')
-        rstr.append("par(lend=1)")
-        rstr.append('legend("topright", legend=sort(lablist), ' +
-                    "col=colourlist, lty=1, lwd=10)")
-    rstr.append("dev.off()")
-
-    # Execute R code
-    rstr = '\n'.join(rstr)
-    robjects.r(rstr)
-    return rstr + '\n'
