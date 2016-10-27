@@ -139,6 +139,7 @@ def test_genbank_download():
     result = subprocess.run(cmd, shell=sys.platform != "win32",
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
+    print(result)
 
     # Test result
     expected = sorted(["GCF_000400505.1_DPA2511_1.0_genomic.fna",
