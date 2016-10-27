@@ -11,27 +11,27 @@ For parallelisation on multi-node system, we use some custom code to submit
 jobs.
 """
 
+import itertools
+import os
+
 from collections import defaultdict
 
 from . import pyani_config
 from .pyani_jobs import JobGroup
 
-import itertools
-import os
-
 
 def split_seq(iterable, size):
     """Splits a passed iterable into chunks of a given size."""
-    it = iter(iterable)
-    item = list(itertools.islice(it, size))
+    elm = iter(iterable)
+    item = list(itertools.islice(elm, size))
     while item:
         yield item
-        item = list(itertools.islice(it, size))
+        item = list(itertools.islice(elm, size))
 
 
 # Run a job dependency graph, with SGE
-def run_dependency_graph(jobgraph, verbose=False, logger=None,
-                         jgprefix="ANIm_SGE_JG", sgegroupsize=10000):
+def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
+                         sgegroupsize=10000):
     """Creates and runs GridEngine scripts for jobs based on the passed
     jobgraph.
 
@@ -127,8 +127,8 @@ def build_directories(root_dir):
     # Create subdirectories
     directories = [os.path.join(root_dir, subdir) for subdir in
                    ("output", "stderr", "stdout", "jobs")]
-    [os.mkdir(dirname) for dirname in directories if not
-     os.path.exists(dirname)]
+    for dirname in directories:
+        os.makedirs(dirname, exist_ok=True)
 
 
 def build_job_scripts(root_dir, jobs):
@@ -139,10 +139,10 @@ def build_job_scripts(root_dir, jobs):
     # Loop over the job list, creating each job script in turn, and then adding
     # scriptPath to the Job object
     for job in jobs:
-        scriptPath = os.path.join(root_dir, "jobs", job.name)
-        with open(scriptPath, "w") as scriptFile:
-            scriptFile.write("#!/bin/sh\n#$ -S /bin/bash\n%s\n" % job.script)
-        job.scriptPath = scriptPath
+        scriptpath = os.path.join(root_dir, "jobs", job.name)
+        with open(scriptpath, "w") as scriptfile:
+            scriptfile.write("#!/bin/sh\n#$ -S /bin/bash\n%s\n" % job.script)
+        job.scriptpath = scriptpath
 
 
 def extract_submittable_jobs(waiting):
@@ -158,7 +158,7 @@ def extract_submittable_jobs(waiting):
     for job in waiting:
         unsatisfied = sum([(subjob.submitted is False) for subjob in
                            job.dependencies])
-        if 0 == unsatisfied:
+        if unsatisfied == 0:
             submittable.add(job)
     return list(submittable)
 
@@ -182,9 +182,9 @@ def submit_safe_jobs(root_dir, jobs):
         args += " -o %s -e %s " % (job.out, job.err)
 
         # If a queue is specified, add this to the SGE command line
-        if job.queue is not None and job.queue in local_queues:
-            args += local_queues[job.queue]
-            # args += "-q %s " % job.queue
+        # LP: This has an undeclared variable, not sure why - delete?
+        #if job.queue is not None and job.queue in local_queues:
+        #    args += local_queues[job.queue]
 
         # If the job is actually a JobGroup, add the task numbering argument
         if isinstance(job, JobGroup):
