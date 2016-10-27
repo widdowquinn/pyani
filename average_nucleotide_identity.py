@@ -335,7 +335,7 @@ def compress_delete_outdir(outdir):
     """Compress the contents of the passed directory to .tar.gz and delete."""
     # Compress output in .tar.gz file and remove raw output
     tarfn = outdir + '.tar.gz'
-    logger.info("\tCompressing output from %s to %s", (outdir, tarfn))
+    logger.info("\tCompressing output from %s to %s", outdir, tarfn)
     with tarfile.open(tarfn, "w:gz") as fh:
         fh.add(outdir)
     logger.info("\tRemoving output directory %s", outdir)
@@ -385,7 +385,6 @@ def calculate_anim(infiles, org_lengths):
                             args.workers)
             cumval = run_mp.run_dependency_graph(joblist,
                                                  workers=args.workers, 
-                                                 verbose=args.verbose,
                                                  logger=logger)
             logger.info("Cumulative return value: %d", cumval)
             if 0 < cumval:
@@ -429,7 +428,7 @@ def calculate_anim(infiles, org_lengths):
 
 
 # Calculate TETRA for input
-def calculate_tetra(infiles, org_lengths):
+def calculate_tetra(infiles):
     """Calculate TETRA for files in input directory.
 
     - infiles - paths to each input file
@@ -500,7 +499,7 @@ def unified_anib(infiles, org_lengths):
     # Build BLAST databases and run pairwise BLASTN
     if not args.skip_blastn:
         # Make sequence fragments
-        logger.info("Fragmenting input files, and writing to %s" %
+        logger.info("Fragmenting input files, and writing to %s",
                     args.outdirname)
         # Fraglengths does not get reused with BLASTN
         fragfiles, fraglengths = anib.fragment_FASTA_files(infiles,
@@ -536,8 +535,7 @@ def unified_anib(infiles, org_lengths):
             else:
                 logger.info("All multiprocessing jobs complete.")
         else:
-            run_sge.run_dependency_graph(jobgraph, verbose=args.verbose,
-                                         logger=logger)
+            run_sge.run_dependency_graph(jobgraph, logger=logger)
             logger.info("Running jobs with SGE")
     else:
         # Import fragment lengths from JSON
@@ -612,7 +610,7 @@ def write(results, filestems):
     True), and plain text tab-separated file in the output directory. The
     order of result output must be reflected in the order of filestems.
     """
-    logger.info("Writing %s results to %s", (args.method, args.outdirname))
+    logger.info("Writing %s results to %s", args.method, args.outdirname)
     for df, filestem in zip(results, filestems):
         logger.info("\t%s", filestem)
         if args.write_excel:
@@ -748,7 +746,7 @@ if __name__ == '__main__':
     if args.rerender: # Rerendering, we want to overwrite graphics
         args.force, args.noclobber = True, True
     make_outdir()
-    logger.info("Output directory: %s" % args.outdirname)
+    logger.info("Output directory: %s", args.outdirname)
 
     # Check for the presence of space characters in any of the input filenames
     # or output directory. If we have any, abort here and now.
