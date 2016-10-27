@@ -19,7 +19,6 @@ matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from matplotlib import cm
 from matplotlib.colors import LinearSegmentedColormap
     
 import numpy as np
@@ -301,17 +300,17 @@ def heatmap_mpl(df, outfilename=None, title=None, cmap=None,
 
         # Create column colourbar axis
         col_cbaxes = fig.add_subplot(colGS[1, 0])
-        col_axi = col_cbaxes.imshow([col_cb],
-                                    cmap=plt.get_cmap(pyani_config.MPL_CBAR),
-                                    interpolation='nearest', aspect='auto',
-                                    origin='lower')
+        #col_axi = col_cbaxes.imshow([col_cb],
+        #                            cmap=plt.get_cmap(pyani_config.MPL_CBAR),
+        #                            interpolation='nearest', aspect='auto',
+        #                            origin='lower')
         clean_axis(col_cbaxes)
         # Create row colourbar axis
         row_cbaxes = fig.add_subplot(rowGS[0, 1])
-        row_axi = row_cbaxes.imshow([[x] for x in row_cb.values],
-                                    cmap=plt.get_cmap(pyani_config.MPL_CBAR),
-                                    interpolation='nearest', aspect='auto',
-                                    origin='lower')
+        #row_axi = row_cbaxes.imshow([[x] for x in row_cb.values],
+        #                            cmap=plt.get_cmap(pyani_config.MPL_CBAR),
+        #                            interpolation='nearest', aspect='auto',
+        #                            origin='lower')
         clean_axis(row_cbaxes)
 
     # Add heatmap labels
