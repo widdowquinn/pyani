@@ -4,6 +4,7 @@
 
 * add several tests and support for `codecov.io`, `landscape.io` and `Travis-CI`
 * removed requirement for `rpy2`
+* moved scripts to `bin/` subdirectory
 
 
 ## v0.2.1
