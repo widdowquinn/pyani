@@ -35,9 +35,6 @@ ALIGNDIR = {'ANIm': 'nucmer_output',
             'ANIb': 'blastn_output',
             'ANIblastall': 'blastall_output'}
 
-# Colour gradients for use in R and Matplotlib:
-# R_AFMHOT is a custom colour palette
-R_AFMHOT = 'colorRampPalette(c("black","red","yellow","white"))'
 # Any valid matplotlib colour map can be used here
 # See, e.g. http://matplotlib.org/xkcd/examples/color/colormaps_reference.html
 MPL_CBAR = 'Spectral'
@@ -74,27 +71,4 @@ def params_mpl(df):
             'ANIblastall_alignment_coverage': ('BuRd', 0, 1),
             'ANIblastall_hadamard': ('hadamard_BuRd', 0, 1),
             'ANIblastall_similarity_errors': ('afmhot', df.values.min(),
-                                              df.values.max())}
-
-
-def params_r(df):
-    """Returns dictionary of R rendering parameters, dependent on dataframe."""
-    return {'ANIb_alignment_lengths': (R_AFMHOT, df.values.min(),
-                                       df.values.max()),
-            'ANIb_percentage_identity': ('bluered', 0.9, 1),
-            'ANIb_alignment_coverage': ('bluered', 0, 1),
-            'ANIb_similarity_errors': (R_AFMHOT, df.values.min(),
-                                       df.values.max()),
-            'ANIm_alignment_lengths': (R_AFMHOT, df.values.min(),
-                                       df.values.max()),
-            'ANIm_percentage_identity': ('bluered', 0.9, 1),
-            'ANIm_alignment_coverage': ('bluered', 0, 1),
-            'ANIm_similarity_errors': (R_AFMHOT, df.values.min(),
-                                       df.values.max()),
-            'TETRA_correlations': ('bluered', 0.9, 1),
-            'ANIblastall_alignment_lengths': (R_AFMHOT, df.values.min(),
-                                              df.values.max()),
-            'ANIblastall_percentage_identity': ('bluered', 0.9, 1),
-            'ANIblastall_alignment_coverage': ('bluered', 0, 1),
-            'ANIblastall_similarity_errors': (R_AFMHOT, df.values.min(),
                                               df.values.max())}

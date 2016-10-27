@@ -170,7 +170,7 @@ from pyani import (anib, anim, tetra, pyani_config, pyani_files,
                    pyani_graphics, pyani_tools)
 from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
-from pyani.pyani_config import params_mpl, params_r, ALIGNDIR, FRAGSIZE
+from pyani.pyani_config import params_mpl, ALIGNDIR, FRAGSIZE
 from pyani import __version__ as VERSION
 
 
