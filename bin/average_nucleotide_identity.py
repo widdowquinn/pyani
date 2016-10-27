@@ -166,7 +166,8 @@ import traceback
 
 from argparse import ArgumentParser
 
-from pyani import anib, anim, tetra, pyani_config, pyani_files, pyani_graphics
+from pyani import (anib, anim, tetra, pyani_config, pyani_files,
+                   pyani_graphics, pyani_tools)
 from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
 from pyani.pyani_config import params_mpl, params_r, ALIGNDIR, FRAGSIZE
@@ -568,36 +569,6 @@ def unified_anib(infiles, org_lengths):
 
     # Return processed BLAST data
     return data
-
-
-# Read sequence annotations in from file
-def get_labels(filename, logger=None):
-    """Returns a dictionary of alternative sequence labels, or None
-
-    - filename - path to file containing tab-separated table of labels
-
-    Input files should be formatted as <key>\t<label>, one pair per line.
-    """
-    labeldict = {}
-    if filename is not None:
-        if logger:
-            logger.info("Reading labels from %s", filename)
-        with open(filename, 'rU') as fh:
-            count = 0
-            for line in fh.readlines():
-                count += 1
-                try:
-                    key, label = line.strip().split('\t')
-                except ValueError:
-                    if logger:
-                        logger.warning("Problem with class file: %s",
-                                       filename)
-                        logger.warning("%d: %s", (count, line.strip()))
-                        logger.warning("(skipping line)")
-                    continue
-                else:
-                    labeldict[key] = label
-    return labeldict
                
 
 # Write ANIb/ANIm/TETRA output
@@ -634,33 +605,22 @@ def draw(filestems, gformat, logger=None):
         df = pd.read_csv(infilename, index_col=0, sep="\t")
         if logger:
             logger.info("Writing heatmap to %s", outfilename)
+        labels =pyani_tools.get_labels(args.labels)
+        classes =pyani_tools.get_labels(args.classes)
         if args.gmethod == "mpl":
             pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
                                        title=filestem,
                                        cmap=params_mpl(df)[filestem][0],
                                        vmin=params_mpl(df)[filestem][1],
                                        vmax=params_mpl(df)[filestem][2],
-                                       labels=get_labels(args.labels),
-                                       classes=get_labels(args.classes))
-        elif args.gmethod == "R":
-            rstr = pyani_graphics.heatmap_r(infilename, outfilename,
-                                            gformat=gformat.lower(),
-                                            title=filestem,
-                                            cmap=params_r(df)[filestem][0],
-                                            vmin=params_r(df)[filestem][1],
-                                            vmax=params_r(df)[filestem][2],
-                                            labels=get_labels(args.labels),
-                                            classes=get_labels(args.classes))
-            if logger:
-                logger.info("Executed R code:\n%s", rstr)
+                                       labels=labels, classes=classes)
         elif args.gmethod == "seaborn":
             pyani_graphics.heatmap_seaborn(df, outfilename=outfilename,
                                            title=filestem,
                                            cmap=params_mpl(df)[filestem][0],
                                            vmin=params_mpl(df)[filestem][1],
                                            vmax=params_mpl(df)[filestem][2],
-                                           labels=get_labels(args.labels),
-                                           classes=get_labels(args.classes))
+                                           labels=labels, classes=classes)
 
 # Subsample the input files
 def subsample_input(infiles):
