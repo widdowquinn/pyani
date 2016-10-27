@@ -139,7 +139,7 @@ def entrez_retry(fn, *fnargs, **fnkwargs):
         except:
             tries += 1
             logger.warning("Entrez query %s(%s, %s) failed (%d/%d)",
-                           (fn, fnargs, fnkwargs, tries+1, args.retries))
+                           fn, fnargs, fnkwargs, tries+1, args.retries)
             logger.warning(last_exception())
     if not success:
         logger.error("Too many Entrez failures (exiting)")
@@ -207,7 +207,7 @@ def get_ncbi_asm(asm_uid):
     ftp://ftp.ncbi.nlm.nih.gov/genomes/all/<AA>_<AN>
     where <AA> is AssemblyAccession, and <AN> is AssemblyName.
     """
-    logger.info("Identifying assembly information from NCBI for %s" %
+    logger.info("Identifying assembly information from NCBI for %s",
                 asm_uid)
 
     # Obtain full eSummary data for the assembly
@@ -262,7 +262,7 @@ def get_ncbi_asm(asm_uid):
         # that GCF is replaced by GCA
         gbfilestem = re.sub('^GCF_', 'GCA_', filestem)
         logger.warning("Could not download %s, trying %s",
-                       (filestem, gbfilestem))
+                       filestem, gbfilestem)
         try:
             fastafilename = retrieve_assembly_contigs(gbfilestem)
         except NCBIDownloadException:
@@ -310,7 +310,7 @@ def retrieve_assembly_contigs(filestem):
     # Get data info
     try:
         response = urlopen(url, timeout=args.timeout)
-    except (HTTPError, URLError) as error:
+    except (HTTPError, URLError):
         logger.error("Download failed for URL: %s", url)
         logger.error(last_exception())
         raise NCBIDownloadException()
@@ -328,7 +328,7 @@ def retrieve_assembly_contigs(filestem):
     if os.path.exists(outfname):
         logger.warning("Output file %s exists, not downloading", outfname)
     else:
-        logger.info("Downloading %s (%d bytes)", (url, fsize))
+        logger.info("Downloading %s (%d bytes)", url, fsize)
         bsize = 1048576  # buffer size
         fsize_dl = 0     # bytes downloaded
         try:
@@ -365,7 +365,7 @@ def retrieve_assembly_contigs(filestem):
     else:
         try:
             logger.info("Extracting archive %s to %s",
-                        (outfname, ename))
+                        outfname, ename)
             with open(ename, 'w') as efh:
                 subprocess.call(['gunzip', '-c', outfname],
                                 stdout=efh)  # can be subprocess.run in Py3.5
@@ -414,8 +414,8 @@ def write_contigs(asm_uid, contig_uids):
     classtxt = "%s\t%s" % (gname, asm_organism)
 
     # Get FASTA records for contigs
-    logger.info("Downloading FASTA records for assembly %s (%s)" %
-                (asm_uid, ' '.join([ginit, species, asm_strain])))
+    logger.info("Downloading FASTA records for assembly %s (%s)",
+                asm_uid, ' '.join([ginit, species, asm_strain]))
     # We're doing an explicit retry loop here because we want to confirm we
     # have the correct data, as well as test for Entrez connection errors,
     # which is all the entrez_retry function does.
@@ -427,7 +427,7 @@ def write_contigs(asm_uid, contig_uids):
         batch_size = 10000
         try:
             for start in range(0, len(contig_uids), batch_size):
-                logger.info("Batch: %d-%d", (start, start+batch_size))
+                logger.info("Batch: %d-%d", start, start+batch_size)
                 seqdata = entrez_retry(Entrez.efetch, db='nucleotide',
                                        id=query_uids,
                                        rettype='fasta', retmode='text',
@@ -439,10 +439,10 @@ def write_contigs(asm_uid, contig_uids):
                 success = True
             else:  
                 logger.warning("%d contigs expected, %d contigs returned",
-                               (len(contig_uids), len(records)))
+                               len(contig_uids), len(records))
                 logger.warning("FASTA download for assembly %s failed",
                                asm_uid)
-                logger.warning("try %d/20" % tries)
+                logger.warning("try %d/20", tries)
             # Could also check expected assembly sequence length?
             totlen = sum([len(r) for r in records])
             logger.info("Downloaded genome size: %d", totlen)
@@ -457,7 +457,7 @@ def write_contigs(asm_uid, contig_uids):
 
     # Write contigs to file
     retval = SeqIO.write(records, outfilename, 'fasta')
-    logger.info("Wrote %d contigs to %s", (retval, outfilename))
+    logger.info("Wrote %d contigs to %s", retval, outfilename)
 
 
 # Function to report whether an accession has been downloaded
@@ -471,7 +471,7 @@ def logreport_downloaded(accession, skippedlist, accessiondict, uidaccdict):
         else:
             status = "DOWNLOADED"
         logger.warning("\t\t%s: %s - %s",
-                       (vid, uidaccdict[vid], status))
+                       vid, uidaccdict[vid], status)
 
 # Run as script
 if __name__ == '__main__':
@@ -533,7 +533,7 @@ if __name__ == '__main__':
     for tid in taxon_ids:
         asm_dict[tid] = get_asm_uids(tid)
     for tid, asm_uids in list(asm_dict.items()):
-        logger.info("Taxon %s: %d assemblies", (tid, len(asm_uids)))
+        logger.info("Taxon %s: %d assemblies", tid, len(asm_uids))
 
     # Download contigs for each assembly UID
     classes, labels = [], []
@@ -573,7 +573,7 @@ if __name__ == '__main__':
         for uid in sorted(skippedlist):
             logger.warning("Assembly UID %s skipped" % uid)
             acc = uidaccdict[uid]
-            logger.warning("\tUID: %s - accession: %s", (uid, acc))
+            logger.warning("\tUID: %s - accession: %s", uid, acc)
             # Has another version of this genome been successfully dl'ed
             logger.warning("\tAccession %s has versions:", acc.split('.')[0])
             logreport_downloaded(acc, skippedlist, accessiondict, uidaccdict)
