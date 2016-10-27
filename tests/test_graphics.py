@@ -16,7 +16,7 @@ import shutil
 
 from nose.tools import assert_equal, assert_less, nottest
 from pyani import pyani_graphics, pyani_config
-from average_nucleotide_identity import get_labels
+from bin.average_nucleotide_identity import get_labels
 
 # Work out where we are. We need to do this to find related data files
 # for testing
