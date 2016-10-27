@@ -22,7 +22,6 @@ import matplotlib.gridspec as gridspec
 from matplotlib.colors import LinearSegmentedColormap
     
 import numpy as np
-import os
 import warnings
 
 import scipy.cluster.hierarchy as sch
