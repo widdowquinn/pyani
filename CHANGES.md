@@ -1,5 +1,11 @@
 # CHANGES.md
 
+## v0.2.1.dev
+
+* add several tests and support for `codecov.io`, `landscape.io` and `Travis-CI`
+* removed requirement for `rpy2`
+
+
 ## v0.2.1
 
 * `pyani` now requires `rpy2` v2.8.0 in order to satisfy running under Anaconda (see issue #26)

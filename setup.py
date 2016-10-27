@@ -10,7 +10,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-
+import os
 import sys
 import re
 
@@ -40,8 +40,8 @@ setup(
     platforms="Posix; MacOS X",
     url="http://widdowquinn.github.io/pyani/",  # project home page
     download_url="https://github.com/widdowquinn/pyani/releases",
-    scripts=['average_nucleotide_identity.py',
-             'genbank_get_genomes_by_taxon.py'],
+    scripts=[os.path.join('bin', 'average_nucleotide_identity.py'),
+             os.path.join('bin', 'genbank_get_genomes_by_taxon.py')],
     packages=['pyani'],
     package_data={'pyani': ['tests/test_JSpecies/*.tab']},
     include_package_date=True,

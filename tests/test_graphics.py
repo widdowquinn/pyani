@@ -15,8 +15,8 @@ import pandas as pd
 import shutil
 
 from nose.tools import assert_equal, assert_less, nottest
-from pyani import pyani_graphics, pyani_config
-from average_nucleotide_identity import get_labels
+from pyani import pyani_graphics, pyani_config, pyani_tools
+
 
 # Work out where we are. We need to do this to find related data files
 # for testing
@@ -28,12 +28,14 @@ OUTDIR = os.path.join("tests", "test_graphics_output")
 def define_inputs():
     return {'infilename': os.path.join("tests", "target_ANIm_output",
                                        "ANIm_percentage_identity.tab"),
-            'labels': get_labels(os.path.join("tests", "test_ani_data",
-                                              "labels.tab"),
-                                 logger=None),
-            'classes': get_labels(os.path.join("tests", "test_ani_data",
-                                               "classes.tab"),
-                                  logger=None)}
+            'labels': pyani_tools.get_labels(os.path.join("tests",
+                                                          "test_ani_data",
+                                                          "labels.tab"),
+                                             logger=None),
+            'classes': pyani_tools.get_labels(os.path.join("tests",
+                                                           "test_ani_data",
+                                                           "classes.tab"),
+                                              logger=None)}
             
 
 def draw_format_method(fmt, mth):
