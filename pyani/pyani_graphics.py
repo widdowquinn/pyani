@@ -19,11 +19,11 @@ matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from matplotlib import cm
 from matplotlib.colors import LinearSegmentedColormap
     
 import numpy as np
 import os
+import warnings
 
 import scipy.cluster.hierarchy as sch
 import scipy.spatial.distance as distance
@@ -35,12 +35,9 @@ except ImportError:
     rpy2_present = False
 
 import seaborn as sns
-
-from . import pyani_config
-
 import pandas as pd
 
-import warnings
+from . import pyani_config
 
 from math import floor, log10
 
