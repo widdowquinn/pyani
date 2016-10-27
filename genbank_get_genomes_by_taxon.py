@@ -410,8 +410,6 @@ def write_contigs(asm_uid, contig_uids):
     # Create label and class strings
     genus, species = asm_organism.split(' ', 1)
     ginit = genus[0] + '.'
-    labeltxt = "%s\t%s %s %s" % (gname, ginit, species, asm_strain)
-    classtxt = "%s\t%s" % (gname, asm_organism)
 
     # Get FASTA records for contigs
     logger.info("Downloading FASTA records for assembly %s (%s)",
@@ -522,11 +520,11 @@ if __name__ == '__main__':
         logger.error("No output directory name (exiting)")
         sys.exit(1)
     make_outdir()
-    logger.info("Output directory: %s" % args.outdirname)
+    logger.info("Output directory: %s", args.outdirname)
 
     # We might have more than one taxon in a comma-separated list
     taxon_ids = args.taxon.split(',')
-    logger.info("Passed taxon IDs: %s" % ', '.join(taxon_ids))    
+    logger.info("Passed taxon IDs: %s", ', '.join(taxon_ids))    
 
     # Get all NCBI assemblies for each taxon UID
     asm_dict = defaultdict(set)
@@ -571,7 +569,7 @@ if __name__ == '__main__':
     if len(skippedlist):
         logger.warning("Skipped %d downloads through error", len(skippedlist))
         for uid in sorted(skippedlist):
-            logger.warning("Assembly UID %s skipped" % uid)
+            logger.warning("Assembly UID %s skipped", uid)
             acc = uidaccdict[uid]
             logger.warning("\tUID: %s - accession: %s", uid, acc)
             # Has another version of this genome been successfully dl'ed
