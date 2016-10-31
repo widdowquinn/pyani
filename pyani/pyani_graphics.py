@@ -84,16 +84,19 @@ def get_safe_seaborn_labels(dfr, labels):
 
 
 # Return a clustermap
-def get_seaborn_clustermap(dfr, cmap, vmin, vmax, colors, figsize,
-                           linewidths, ticklabels, title=None, annot=True):
+def get_seaborn_clustermap(dfr, param_dict, title=None, annot=True):
     """Returns a Seaborn clustermap."""
     fig = sns.clustermap(dfr,
-                         cmap=cmap, vmin=vmin, vmax=vmax,
-                         col_colors=colors, row_colors=colors,
-                         figsize=(figsize, figsize),
-                         linewidths=linewidths,
-                         xticklabels=ticklabels,
-                         yticklabels=ticklabels,
+                         cmap=param_dict['cmap'],
+                         vmin=param_dict['vmin'],
+                         vmax=param_dict['vmax'],
+                         col_colors=param_dict['colorbar'],
+                         row_colors=param_dict['colorbar'],
+                         figsize=(param_dict['figsize'],
+                                  param_dict['figsize']),
+                         linewidths=param_dict['linewidths'],
+                         xticklabels=param_dict['ticklabels'],
+                         yticklabels=param_dict['ticklabels'],
                          annot=annot)
     fig.cax.yaxis.set_label_position('left')
     if title:
@@ -148,8 +151,10 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, cmap=None,
     labels = get_safe_seaborn_labels(dfr, labels)
 
     # Plot heatmap
-    fig = get_seaborn_clustermap(dfr, cmap, vmin, vmax, col_cb, figsize,
-                                 0.25, labels, title=title)
+    param_dict = {'cmap': cmap, 'vmin': vmin, 'vmax': vmax,
+                  'colorbar': col_cb, 'figsize': figsize, 'linewidths': 0.25,
+                  'ticklabels': labels}
+    fig = get_seaborn_clustermap(dfr, param_dict, title=title)
 
     # Save to file
     if outfilename:
