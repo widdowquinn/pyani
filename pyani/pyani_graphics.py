@@ -49,6 +49,66 @@ def clean_axis(axis):
         spine.set_visible(False)
 
 
+# Add classes colorbar to Seaborn plot
+def get_seaborn_colorbar(dfr, classes):
+    """Return a colorbar representing classes, for a Seaborn plot.
+
+    The aim is to get a pd.Series for the passed dataframe columns,
+    in the form:
+    0    colour for class in col 0
+    1    colour for class in col 1
+    ...  colour for class in col ...
+    n    colour for class in col n
+    """
+    levels = sorted(list(set(classes.values())))
+    paldict = {lvl: pal for (lvl, pal) in
+               zip(levels, sns.cubehelix_palette(len(levels),
+                                                 light=.9, dark=.1,
+                                                 reverse=True,
+                                                 start=1, rot=-2))}
+    lvl_pal = {cls: paldict[lvl] for (cls, lvl) in list(classes.items())}
+    col_cb = pd.Series(dfr.index).map(lvl_pal)
+    # The col_cb Series index now has to match the dfr.index, but
+    # we don't create the Series with this (and if we try, it
+    # fails) - so change it with this line
+    col_cb.index = dfr.index
+    return col_cb
+
+
+# Get safe Seaborn labels
+def get_safe_seaborn_labels(dfr, labels):
+    """Returns labels guaranteed to correspond to the dataframe."""
+    if labels is not None:
+        return [labels.get(i, i) for i in dfr.index]
+    return [i for i in dfr.index]
+
+
+# Return a clustermap
+def get_seaborn_clustermap(dfr, cmap, vmin, vmax, colors, figsize,
+                           linewidths, ticklabels, title=None, annot=True):
+    """Returns a Seaborn clustermap."""
+    fig = sns.clustermap(dfr,
+                         cmap=cmap, vmin=vmin, vmax=vmax,
+                         col_colors=colors, row_colors=colors,
+                         figsize=(figsize, figsize),
+                         linewidths=linewidths,
+                         xticklabels=ticklabels,
+                         yticklabels=ticklabels,
+                         annot=annot)
+    fig.cax.yaxis.set_label_position('left')
+    if title:
+        fig.cax.set_ylabel(title)
+
+    # Rotate ticklabels
+    fig.ax_heatmap.set_xticklabels(fig.ax_heatmap.get_xticklabels(),
+                                   rotation=90)
+    fig.ax_heatmap.set_yticklabels(fig.ax_heatmap.get_yticklabels(),
+                                   rotation=0)
+
+    # Return clustermap
+    return fig
+
+
 # Generate Seaborn heatmap output
 def heatmap_seaborn(dfr, outfilename=None, title=None, cmap=None,
                     vmin=None, vmax=None, labels=None, classes=None):
@@ -77,56 +137,25 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, cmap=None,
         scale = maxfigsize/calcfigsize
         sns.set_context("notebook", font_scale=scale)
 
-    # Add class colour bar. The aim is to get a pd.Series for the columns
-    # of the form:
-    # 0    colour for class in col 0
-    # 1    colour for class in col 1
-    # ...  colour for class in col ...
-    # n    colour for class in col n
-    # This is in col_cb when we're finished
-    if classes is not None:
-        levels = sorted(list(set(classes.values())))
-        pal = sns.cubehelix_palette(len(levels),
-                                    light=.9, dark=.1, reverse=True,
-                                    start=1, rot=-2)
-        paldict = {lvl: pal for (lvl, pal) in zip(levels, pal)}
-        lvl_pal = {cls: paldict[lvl] for (cls, lvl) in list(classes.items())}
-        col_cb = pd.Series(dfr.index).map(lvl_pal)
-        # The col_cb Series index now has to match the dfr.index, but
-        # we don't create the Series with this (and if we try, it
-        # fails) - so change it, here.
-        col_cb.index = dfr.index
-    else:
+    # Add a colorbar?
+    if classes is None:
         col_cb = None
+    else:
+        col_cb = get_seaborn_colorbar(dfr, classes)
 
     # Labels are defined before we build the clustering
     # If a label mapping is missing, use the key text as fall back
-    if labels is not None:
-        newlabels = [labels.get(i, i) for i in dfr.index]
-    else:
-        newlabels = [i for i in dfr.index]
+    labels = get_safe_seaborn_labels(dfr, labels)
 
     # Plot heatmap
-    fig = sns.clustermap(dfr,
-                         cmap=cmap, vmin=vmin, vmax=vmax,
-                         col_colors=col_cb, row_colors=col_cb,
-                         figsize=(figsize, figsize),
-                         linewidths=0.25,
-                         xticklabels=newlabels,
-                         yticklabels=newlabels,
-                         annot=True)
-    fig.cax.yaxis.set_label_position('left')
-    fig.cax.set_ylabel(title)
-
-    # Rotate ticklabels
-    fig.ax_heatmap.set_xticklabels(fig.ax_heatmap.get_xticklabels(),
-                                   rotation=90)
-    fig.ax_heatmap.set_yticklabels(fig.ax_heatmap.get_yticklabels(),
-                                   rotation=0)
+    fig = get_seaborn_clustermap(dfr, cmap, vmin, vmax, col_cb, figsize,
+                                 0.25, labels, title=title)
 
     # Save to file
     if outfilename:
         fig.savefig(outfilename)
+
+    # Return clustermap
     return fig
 
 
