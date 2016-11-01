@@ -235,16 +235,19 @@ def add_mpl_colorbar(dfr, fig, dend, params, orientation='row'):
             cblist.append(classdict[name])
     cbar = pd.Series(cblist)
 
-    # Create colourbar axis
+    # Create colourbar axis - could capture if needed
     if orientation == 'row':
         cbaxes = fig.add_subplot(dend['gridspec'][0, 1])
+        cbaxes.imshow([[bar] for bar in cbar.values],
+                      cmap=plt.get_cmap(pyani_config.MPL_CBAR),
+                      interpolation='nearest', aspect='auto',
+                      origin='lower')
     else:
         cbaxes = fig.add_subplot(dend['gridspec'][1, 0])
-    # Could capture returned axis from cbaxes.imshow in variable if required
-    cbaxes.imshow([cbar],
-                  cmap=plt.get_cmap(pyani_config.MPL_CBAR),
-                  interpolation='nearest', aspect='auto',
-                  origin='lower')
+        cbaxes.imshow([cbar],
+                      cmap=plt.get_cmap(pyani_config.MPL_CBAR),
+                      interpolation='nearest', aspect='auto',
+                      origin='lower')
     clean_axis(cbaxes)
     return cbar
 
