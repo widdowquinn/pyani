@@ -41,6 +41,20 @@ plt.register_cmap(cmap=pyani_config.CMAP_HADAMARD_BURD)
 plt.register_cmap(cmap=pyani_config.CMAP_BURD)
 
 
+# Convenience class to hold heatmap graphics parameters
+class Params(object):
+    def __init__(self, params, labels=None, classes=None):
+        self.cmap = plt.get_cmap(params[0])
+        self.vmin = params[1]
+        self.vmax = params[2]
+        self.labels = labels
+        self.classes = classes
+
+    @property
+    def vdiff(self):
+        return max(0.01, self.vmax-self.vmin)
+
+
 # helper for cleaning up matplotlib axes by removing ticks etc.
 def clean_axis(axis):
     """Remove ticks, tick labels, and frame from axis"""
@@ -85,19 +99,19 @@ def get_safe_seaborn_labels(dfr, labels):
 
 
 # Return a clustermap
-def get_seaborn_clustermap(dfr, param_dict, title=None, annot=True):
+def get_seaborn_clustermap(dfr, params, title=None, annot=True):
     """Returns a Seaborn clustermap."""
     fig = sns.clustermap(dfr,
-                         cmap=param_dict['cmap'],
-                         vmin=param_dict['vmin'],
-                         vmax=param_dict['vmax'],
-                         col_colors=param_dict['colorbar'],
-                         row_colors=param_dict['colorbar'],
-                         figsize=(param_dict['figsize'],
-                                  param_dict['figsize']),
-                         linewidths=param_dict['linewidths'],
-                         xticklabels=param_dict['ticklabels'],
-                         yticklabels=param_dict['ticklabels'],
+                         cmap=params.cmap,
+                         vmin=params.vmin,
+                         vmax=params.vmax,
+                         col_colors=params.colorbar,
+                         row_colors=params.colorbar,
+                         figsize=(params.figsize,
+                                  params.figsize),
+                         linewidths=params.linewidths,
+                         xticklabels=params.labels,
+                         yticklabels=params.labels,
                          annot=annot)
     fig.cax.yaxis.set_label_position('left')
     if title:
@@ -114,19 +128,11 @@ def get_seaborn_clustermap(dfr, param_dict, title=None, annot=True):
 
 
 # Generate Seaborn heatmap output
-def heatmap_seaborn(dfr, outfilename=None, title=None, params=None,
-                    labels=None, classes=None):
+def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
     """Returns seaborn heatmap with cluster dendrograms.
 
     - dfr - pandas DataFrame with relevant data
     - outfilename - path to output file (indicates output format)
-    - cmap - colourmap option
-    - vmin - float, minimum value on the heatmap scale
-    - vmax - float, maximum value on the heatmap scale
-    - labels - dictionary of alternative labels, keyed by default sequence
-               labels
-    - classes - dictionary of sequence classes, keyed by default sequence
-                labels
     """
     # Decide on figure layout size: a minimum size is required for
     # aesthetics, and a maximum to avoid core dumps on rendering.
@@ -139,22 +145,20 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None,
         sns.set_context("notebook", font_scale=scale)
 
     # Add a colorbar?
-    if classes is None:
+    if params.classes is None:
         col_cb = None
     else:
-        col_cb = get_seaborn_colorbar(dfr, classes)
+        col_cb = get_seaborn_colorbar(dfr, params.classes)
 
     # Labels are defined before we build the clustering
     # If a label mapping is missing, use the key text as fall back
-    labels = get_safe_seaborn_labels(dfr, labels)
+    params.labels = get_safe_seaborn_labels(dfr, params.labels)
 
-    # Plot heatmap
-    param_dict = {'cmap': plt.get_cmap(params[0]),
-                  'vmin': params[1], 'vmax': params[2],
-                  'colorbar': col_cb, 'figsize': figsize,
-                  'linewidths': 0.25,
-                  'ticklabels': labels}
-    fig = get_seaborn_clustermap(dfr, param_dict, title=title)
+    # Add attributes to parameter object, and draw heatmap
+    params.colorbar = col_cb
+    params.figsize = figsize
+    params.linewidths = 0.25
+    fig = get_seaborn_clustermap(dfr, params, title=title)
 
     # Save to file
     if outfilename:
@@ -165,17 +169,13 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None,
 
 
 # Add dendrogram and axes to passed figure
-def add_mpl_dendrogram(dfr, fig, heatmap_gs,
-                       params=None,
+def add_mpl_dendrogram(dfr, fig, heatmap_gs, params,
                        orientation='col'):
     """Return a dendrogram and corresponding gridspec, attached to the fig
 
     Modifies the fig in-place. Orientation is either 'row' or 'col' and
     determines location and orientation of the rendered dendrogram.
     """
-    if params is None:
-        params = {'wspace': 0.0, 'hspace': 0.1, 'height_ratios': [1, 0.15]}
-
     # Row or column axes?
     if orientation == 'row':
         dists = distance.squareform(distance.pdist(dfr))
@@ -191,10 +191,8 @@ def add_mpl_dendrogram(dfr, fig, heatmap_gs,
     # Create row dendrogram axis
     gspec = gridspec.GridSpecFromSubplotSpec(nrows, ncols,
                                              subplot_spec=spec,
-                                             wspace=params['wspace'],
-                                             hspace=params['hspace'],
-                                             height_ratios=\
-                                             params['height_ratios'])
+                                             wspace=0.0, hspace=0.1,
+                                             height_ratios=[1, 0.15])
     dend_axes = fig.add_subplot(gspec[0, 0])
     dend = sch.dendrogram(sch.linkage(dists, method='complete'),
                           color_threshold=np.inf,
@@ -204,8 +202,7 @@ def add_mpl_dendrogram(dfr, fig, heatmap_gs,
 
 
 # Generate Matplotlib heatmap output
-def heatmap_mpl(dfr, outfilename=None, title=None, params=None,
-                labels=None, classes=None):
+def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
     """Returns matplotlib heatmap with cluster dendrograms.
 
     - dfr - pandas DataFrame with relevant data
@@ -216,29 +213,15 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None,
     - classes - dictionary of sequence classes, keyed by default sequence
                 labels
     """
-    # Obtain colour map
-    cmap = plt.get_cmap(params[0])
-
-    # Define min/max heatmap values
-    vmin, vmax = params[1], params[2]
-
-    # Get indication of dataframe size and, if necessary, max and
-    # min values for colormap
-    dfsize = dfr.shape[0]
-    if vmin is None:
-        vmin = dfr.values.min()
-    if vmax is None:
-        vmax = dfr.values.max()
-    # a vdiff of zero causes display problems in matplotlib, so we set a minval
-    vdiff = max(vmax - vmin, 0.01)
-    cbticks = [vmin + e * vdiff for e in (0, 0.25, 0.5, 0.75, 1)]
-    if vmax > 10:
-        exponent = int(floor(log10(vmax))) - 1
+    # Set tick intervals
+    cbticks = [params.vmin + e * params.vdiff for e in (0, 0.25, 0.5, 0.75, 1)]
+    if params.vmax > 10:
+        exponent = int(floor(log10(params.vmax))) - 1
         cbticks = [int(round(e, -exponent)) for e in cbticks]
 
     # Layout figure grid and add title
     # Set figure size by the number of rows in the dataframe
-    figsize = max(8, dfsize * 0.175)
+    figsize = max(8, dfr.shape[0] * 0.175)
     fig = plt.figure(figsize=(figsize, figsize))
     # if title:
     #     fig.suptitle(title)
@@ -247,9 +230,9 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None,
                                    height_ratios=[0.3, 1])
 
     # Add column and row dendrograms/axes to figure
-    coldend, col_gs = add_mpl_dendrogram(dfr, fig, heatmap_gs,
+    coldend, col_gs = add_mpl_dendrogram(dfr, fig, heatmap_gs, params,
                                          orientation='col')
-    rowdend, row_gs = add_mpl_dendrogram(dfr, fig, heatmap_gs,
+    rowdend, row_gs = add_mpl_dendrogram(dfr, fig, heatmap_gs, params,
                                          orientation='row')
 
     # Create heatmap axis
@@ -257,29 +240,30 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None,
     ax_map = heatmap_axes.imshow(dfr.ix[rowdend['leaves'],
                                         coldend['leaves']],
                                  interpolation='nearest',
-                                 cmap=cmap, origin='lower',
-                                 vmin=vmin, vmax=vmax,
+                                 cmap=params.cmap, origin='lower',
+                                 vmin=params.vmin, vmax=params.vmax,
                                  aspect='auto')
-    heatmap_axes.set_xticks(np.linspace(0, dfsize-1, dfsize))
-    heatmap_axes.set_yticks(np.linspace(0, dfsize-1, dfsize))
+    heatmap_axes.set_xticks(np.linspace(0, dfr.shape[0]-1, dfr.shape[0]))
+    heatmap_axes.set_yticks(np.linspace(0, dfr.shape[0]-1, dfr.shape[0]))
     heatmap_axes.grid('off')
     heatmap_axes.xaxis.tick_bottom()
     heatmap_axes.yaxis.tick_right()
 
     # Are there class colourbars to add?
-    if classes is not None:
+    if params.classes is not None:
         # If not all dendrogram leaves are present, extend classes
         for name in dfr.index[coldend['leaves']]:
-            if name not in classes:
-                classes[name] = name
+            if name not in params.classes:
+                params.classes[name] = name
 
         # Assign a numerical value to each class, for mpl
-        classdict = {cls: idx for (idx, cls) in enumerate(classes.values())}
+        classdict = {cls: idx for (idx, cls) in
+                     enumerate(params.classes.values())}
         # Column colourbar
         col_cblist = []
         for name in dfr.index[coldend['leaves']]:
             try:
-                col_cblist.append(classdict[classes[name]])
+                col_cblist.append(classdict[params.classes[name]])
             except KeyError:
                 col_cblist.append(classdict[name])
         col_cb = pd.Series(col_cblist)
@@ -288,7 +272,7 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None,
         row_cblist = []
         for name in dfr.index[rowdend['leaves']]:
             try:
-                row_cblist.append(classdict[classes[name]])
+                row_cblist.append(classdict[params.classes[name]])
             except KeyError:
                 row_cblist.append(classdict[name])
         row_cb = pd.Series(row_cblist)
@@ -311,10 +295,10 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None,
     # Add heatmap labels
     rowticklabels = dfr.index[rowdend['leaves']]
     colticklabels = dfr.index[coldend['leaves']]
-    if labels:
+    if params.labels:
         # If a label mapping is missing, use the key text as fall back
-        rowticklabels = [labels.get(lab, lab) for lab in rowticklabels]
-        colticklabels = [labels.get(lab, lab) for lab in colticklabels]
+        rowticklabels = [params.labels.get(lab, lab) for lab in rowticklabels]
+        colticklabels = [params.labels.get(lab, lab) for lab in colticklabels]
     xlabs = heatmap_axes.set_xticklabels(colticklabels)
     ylabs = heatmap_axes.set_yticklabels(rowticklabels)
     for label in xlabs:  # Rotate column labels

@@ -49,10 +49,10 @@ def draw_format_method(fmt, mth):
           "seaborn": pyani_graphics.heatmap_seaborn}
     params = {"mpl": pyani_config.params_mpl,
               "seaborn": pyani_config.params_mpl}
-    method_params = params[mth](df)[stem]
+    method_params = pyani_graphics.Params(params[mth](df)[stem],
+                                          inputs['labels'], inputs['classes'])
     fn[mth](df, outfilename, title="%s:%s test" % (mth, fmt),
-            params=method_params,
-            labels=inputs['labels'], classes=inputs['classes'])
+            params=method_params)
 
 
 def test_png_mpl():

@@ -605,18 +605,18 @@ def draw(filestems, gformat, logger=None):
         df = pd.read_csv(infilename, index_col=0, sep="\t")
         if logger:
             logger.info("Writing heatmap to %s", outfilename)
-        labels =pyani_tools.get_labels(args.labels)
-        classes =pyani_tools.get_labels(args.classes)
+        params = pyani_graphics.Params(params_mpl(df)[filestem],
+                                       pyani_tools.get_labels(args.labels),
+                                       pyani_tools.get_labels(args.classes))
         if args.gmethod == "mpl":
             pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
                                        title=filestem,
-                                       params=params_mpl(df)[filestem],
-                                       labels=labels, classes=classes)
+                                       params=params)
         elif args.gmethod == "seaborn":
             pyani_graphics.heatmap_seaborn(df, outfilename=outfilename,
                                            title=filestem,
-                                           params=params_mpl(df)[filestem],
-                                           labels=labels, classes=classes)
+                                           params=params)
+
 
 # Subsample the input files
 def subsample_input(infiles):
