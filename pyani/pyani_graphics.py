@@ -18,6 +18,7 @@ from math import floor, log10
 import warnings
 
 import matplotlib
+# Specify matplotlib backend
 matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
@@ -113,8 +114,8 @@ def get_seaborn_clustermap(dfr, param_dict, title=None, annot=True):
 
 
 # Generate Seaborn heatmap output
-def heatmap_seaborn(dfr, outfilename=None, title=None, cmap=None,
-                    vmin=None, vmax=None, labels=None, classes=None):
+def heatmap_seaborn(dfr, outfilename=None, title=None, params=None,
+                    labels=None, classes=None):
     """Returns seaborn heatmap with cluster dendrograms.
 
     - dfr - pandas DataFrame with relevant data
@@ -128,7 +129,10 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, cmap=None,
                 labels
     """
     # Obtain colour map
-    cmap = plt.get_cmap(cmap)
+    cmap = plt.get_cmap(params[0])
+
+    # Define min/max heatmap values
+    vmin, vmax = params[1], params[2]
 
     # Decide on figure layout size: a minimum size is required for
     # aesthetics, and a maximum to avoid core dumps on rendering.
@@ -165,8 +169,8 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, cmap=None,
 
 
 # Generate Matplotlib heatmap output
-def heatmap_mpl(dfr, outfilename=None, title=None, cmap=None,
-                vmin=None, vmax=None, labels=None, classes=None):
+def heatmap_mpl(dfr, outfilename=None, title=None, params=None,
+                labels=None, classes=None):
     """Returns matplotlib heatmap with cluster dendrograms.
 
     - dfr - pandas DataFrame with relevant data
@@ -179,6 +183,12 @@ def heatmap_mpl(dfr, outfilename=None, title=None, cmap=None,
     - classes - dictionary of sequence classes, keyed by default sequence
                 labels
     """
+    # Obtain colour map
+    cmap = plt.get_cmap(params[0])
+
+    # Define min/max heatmap values
+    vmin, vmax = params[1], params[2]
+
     # Get indication of dataframe size and, if necessary, max and
     # min values for colormap
     dfsize = dfr.shape[0]
@@ -192,9 +202,6 @@ def heatmap_mpl(dfr, outfilename=None, title=None, cmap=None,
     if vmax > 10:
         exponent = int(floor(log10(vmax))) - 1
         cbticks = [int(round(e, -exponent)) for e in cbticks]
-
-    # Obtain appropriate colour map
-    cmap = plt.get_cmap(cmap)
 
     # Layout figure grid and add title
     # Set figure size by the number of rows in the dataframe

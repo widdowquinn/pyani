@@ -610,16 +610,12 @@ def draw(filestems, gformat, logger=None):
         if args.gmethod == "mpl":
             pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
                                        title=filestem,
-                                       cmap=params_mpl(df)[filestem][0],
-                                       vmin=params_mpl(df)[filestem][1],
-                                       vmax=params_mpl(df)[filestem][2],
+                                       params=params_mpl(df)[filestem],
                                        labels=labels, classes=classes)
         elif args.gmethod == "seaborn":
             pyani_graphics.heatmap_seaborn(df, outfilename=outfilename,
                                            title=filestem,
-                                           cmap=params_mpl(df)[filestem][0],
-                                           vmin=params_mpl(df)[filestem][1],
-                                           vmax=params_mpl(df)[filestem][2],
+                                           params=params_mpl(df)[filestem],
                                            labels=labels, classes=classes)
 
 # Subsample the input files

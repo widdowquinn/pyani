@@ -49,9 +49,9 @@ def draw_format_method(fmt, mth):
           "seaborn": pyani_graphics.heatmap_seaborn}
     params = {"mpl": pyani_config.params_mpl,
               "seaborn": pyani_config.params_mpl}
+    method_params = params[mth](df)[stem]
     fn[mth](df, outfilename, title="%s:%s test" % (mth, fmt),
-            cmap=params[mth](df)[stem][0],
-            vmin=params[mth](df)[stem][1], vmax=params[mth](df)[stem][2],
+            params=method_params,
             labels=inputs['labels'], classes=inputs['classes'])
 
 
