@@ -200,7 +200,7 @@ def add_mpl_dendrogram(dfr, fig, heatmap_gs,
                           color_threshold=np.inf,
                           orientation=orient)
     clean_axis(dend_axes)
-    return dend, gs
+    return dend, gspec
 
 
 # Generate Matplotlib heatmap output
