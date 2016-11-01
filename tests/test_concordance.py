@@ -93,6 +93,60 @@ def delete_and_remake_outdir(mode):
     return outdirname
 
 
+# Test concordance of ANIm with JSpecies output
+def test_anim_concordance():
+    """Test concordance of ANIm method with JSpecies output."""
+    # Make/check output directory
+    mode = "ANIm"
+    outdirname = delete_and_remake_outdir(mode)
+    nucmername = os.path.join(outdirname, 'nucmer_output') 
+    os.makedirs(nucmername, exist_ok=True)
+
+    # Get dataframes of JSpecies output
+    anim_jspecies = parse_table(JSPECIES_OUTFILE, 'ANIm')
+
+    # Identify our input files, and the total lengths of each organism seq
+    infiles = pyani_files.get_fasta_files(INDIRNAME)
+    org_lengths = pyani_files.get_sequence_lengths(infiles)
+
+    # Test ANIm concordance:
+    # Run pairwise NUCmer
+    cmdlist = anim.generate_nucmer_commands(infiles, outdirname,
+                                            pyani_config.NUCMER_DEFAULT)
+    print('\n'.join(cmdlist))
+    multiprocessing_run(cmdlist, verbose=False)
+    # Process .delta files
+    results = anim.process_deltadir(nucmername, org_lengths)
+    anim_pid = \
+        results.percentage_identity.sort_index(axis=0).sort_index(axis=1) * 100.
+
+    print("ANIm data\n", results)
+
+    index, columns = anim_pid.index, anim_pid.columns
+    diffmat = anim_pid.as_matrix() - anim_jspecies.as_matrix()
+    anim_diff = pd.DataFrame(diffmat, index=index, columns=columns)
+
+    # Write dataframes to file, for reference
+    anim_pid.to_csv(os.path.join(outdirname,
+                                'ANIm_pid.tab'),
+                   sep='\t')
+    anim_jspecies.to_csv(os.path.join(outdirname,
+                                      'ANIm_jspecies.tab'),
+                         sep='\t')
+    anim_diff.to_csv(os.path.join(outdirname,
+                                  'ANIm_diff.tab'),
+                     sep='\t')
+    print("ANIm concordance test output placed in %s" % outdirname)
+    print("ANIm PID\n", anim_pid)
+    print("ANIm JSpecies\n", anim_jspecies)
+    print("ANIm diff\n", anim_diff)
+
+    # We'd like the absolute difference reported to be < ANIB_THRESHOLD
+    max_diff = anim_diff.abs().values.max()
+    print("Maximum difference for ANIm: %e" % max_diff)
+    assert_less(max_diff, ANIM_THRESHOLD)
+
+
 # Test concordance of ANIb with JSpecies output
 def test_anib_concordance():
     """Test concordance of ANIb method with JSpecies output.
@@ -214,59 +268,6 @@ def test_aniblastall_concordance():
     max_diff = aniblastall_diff.abs().values.max()
     print("Maximum difference for ANIblastall: %e" % max_diff)
     assert_less(max_diff, ANIB_THRESHOLD)
-
-
-# Test concordance of ANIm with JSpecies output
-def test_anim_concordance():
-    """Test concordance of ANIm method with JSpecies output."""
-    # Make/check output directory
-    mode = "ANIm"
-    outdirname = delete_and_remake_outdir(mode)
-    nucmername = os.path.join(outdirname, 'nucmer_output') 
-    os.makedirs(nucmername, exist_ok=True)
-
-    # Get dataframes of JSpecies output
-    anim_jspecies = parse_table(JSPECIES_OUTFILE, 'ANIm')
-
-    # Identify our input files, and the total lengths of each organism seq
-    infiles = pyani_files.get_fasta_files(INDIRNAME)
-    org_lengths = pyani_files.get_sequence_lengths(infiles)
-
-    # Test ANIm concordance:
-    # Run pairwise NUCmer
-    cmdlist = anim.generate_nucmer_commands(infiles, outdirname,
-                                            pyani_config.NUCMER_DEFAULT)
-    print('\n'.join(cmdlist))
-    multiprocessing_run(cmdlist, verbose=False)
-    # Process .delta files
-    anim_data = anim.process_deltadir(nucmername, org_lengths)
-    anim_pid = anim_data[1].sort_index(axis=0).sort_index(axis=1) * 100.
-
-    print("ANIm data\n", anim_data)
-
-    index, columns = anim_pid.index, anim_pid.columns
-    diffmat = anim_pid.as_matrix() - anim_jspecies.as_matrix()
-    anim_diff = pd.DataFrame(diffmat, index=index, columns=columns)
-
-    # Write dataframes to file, for reference
-    anim_pid.to_csv(os.path.join(outdirname,
-                                'ANIm_pid.tab'),
-                   sep='\t')
-    anim_jspecies.to_csv(os.path.join(outdirname,
-                                      'ANIm_jspecies.tab'),
-                         sep='\t')
-    anim_diff.to_csv(os.path.join(outdirname,
-                                  'ANIm_diff.tab'),
-                     sep='\t')
-    print("ANIm concordance test output placed in %s" % outdirname)
-    print("ANIm PID\n", anim_pid)
-    print("ANIm JSpecies\n", anim_jspecies)
-    print("ANIm diff\n", anim_diff)
-
-    # We'd like the absolute difference reported to be < ANIB_THRESHOLD
-    max_diff = anim_diff.abs().values.max()
-    print("Maximum difference for ANIm: %e" % max_diff)
-    assert_less(max_diff, ANIM_THRESHOLD)
 
 
 # Test concordance of TETRA code with JSpecies output

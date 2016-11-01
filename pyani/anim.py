@@ -21,20 +21,69 @@ counts, average nucleotide identity (ANI) percentages, and minimum aligned
 percentage (of whole genome) for each pairwise comparison.
 """
 
-import pandas as pd
-
 import os
-import sys
+
+import pandas as pd
 
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
 
 
+# Class to hold ANIm dataframe results
+class ANImResults(object):
+    """Holds ANIm dataframe results."""
+    def __init__(self, labels):
+        """Initialise with four empty, labelled dataframes."""
+        self.alignment_lengths = pd.DataFrame(index=labels, columns=labels,
+                                              dtype=float)
+        self.similarity_errors = pd.DataFrame(index=labels, columns=labels,
+                                              dtype=float).fillna(0)
+        self.percentage_identity = pd.DataFrame(index=labels, columns=labels,
+                                                dtype=float).fillna(1.0)
+        self.alignment_coverage = pd.DataFrame(index=labels, columns=labels,
+                                               dtype=float).fillna(1.0)
+        self.zero_error = False
+
+    def add_tot_length(self, qname, sname, value):
+        """Add a total length value to self.alignment_lengths."""
+        self.alignment_lengths.loc[qname, sname] = value
+        self.alignment_lengths.loc[sname, qname] = value
+
+    def add_sim_errors(self, qname, sname, value):
+        """Add a similarity error value to self.similarity_errors."""
+        self.similarity_errors.loc[qname, sname] = value
+        self.similarity_errors.loc[sname, qname] = value
+
+    def add_pid(self, qname, sname, value):
+        """Add a percentage identity value to self.percentage_identity."""
+        self.percentage_identity.loc[qname, sname] = value
+        self.percentage_identity.loc[sname, qname] = value
+
+    def add_coverage(self, qname, sname, qcover, scover):
+        """Add percentage coverage values to self.alignment_coverage."""
+        self.alignment_coverage.loc[qname, sname] = scover
+        self.alignment_coverage.loc[sname, qname] = qcover
+
+    @property
+    def hadamard(self):
+        """Return Hadamard matrix (identity * coverage)."""
+        return self.percentage_identity * self.alignment_coverage
+
+    @property
+    def data(self):
+        """Return list of (dataframe, filestem) tuples."""
+        return [(self.alignment_lengths, "ANIm_alignment_lengths"),
+                (self.percentage_identity, "ANIm_percentage_identity"),
+                (self.alignment_coverage, "ANIm_alignment_coverage"),
+                (self.similarity_errors, "ANIm_similarity_errors"),
+                (self.hadamard, "ANIm_hadamard")]
+
+
 # Generate list of Job objects, one per NUCmer run
 def generate_nucmer_jobs(filenames, outdir='.',
                          nucmer_exe=pyani_config.NUCMER_DEFAULT,
-                         maxmatch=False, jobprefix="ANINUCmer"):
+                         jobprefix="ANINUCmer"):
     """Return a list of Jobs describing NUCmer command-lines for ANIm
 
     - filenames - a list of paths to input FASTA files
@@ -45,8 +94,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
     Loop over all FASTA files, generating Jobs describing NUCmer command lines
     for each pairwise comparison.
     """
-    cmdlines = generate_nucmer_commands(filenames, outdir, nucmer_exe,
-                                        maxmatch)
+    cmdlines = generate_nucmer_commands(filenames, outdir, nucmer_exe)
     joblist = []
     for idx, cmd in enumerate(cmdlines):
         joblist.append(pyani_jobs.Job("%s_%06d" % (jobprefix, idx), cmd))
@@ -56,8 +104,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
 # Generate list of NUCmer pairwise comparison command lines from
 # passed sequence filenames
 def generate_nucmer_commands(filenames, outdir='.',
-                             nucmer_exe=pyani_config.NUCMER_DEFAULT,
-                             maxmatch=False):
+                             nucmer_exe=pyani_config.NUCMER_DEFAULT):
     """Return a list of NUCmer command-lines for ANIm
 
     - filenames - a list of paths to input FASTA files
@@ -69,10 +116,10 @@ def generate_nucmer_commands(filenames, outdir='.',
     pairwise comparison.
     """
     cmdlines = []
-    for idx, f1 in enumerate(filenames[:-1]):
-        cmdlines.extend([construct_nucmer_cmdline(f1, f2, outdir,
+    for idx, fname1 in enumerate(filenames[:-1]):
+        cmdlines.extend([construct_nucmer_cmdline(fname1, fname2, outdir,
                                                   nucmer_exe) for
-                         f2 in filenames[idx+1:]])
+                         fname2 in filenames[idx+1:]])
     return cmdlines
 
 
@@ -145,22 +192,13 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     """
     # Process directory to identify input files
     deltafiles = pyani_files.get_input_files(delta_dir, '.delta')
-    labels = list(org_lengths.keys())
     # Hold data in pandas dataframe
-    alignment_lengths = pd.DataFrame(index=labels, columns=labels,
-                                     dtype=float)
-    similarity_errors = pd.DataFrame(index=labels, columns=labels,
-                                     dtype=float).fillna(0)
-    percentage_identity = pd.DataFrame(index=labels, columns=labels,
-                                       dtype=float).fillna(1.0)
-    alignment_coverage = pd.DataFrame(index=labels, columns=labels,
-                                      dtype=float).fillna(1.0)
+    results = ANImResults(list(org_lengths.keys()))
     # Fill diagonal NA values for alignment_length with org_lengths
     for org, length in list(org_lengths.items()):
-        alignment_lengths[org][org] = length
+        results.alignment_lengths[org][org] = length
     # Process .delta files assuming that the filename format holds:
     # org1_vs_org2.delta
-    zero_error = False  # flag to register a divide-by-zero error
     for deltafile in deltafiles:
         qname, sname = \
             os.path.splitext(os.path.split(deltafile)[-1])[0].split('_vs_')
@@ -200,18 +238,12 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
                              "run failure: analysis may continue, but " +
                              "please investigate.")
             perc_id = 0  # set arbitrary value of zero identity
-            zero_error = True
+            results.zero_error = True
         # Populate dataframes: when assigning data, pandas dataframes
         # take column, index order, i.e. df['column']['row'] - this only
         # matters for asymmetrical data
-        alignment_lengths.loc[qname, sname] = tot_length
-        alignment_lengths.loc[sname, qname] = tot_length
-        similarity_errors.loc[qname, sname] = tot_sim_error
-        similarity_errors.loc[sname, qname] = tot_sim_error
-        percentage_identity.loc[qname, sname] = perc_id
-        percentage_identity.loc[sname, qname] = perc_id
-        alignment_coverage.loc[sname, qname] = query_cover
-        alignment_coverage.loc[qname, sname] = sbjct_cover
-    return(alignment_lengths, percentage_identity, alignment_coverage,
-           similarity_errors, percentage_identity * alignment_coverage,
-           zero_error)
+        results.add_tot_length(qname, sname, tot_length)
+        results.add_sim_errors(qname, sname, tot_sim_error)
+        results.add_pid(qname, sname, perc_id)
+        results.add_coverage(qname, sname, query_cover, sbjct_cover)
+    return results

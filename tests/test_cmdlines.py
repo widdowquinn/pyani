@@ -5,9 +5,6 @@
 These tests are intended to be run using the nose package
 (see https://nose.readthedocs.org/en/latest/), from the repository root
 directory.
-
-If the test is run directly at the command-line, the output obtained by each
-test is returned to STDOUT.
 """
 
 
