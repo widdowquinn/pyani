@@ -42,7 +42,8 @@ plt.register_cmap(cmap=pyani_config.CMAP_BURD)
 
 
 # Convenience class to hold heatmap graphics parameters
-class Params(object):
+class Params(object):  # pylint: disable=too-few-public-methods 
+    """Convenience class to hold heatmap rendering parameters."""
     def __init__(self, params, labels=None, classes=None):
         self.cmap = plt.get_cmap(params[0])
         self.vmin = params[1]
@@ -52,6 +53,7 @@ class Params(object):
 
     @property
     def vdiff(self):
+        """Returns difference between max and min values for presentation"""
         return max(0.01, self.vmax-self.vmin)
 
 
@@ -169,8 +171,7 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
 
 
 # Add dendrogram and axes to passed figure
-def add_mpl_dendrogram(dfr, fig, heatmap_gs, params,
-                       orientation='col'):
+def add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation='col'):
     """Return a dendrogram and corresponding gridspec, attached to the fig
 
     Modifies the fig in-place. Orientation is either 'row' or 'col' and
@@ -199,6 +200,52 @@ def add_mpl_dendrogram(dfr, fig, heatmap_gs, params,
                           orientation=orient)
     clean_axis(dend_axes)
     return dend, gspec
+
+
+# Create heatmap axes for Matplotlib output
+def get_mpl_heatmap_axes(dfr, fig, heatmap_gs):
+    """Return axis for Matplotlib heatmap."""
+    # Create heatmap axis
+    heatmap_axes = fig.add_subplot(heatmap_gs[1, 1])
+    heatmap_axes.set_xticks(np.linspace(0, dfr.shape[0]-1, dfr.shape[0]))
+    heatmap_axes.set_yticks(np.linspace(0, dfr.shape[0]-1, dfr.shape[0]))
+    heatmap_axes.grid('off')
+    heatmap_axes.xaxis.tick_bottom()
+    heatmap_axes.yaxis.tick_right()
+    return heatmap_axes
+
+
+def add_mpl_colorbar(dfr, fig, dend, gspec, params, orientation):
+    """Add class colorbars to Matplotlib heatmap."""
+    for name in dfr.index[dend['leaves']]:
+        if name not in params.classes:
+            params.classes[name] = name
+
+    # Assign a numerical value to each class, for mpl
+    classdict = {cls: idx for (idx, cls) in
+                 enumerate(params.classes.values())}
+
+    # colourbar
+    cblist = []
+    for name in dfr.index[dend['leaves']]:
+        try:
+            cblist.append(classdict[params.classes[name]])
+        except KeyError:
+            cblist.append(classdict[name])
+    cbar = pd.Series(cblist)
+
+    # Create colourbar axis
+    if orientation == 'row':
+        cbaxes = fig.add_subplot(gspec[0, 1])
+    else:
+        cbaxes = fig.add_subplot(gspec[1, 0])
+    # Could capture returned axis from cbaxes.imshow in variable if required
+    cbaxes.imshow([cbar],
+                  cmap=plt.get_cmap(pyani_config.MPL_CBAR),
+                  interpolation='nearest', aspect='auto',
+                  origin='lower')
+    clean_axis(cbaxes)
+    return cbar
 
 
 # Generate Matplotlib heatmap output
@@ -230,67 +277,26 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
                                    height_ratios=[0.3, 1])
 
     # Add column and row dendrograms/axes to figure
-    coldend, col_gs = add_mpl_dendrogram(dfr, fig, heatmap_gs, params,
+    coldend, col_gs = add_mpl_dendrogram(dfr, fig, heatmap_gs,
                                          orientation='col')
-    rowdend, row_gs = add_mpl_dendrogram(dfr, fig, heatmap_gs, params,
+    rowdend, row_gs = add_mpl_dendrogram(dfr, fig, heatmap_gs,
                                          orientation='row')
 
-    # Create heatmap axis
-    heatmap_axes = fig.add_subplot(heatmap_gs[1, 1])
+    # Add heatmap axes to figure, with rows/columns as in the dendrograms
+    heatmap_axes = get_mpl_heatmap_axes(dfr, fig, heatmap_gs)
     ax_map = heatmap_axes.imshow(dfr.ix[rowdend['leaves'],
                                         coldend['leaves']],
                                  interpolation='nearest',
                                  cmap=params.cmap, origin='lower',
                                  vmin=params.vmin, vmax=params.vmax,
                                  aspect='auto')
-    heatmap_axes.set_xticks(np.linspace(0, dfr.shape[0]-1, dfr.shape[0]))
-    heatmap_axes.set_yticks(np.linspace(0, dfr.shape[0]-1, dfr.shape[0]))
-    heatmap_axes.grid('off')
-    heatmap_axes.xaxis.tick_bottom()
-    heatmap_axes.yaxis.tick_right()
 
     # Are there class colourbars to add?
     if params.classes is not None:
-        # If not all dendrogram leaves are present, extend classes
-        for name in dfr.index[coldend['leaves']]:
-            if name not in params.classes:
-                params.classes[name] = name
-
-        # Assign a numerical value to each class, for mpl
-        classdict = {cls: idx for (idx, cls) in
-                     enumerate(params.classes.values())}
-        # Column colourbar
-        col_cblist = []
-        for name in dfr.index[coldend['leaves']]:
-            try:
-                col_cblist.append(classdict[params.classes[name]])
-            except KeyError:
-                col_cblist.append(classdict[name])
-        col_cb = pd.Series(col_cblist)
-
-        # Row colourbar
-        row_cblist = []
-        for name in dfr.index[rowdend['leaves']]:
-            try:
-                row_cblist.append(classdict[params.classes[name]])
-            except KeyError:
-                row_cblist.append(classdict[name])
-        row_cb = pd.Series(row_cblist)
-
-        # Create column colourbar axis
-        col_cbaxes = fig.add_subplot(col_gs[1, 0])
-        col_axi = col_cbaxes.imshow([col_cb],
-                                    cmap=plt.get_cmap(pyani_config.MPL_CBAR),
-                                    interpolation='nearest', aspect='auto',
-                                    origin='lower')
-        clean_axis(col_cbaxes)
-        # Create row colourbar axis
-        row_cbaxes = fig.add_subplot(row_gs[0, 1])
-        row_axi = row_cbaxes.imshow([[x] for x in row_cb.values],
-                                    cmap=plt.get_cmap(pyani_config.MPL_CBAR),
-                                    interpolation='nearest', aspect='auto',
-                                    origin='lower')
-        clean_axis(row_cbaxes)
+        add_mpl_colorbar(dfr, fig, coldend, col_gs, params,
+                         orientation='col')
+        add_mpl_colorbar(dfr, fig, rowdend, row_gs, params,
+                         orientation='row')
 
     # Add heatmap labels
     rowticklabels = dfr.index[rowdend['leaves']]
