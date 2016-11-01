@@ -128,12 +128,6 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None,
     - classes - dictionary of sequence classes, keyed by default sequence
                 labels
     """
-    # Obtain colour map
-    cmap = plt.get_cmap(params[0])
-
-    # Define min/max heatmap values
-    vmin, vmax = params[1], params[2]
-
     # Decide on figure layout size: a minimum size is required for
     # aesthetics, and a maximum to avoid core dumps on rendering.
     # If we hit the maximum size, we should modify font size.
@@ -155,8 +149,10 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None,
     labels = get_safe_seaborn_labels(dfr, labels)
 
     # Plot heatmap
-    param_dict = {'cmap': cmap, 'vmin': vmin, 'vmax': vmax,
-                  'colorbar': col_cb, 'figsize': figsize, 'linewidths': 0.25,
+    param_dict = {'cmap': plt.get_cmap(params[0]),
+                  'vmin': params[1], 'vmax': params[2],
+                  'colorbar': col_cb, 'figsize': figsize,
+                  'linewidths': 0.25,
                   'ticklabels': labels}
     fig = get_seaborn_clustermap(dfr, param_dict, title=title)
 
@@ -168,6 +164,45 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None,
     return fig
 
 
+# Add dendrogram and axes to passed figure
+def add_mpl_dendrogram(dfr, fig, heatmap_gs,
+                       params=None,
+                       orientation='col'):
+    """Return a dendrogram and corresponding gridspec, attached to the fig
+
+    Modifies the fig in-place. Orientation is either 'row' or 'col' and
+    determines location and orientation of the rendered dendrogram.
+    """
+    if params is None:
+        params = {'wspace': 0.0, 'hspace': 0.1, 'height_ratios': [1, 0.15]}
+
+    # Row or column axes?
+    if orientation == 'row':
+        dists = distance.squareform(distance.pdist(dfr))
+        spec = heatmap_gs[1, 0]
+        orient = 'left'
+        nrows, ncols = 1, 2
+    else:  # Column dendrogram
+        dists = distance.squareform(distance.pdist(dfr.T))
+        spec = heatmap_gs[0, 1]
+        orient = 'top'
+        nrows, ncols = 2, 1
+
+    # Create row dendrogram axis
+    gspec = gridspec.GridSpecFromSubplotSpec(nrows, ncols,
+                                             subplot_spec=spec,
+                                             wspace=params['wspace'],
+                                             hspace=params['hspace'],
+                                             height_ratios=\
+                                             params['height_ratios'])
+    dend_axes = fig.add_subplot(gspec[0, 0])
+    dend = sch.dendrogram(sch.linkage(dists, method='complete'),
+                          color_threshold=np.inf,
+                          orientation=orient)
+    clean_axis(dend_axes)
+    return dend, gs
+
+
 # Generate Matplotlib heatmap output
 def heatmap_mpl(dfr, outfilename=None, title=None, params=None,
                 labels=None, classes=None):
@@ -175,9 +210,7 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None,
 
     - dfr - pandas DataFrame with relevant data
     - outfilename - path to output file (indicates output format)
-    - cmap - colourmap option
-    - vmin - float, minimum value on the heatmap scale
-    - vmax - float, maximum value on the heatmap scale
+    - params - a list of parameters for plotting: [colormap, vmin, vmax]
     - labels - dictionary of alternative labels, keyed by default sequence
                labels
     - classes - dictionary of sequence classes, keyed by default sequence
@@ -213,32 +246,11 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None,
                                    width_ratios=[0.3, 1],
                                    height_ratios=[0.3, 1])
 
-    # Calculate column pairwise distances and dendrogram
-    coldists = distance.squareform(distance.pdist(dfr.T))
-    colclusters = sch.linkage(coldists, method='complete')
-
-    # Create column dendrogram axis
-    col_gs = gridspec.GridSpecFromSubplotSpec(2, 1,
-                                              subplot_spec=heatmap_gs[0, 1],
-                                              wspace=0.0, hspace=0.1,
-                                              height_ratios=[1, 0.15])
-    coldend_axes = fig.add_subplot(col_gs[0, 0])
-    coldend = sch.dendrogram(colclusters, color_threshold=np.inf)
-    clean_axis(coldend_axes)
-
-    # Calculate row pairwise distances and dendrogram
-    rowdists = distance.squareform(distance.pdist(dfr))
-    rowclusters = sch.linkage(rowdists, method='complete')
-
-    # Create row dendrogram axis
-    row_gs = gridspec.GridSpecFromSubplotSpec(1, 2,
-                                              subplot_spec=heatmap_gs[1, 0],
-                                              wspace=0.1, hspace=0.0,
-                                              width_ratios=[1, 0.15])
-    rowdend_axes = fig.add_subplot(row_gs[0, 0])
-    rowdend = sch.dendrogram(rowclusters, color_threshold=np.inf,
-                             orientation="left")
-    clean_axis(rowdend_axes)
+    # Add column and row dendrograms/axes to figure
+    coldend, col_gs = add_mpl_dendrogram(dfr, fig, heatmap_gs,
+                                         orientation='col')
+    rowdend, row_gs = add_mpl_dendrogram(dfr, fig, heatmap_gs,
+                                         orientation='row')
 
     # Create heatmap axis
     heatmap_axes = fig.add_subplot(heatmap_gs[1, 1])
