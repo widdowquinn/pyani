@@ -231,7 +231,7 @@ def test_aniblastall_concordance():
 
     # Build jobgraph
     jobgraph = anib.make_job_graph(infiles, fragfiles, outdirname,
-                                   mode="ANIblastall")
+                                   "ANIblastall")
     print("\nJobgraph:\n", jobgraph)
     print("\nJob 0:\n", jobgraph[0].script)
 
