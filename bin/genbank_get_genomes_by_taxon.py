@@ -2,13 +2,20 @@
 #
 # genbank_get_genomes_by_taxon.py
 #
-# A script that takes an NCBI taxonomy identifier (or string, though this is
-# not reliable for taxonomy tree subgraphs...) and downloads all genomes it 
-# can find from NCBI in the corresponding taxon subgraph with the passed
-# argument as root.
-#
-# (c) The James Hutton Institute 2015
+# Copyright 2015-2016, The James Hutton Insitute
 # Author: Leighton Pritchard
+#
+# This code is part of the pyani package, and is governed by its licence.
+# Please see the LICENSE file that should have been included as part of
+# this package.
+
+"""A script to download sequence/class/label data from NCBI
+
+This script takes an NCBI taxonomy identifier (or string, though this is
+not always reliable for taxonomy tree subgraphs...) and downloads all genomes
+it can find from NCBI in the corresponding taxon subgraph that has
+the passed argument as root.
+"""
 
 import logging
 import logging.handlers
@@ -30,6 +37,7 @@ from Bio import Entrez, SeqIO
 
 
 class NCBIDownloadException(Exception):
+    """General exception for failed NCBI download."""
     def __init__(self):
         Exception.__init__(self, "Error downloading file from NCBI")
 
@@ -87,7 +95,7 @@ def set_ncbi_email():
     Entrez.email = args.email
     logger.info("Set NCBI contact email to %s", args.email)
     Entrez.tool = "genbank_get_genomes_by_taxon.py"
-    
+
 
 # Create output directory if it doesn't exist
 def make_outdir():
@@ -127,19 +135,19 @@ def make_outdir():
             sys.exit(1)
 
 # Retry Entrez requests (or any other function)
-def entrez_retry(fn, *fnargs, **fnkwargs):
+def entrez_retry(func, *fnargs, **fnkwargs):
     """Retries the passed function up to the number of times specified
     by args.retries
     """
     tries, success = 0, False
     while not success and tries < args.retries:
         try:
-            output = fn(*fnargs, **fnkwargs)
+            output = func(*fnargs, **fnkwargs)
             success = True
-        except:
+        except (HTTPError, URLError):
             tries += 1
             logger.warning("Entrez query %s(%s, %s) failed (%d/%d)",
-                           fn, fnargs, fnkwargs, tries+1, args.retries)
+                           func, fnargs, fnkwargs, tries+1, args.retries)
             logger.warning(last_exception())
     if not success:
         logger.error("Too many Entrez failures (exiting)")
@@ -149,7 +157,7 @@ def entrez_retry(fn, *fnargs, **fnkwargs):
 
 # Get results from NCBI web history, in batches
 def entrez_batch_webhistory(record, expected, batchsize, *fnargs, **fnkwargs):
-    """Recovers the Entrez data from a prior NCBI webhistory search, in 
+    """Recovers the Entrez data from a prior NCBI webhistory search, in
     batches of defined size, using Efetch. Returns all results as a list.
 
     - record: Entrez webhistory record
@@ -179,7 +187,7 @@ def get_asm_uids(taxon_uid):
     """
     query = "txid%s[Organism:exp]" % taxon_uid
     logger.info("Entrez ESearch with query: %s", query)
-    
+
     # Perform initial search for assembly UIDs with taxon ID as query.
     # Use NCBI history for the search.
     handle = entrez_retry(Entrez.esearch, db="assembly", term=query,
@@ -187,12 +195,28 @@ def get_asm_uids(taxon_uid):
     record = Entrez.read(handle, validate=False)
     result_count = int(record['Count'])
     logger.info("Entrez ESearch returns %d assembly IDs", result_count)
-    
+
     # Recover assembly UIDs from the web history
     asm_ids = entrez_batch_webhistory(record, result_count, 250,
                                       db="assembly", retmode="xml")
     logger.info("Identified %d unique assemblies", len(asm_ids))
     return asm_ids
+
+
+# Extract filestem from Entrez eSummary
+def extract_filestem(data):
+    """Extract filestem from Entrez eSummary data.
+
+    Function expects esummary['DocumentSummarySet']['DocumentSummary'][0]
+
+    Some illegal characters may occur in AssemblyName - for these, a more
+    robust regex replace/escape may be required. Sadly, NCBI don't just
+    use standard percent escapes, but instead replace certain
+    characters with underscores.
+    """
+    escapes = re.compile(r"[\s/,]")
+    escname = re.sub(escapes, '_', data['AssemblyName'])
+    return '_'.join([data['AssemblyAccession'], escname])
 
 
 # Download NCBI assembly file for a passed Assembly UID
@@ -211,28 +235,19 @@ def get_ncbi_asm(asm_uid):
                 asm_uid)
 
     # Obtain full eSummary data for the assembly
-    es_handle = entrez_retry(Entrez.esummary, db="assembly", id=asm_uid,
-                             report="full")
-    summary = Entrez.read(es_handle, validate=False)
+    summary = Entrez.read(entrez_retry(Entrez.esummary, db="assembly",
+                                       id=asm_uid, report="full"),
+                          validate=False)
 
     # Extract filestem from assembly data
-    # Some illegal characters may occur in AssemblyName - a more robust
-    # regex replace/escape may be required. Sadly, NCBI don't just
-    # use standard percent escapes, but instead replace certain
-    # characters with underscores.
-    escapes = re.compile("[\s/,]")
     data = summary['DocumentSummarySet']['DocumentSummary'][0]
-    accession = data['AssemblyAccession']
-    name = data['AssemblyName']
-    escname = re.sub(escapes, '_', name)
-    filestem = '_'.join([accession, escname])
+    filestem = extract_filestem(data)
 
     # Report interesting things from the summary for those interested
     logger.info("\tOrganism: %s", data['Organism'])
     logger.info("\tTaxid: %s", data['SpeciesTaxid'])
-    logger.info("\tAccession: %s", accession)
-    logger.info("\tName: %s", name)
-    logger.info("\tEscaped name: %s", escname)
+    logger.info("\tAccession: %s", data['AssemblyAccession'])
+    logger.info("\tName: %s", data['AssemblyName'])
     # NOTE: Maybe parse out the assembly stats here, in future?
 
     # Get class and label text
@@ -244,15 +259,15 @@ def get_ncbi_asm(asm_uid):
 
     # Create label and class strings
     genus, species = organism.split(' ', 1)
-    ginit = genus[0] + '.'
-    labeltxt = "%s_genomic\t%s %s %s" % (filestem, ginit, species, strain)
+    labeltxt = "%s_genomic\t%s %s %s" % (filestem, genus[0] + '.',
+                                         species, strain)
     classtxt = "%s_genomic\t%s" % (filestem, organism)
     logger.info("\tLabel: %s", labeltxt)
     logger.info("\tClass: %s", classtxt)
 
     # Download and extract genome assembly
     try:
-        fastafilename = retrieve_assembly_contigs(filestem)
+        fastafilename = retrieve_asm_contigs(filestem)
     except NCBIDownloadException:
         # This is a little hacky. Sometimes, RefSeq assemblies are
         # suppressed (presumably because they are non-redundant),
@@ -264,18 +279,20 @@ def get_ncbi_asm(asm_uid):
         logger.warning("Could not download %s, trying %s",
                        filestem, gbfilestem)
         try:
-            fastafilename = retrieve_assembly_contigs(gbfilestem)
+            fastafilename = retrieve_asm_contigs(gbfilestem)
         except NCBIDownloadException:
             fastafilename = None
 
-    return (fastafilename, classtxt, labeltxt, accession)
+    return (fastafilename, classtxt, labeltxt, data['AssemblyAccession'])
 
 
 # Download and extract an NCBI assembly file, given a filestem
-def retrieve_assembly_contigs(filestem):
+def retrieve_asm_contigs(filestem,
+                         ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all/",
+                         suffix="genomic.fna.gz"):
     """Downloads an assembly sequence to a local directory.
 
-    The filestem corresponds to <AA>_<AN>, where <AA> and <AN> are 
+    The filestem corresponds to <AA>_<AN>, where <AA> and <AN> are
     AssemblyAccession and AssemblyName: data fields in the eSummary record.
     These correspond to downloadable files for each assembly at
     ftp://ftp.ncbi.nlm.nih.gov/genomes/all/<AA>_<AN>
@@ -301,30 +318,27 @@ def retrieve_assembly_contigs(filestem):
     logger.info("Retrieving assembly sequence for %s", filestem)
 
     # Compile URL
-    ftpstem = "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/"
-    suffix = "genomic.fna.gz"
-    fname = '_'.join([filestem, suffix])
-    url = "{0}{1}/{2}".format(ftpstem, filestem, fname)
+    url = "{0}{1}/{2}".format(ftpstem, filestem,
+                              '_'.join([filestem, suffix]))
     logger.info("Using URL: %s", url)
-    
+
     # Get data info
     try:
         response = urlopen(url, timeout=args.timeout)
     except (HTTPError, URLError):
-        logger.error("Download failed for URL: %s", url)
-        logger.error(last_exception())
+        logger.error("Download failed for URL: %s\n%s",
+                     url, last_exception())
         raise NCBIDownloadException()
     except timeout:
-        logger.error("Download failed for URL: %s", url)
-        logger.error(last_exception())
+        logger.error("Download timed out for URL: %s\n%s",
+                     url, last_exception())
         raise NCBIDownloadException()
     else:
-        meta = response.info()
-        fsize = int(meta.get("Content-length"))
+        fsize = int(response.info().get("Content-length"))
         logger.info("Opened URL and parsed metadata.")
 
     # Download data
-    outfname = os.path.join(args.outdirname, fname)
+    outfname = os.path.join(args.outdirname, '_'.join([filestem, suffix]))
     if os.path.exists(outfname):
         logger.warning("Output file %s exists, not downloading", outfname)
     else:
@@ -350,9 +364,9 @@ def retrieve_assembly_contigs(filestem):
     # Extract data
     ename = os.path.splitext(outfname)[0]  # Strips only .gz from filename
     # The code below would munge the extracted filename to suit the expected
-    # class/label from the old version of this script. 
+    # class/label from the old version of this script.
     # The .gz file downloaded from NCBI has format
-    # <assembly UID>_<string>_genomic.fna.gz - which we would extract to 
+    # <assembly UID>_<string>_genomic.fna.gz - which we would extract to
     # <assembly UID>.fna
     #regex = ".{3}_[0-9]{9}.[0-9]"
     #outparts = os.path.split(outfname)
@@ -376,10 +390,10 @@ def retrieve_assembly_contigs(filestem):
             raise NCBIDownloadException()
 
     return ename
-    
+
 
 # Write contigs for a single assembly out to file
-def write_contigs(asm_uid, contig_uids):
+def write_contigs(asm_uid, contig_uids, batchsize=10000):
     """Writes assembly contigs out to a single FASTA file in the script's
     designated output directory.
 
@@ -392,58 +406,60 @@ def write_contigs(asm_uid, contig_uids):
     # Has duplicate code with get_class_label_info() - needs refactoring
     logger.info("Collecting contig data for %s", asm_uid)
     # Assembly record - get binomial and strain names
-    asm_summary = entrez_retry(Entrez.esummary, db='assembly', id=asm_uid,
-                               rettype='text')
-    asm_record = Entrez.read(asm_summary, validate=False)
+    asm_record = Entrez.read(entrez_retry(Entrez.esummary, db='assembly',
+                                          id=asm_uid, rettype='text'),
+                             validate=False)
     asm_organism = asm_record['DocumentSummarySet']['DocumentSummary']\
                    [0]['SpeciesName']
     try:
         asm_strain = asm_record['DocumentSummarySet']['DocumentSummary']\
                      [0]['Biosource']['InfraspeciesList'][0]['Sub_value']
-    except:
+    except KeyError:
         asm_strain = ""
     # Assembly UID (long form) for the output filename
-    gname = asm_record['DocumentSummarySet']['DocumentSummary']\
-            [0]['AssemblyAccession']
-    outfilename = "%s.fasta" % os.path.join(args.outdirname, gname)
+    outfilename = "%s.fasta" % os.path.join(args.outdirname,
+                                            asm_record['DocumentSummarySet']\
+                                            ['DocumentSummary']\
+                                            [0]['AssemblyAccession'])
 
     # Create label and class strings
     genus, species = asm_organism.split(' ', 1)
-    ginit = genus[0] + '.'
 
     # Get FASTA records for contigs
     logger.info("Downloading FASTA records for assembly %s (%s)",
-                asm_uid, ' '.join([ginit, species, asm_strain]))
-    # We're doing an explicit retry loop here because we want to confirm we
-    # have the correct data, as well as test for Entrez connection errors,
+                asm_uid, ' '.join([genus[0] + '.', species, asm_strain]))
+    # We're doing an explicit outer retry loop here because we want to confirm
+    # we have the correct data, as well as test for Entrez connection errors,
     # which is all the entrez_retry function does.
     tries, success = 0, False
     while not success and tries < args.retries:
         records = []  # Holds all return records
         # We may need to batch contigs
         query_uids = ','.join(contig_uids)
-        batch_size = 10000
         try:
             for start in range(0, len(contig_uids), batch_size):
                 logger.info("Batch: %d-%d", start, start+batch_size)
-                seqdata = entrez_retry(Entrez.efetch, db='nucleotide',
-                                       id=query_uids,
-                                       rettype='fasta', retmode='text',
-                                       retstart=start, retmax=batch_size)
-                records.extend(list(SeqIO.parse(seqdata, 'fasta')))
+                records.extend(list(SeqIO.parse(entrez_retry(Entrez.efetch,
+                                                             db='nucleotide',
+                                                             id=query_uids,
+                                                             rettype='fasta',
+                                                             retmode='text',
+                                                             retstart=start,
+                                                             retmax=batchsize),
+                                                'fasta')))
             tries += 1
             # Check only that correct number of records returned.
-            if len(records) == len(contig_uids):  
+            if len(records) == len(contig_uids):
                 success = True
-            else:  
+            else:
                 logger.warning("%d contigs expected, %d contigs returned",
                                len(contig_uids), len(records))
                 logger.warning("FASTA download for assembly %s failed",
                                asm_uid)
                 logger.warning("try %d/20", tries)
             # Could also check expected assembly sequence length?
-            totlen = sum([len(r) for r in records])
-            logger.info("Downloaded genome size: %d", totlen)
+            logger.info("Downloaded genome size: %d",
+                        sum([len(r) for r in records]))
         except:
             logger.warning("FASTA download for assembly %s failed", asm_uid)
             logger.warning(last_exception())
@@ -524,7 +540,7 @@ if __name__ == '__main__':
 
     # We might have more than one taxon in a comma-separated list
     taxon_ids = args.taxon.split(',')
-    logger.info("Passed taxon IDs: %s", ', '.join(taxon_ids))    
+    logger.info("Passed taxon IDs: %s", ', '.join(taxon_ids))
 
     # Get all NCBI assemblies for each taxon UID
     asm_dict = defaultdict(set)
