@@ -181,8 +181,8 @@ def test_anib_concordance():
 
     # Process BLAST; the pid data is in anib_data[1]
     anib_data = anib.process_blast(outdirname, org_lengths, fraglengths,
-                                   mode="ANIb")
-    anib_pid = anib_data[1].sort_index(axis=0).sort_index(axis=1) * 100.
+                                   mode="ANIb").percentage_identity
+    anib_pid = anib_data.sort_index(axis=0).sort_index(axis=1) * 100.
 
     index, columns = anib_pid.index, anib_pid.columns
     diffmat = anib_pid.as_matrix() - anib_jspecies.as_matrix()
@@ -243,7 +243,8 @@ def test_aniblastall_concordance():
                                           fraglengths,
                                           mode="ANIblastall")
     aniblastall_pid = \
-        aniblastall_data[1].sort_index(axis=0).sort_index(axis=1) * 100.
+        aniblastall_data.percentage_identity.sort_index(axis=0).\
+        sort_index(axis=1) * 100.
 
     index, columns = aniblastall_pid.index, aniblastall_pid.columns
     diffmat = aniblastall_pid.as_matrix() - aniblastall_jspecies.as_matrix()
