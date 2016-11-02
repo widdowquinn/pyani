@@ -114,7 +114,7 @@ def test_anim_concordance():
     cmdlist = anim.generate_nucmer_commands(infiles, outdirname,
                                             pyani_config.NUCMER_DEFAULT)
     print('\n'.join(cmdlist))
-    multiprocessing_run(cmdlist, verbose=False)
+    multiprocessing_run(cmdlist)
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
     anim_pid = \

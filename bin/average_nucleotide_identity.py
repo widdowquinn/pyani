@@ -527,7 +527,6 @@ def unified_anib(infiles, org_lengths):
             logger.info("Running jobs with multiprocessing")
             logger.info("Running job dependency graph")
             cumval = run_mp.run_dependency_graph(jobgraph,
-                                                 verbose=args.verbose,
                                                  logger=logger)
             if 0 < cumval:
                 logger.warning("At least one BLAST run failed. " +
