@@ -28,56 +28,7 @@ import pandas as pd
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
-
-
-# Class to hold ANIm dataframe results
-class ANImResults(object):
-    """Holds ANIm dataframe results."""
-    def __init__(self, labels):
-        """Initialise with four empty, labelled dataframes."""
-        self.alignment_lengths = pd.DataFrame(index=labels, columns=labels,
-                                              dtype=float)
-        self.similarity_errors = pd.DataFrame(index=labels, columns=labels,
-                                              dtype=float).fillna(0)
-        self.percentage_identity = pd.DataFrame(index=labels, columns=labels,
-                                                dtype=float).fillna(1.0)
-        self.alignment_coverage = pd.DataFrame(index=labels, columns=labels,
-                                               dtype=float).fillna(1.0)
-        self.zero_error = False
-
-    def add_tot_length(self, qname, sname, value):
-        """Add a total length value to self.alignment_lengths."""
-        self.alignment_lengths.loc[qname, sname] = value
-        self.alignment_lengths.loc[sname, qname] = value
-
-    def add_sim_errors(self, qname, sname, value):
-        """Add a similarity error value to self.similarity_errors."""
-        self.similarity_errors.loc[qname, sname] = value
-        self.similarity_errors.loc[sname, qname] = value
-
-    def add_pid(self, qname, sname, value):
-        """Add a percentage identity value to self.percentage_identity."""
-        self.percentage_identity.loc[qname, sname] = value
-        self.percentage_identity.loc[sname, qname] = value
-
-    def add_coverage(self, qname, sname, qcover, scover):
-        """Add percentage coverage values to self.alignment_coverage."""
-        self.alignment_coverage.loc[qname, sname] = scover
-        self.alignment_coverage.loc[sname, qname] = qcover
-
-    @property
-    def hadamard(self):
-        """Return Hadamard matrix (identity * coverage)."""
-        return self.percentage_identity * self.alignment_coverage
-
-    @property
-    def data(self):
-        """Return list of (dataframe, filestem) tuples."""
-        return [(self.alignment_lengths, "ANIm_alignment_lengths"),
-                (self.percentage_identity, "ANIm_percentage_identity"),
-                (self.alignment_coverage, "ANIm_alignment_coverage"),
-                (self.similarity_errors, "ANIm_similarity_errors"),
-                (self.hadamard, "ANIm_hadamard")]
+from .pyani_tools import ANIResults
 
 
 # Generate list of Job objects, one per NUCmer run
@@ -193,7 +144,7 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     # Process directory to identify input files
     deltafiles = pyani_files.get_input_files(delta_dir, '.delta')
     # Hold data in pandas dataframe
-    results = ANImResults(list(org_lengths.keys()))
+    results = ANIResults(list(org_lengths.keys()))
     # Fill diagonal NA values for alignment_length with org_lengths
     for org, length in list(org_lengths.items()):
         results.alignment_lengths[org][org] = length
