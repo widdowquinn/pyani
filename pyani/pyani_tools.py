@@ -25,25 +25,29 @@ class ANIResults(object):
                                                dtype=float).fillna(1.0)
         self.zero_error = False
 
-    def add_tot_length(self, qname, sname, value):
+    def add_tot_length(self, qname, sname, value, sym=True):
         """Add a total length value to self.alignment_lengths."""
         self.alignment_lengths.loc[qname, sname] = value
-        self.alignment_lengths.loc[sname, qname] = value
+        if sym:
+            self.alignment_lengths.loc[sname, qname] = value
 
-    def add_sim_errors(self, qname, sname, value):
+    def add_sim_errors(self, qname, sname, value, sym=True):
         """Add a similarity error value to self.similarity_errors."""
         self.similarity_errors.loc[qname, sname] = value
-        self.similarity_errors.loc[sname, qname] = value
+        if sym:
+            self.similarity_errors.loc[sname, qname] = value
 
-    def add_pid(self, qname, sname, value):
+    def add_pid(self, qname, sname, value, sym=True):
         """Add a percentage identity value to self.percentage_identity."""
         self.percentage_identity.loc[qname, sname] = value
-        self.percentage_identity.loc[sname, qname] = value
+        if sym:
+            self.percentage_identity.loc[sname, qname] = value
 
-    def add_coverage(self, qname, sname, qcover, scover):
+    def add_coverage(self, qname, sname, qcover, scover=None):
         """Add percentage coverage values to self.alignment_coverage."""
-        self.alignment_coverage.loc[qname, sname] = scover
-        self.alignment_coverage.loc[sname, qname] = qcover
+        self.alignment_coverage.loc[qname, sname] = qcover
+        if scover:
+            self.alignment_coverage.loc[sname, qname] = scover
 
     @property
     def hadamard(self):

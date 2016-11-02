@@ -346,13 +346,13 @@ def retrieve_asm_contigs(filestem,
         bsize = 1048576  # buffer size
         fsize_dl = 0     # bytes downloaded
         try:
-            with open(outfname, "wb") as fh:
+            with open(outfname, "wb") as ofh:
                 while True:
                     buffer = response.read(bsize)
                     if not buffer:
                         break
                     fsize_dl += len(buffer)
-                    fh.write(buffer)
+                    ofh.write(buffer)
                     status = r"%10d  [%3.2f%%]" % (fsize_dl,
                                                    fsize_dl * 100. / fsize)
                     logger.info(status)
@@ -437,8 +437,8 @@ def write_contigs(asm_uid, contig_uids, batchsize=10000):
         # We may need to batch contigs
         query_uids = ','.join(contig_uids)
         try:
-            for start in range(0, len(contig_uids), batch_size):
-                logger.info("Batch: %d-%d", start, start+batch_size)
+            for start in range(0, len(contig_uids), batchsize):
+                logger.info("Batch: %d-%d", start, start+batchsize)
                 records.extend(list(SeqIO.parse(entrez_retry(Entrez.efetch,
                                                              db='nucleotide',
                                                              id=query_uids,
@@ -574,11 +574,11 @@ if __name__ == '__main__':
     classfilename = os.path.join(args.outdirname, 'classes.txt')
     labelfilename = os.path.join(args.outdirname, 'labels.txt')
     logger.info("Writing classes file to %s", classfilename)
-    with open(classfilename, 'w') as fh:
-        fh.write('\n'.join(classes) + '\n')
+    with open(classfilename, 'w') as ofh:
+        ofh.write('\n'.join(classes) + '\n')
     logger.info("Writing labels file to %s", labelfilename)
-    with open(labelfilename, 'w') as fh:
-        fh.write('\n'.join(labels) + '\n')
+    with open(labelfilename, 'w') as ofh:
+        ofh.write('\n'.join(labels) + '\n')
 
     # How many downloads did we do/have to skip?
     logger.info("Obtained %d assemblies", len(contig_dict))

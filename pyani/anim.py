@@ -130,8 +130,8 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     - delta_dir - path to the directory containing .delta files
     - org_lengths - dictionary of total sequence lengths, keyed by sequence
 
-    Returns the following pandas dataframes in a tuple; query sequences are
-    rows, subject sequences are columns:
+    Returns the following pandas dataframes in an ANIResults object;
+    query sequences are rows, subject sequences are columns:
 
     - alignment_lengths - symmetrical: total length of alignment
     - percentage_identity - symmetrical: percentage identity of alignment
@@ -143,16 +143,20 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     """
     # Process directory to identify input files
     deltafiles = pyani_files.get_input_files(delta_dir, '.delta')
-    # Hold data in pandas dataframe
+
+    # Hold data in ANIResults object
     results = ANIResults(list(org_lengths.keys()))
+
     # Fill diagonal NA values for alignment_length with org_lengths
     for org, length in list(org_lengths.items()):
         results.alignment_lengths[org][org] = length
+
     # Process .delta files assuming that the filename format holds:
     # org1_vs_org2.delta
     for deltafile in deltafiles:
         qname, sname = \
             os.path.splitext(os.path.split(deltafile)[-1])[0].split('_vs_')
+
         # We may have .delta files from other analyses in the same directory
         # If this occurs, we raise a warning, and skip the .delta file
         if qname not in list(org_lengths.keys()):
@@ -172,6 +176,7 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
                                "%s is zero!" % deltafile)
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
+
         # Calculate percentage ID of aligned length. This may fail if
         # total length is zero.
         # The ZeroDivisionError that would arise should be handled
@@ -190,9 +195,9 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
                              "please investigate.")
             perc_id = 0  # set arbitrary value of zero identity
             results.zero_error = True
-        # Populate dataframes: when assigning data, pandas dataframes
-        # take column, index order, i.e. df['column']['row'] - this only
-        # matters for asymmetrical data
+
+        # Populate dataframes: when assigning data from symmetrical MUMmer
+        # output, both upper and lower triangles will be populated
         results.add_tot_length(qname, sname, tot_length)
         results.add_sim_errors(qname, sname, tot_sim_error)
         results.add_pid(qname, sname, perc_id)
