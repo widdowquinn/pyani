@@ -8,6 +8,8 @@
 """Configuration settings for the pyani package.
 """
 
+from matplotlib.colors import LinearSegmentedColormap
+
 # Defaults assume that common binaries are on the $PATH
 NUCMER_DEFAULT = "nucmer"
 BLASTN_DEFAULT = "blastn"
@@ -44,6 +46,59 @@ FRAGSIZE = 1020  # Default ANIb fragment size
 
 # SGE/OGE scheduler parameters
 SGE_WAIT = 0.01  # Base unit of time (s) to wait between polling SGE
+
+# Custom Matplotlib colourmaps
+# 1a) Map for species boundaries (95%: 0.95), blue for values at
+# 0.9 or below, red for values at 1.0; white at 0.95.
+# Also, anything below 0.7 is 70% grey
+cdict_spbnd_BuRd = {'red': ((0.0, 0.0, 0.7),
+                            (0.7, 0.7, 0.0),
+                            (0.9, 0.0, 0.0),
+                            (0.95, 1.0, 1.0),
+                            (1.0, 1.0, 1.0)),
+                    'green': ((0.0, 0.0, 0.7),
+                              (0.7, 0.7, 0.0),
+                              (0.9, 0.0, 0.0),
+                              (0.95, 1.0, 1.0),
+                              (1.0, 0.0, 0.0)),
+                    'blue': ((0.0, 0.0, 0.7),
+                             (0.7, 0.7, 1.0),
+                             (0.95, 1.0, 1.0),
+                             (1.0, 0.0, 0.0))}
+CMAP_SPBND_BURD = LinearSegmentedColormap("spbnd_BuRd",
+                                          cdict_spbnd_BuRd)
+
+# 1b) Map for species boundaries (95%: 0.95), blue for values at
+# 0.9 or below, red for values at 1.0; white at 0.9.
+# Also, anything below 0.8 is 70% grey
+cdict_hadamard_BuRd = {'red': ((0.0, 0.0, 0.7),
+                               (0.8, 0.7, 0.0),
+                               (0.9, 0.0, 0.0),
+                               (0.9, 1.0, 1.0),
+                               (1.0, 1.0, 1.0)),
+                       'green': ((0.0, 0.0, 0.7),
+                                 (0.8, 0.7, 0.0),
+                                 (0.9, 0.0, 0.0),
+                                 (0.9, 1.0, 1.0),
+                                 (1.0, 0.0, 0.0)),
+                       'blue': ((0.0, 0.0, 0.7),
+                                (0.8, 0.7, 1.0),
+                                (0.9, 1.0, 1.0),
+                                (1.0, 0.0, 0.0))}
+CMAP_HADAMARD_BURD = LinearSegmentedColormap("hadamard_BuRd",
+                                             cdict_hadamard_BuRd)
+
+# 2) Blue for values at 0.0, red for values at 1.0; white at 0.5
+cdict_BuRd = {'red': ((0.0, 0.0, 0.0),
+                      (0.5, 1.0, 1.0),
+                      (1.0, 1.0, 1.0)),
+              'green': ((0.0, 0.0, 0.0),
+                        (0.5, 1.0, 1.0),
+                        (1.0, 0.0, 0.0)),
+              'blue': ((0.0, 1.0, 1.0),
+                       (0.5, 1.0, 1.0),
+                       (1.0, 0.0, 0.0))}
+CMAP_BURD = LinearSegmentedColormap("BuRd", cdict_BuRd)
 
 
 # Graphics parameters for each output file. Note that this should be

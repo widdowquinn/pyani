@@ -6,9 +6,6 @@ We only test for dependencies from non-standard libraries.
 
 These tests are intended to be run using the nose package
 (see https://nose.readthedocs.org/en/latest/).
-
-If the test is run directly at the command-line, the output obtained by each
-test is returned to STDOUT.
 """
 
 import subprocess
@@ -72,14 +69,3 @@ def test_run_nucmer():
                             check=True)
     print(result.stderr)  # NUCmer puts output to STDERR!
     assert_equal(result.stderr[:6], b'nucmer')
-
-
-# Run as script
-if __name__ == '__main__':
-    import inspect
-    import test_cmdlines
-    functions = [o[0] for o in inspect.getmembers(test_cmdlines) if
-                 inspect.isfunction(o[1])]
-    for fn in functions:
-        print("\nFunction called: {}()".format(fn))
-        locals()[fn]()

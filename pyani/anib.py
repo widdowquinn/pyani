@@ -56,11 +56,12 @@ import shutil
 
 import pandas as pd
 
+from Bio import SeqIO
+
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
-
-from Bio import SeqIO
+from .pyani_tools import ANIResults
 
 
 # Divide input FASTA sequences into fragments
@@ -331,7 +332,8 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
     - mode - parsing BLASTN+ or BLASTALL output?
     - logger - a logger for messages
 
-    Returns the following pandas dataframes in a tuple:
+    Returns the following pandas dataframes in an ANIResults object;
+    query sequences are rows, subject sequences are columns:
 
     - alignment_lengths - non-symmetrical: total length of alignment
     - percentage_identity - non-symmetrical: ANIb (Goris) percentage identity
@@ -343,24 +345,18 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
     """
     # Process directory to identify input files
     blastfiles = pyani_files.get_input_files(blast_dir, '.blast_tab')
-    labels = list(org_lengths.keys())
-    # Hold data in pandas dataframe
-    alignment_lengths = pd.DataFrame(index=labels, columns=labels,
-                                     dtype=float)
-    similarity_errors = pd.DataFrame(index=labels, columns=labels,
-                                     dtype=float).fillna(0)
-    percentage_identity = pd.DataFrame(index=labels, columns=labels,
-                                       dtype=float).fillna(1.0)
-    alignment_coverage = pd.DataFrame(index=labels, columns=labels,
-                                      dtype=float).fillna(1.0)
+    # Hold data in ANIResults object
+    results = ANIResults(list(org_lengths.keys()))
     # Fill diagonal NA values for alignment_length with org_lengths
     for org, length in list(org_lengths.items()):
-        alignment_lengths[org][org] = length
+        results.alignment_lengths[org][org] = length
+
     # Process .blast_tab files assuming that the filename format holds:
     # org1_vs_org2.blast_tab:
     for blastfile in blastfiles:
         qname, sname = \
             os.path.splitext(os.path.split(blastfile)[-1])[0].split('_vs_')
+
         # We may have BLAST files from other analyses in the same directory
         # If this occurs, we raise a warning, and skip the file
         if qname not in list(org_lengths.keys()):
@@ -377,15 +373,15 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
                                                              fraglengths,
                                                              mode)
         query_cover = float(tot_length) / org_lengths[qname]
-        # Populate dataframes: when assigning data, pandas dataframes
-        # take column, index order, i.e. df['column']['row'] - this only
-        # matters for asymmetrical data
-        alignment_lengths.loc[qname, sname] = tot_length
-        similarity_errors.loc[qname, sname] = tot_sim_error
-        percentage_identity.loc[qname, sname] = 0.01 * ani_pid
-        alignment_coverage.loc[qname, sname] = query_cover
-    return(alignment_lengths, percentage_identity, alignment_coverage,
-           similarity_errors, percentage_identity * alignment_coverage)
+
+        # Populate dataframes: when assigning data, we need to note that
+        # we have asymmetrical data from BLAST output, so only the
+        # upper triangle is populated
+        results.add_tot_length(qname, sname, tot_length, sym=False)
+        results.add_sim_errors(qname, sname, tot_sim_error, sym=False)
+        results.add_pid(qname, sname, 0.01 * ani_pid, sym=False)
+        results.add_coverage(qname, sname, query_cover)
+    return results
 
 
 # Parse BLASTALL output to get total alignment length and mismatches

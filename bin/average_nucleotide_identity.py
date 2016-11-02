@@ -238,9 +238,9 @@ def parse_cmdline():
     parser.add_argument("--SGEgroupsize", dest="sgegroupsize",
                         action="store", default=10000, type=int,
                         help="Number of jobs to place in an SGE array group")
-    parser.add_argument("--maxmatch", dest="maxmatch",
-                        action="store_true", default=False,
-                        help="Override MUMmer to allow all NUCmer matches")
+    #parser.add_argument("--maxmatch", dest="maxmatch",
+    #                    action="store_true", default=False,
+    #                    help="Override MUMmer to allow all NUCmer matches")
     parser.add_argument("--nucmer_exe", dest="nucmer_exe",
                         action="store", default=pyani_config.NUCMER_DEFAULT,
                         help="Path to NUCmer executable")
@@ -374,7 +374,6 @@ def calculate_anim(infiles, org_lengths):
     if not args.skip_nucmer:
         joblist = anim.generate_nucmer_jobs(infiles, args.outdirname,
                                             nucmer_exe=args.nucmer_exe,
-                                            maxmatch=args.maxmatch,
                                             jobprefix=args.jobprefix)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
@@ -405,8 +404,8 @@ def calculate_anim(infiles, org_lengths):
 
     # Process resulting .delta files
     logger.info("Processing NUCmer .delta files.")
-    data = anim.process_deltadir(deltadir, org_lengths, logger=logger)
-    if data[-1]:  # zero percentage identity error
+    results = anim.process_deltadir(deltadir, org_lengths, logger=logger)
+    if results.zero_error:  # zero percentage identity error
         if not args.skip_nucmer and args.scheduler == 'multiprocessing':
             if 0 < cumval:
                 logger.error("This has possibly been a NUCmer run failure, " +
@@ -425,7 +424,7 @@ def calculate_anim(infiles, org_lengths):
         compress_delete_outdir(deltadir)
 
     # Return processed data from .delta files
-    return tuple(data[:-1])
+    return results
 
 
 # Calculate TETRA for input
@@ -572,23 +571,23 @@ def unified_anib(infiles, org_lengths):
                
 
 # Write ANIb/ANIm/TETRA output
-def write(results, filestems):
+def write(results):
     """Write ANIb/ANIm/TETRA results to output directory.
 
-    - results - tuple of dataframes from analysis
+    - results - results object from analysis
 
     Each dataframe is written to an Excel-format file (if args.write_excel is
     True), and plain text tab-separated file in the output directory. The
     order of result output must be reflected in the order of filestems.
     """
     logger.info("Writing %s results to %s", args.method, args.outdirname)
-    for df, filestem in zip(results, filestems):
+    for dfr, filestem in results.data:
         logger.info("\t%s", filestem)
         if args.write_excel:
-            df.to_excel(os.path.join(args.outdirname, filestem) + '.xlsx',
-                        index=True)
-        df.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
-                  index=True, sep="\t")
+            dfr.to_excel(os.path.join(args.outdirname, filestem) + '.xlsx',
+                         index=True)
+        dfr.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
+                   index=True, sep="\t")
 
 # Draw ANIb/ANIm/TETRA output
 def draw(filestems, gformat, logger=None):
@@ -605,22 +604,18 @@ def draw(filestems, gformat, logger=None):
         df = pd.read_csv(infilename, index_col=0, sep="\t")
         if logger:
             logger.info("Writing heatmap to %s", outfilename)
-        labels =pyani_tools.get_labels(args.labels)
-        classes =pyani_tools.get_labels(args.classes)
+        params = pyani_graphics.Params(params_mpl(df)[filestem],
+                                       pyani_tools.get_labels(args.labels),
+                                       pyani_tools.get_labels(args.classes))
         if args.gmethod == "mpl":
             pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
                                        title=filestem,
-                                       cmap=params_mpl(df)[filestem][0],
-                                       vmin=params_mpl(df)[filestem][1],
-                                       vmax=params_mpl(df)[filestem][2],
-                                       labels=labels, classes=classes)
+                                       params=params)
         elif args.gmethod == "seaborn":
             pyani_graphics.heatmap_seaborn(df, outfilename=outfilename,
                                            title=filestem,
-                                           cmap=params_mpl(df)[filestem][0],
-                                           vmin=params_mpl(df)[filestem][1],
-                                           vmax=params_mpl(df)[filestem][2],
-                                           labels=labels, classes=classes)
+                                           params=params)
+
 
 # Subsample the input files
 def subsample_input(infiles):
@@ -770,7 +765,7 @@ if __name__ == '__main__':
             results = methods[args.method][0](infiles)
         else:
             results = methods[args.method][0](infiles, org_lengths)
-        write(results, methods[args.method][1])
+        write(results)
 
     # Do we want graphical output?
     if args.graphics or args.rerender:

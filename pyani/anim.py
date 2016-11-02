@@ -1,4 +1,4 @@
-# Copyright 2013-2015, The James Hutton Insitute
+# Copyright 2013-2016, The James Hutton Insitute
 # Author: Leighton Pritchard
 #
 # This code is part of the pyani package, and is governed by its licence.
@@ -21,20 +21,20 @@ counts, average nucleotide identity (ANI) percentages, and minimum aligned
 percentage (of whole genome) for each pairwise comparison.
 """
 
-import pandas as pd
-
 import os
-import sys
+
+import pandas as pd
 
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
+from .pyani_tools import ANIResults
 
 
 # Generate list of Job objects, one per NUCmer run
 def generate_nucmer_jobs(filenames, outdir='.',
                          nucmer_exe=pyani_config.NUCMER_DEFAULT,
-                         maxmatch=False, jobprefix="ANINUCmer"):
+                         jobprefix="ANINUCmer"):
     """Return a list of Jobs describing NUCmer command-lines for ANIm
 
     - filenames - a list of paths to input FASTA files
@@ -45,8 +45,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
     Loop over all FASTA files, generating Jobs describing NUCmer command lines
     for each pairwise comparison.
     """
-    cmdlines = generate_nucmer_commands(filenames, outdir, nucmer_exe,
-                                        maxmatch)
+    cmdlines = generate_nucmer_commands(filenames, outdir, nucmer_exe)
     joblist = []
     for idx, cmd in enumerate(cmdlines):
         joblist.append(pyani_jobs.Job("%s_%06d" % (jobprefix, idx), cmd))
@@ -56,8 +55,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
 # Generate list of NUCmer pairwise comparison command lines from
 # passed sequence filenames
 def generate_nucmer_commands(filenames, outdir='.',
-                             nucmer_exe=pyani_config.NUCMER_DEFAULT,
-                             maxmatch=False):
+                             nucmer_exe=pyani_config.NUCMER_DEFAULT):
     """Return a list of NUCmer command-lines for ANIm
 
     - filenames - a list of paths to input FASTA files
@@ -69,10 +67,10 @@ def generate_nucmer_commands(filenames, outdir='.',
     pairwise comparison.
     """
     cmdlines = []
-    for idx, f1 in enumerate(filenames[:-1]):
-        cmdlines.extend([construct_nucmer_cmdline(f1, f2, outdir,
+    for idx, fname1 in enumerate(filenames[:-1]):
+        cmdlines.extend([construct_nucmer_cmdline(fname1, fname2, outdir,
                                                   nucmer_exe) for
-                         f2 in filenames[idx+1:]])
+                         fname2 in filenames[idx+1:]])
     return cmdlines
 
 
@@ -132,8 +130,8 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     - delta_dir - path to the directory containing .delta files
     - org_lengths - dictionary of total sequence lengths, keyed by sequence
 
-    Returns the following pandas dataframes in a tuple; query sequences are
-    rows, subject sequences are columns:
+    Returns the following pandas dataframes in an ANIResults object;
+    query sequences are rows, subject sequences are columns:
 
     - alignment_lengths - symmetrical: total length of alignment
     - percentage_identity - symmetrical: percentage identity of alignment
@@ -145,25 +143,20 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     """
     # Process directory to identify input files
     deltafiles = pyani_files.get_input_files(delta_dir, '.delta')
-    labels = list(org_lengths.keys())
-    # Hold data in pandas dataframe
-    alignment_lengths = pd.DataFrame(index=labels, columns=labels,
-                                     dtype=float)
-    similarity_errors = pd.DataFrame(index=labels, columns=labels,
-                                     dtype=float).fillna(0)
-    percentage_identity = pd.DataFrame(index=labels, columns=labels,
-                                       dtype=float).fillna(1.0)
-    alignment_coverage = pd.DataFrame(index=labels, columns=labels,
-                                      dtype=float).fillna(1.0)
+
+    # Hold data in ANIResults object
+    results = ANIResults(list(org_lengths.keys()))
+
     # Fill diagonal NA values for alignment_length with org_lengths
     for org, length in list(org_lengths.items()):
-        alignment_lengths[org][org] = length
+        results.alignment_lengths[org][org] = length
+
     # Process .delta files assuming that the filename format holds:
     # org1_vs_org2.delta
-    zero_error = False  # flag to register a divide-by-zero error
     for deltafile in deltafiles:
         qname, sname = \
             os.path.splitext(os.path.split(deltafile)[-1])[0].split('_vs_')
+
         # We may have .delta files from other analyses in the same directory
         # If this occurs, we raise a warning, and skip the .delta file
         if qname not in list(org_lengths.keys()):
@@ -183,6 +176,7 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
                                "%s is zero!" % deltafile)
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
+
         # Calculate percentage ID of aligned length. This may fail if
         # total length is zero.
         # The ZeroDivisionError that would arise should be handled
@@ -200,18 +194,12 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
                              "run failure: analysis may continue, but " +
                              "please investigate.")
             perc_id = 0  # set arbitrary value of zero identity
-            zero_error = True
-        # Populate dataframes: when assigning data, pandas dataframes
-        # take column, index order, i.e. df['column']['row'] - this only
-        # matters for asymmetrical data
-        alignment_lengths.loc[qname, sname] = tot_length
-        alignment_lengths.loc[sname, qname] = tot_length
-        similarity_errors.loc[qname, sname] = tot_sim_error
-        similarity_errors.loc[sname, qname] = tot_sim_error
-        percentage_identity.loc[qname, sname] = perc_id
-        percentage_identity.loc[sname, qname] = perc_id
-        alignment_coverage.loc[sname, qname] = query_cover
-        alignment_coverage.loc[qname, sname] = sbjct_cover
-    return(alignment_lengths, percentage_identity, alignment_coverage,
-           similarity_errors, percentage_identity * alignment_coverage,
-           zero_error)
+            results.zero_error = True
+
+        # Populate dataframes: when assigning data from symmetrical MUMmer
+        # output, both upper and lower triangles will be populated
+        results.add_tot_length(qname, sname, tot_length)
+        results.add_sim_errors(qname, sname, tot_sim_error)
+        results.add_pid(qname, sname, perc_id)
+        results.add_coverage(qname, sname, query_cover, sbjct_cover)
+    return results
