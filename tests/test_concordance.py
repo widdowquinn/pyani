@@ -166,7 +166,7 @@ def test_anib_concordance():
 
     # Test ANIb concordance:
     # Make fragments
-    fragfiles, fraglengths = anib.fragment_FASTA_files(infiles, outdirname,
+    fragfiles, fraglengths = anib.fragment_fasta_files(infiles, outdirname,
                                                        pyani_config.FRAGSIZE)
 
     
@@ -225,7 +225,7 @@ def test_aniblastall_concordance():
 
     # Test ANIblastall concordance:
     # Make fragments
-    fragfiles, fraglengths = anib.fragment_FASTA_files(infiles, outdirname,
+    fragfiles, fraglengths = anib.fragment_fasta_files(infiles, outdirname,
                                                        pyani_config.FRAGSIZE)
 
     # Build jobgraph

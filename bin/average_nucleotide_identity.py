@@ -502,7 +502,7 @@ def unified_anib(infiles, org_lengths):
         logger.info("Fragmenting input files, and writing to %s",
                     args.outdirname)
         # Fraglengths does not get reused with BLASTN
-        fragfiles, fraglengths = anib.fragment_FASTA_files(infiles,
+        fragfiles, fraglengths = anib.fragment_fasta_files(infiles,
                                                            blastdir,
                                                            args.fragsize)
         # Export fragment lengths as JSON, in case we re-run with --skip_blastn
