@@ -64,6 +64,33 @@ class ANIResults(object):
                 (self.hadamard, "ANIm_hadamard")]
 
 
+# Class to hold/build BLAST commands
+class BLASTcmds(object):
+    """Class to hold BLAST command data for construction of BLASTN and
+    database formatting commands.
+    """
+    def __init__(self, db_func, blastn_func, format_exe, blast_exe, prefix,
+                 outdir):
+        self.db_func = db_func
+        self.blastn_func = blastn_func
+        self.format_exe = format_exe
+        self.blast_exe = blast_exe
+        self.prefix = prefix
+        self.outdir = outdir
+
+    def build_db_cmd(self, fname):
+        """Return database format/build command"""
+        return self.db_func(fname, self.outdir, self.format_exe)[0]
+
+    def get_db_name(self, fname):
+        """Return database filename"""
+        return self.db_func(fname, self.outdir, self.format_exe)[1]
+
+    def build_blast_cmd(self, fname, dbname):
+        """Return BLASTN command"""
+        return self.blastn_func(fname, dbname, self.outdir, self.blast_exe)
+
+
 # Read sequence annotations in from file
 def get_labels(filename, logger=None):
     """Returns a dictionary of alternative sequence labels, or None

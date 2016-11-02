@@ -171,8 +171,9 @@ def test_anib_concordance():
 
     
     # Build jobgraph
-    jobgraph = anib.make_job_graph(infiles, fragfiles, outdirname,
-                                   mode="ANIb")
+    jobgraph = anib.make_job_graph(infiles, fragfiles,
+                                   anib.make_blastcmd_builder("ANIb",
+                                                              outdirname))
     print("\nJobgraph:\n", jobgraph)
 
     # Run jobgraph with multiprocessing
