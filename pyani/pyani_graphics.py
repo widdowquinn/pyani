@@ -233,23 +233,23 @@ def add_mpl_colorbar(dfr, fig, dend, params, orientation='row'):
             cblist.append(classdict[params.classes[name]])
         except KeyError:
             cblist.append(classdict[name])
-    cbar = pd.Series(cblist)
+    colbar = pd.Series(cblist)
 
     # Create colourbar axis - could capture if needed
     if orientation == 'row':
         cbaxes = fig.add_subplot(dend['gridspec'][0, 1])
-        cbaxes.imshow([[bar] for bar in cbar.values],
+        cbaxes.imshow([[cbar] for cbar in colbar.values],
                       cmap=plt.get_cmap(pyani_config.MPL_CBAR),
                       interpolation='nearest', aspect='auto',
                       origin='lower')
     else:
         cbaxes = fig.add_subplot(dend['gridspec'][1, 0])
-        cbaxes.imshow([cbar],
+        cbaxes.imshow([colbar],
                       cmap=plt.get_cmap(pyani_config.MPL_CBAR),
                       interpolation='nearest', aspect='auto',
                       origin='lower')
     clean_axis(cbaxes)
-    return cbar
+    return colbar
 
 
 # Add labels to the heatmap axes
