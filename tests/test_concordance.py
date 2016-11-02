@@ -230,8 +230,9 @@ def test_aniblastall_concordance():
                                                        pyani_config.FRAGSIZE)
 
     # Build jobgraph
-    jobgraph = anib.make_job_graph(infiles, fragfiles, outdirname,
-                                   "ANIblastall")
+    jobgraph = anib.make_job_graph(infiles, fragfiles,
+                                   anib.make_blastcmd_builder("ANIblastall",
+                                                              outdirname))
     print("\nJobgraph:\n", jobgraph)
     print("\nJob 0:\n", jobgraph[0].script)
 
