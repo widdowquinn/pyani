@@ -61,7 +61,7 @@ from Bio import SeqIO
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
-from .pyani_tools import ANIResults, BLASTcmds
+from .pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
 
 
 # Divide input FASTA sequences into fragments
@@ -147,16 +147,20 @@ def make_blastcmd_builder(mode, outdir, format_exe=None, blast_exe=None,
                           prefix="ANIBLAST"):
     """Returns BLASTcmds object for construction of BLAST commands."""
     if mode == "ANIb":  # BLAST/formatting executable depends on mode
-        blastcmds = BLASTcmds(construct_makeblastdb_cmd,
-                              construct_blastn_cmdline,
-                              format_exe or pyani_config.MAKEBLASTDB_DEFAULT,
-                              blast_exe or pyani_config.BLASTN_DEFAULT,
+        blastcmds = BLASTcmds(BLASTfunctions(construct_makeblastdb_cmd,
+                                             construct_blastn_cmdline),
+                              BLASTexes(format_exe or \
+                                        pyani_config.MAKEBLASTDB_DEFAULT,
+                                        blast_exe or \
+                                        pyani_config.BLASTN_DEFAULT),
                               prefix, outdir)
     else:
-        blastcmds = BLASTcmds(construct_formatdb_cmd,
-                              construct_blastall_cmdline,
-                              format_exe or pyani_config.FORMATDB_DEFAULT,
-                              blast_exe or pyani_config.BLASTALL_DEFAULT,
+        blastcmds = BLASTcmds(BLASTfunctions(construct_formatdb_cmd,
+                                             construct_blastall_cmdline),
+                              BLASTexes(format_exe or \
+                                        pyani_config.FORMATDB_DEFAULT,
+                                        blast_exe or \
+                                        pyani_config.BLASTALL_DEFAULT),
                               prefix, outdir)
     return blastcmds
 

@@ -23,8 +23,6 @@ percentage (of whole genome) for each pairwise comparison.
 
 import os
 
-import pandas as pd
-
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs

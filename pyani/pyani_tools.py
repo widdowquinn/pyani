@@ -64,31 +64,47 @@ class ANIResults(object):
                 (self.hadamard, "ANIm_hadamard")]
 
 
+# Class to hold BLAST functions
+class BLASTfunctions(object):
+    """Class to hold BLAST functions."""
+    def __init__(self, db_func, blastn_func):
+        self.db_func = db_func
+        self.blastn_func = blastn_func
+
+
+# Class to hold BLAST executables
+class BLASTexes(object):
+    """Class to hold BLAST functions."""
+    def __init__(self, format_exe, blast_exe):
+        self.format_exe = format_exe
+        self.blast_exe = blast_exe
+
+
 # Class to hold/build BLAST commands
 class BLASTcmds(object):
     """Class to hold BLAST command data for construction of BLASTN and
     database formatting commands.
     """
-    def __init__(self, db_func, blastn_func, format_exe, blast_exe, prefix,
-                 outdir):
-        self.db_func = db_func
-        self.blastn_func = blastn_func
-        self.format_exe = format_exe
-        self.blast_exe = blast_exe
+    def __init__(self, funcs, exes, prefix, outdir):
+        self.funcs = funcs
+        self.exes = exes
         self.prefix = prefix
         self.outdir = outdir
 
     def build_db_cmd(self, fname):
         """Return database format/build command"""
-        return self.db_func(fname, self.outdir, self.format_exe)[0]
+        return self.funcs.db_func(fname, self.outdir,
+                                  self.exes.format_exe)[0]
 
     def get_db_name(self, fname):
         """Return database filename"""
-        return self.db_func(fname, self.outdir, self.format_exe)[1]
+        return self.funcs.db_func(fname, self.outdir,
+                                  self.exes.format_exe)[1]
 
     def build_blast_cmd(self, fname, dbname):
         """Return BLASTN command"""
-        return self.blastn_func(fname, dbname, self.outdir, self.blast_exe)
+        return self.funcs.blastn_func(fname, dbname, self.outdir,
+                                      self.exes.blast_exe)
 
 
 # Read sequence annotations in from file
@@ -103,9 +119,9 @@ def get_labels(filename, logger=None):
     if filename is not None:
         if logger:
             logger.info("Reading labels from %s", filename)
-        with open(filename, 'rU') as fh:
+        with open(filename, 'rU') as ifh:
             count = 0
-            for line in fh.readlines():
+            for line in ifh.readlines():
                 count += 1
                 try:
                     key, label = line.strip().split('\t')
