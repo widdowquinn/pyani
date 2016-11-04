@@ -143,7 +143,7 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     deltafiles = pyani_files.get_input_files(delta_dir, '.delta')
 
     # Hold data in ANIResults object
-    results = ANIResults(list(org_lengths.keys()))
+    results = ANIResults(list(org_lengths.keys()), "ANIm")
 
     # Fill diagonal NA values for alignment_length with org_lengths
     for org, length in list(org_lengths.items()):

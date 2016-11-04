@@ -7,13 +7,15 @@
 
 """Code to support pyani."""
 
+
 import pandas as pd
+from . import pyani_config
 
 
 # Class to hold ANI dataframe results
 class ANIResults(object):
     """Holds ANI dataframe results."""
-    def __init__(self, labels):
+    def __init__(self, labels, mode):
         """Initialise with four empty, labelled dataframes."""
         self.alignment_lengths = pd.DataFrame(index=labels, columns=labels,
                                               dtype=float)
@@ -24,6 +26,7 @@ class ANIResults(object):
         self.alignment_coverage = pd.DataFrame(index=labels, columns=labels,
                                                dtype=float).fillna(1.0)
         self.zero_error = False
+        self.mode = mode
 
     def add_tot_length(self, qname, sname, value, sym=True):
         """Add a total length value to self.alignment_lengths."""
@@ -57,11 +60,17 @@ class ANIResults(object):
     @property
     def data(self):
         """Return list of (dataframe, filestem) tuples."""
-        return [(self.alignment_lengths, "ANIm_alignment_lengths"),
-                (self.percentage_identity, "ANIm_percentage_identity"),
-                (self.alignment_coverage, "ANIm_alignment_coverage"),
-                (self.similarity_errors, "ANIm_similarity_errors"),
-                (self.hadamard, "ANIm_hadamard")]
+        stemdict = {"ANIm": pyani_config.ANIM_FILESTEMS,
+                    "ANIb": pyani_config.ANIB_FILESTEMS,
+                    "ANIblastall": pyani_config.ANIBLASTALL_FILESTEMS}
+        return zip((self.alignment_lengths, self.percentage_identity,
+                    self.alignment_coverage, self.similarity_errors,
+                    self.hadamard), stemdict[self.mode])
+        #return [(self.alignment_lengths, "ANIm_alignment_lengths"),
+        #        (self.percentage_identity, "ANIm_percentage_identity"),
+        #        (self.alignment_coverage, "ANIm_alignment_coverage"),
+        #        (self.similarity_errors, "ANIm_similarity_errors"),
+        #        (self.hadamard, "ANIm_hadamard")]
 
 
 # Class to hold BLAST functions

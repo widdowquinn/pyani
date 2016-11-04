@@ -355,7 +355,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
     # Process directory to identify input files
     blastfiles = pyani_files.get_input_files(blast_dir, '.blast_tab')
     # Hold data in ANIResults object
-    results = ANIResults(list(org_lengths.keys()))
+    results = ANIResults(list(org_lengths.keys()), mode)
     # Fill diagonal NA values for alignment_length with org_lengths
     for org, length in list(org_lengths.items()):
         results.alignment_lengths[org][org] = length
