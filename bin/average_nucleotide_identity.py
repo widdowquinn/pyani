@@ -502,7 +502,7 @@ def unified_anib(infiles, org_lengths):
         logger.info("Fragmenting input files, and writing to %s",
                     args.outdirname)
         # Fraglengths does not get reused with BLASTN
-        fragfiles, fraglengths = anib.fragment_FASTA_files(infiles,
+        fragfiles, fraglengths = anib.fragment_fasta_files(infiles,
                                                            blastdir,
                                                            args.fragsize)
         # Export fragment lengths as JSON, in case we re-run with --skip_blastn
@@ -511,23 +511,25 @@ def unified_anib(infiles, org_lengths):
             json.dump(fraglengths, outfile)
 
         # Which executables are we using?
-        if args.method == "ANIblastall":
-            format_exe = args.formatdb_exe
-            blast_exe = args.blastall_exe
-        else:
-            format_exe = args.makeblastdb_exe
-            blast_exe = args.blastn_exe
+        #if args.method == "ANIblastall":
+        #    format_exe = args.formatdb_exe
+        #    blast_exe = args.blastall_exe
+        #else:
+        #    format_exe = args.makeblastdb_exe
+        #    blast_exe = args.blastn_exe
 
         # Run BLAST database-building and executables from a jobgraph
         logger.info("Creating job dependency graph")
-        jobgraph = anib.make_job_graph(infiles, fragfiles, blastdir,
-                                       format_exe, blast_exe, args.method,
-                                       jobprefix=args.jobprefix)
+        jobgraph = anib.make_job_graph(infiles, fragfiles,
+                                       anib.make_blastcmd_builder(args.method,
+                                                                  blastdir))
+        #jobgraph = anib.make_job_graph(infiles, fragfiles, blastdir,
+        #                               format_exe, blast_exe, args.method,
+        #                               jobprefix=args.jobprefix)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             logger.info("Running job dependency graph")
             cumval = run_mp.run_dependency_graph(jobgraph,
-                                                 verbose=args.verbose,
                                                  logger=logger)
             if 0 < cumval:
                 logger.warning("At least one BLAST run failed. " +

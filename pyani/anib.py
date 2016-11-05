@@ -61,11 +61,11 @@ from Bio import SeqIO
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
-from .pyani_tools import ANIResults
+from .pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
 
 
 # Divide input FASTA sequences into fragments
-def fragment_FASTA_files(infiles, outdirname, fragsize):
+def fragment_fasta_files(infiles, outdirname, fragsize):
     """Chops sequences of the passed files into fragments, returns filenames.
 
     - infiles - paths to each input sequence file
@@ -130,18 +130,47 @@ def get_fragment_lengths(fastafile):
     return fraglengths
 
 
+# Create dictionary of database building commands, keyed by dbname
+def build_db_jobs(infiles, blastcmds):
+    """Returns dictionary of db-building commands, keyed by dbname."""
+    dbjobdict = {}  # Dict of database construction jobs, keyed by filename
+    # Create dictionary of database building jobs, keyed by db name
+    # defining jobnum for later use as last job index used
+    for idx, fname in enumerate(infiles):
+        dbjobdict[blastcmds.get_db_name(fname)] = \
+                pyani_jobs.Job("%s_db_%06d" % (blastcmds.prefix, idx),
+                               blastcmds.build_db_cmd(fname))
+    return dbjobdict
+
+
+def make_blastcmd_builder(mode, outdir, format_exe=None, blast_exe=None,
+                          prefix="ANIBLAST"):
+    """Returns BLASTcmds object for construction of BLAST commands."""
+    if mode == "ANIb":  # BLAST/formatting executable depends on mode
+        blastcmds = BLASTcmds(BLASTfunctions(construct_makeblastdb_cmd,
+                                             construct_blastn_cmdline),
+                              BLASTexes(format_exe or \
+                                        pyani_config.MAKEBLASTDB_DEFAULT,
+                                        blast_exe or \
+                                        pyani_config.BLASTN_DEFAULT),
+                              prefix, outdir)
+    else:
+        blastcmds = BLASTcmds(BLASTfunctions(construct_formatdb_cmd,
+                                             construct_blastall_cmdline),
+                              BLASTexes(format_exe or \
+                                        pyani_config.FORMATDB_DEFAULT,
+                                        blast_exe or \
+                                        pyani_config.BLASTALL_DEFAULT),
+                              prefix, outdir)
+    return blastcmds
+
+
 # Make a dependency graph of BLAST commands
-def make_job_graph(infiles, fragfiles, outdir,
-                   format_exe=None, blast_exe=None,
-                   mode="ANIb", jobprefix="ANIBLAST"):
+def make_job_graph(infiles, fragfiles, blastcmds):
     """Return a job dependency graph, based on the passed input sequence files.
 
     - infiles - a list of paths to input FASTA files
     - fragfiles - a list of paths to fragmented input FASTA files
-    - outdir - path to output directory
-    - format_exe - path to the database formatting executable
-    - blast_exe - path to BLASTN executable
-    - mode - which BLAST mode are we running in: ANIb or ANIblastall
 
     By default, will run ANIb - it *is* possible to make a mess of passing the
     wrong executable for the mode you're using.
@@ -153,51 +182,31 @@ def make_job_graph(infiles, fragfiles, outdir,
     run_multiprocessing.py, run_sge.py)
     """
     joblist = []    # Holds list of job dependency graphs
-    dbjobdict = {}  # Dict of database construction jobs, keyed by filename
 
-    if mode == "ANIb":  # BLAST/formatting executable depends on mode
-        construct_db_cmdline = construct_makeblastdb_cmd
-        construct_blast_cmdline = construct_blastn_cmdline
-        if format_exe is None:
-            format_exe = pyani_config.MAKEBLASTDB_DEFAULT
-        if blast_exe is None:
-            blast_exe = pyani_config.BLASTN_DEFAULT
-    else:
-        construct_db_cmdline = construct_formatdb_cmd
-        construct_blast_cmdline = construct_blastall_cmdline
-        if format_exe is None:
-            format_exe = pyani_config.FORMATDB_DEFAULT
-        if blast_exe is None:
-            blast_exe = pyani_config.BLASTALL_DEFAULT
-
-    # Create dictionary of database building jobs, keyed by db name
-    # define job_offset for later use as last job index used
-    for idx, fname in enumerate(infiles):
-        dbcmd, dbname = construct_db_cmdline(fname, outdir, format_exe)
-        job = pyani_jobs.Job("%s_db_%06d" % (jobprefix, idx), dbcmd)
-        dbjobdict[dbname] = job
-        job_offset = idx
+    # Get dictionary of database-building jobs
+    dbjobdict = build_db_jobs(infiles, blastcmds)
 
     # Create list of BLAST executable jobs, with dependencies
-    jobnum = job_offset
+    jobnum = len(dbjobdict)
     for idx, fname1 in enumerate(fragfiles[:-1]):
-        dbname1 = fname1.replace('-fragments', '')
         for fname2 in fragfiles[idx+1:]:
             jobnum += 1
-            dbname2 = fname2.replace('-fragments', '')
-            execmd1 = construct_blast_cmdline(fname1, dbname2,
-                                              outdir, blast_exe)
-            execmd2 = construct_blast_cmdline(fname2, dbname1,
-                                              outdir, blast_exe)
-            job1 = pyani_jobs.Job("%s_exe_%06d_a" %
-                                  (jobprefix, jobnum), execmd1)
-            job2 = pyani_jobs.Job("%s_exe_%06d_b" %
-                                  (jobprefix, jobnum), execmd2)
-            job1.add_dependency(dbjobdict[dbname2])
-            job2.add_dependency(dbjobdict[dbname1])
-            joblist.extend([job1, job2])
+            jobs = \
+                [pyani_jobs.Job("%s_exe_%06d_a" %
+                                (blastcmds.prefix, jobnum),
+                                blastcmds.build_blast_cmd(fname1,
+                                                          fname2.replace\
+                                                          ('-fragments', ''))),
+                 pyani_jobs.Job("%s_exe_%06d_b" %
+                                (blastcmds.prefix, jobnum),
+                                blastcmds.build_blast_cmd(fname2,
+                                                          fname1.replace\
+                                                          ('-fragments', '')))]
+            jobs[0].add_dependency(dbjobdict[fname1.replace('-fragments', '')])
+            jobs[1].add_dependency(dbjobdict[fname2.replace('-fragments', '')])
+            joblist.extend(jobs)
 
-    # Return the dependency graph. This is the joblist.
+    # Return the dependency graph
     return joblist
 
 
@@ -346,7 +355,8 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
     # Process directory to identify input files
     blastfiles = pyani_files.get_input_files(blast_dir, '.blast_tab')
     # Hold data in ANIResults object
-    results = ANIResults(list(org_lengths.keys()))
+    results = ANIResults(list(org_lengths.keys()), mode)
+
     # Fill diagonal NA values for alignment_length with org_lengths
     for org, length in list(org_lengths.items()):
         results.alignment_lengths[org][org] = length
@@ -369,17 +379,15 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
                 logger.warning("Subject name %s not in input " % sname +
                                "sequence list, skipping %s" % blastfile)
             continue
-        tot_length, tot_sim_error, ani_pid = parse_blast_tab(blastfile,
-                                                             fraglengths,
-                                                             mode)
-        query_cover = float(tot_length) / org_lengths[qname]
+        resultvals = parse_blast_tab(blastfile, fraglengths, mode)
+        query_cover = float(resultvals[0]) / org_lengths[qname]
 
         # Populate dataframes: when assigning data, we need to note that
         # we have asymmetrical data from BLAST output, so only the
         # upper triangle is populated
-        results.add_tot_length(qname, sname, tot_length, sym=False)
-        results.add_sim_errors(qname, sname, tot_sim_error, sym=False)
-        results.add_pid(qname, sname, 0.01 * ani_pid, sym=False)
+        results.add_tot_length(qname, sname, resultvals[0], sym=False)
+        results.add_sim_errors(qname, sname, resultvals[1], sym=False)
+        results.add_pid(qname, sname, 0.01 * resultvals[2], sym=False)
         results.add_coverage(qname, sname, query_cover)
     return results
 
