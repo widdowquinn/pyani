@@ -114,7 +114,7 @@ def test_anim_concordance():
     cmdlist = anim.generate_nucmer_commands(infiles, outdirname,
                                             pyani_config.NUCMER_DEFAULT)
     print('\n'.join(cmdlist))
-    multiprocessing_run(cmdlist, verbose=False)
+    multiprocessing_run(cmdlist)
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
     anim_pid = \
@@ -166,13 +166,14 @@ def test_anib_concordance():
 
     # Test ANIb concordance:
     # Make fragments
-    fragfiles, fraglengths = anib.fragment_FASTA_files(infiles, outdirname,
+    fragfiles, fraglengths = anib.fragment_fasta_files(infiles, outdirname,
                                                        pyani_config.FRAGSIZE)
 
     
     # Build jobgraph
-    jobgraph = anib.make_job_graph(infiles, fragfiles, outdirname,
-                                   mode="ANIb")
+    jobgraph = anib.make_job_graph(infiles, fragfiles,
+                                   anib.make_blastcmd_builder("ANIb",
+                                                              outdirname))
     print("\nJobgraph:\n", jobgraph)
 
     # Run jobgraph with multiprocessing
@@ -225,12 +226,13 @@ def test_aniblastall_concordance():
 
     # Test ANIblastall concordance:
     # Make fragments
-    fragfiles, fraglengths = anib.fragment_FASTA_files(infiles, outdirname,
+    fragfiles, fraglengths = anib.fragment_fasta_files(infiles, outdirname,
                                                        pyani_config.FRAGSIZE)
 
     # Build jobgraph
-    jobgraph = anib.make_job_graph(infiles, fragfiles, outdirname,
-                                   mode="ANIblastall")
+    jobgraph = anib.make_job_graph(infiles, fragfiles,
+                                   anib.make_blastcmd_builder("ANIblastall",
+                                                              outdirname))
     print("\nJobgraph:\n", jobgraph)
     print("\nJob 0:\n", jobgraph[0].script)
 

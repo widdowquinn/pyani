@@ -29,6 +29,35 @@ def split_seq(iterable, size):
         item = list(itertools.islice(elm, size))
 
 
+# Build a list of SGE jobs from a graph
+def build_joblist(jobgraph):
+    """Returns a list of jobs, from a passed jobgraph."""
+    jobset = set()
+    for job in jobgraph:
+        jobset = populate_jobset(job, jobset, depth=1)
+    return list(jobset)
+
+
+# Convert joblist into jobgroups
+def compile_jobgroups_from_joblist(joblist, jgprefix, sgegroupsize):
+    """Return list of jobgroups, rather than list of jobs."""
+    jobcmds = defaultdict(list)
+    for job in joblist:
+        jobcmds[job.command.split(' ', 1)[0]].append(job.command)
+    jobgroups = []
+    for cmds in list(jobcmds.items()):
+        # Break arglist up into batches of sgegroupsize (default: 10,000)
+        sublists = split_seq(cmds[1], sgegroupsize)
+        count = 0
+        for sublist in sublists:
+            count += 1
+            sge_jobcmdlist = ['\"%s\"' % jc for jc in sublist]
+            jobgroups.append(JobGroup("%s_%d" % (jgprefix, count),
+                                      "$cmds",
+                                      arguments={'cmds': sge_jobcmdlist}))
+    return jobgroups
+
+
 # Run a job dependency graph, with SGE
 def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
                          sgegroupsize=10000):
@@ -47,10 +76,7 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
     add the job to a new list of jobs, swapping out the Job dependency for
     the name of the Job on which it depends.
     """
-    jobset = set()
-    for job in jobgraph:
-        jobset = populate_jobset(job, jobset, depth=1)
-    joblist = list(jobset)
+    joblist = build_joblist(jobgraph)
 
     # Try to be informative by telling the user what jobs will run
     dep_count = 0  # how many dependencies are there
@@ -69,22 +95,8 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
     # job lists choking up the queue.
     if dep_count == 0:
         logger.info("Compiling jobs into JobGroups")
-        jobcmds = defaultdict(list)
-        for job in joblist:
-            cmd = job.command.split(' ', 1)[0]
-            jobcmds[cmd].append(job.command)
-        jobgroups = []
-        for cmd, jobcmd in list(jobcmds.items()):
-            # Break arglist up into batches of sgegroupsize (default: 10,000)
-            sublists = split_seq(jobcmd, sgegroupsize)
-            count = 0
-            for sublist in sublists:
-                count += 1
-                sge_jobcmdlist = ['\"%s\"' % jc for jc in sublist]
-                jobgroups.append(JobGroup("%s_%d" % (jgprefix, count),
-                                          "$cmds",
-                                          arguments={'cmds': sge_jobcmdlist}))
-        joblist = jobgroups
+        joblist = compile_jobgroups_from_joblist(joblist, jgprefix,
+                                                 sgegroupsize)
 
     # Send jobs to scheduler
     logger.info("Running jobs with scheduler...")
