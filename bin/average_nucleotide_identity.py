@@ -170,7 +170,7 @@ from pyani import (anib, anim, tetra, pyani_config, pyani_files,
                    pyani_graphics, pyani_tools)
 from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
-from pyani.pyani_config import params_mpl, ALIGNDIR, FRAGSIZE
+from pyani.pyani_config import params_mpl, ALIGNDIR, FRAGSIZE, TETRA_FILESTEMS
 from pyani import __version__ as VERSION
 
 
@@ -457,7 +457,7 @@ def calculate_tetra(infiles):
     # Then calculate Pearson correlation between Z-scores for each sequence
     logger.info("Calculating TETRA correlation scores.")
     tetra_correlations = tetra.calculate_correlations(tetra_zscores)
-    return (tetra_correlations, )
+    return tetra_correlations
 
 
 # Calculate ANIb for input
@@ -583,14 +583,25 @@ def write(results):
     order of result output must be reflected in the order of filestems.
     """
     logger.info("Writing %s results to %s", args.method, args.outdirname)
-    for dfr, filestem in results.data:
-        logger.info("\t%s", filestem)
+    if args.method == "TETRA":
+        out_excel = os.path.join(args.outdirname,
+                                 TETRA_FILESTEMS[0]) + '.xlsx'
+        out_csv = os.path.join(args.outdirname,
+                               TETRA_FILESTEMS[0]) + '.tab'
         if args.write_excel:
-            dfr.to_excel(os.path.join(args.outdirname, filestem) + '.xlsx',
-                         index=True)
-        dfr.to_csv(os.path.join(args.outdirname, filestem) + '.tab',
-                   index=True, sep="\t")
+            results.to_excel(out_excel, index=True)
+        results.to_csv(out_csv, index=True, sep="\t")
+            
+    else:
+        out_excel = os.path.join(args.outdirname, filestem) + '.xlsx'
+        out_csv = os.path.join(args.outdirname, filestem) + '.tab'
+        for dfr, filestem in results.data:
+            logger.info("\t%s", filestem)
+            if args.write_excel:
+                dfr.to_excel(out_excel, index=True)
+            dfr.to_csv(out_csv, index=True, sep="\t")
 
+            
 # Draw ANIb/ANIm/TETRA output
 def draw(filestems, gformat, logger=None):
     """Draw ANIb/ANIm/TETRA results

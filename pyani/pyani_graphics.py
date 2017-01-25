@@ -183,17 +183,19 @@ def add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation='col'):
         spec = heatmap_gs[1, 0]
         orient = 'left'
         nrows, ncols = 1, 2
+        height_ratios = [1, ]
     else:  # Column dendrogram
         dists = distance.squareform(distance.pdist(dfr.T))
         spec = heatmap_gs[0, 1]
         orient = 'top'
         nrows, ncols = 2, 1
+        height_ratios = [1, 0.15]
 
     # Create row dendrogram axis
     gspec = gridspec.GridSpecFromSubplotSpec(nrows, ncols,
                                              subplot_spec=spec,
                                              wspace=0.0, hspace=0.1,
-                                             height_ratios=[1, 0.15])
+                                             height_ratios=height_ratios)
     dend_axes = fig.add_subplot(gspec[0, 0])
     dend = sch.dendrogram(sch.linkage(dists, method='complete'),
                           color_threshold=np.inf,
