@@ -593,9 +593,9 @@ def write(results):
         results.to_csv(out_csv, index=True, sep="\t")
             
     else:
-        out_excel = os.path.join(args.outdirname, filestem) + '.xlsx'
-        out_csv = os.path.join(args.outdirname, filestem) + '.tab'
         for dfr, filestem in results.data:
+            out_excel = os.path.join(args.outdirname, filestem) + '.xlsx'
+            out_csv = os.path.join(args.outdirname, filestem) + '.tab'
             logger.info("\t%s", filestem)
             if args.write_excel:
                 dfr.to_excel(out_excel, index=True)
