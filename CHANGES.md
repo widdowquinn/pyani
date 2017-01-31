@@ -2,6 +2,7 @@
 
 ## v0.2.1.dev
 
+* fix to `genbank_get_genomes_by_taxon.py` to account for NCBI FTP location changes
 * add several tests and support for `codecov.io`, `landscape.io` and `Travis-CI`
 * removed requirement for `rpy2`
 * moved scripts to `bin/` subdirectory
