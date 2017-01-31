@@ -228,8 +228,9 @@ def get_ncbi_asm(asm_uid):
 
     AssemblyAccession and AssemblyName are data fields in the eSummary record,
     and correspond to downloadable files for each assembly at
-    ftp://ftp.ncbi.nlm.nih.gov/genomes/all/<AA>_<AN>
-    where <AA> is AssemblyAccession, and <AN> is AssemblyName.
+    ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GC[AF]/nnn/nnn/nnn/<AA>_<AN>
+    where <AA> is AssemblyAccession, and <AN> is AssemblyName, and the choice
+    of GCA vs GCF, and the three values of nnn are taken from <AA>
     """
     logger.info("Identifying assembly information from NCBI for %s",
                 asm_uid)
@@ -254,7 +255,8 @@ def get_ncbi_asm(asm_uid):
     organism = data['SpeciesName']
     try:
         strain = data['Biosource']['InfraspeciesList'][0]['Sub_value']
-    except KeyError:
+    except (KeyError, IndexError):
+        # we consider this an error/incompleteness in the NCBI metadata
         strain = ""
 
     # Create label and class strings
@@ -288,15 +290,16 @@ def get_ncbi_asm(asm_uid):
 
 # Download and extract an NCBI assembly file, given a filestem
 def retrieve_asm_contigs(filestem,
-                         ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all/",
+                         ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all",
                          suffix="genomic.fna.gz"):
     """Downloads an assembly sequence to a local directory.
 
     The filestem corresponds to <AA>_<AN>, where <AA> and <AN> are
     AssemblyAccession and AssemblyName: data fields in the eSummary record.
     These correspond to downloadable files for each assembly at
-    ftp://ftp.ncbi.nlm.nih.gov/genomes/all/<AA>_<AN>
-    where <AA> is AssemblyAccession, and <AN> is AssemblyName.
+    ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GC[AF]/nnn/nnn/nnn/<AA>_<AN>/
+    where <AA> is AssemblyAccession, and <AN> is AssemblyName. The choice
+    of GCA vs GCF, and the values of nnn, are derived from <AA>
 
     The files in this directory all have the stem <AA>_<AN>_<suffix>, where
     suffixes are:
@@ -318,8 +321,12 @@ def retrieve_asm_contigs(filestem,
     logger.info("Retrieving assembly sequence for %s", filestem)
 
     # Compile URL
-    url = "{0}{1}/{2}".format(ftpstem, filestem,
-                              '_'.join([filestem, suffix]))
+    gc, aa, an = tuple(filestem.split('_', 2))
+    aaval = aa.split('.')[0]
+    subdirs = '/'.join([aa[i:i+3] for i in range(0, len(aaval), 3)])
+               
+    url = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gc, subdirs,
+                                           filestem, suffix)
     logger.info("Using URL: %s", url)
 
     # Get data info
