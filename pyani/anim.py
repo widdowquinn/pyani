@@ -32,6 +32,7 @@ from .pyani_tools import ANIResults
 # Generate list of Job objects, one per NUCmer run
 def generate_nucmer_jobs(filenames, outdir='.',
                          nucmer_exe=pyani_config.NUCMER_DEFAULT,
+                         maxmatch=False,
                          jobprefix="ANINUCmer"):
     """Return a list of Jobs describing NUCmer command-lines for ANIm
 
@@ -43,7 +44,8 @@ def generate_nucmer_jobs(filenames, outdir='.',
     Loop over all FASTA files, generating Jobs describing NUCmer command lines
     for each pairwise comparison.
     """
-    cmdlines = generate_nucmer_commands(filenames, outdir, nucmer_exe)
+    cmdlines = generate_nucmer_commands(filenames, outdir, nucmer_exe,
+                                        maxmatch)
     joblist = []
     for idx, cmd in enumerate(cmdlines):
         joblist.append(pyani_jobs.Job("%s_%06d" % (jobprefix, idx), cmd))
@@ -53,7 +55,8 @@ def generate_nucmer_jobs(filenames, outdir='.',
 # Generate list of NUCmer pairwise comparison command lines from
 # passed sequence filenames
 def generate_nucmer_commands(filenames, outdir='.',
-                             nucmer_exe=pyani_config.NUCMER_DEFAULT):
+                             nucmer_exe=pyani_config.NUCMER_DEFAULT,
+                             maxmatch=False):
     """Return a list of NUCmer command-lines for ANIm
 
     - filenames - a list of paths to input FASTA files
@@ -67,7 +70,7 @@ def generate_nucmer_commands(filenames, outdir='.',
     cmdlines = []
     for idx, fname1 in enumerate(filenames[:-1]):
         cmdlines.extend([construct_nucmer_cmdline(fname1, fname2, outdir,
-                                                  nucmer_exe) for
+                                                  nucmer_exe, maxmatch) for
                          fname2 in filenames[idx+1:]])
     return cmdlines
 

@@ -238,9 +238,9 @@ def parse_cmdline():
     parser.add_argument("--SGEgroupsize", dest="sgegroupsize",
                         action="store", default=10000, type=int,
                         help="Number of jobs to place in an SGE array group")
-    #parser.add_argument("--maxmatch", dest="maxmatch",
-    #                    action="store_true", default=False,
-    #                    help="Override MUMmer to allow all NUCmer matches")
+    parser.add_argument("--maxmatch", dest="maxmatch",
+                        action="store_true", default=False,
+                        help="Override MUMmer to allow all NUCmer matches")
     parser.add_argument("--nucmer_exe", dest="nucmer_exe",
                         action="store", default=pyani_config.NUCMER_DEFAULT,
                         help="Path to NUCmer executable")
@@ -374,6 +374,7 @@ def calculate_anim(infiles, org_lengths):
     if not args.skip_nucmer:
         joblist = anim.generate_nucmer_jobs(infiles, args.outdirname,
                                             nucmer_exe=args.nucmer_exe,
+                                            maxmatch=args.maxmatch,
                                             jobprefix=args.jobprefix)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
