@@ -1,6 +1,6 @@
-numpy>=1.10.0.post2
-scipy>=0.16.0
-matplotlib>=1.4.3
-biopython>=1.65
-pandas>=0.17.0
-seaborn>=0.7.0
+numpy
+scipy
+matplotlib
+biopython
+pandas
+seaborn
