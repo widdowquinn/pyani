@@ -2,7 +2,10 @@
 
 ## v0.2.1.dev
 
+* fix for issue #53 (--maxmatch has no effect)
 * fix to `genbank_get_genomes_by_taxon.py` to account for NCBI FTP location changes
+* fixed issue #52 (local variable bug)
+* fixed issued #49 (TETRA failure) and #51 (matplotlib bug)
 * add several tests and support for `codecov.io`, `landscape.io` and `Travis-CI`
 * removed requirement for `rpy2`
 * moved scripts to `bin/` subdirectory
