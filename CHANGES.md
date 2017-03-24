@@ -1,5 +1,8 @@
 # CHANGES.md
 
+## v0.2.3
+* fixes a bug in the installed scripts where the shebang (`#!`) in wheel and egg packages pointed to a development Python
+
 ## v0.2.2
 
 * fix for issue #53 (--maxmatch has no effect)
