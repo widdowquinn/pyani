@@ -238,6 +238,9 @@ def parse_cmdline():
     parser.add_argument("--SGEgroupsize", dest="sgegroupsize",
                         action="store", default=10000, type=int,
                         help="Number of jobs to place in an SGE array group")
+    parser.add_argument("--SGEargs", dest="sgeargs",
+                        action="store", default=None,
+                        help="Additional arguments for qsub")
     parser.add_argument("--maxmatch", dest="maxmatch",
                         action="store_true", default=False,
                         help="Override MUMmer to allow all NUCmer matches")
@@ -399,7 +402,8 @@ def calculate_anim(infiles, org_lengths):
             run_sge.run_dependency_graph(joblist,
                                          logger=logger,
                                          jgprefix=args.jobprefix,
-                                         sgegroupsize=args.sgegroupsize)
+                                         sgegroupsize=args.sgegroupsize,
+                                         sgeargs=args.sgeargs)
     else:
         logger.warning("Skipping NUCmer run (as instructed)!")
 

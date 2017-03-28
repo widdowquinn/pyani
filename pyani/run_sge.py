@@ -60,13 +60,16 @@ def compile_jobgroups_from_joblist(joblist, jgprefix, sgegroupsize):
 
 # Run a job dependency graph, with SGE
 def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
-                         sgegroupsize=10000):
+                         sgegroupsize=10000, sgeargs=None):
     """Creates and runs GridEngine scripts for jobs based on the passed
     jobgraph.
 
     - jobgraph - list of jobs, which may have dependencies.
     - verbose - flag for multiprocessing verbosity
     - logger - a logger module logger (optional)
+    - jgprefix - a prefix for the submitted jobs, in the scheduler
+    - sgegroupsize - the maximum size for an array job submission
+    - sgeargs - additional arguments to qsub
 
     The strategy here is to loop over each job in the list of jobs (jobgraph),
     and create/populate a series of Sets of commands, to be run in
@@ -103,7 +106,7 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
     logger.info("Jobs passed to scheduler in order:")
     for job in joblist:
         logger.info("\t%s" % job.name)
-    build_and_submit_jobs(os.curdir, joblist)
+    build_and_submit_jobs(os.curdir, joblist, sgeargs)
     logger.info("Waiting for SGE-submitted jobs to finish (polling)")
     for job in joblist:
         job.wait()
@@ -175,7 +178,7 @@ def extract_submittable_jobs(waiting):
     return list(submittable)
 
 
-def submit_safe_jobs(root_dir, jobs):
+def submit_safe_jobs(root_dir, jobs, sgeargs=None):
     """Submit the passed list of jobs to the Grid Engine server, using the
     passed directory as the root for scheduler output.
 
@@ -212,12 +215,14 @@ def submit_safe_jobs(root_dir, jobs):
 
         # Build the qsub SGE commandline (passing local environment)
         qsubcmd = ("%s -V %s %s" %
-                   (pyani_config.QSUB_DEFAULT, args, job.scriptPath))
+                   (pyani_config.QSUB_DEFAULT, args, job.scriptpath))
+        if sgeargs is not None:
+            qsubcmd = "%s %s" % (qsubsmd, sgeargs)
         os.system(qsubcmd)               # Run the command
         job.submitted = True             # Set the job's submitted flag to True
 
 
-def submit_jobs(root_dir, jobs):
+def submit_jobs(root_dir, jobs, sgeargs=None):
     """ Submit each of the passed jobs to the SGE server, using the passed
     directory as root for SGE output.
 
@@ -230,19 +235,19 @@ def submit_jobs(root_dir, jobs):
         # extract submittable jobs
         submittable = extract_submittable_jobs(waiting)
         # run those jobs
-        submit_safe_jobs(root_dir, submittable)
+        submit_safe_jobs(root_dir, submittable, sgeargs)
         # remove those from the waiting list
         for job in submittable:
             waiting.remove(job)
 
 
-def build_and_submit_jobs(root_dir, jobs):
+def build_and_submit_jobs(root_dir, jobs, sgeargs=None):
     """Submits the passed iterable of Job objects to SGE, placing SGE's
     output in the passed root directory
 
     - root_dir   Root directory for SGE and job output
-
     - jobs       List of Job objects, describing each job to be submitted
+    - sgeargs    Additional arguments to qsub
     """
     # If the passed set of jobs is not a list, turn it into one. This makes the
     # use of a single JobGroup a little more intutitive
@@ -252,4 +257,4 @@ def build_and_submit_jobs(root_dir, jobs):
     # Build and submit the passed jobs
     build_directories(root_dir)        # build all necessary directories
     build_job_scripts(root_dir, jobs)  # build job scripts
-    submit_jobs(root_dir, jobs)        # submit the jobs to SGE
+    submit_jobs(root_dir, jobs, sgeargs)        # submit the jobs to SGE
