@@ -239,7 +239,7 @@ def parse_cmdline():
                         action="store", default=10000, type=int,
                         help="Number of jobs to place in an SGE array group")
     parser.add_argument("--SGEargs", dest="sgeargs",
-                        action="store", default=None,
+                        action="store", default=None, type=str,
                         help="Additional arguments for qsub")
     parser.add_argument("--maxmatch", dest="maxmatch",
                         action="store_true", default=False,
