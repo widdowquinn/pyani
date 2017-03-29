@@ -1,5 +1,10 @@
 # CHANGES.md
 
+## v0.2.3.dev
+
+* add `--SGEargs` option to `average_nucleotide_identity.py` for custom qsub settings
+
+
 ## v0.2.3
 * fixes a bug in the installed scripts where the shebang (`#!`) in wheel and egg packages pointed to a development Python
 
