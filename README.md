@@ -1,6 +1,10 @@
 # README.md (pyani)
 
-![pyani PyPi version](https://img.shields.io/pypi/v/pyani.svg "PyPi version") ![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence") ![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=master) ![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg) [![Code Health](https://landscape.io/github/widdowquinn/pyani/master/landscape.svg?style=flat)](https://landscape.io/github/widdowquinn/pyani/master) 
+[![pyani PyPi version](https://img.shields.io/pypi/v/pyani.svg "PyPi version")](https://pypi.python.org/pypi/pyani)
+[![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/master/LICENSE)
+[![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=master)](https://travis-ci.org/widdowquinn/pyani/branches)
+[![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)](https://codecov.io/github/widdowquinn/pyani)
+[![Code Health](https://landscape.io/github/widdowquinn/pyani/master/landscape.svg?style=flat)](https://landscape.io/github/widdowquinn/pyani/master) 
 
 ## Overview
 `pyani` is a Python3 module that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
