@@ -9,7 +9,7 @@ coverage:
   range: 70...100
 
   status:
-    # Learn more at https://codecov.io/docs#yaml_default_commit_status
+    # Learn more at https://docs.codecov.io/docs/commit-status
     project: true
     patch: true
     changes: false
