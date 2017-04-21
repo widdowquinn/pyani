@@ -178,6 +178,8 @@ from pyani import __version__ as VERSION
 def parse_cmdline():
     """Parse command-line arguments for script."""
     parser = ArgumentParser(prog="average_nucleotide_identity.py")
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s using pyani ' + VERSION)
     parser.add_argument("-o", "--outdir", dest="outdirname",
                         action="store", default=None,
                         help="Output directory")
