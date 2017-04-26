@@ -332,11 +332,20 @@ def retrieve_asm_contigs(filestem,
     # Get data info
     try:
         response = urlopen(url, timeout=args.timeout)
-    except (HTTPError, URLError):
+    except HTTPError:
         logger.error("Download failed for URL: %s\n%s",
                      url, last_exception())
         raise NCBIDownloadException()
+    except URLError as e:
+        if isinstance(e.reason, timeout):
+            logger.error("Download timed out for URL: %s\n%s",
+                         url, last_exception())
+        else:
+            logger.error("Download failed for URL: %s\n%s",
+                         url, last_exception())
+        raise NCBIDownloadException()
     except timeout:
+        # TODO: Does this ever happen?
         logger.error("Download timed out for URL: %s\n%s",
                      url, last_exception())
         raise NCBIDownloadException()
