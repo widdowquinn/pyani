@@ -212,9 +212,9 @@ def extract_filestem(data):
     Some illegal characters may occur in AssemblyName - for these, a more
     robust regex replace/escape may be required. Sadly, NCBI don't just
     use standard percent escapes, but instead replace certain
-    characters with underscores.
+    characters with underscores: white space, slash, comma, hash, brackets.
     """
-    escapes = re.compile(r"[\s/,]")
+    escapes = re.compile(r"[\s/,#\(\)]")
     escname = re.sub(escapes, '_', data['AssemblyName'])
     return '_'.join([data['AssemblyAccession'], escname])
 
