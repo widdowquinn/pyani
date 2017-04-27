@@ -182,10 +182,10 @@ def parse_cmdline():
                         version='%(prog)s: pyani ' + VERSION)
     parser.add_argument("-o", "--outdir", dest="outdirname",
                         action="store", default=None, required=True,
-                        help="Output directory")
+                        help="Output directory (required)")
     parser.add_argument("-i", "--indir", dest="indirname",
                         action="store", default=None, required=True,
-                        help="Input directory name")
+                        help="Input directory name (required)")
     parser.add_argument("-v", "--verbose", dest="verbose",
                         action="store_true", default=False,
                         help="Give verbose output")
@@ -195,7 +195,8 @@ def parse_cmdline():
     parser.add_argument("-s", "--fragsize", dest="fragsize",
                         action="store", default=FRAGSIZE,
                         type=int,
-                        help="Sequence fragment size for ANIb")
+                        help="Sequence fragment size for ANIb "
+                        "(default %i)" % FRAGSIZE)
     parser.add_argument("-l", "--logfile", dest="logfile",
                         action="store", default=None,
                         help="Logfile location")
@@ -218,10 +219,12 @@ def parse_cmdline():
                         help="Generate heatmap of ANI")
     parser.add_argument("--gformat", dest="gformat",
                         action="store", default="pdf,png,eps",
-                        help="Graphics output format(s) [pdf|png|jpg|svg]")
+                        help="Graphics output format(s) [pdf|png|jpg|svg] "
+                        "(default pdf,png,eps meaning three file formats)")
     parser.add_argument("--gmethod", dest="gmethod",
                         action="store", default="mpl",
-                        help="Graphics output method [mpl|seaborn]")
+                        help="Graphics output method [mpl|seaborn] "
+                        "(default mpl)")
     parser.add_argument("--labels", dest="labels",
                         action="store", default=None,
                         help="Path to file containing sequence labels")
@@ -233,13 +236,16 @@ def parse_cmdline():
                         help="ANI method [ANIm|ANIb|ANIblastall|TETRA]")
     parser.add_argument("--scheduler", dest="scheduler",
                         action="store", default="multiprocessing",
-                        help="Job scheduler [multiprocessing|SGE]")
+                        help="Job scheduler [multiprocessing|SGE] "
+                        "(default multiprocessing, meaning run locally)")
     parser.add_argument("--workers", dest="workers",
                         action="store", default=None, type=int,
-                        help="Number of worker processes for multiprocessing")
+                        help="Number of worker processes for multiprocessing "
+                        "(default zero, meaning use all available cores)")
     parser.add_argument("--SGEgroupsize", dest="sgegroupsize",
                         action="store", default=10000, type=int,
-                        help="Number of jobs to place in an SGE array group")
+                        help="Number of jobs to place in an SGE array group "
+                        "(default 10000)")
     parser.add_argument("--SGEargs", dest="sgeargs",
                         action="store", default=None, type=str,
                         help="Additional arguments for qsub")
@@ -280,7 +286,7 @@ def parse_cmdline():
                         help="Set random seed for reproducible subsampling.")
     parser.add_argument("--jobprefix", dest="jobprefix",
                         action="store", default="ANI",
-                        help="Prefix for SGE jobs.")
+                        help="Prefix for SGE jobs (default ANI).")
     return parser.parse_args()
 
 
