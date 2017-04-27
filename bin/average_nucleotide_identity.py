@@ -181,10 +181,10 @@ def parse_cmdline():
     parser.add_argument('--version', action='version',
                         version='%(prog)s: pyani ' + VERSION)
     parser.add_argument("-o", "--outdir", dest="outdirname",
-                        action="store", default=None,
+                        action="store", default=None, required=True,
                         help="Output directory")
     parser.add_argument("-i", "--indir", dest="indirname",
-                        action="store", default=None,
+                        action="store", default=None, required=True,
                         help="Input directory name")
     parser.add_argument("-v", "--verbose", dest="verbose",
                         action="store_true", default=False,
