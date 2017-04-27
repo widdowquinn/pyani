@@ -223,8 +223,8 @@ def parse_cmdline():
                         "(default pdf,png,eps meaning three file formats)")
     parser.add_argument("--gmethod", dest="gmethod",
                         action="store", default="mpl",
-                        help="Graphics output method [mpl|seaborn] "
-                        "(default mpl)")
+                        choices=["mpl", "seaborn"],
+                        help="Graphics output method (default mpl)")
     parser.add_argument("--labels", dest="labels",
                         action="store", default=None,
                         help="Path to file containing sequence labels")
@@ -233,11 +233,12 @@ def parse_cmdline():
                         help="Path to file containing sequence classes")
     parser.add_argument("-m", "--method", dest="method",
                         action="store", default="ANIm",
-                        help="ANI method [ANIm|ANIb|ANIblastall|TETRA]")
+                        choices=["ANIm", "ANIb", "ANIblastall", "TETRA"],
+                        help="ANI method (default ANIm)")
     parser.add_argument("--scheduler", dest="scheduler",
                         action="store", default="multiprocessing",
-                        help="Job scheduler [multiprocessing|SGE] "
-                        "(default multiprocessing, meaning run locally)")
+                        choices=["multiprocessing", "SGE"],
+                        help="Job scheduler (default multiprocessing, i.e. locally)")
     parser.add_argument("--workers", dest="workers",
                         action="store", default=None, type=int,
                         help="Number of worker processes for multiprocessing "
