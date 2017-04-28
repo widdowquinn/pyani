@@ -46,9 +46,9 @@ class NCBIDownloadException(Exception):
 def parse_cmdline():
     """Parse command-line arguments"""
     parser = ArgumentParser(prog="genbank_get_genomes_by_taxon.py")
-    parser.add_argument("-o", "--outdir", dest="outdirname",
+    parser.add_argument("-o", "--outdir", dest="outdirname", required=True,
                         action="store", default=None,
-                        help="Output directory")
+                        help="Output directory (required)")
     parser.add_argument("-t", "--taxon", dest="taxon",
                         action="store", default=None,
                         help="NCBI taxonomy ID")
@@ -67,9 +67,9 @@ def parse_cmdline():
     parser.add_argument("--format", dest="format",
                         action="store", default="gbk,fasta",
                         help="Output file format [gbk|fasta]")
-    parser.add_argument("--email", dest="email",
+    parser.add_argument("--email", dest="email", required=True,
                         action="store", default=None,
-                        help="Email associated with NCBI queries")
+                        help="Email associated with NCBI queries (required)")
     parser.add_argument("--retries", dest="retries",
                         action="store", default=20,
                         help="Number of Entrez retry attempts per request.")
@@ -541,7 +541,7 @@ if __name__ == '__main__':
     logger.info("command-line: %s", ' '.join(sys.argv))
     logger.info(args)
 
-    # Have we got an output directory? If not, exit.
+    # Have we got an email address? If not, exit.
     if args.email is None:
         logger.error("No email contact address provided (exiting)")
         sys.exit(1)
