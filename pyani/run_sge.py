@@ -81,6 +81,11 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
     """
     joblist = build_joblist(jobgraph)
 
+    if not joblist:
+        if logger:
+            logger.info("No jobs to run with SGE scheduler")
+        return 0
+
     # Try to be informative by telling the user what jobs will run
     dep_count = 0  # how many dependencies are there
     if logger:

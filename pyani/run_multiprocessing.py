@@ -34,6 +34,11 @@ def run_dependency_graph(jobgraph, workers=None, logger=None):
     for job in jobgraph:
         cmdsets = populate_cmdsets(job, cmdsets, depth=1)
 
+    if not cmdsets:
+        if logger:
+            logger.info("No jobs to run with multiprocessing")
+        return 0
+
     # Put command sets in reverse order, and submit to multiprocessing_run
     cmdsets.reverse()
     cumretval = 0
