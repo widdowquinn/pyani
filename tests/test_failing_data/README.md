@@ -19,38 +19,14 @@ bin/average_nucleotide_identity.py -i tests/test_failing_data/ -o ./test_out -m 
 ## Expected error
 
 ```
-WARNING: Total alignment length reported in ./test_out/NC_000918_vs_NC_010473.delta is zero!
-ERROR: One or more NUCmer output files has a problem.
-ERROR: This is possibly due to a NUCmer comparison being too distant for use. If so, please consider using the --maxmatch option.
-ERROR: Alternatively, this may be due to NUCmer run failure: analysis may continue, but please investigate.
-WARNING: Total alignment length reported in ./test_out/NC_000918_vs_NC_013353.delta is zero!
-ERROR: One or more NUCmer output files has a problem.
-ERROR: This is possibly due to a NUCmer comparison being too distant for use. If so, please consider using the --maxmatch option.
-ERROR: Alternatively, this may be due to NUCmer run failure: analysis may continue, but please investigate.
-WARNING: Total alignment length reported in ./test_out/NC_000918_vs_NC_015216.delta is zero!
-ERROR: One or more NUCmer output files has a problem.
-ERROR: This is possibly due to a NUCmer comparison being too distant for use. If so, please consider using the --maxmatch option.
-ERROR: Alternatively, this may be due to NUCmer run failure: analysis may continue, but please investigate.
-WARNING: Total alignment length reported in ./test_out/NC_000918_vs_NC_023044.delta is zero!
-ERROR: One or more NUCmer output files has a problem.
-ERROR: This is possibly due to a NUCmer comparison being too distant for use. If so, please consider using the --maxmatch option.
-ERROR: Alternatively, this may be due to NUCmer run failure: analysis may continue, but please investigate.
-WARNING: Total alignment length reported in ./test_out/NC_010473_vs_NC_015216.delta is zero!
-ERROR: One or more NUCmer output files has a problem.
-ERROR: This is possibly due to a NUCmer comparison being too distant for use. If so, please consider using the --maxmatch option.
-ERROR: Alternatively, this may be due to NUCmer run failure: analysis may continue, but please investigate.
-WARNING: Total alignment length reported in ./test_out/NC_010473_vs_NC_023044.delta is zero!
-ERROR: One or more NUCmer output files has a problem.
-ERROR: This is possibly due to a NUCmer comparison being too distant for use. If so, please consider using the --maxmatch option.
-ERROR: Alternatively, this may be due to NUCmer run failure: analysis may continue, but please investigate.
-WARNING: Total alignment length reported in ./test_out/NC_013353_vs_NC_015216.delta is zero!
-ERROR: One or more NUCmer output files has a problem.
-ERROR: This is possibly due to a NUCmer comparison being too distant for use. If so, please consider using the --maxmatch option.
-ERROR: Alternatively, this may be due to NUCmer run failure: analysis may continue, but please investigate.
-WARNING: Total alignment length reported in ./test_out/NC_013353_vs_NC_023044.delta is zero!
-ERROR: One or more NUCmer output files has a problem.
-ERROR: This is possibly due to a NUCmer comparison being too distant for use. If so, please consider using the --maxmatch option.
-ERROR: Alternatively, this may be due to NUCmer run failure: analysis may continue, but please investigate.
+WARNING: Total alignment length reported in ./test_out/nucmer_output/NC_015216_vs_NC_000918.delta is zero!
+WARNING: Total alignment length reported in ./test_out/nucmer_output/NC_010473_vs_NC_023044.delta is zero!
+WARNING: Total alignment length reported in ./test_out/nucmer_output/NC_000918_vs_NC_023044.delta is zero!
+WARNING: Total alignment length reported in ./test_out/nucmer_output/NC_010473_vs_NC_015216.delta is zero!
+WARNING: Total alignment length reported in ./test_out/nucmer_output/NC_013353_vs_NC_015216.delta is zero!
+WARNING: Total alignment length reported in ./test_out/nucmer_output/NC_010473_vs_NC_000918.delta is zero!
+WARNING: Total alignment length reported in ./test_out/nucmer_output/NC_013353_vs_NC_000918.delta is zero!
+WARNING: Total alignment length reported in ./test_out/nucmer_output/NC_013353_vs_NC_023044.delta is zero!
 ERROR: This is possibly due to a NUCmer comparison being too distant for use. Please consider using the --maxmatch option.
 ERROR: This is alternatively due to NUCmer run failure, analysis will continue, but please investigate.
 ```
