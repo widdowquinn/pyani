@@ -72,6 +72,9 @@ def generate_nucmer_commands(filenames, outdir='.',
         cmdlines.extend([construct_nucmer_cmdline(fname1, fname2, outdir,
                                                   nucmer_exe, maxmatch) for
                          fname2 in filenames[idx+1:]])
+    # This is part of an experimental hack to resume partial jobs.
+    # Remove the no-ops (should they return None, or as now an echo statement?
+    cmdlines = [cmd for cmd in cmdlines if cmd and not cmd.startswith("echo ")]
     return cmdlines
 
 
@@ -95,6 +98,12 @@ def construct_nucmer_cmdline(fname1, fname2, outdir='.',
     outprefix = os.path.join(outsubdir, "%s_vs_%s" %
                              (os.path.splitext(os.path.split(fname1)[-1])[0],
                               os.path.splitext(os.path.split(fname2)[-1])[0]))
+
+    # Experimental hack for resuming partial jobs
+    # (TODO: Could we have partially complete delta files?)
+    if os.path.isfile(outprefix + ".delta"):
+        return "echo 'Reusing existing file {0}.delta'".format(outprefix)
+
     if maxmatch:
         mode = "-maxmatch"
     else:
