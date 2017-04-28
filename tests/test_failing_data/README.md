@@ -13,7 +13,7 @@ This set of sequences should be a 'failing' data set, where at least one pair of
 ## Command-line
 
 ```graph    
-./average_nucleotide_identity.py -i tests/test_failing_data/ -o ./test_out -m ANIm -g --gformat png
+bin/average_nucleotide_identity.py -i tests/test_failing_data/ -o ./test_out -m ANIm -g --gformat png
 ```
 
 ## Expected error
