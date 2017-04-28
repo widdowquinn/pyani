@@ -186,14 +186,6 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
         try:
             perc_id = 1 - float(tot_sim_error) / tot_length
         except ZeroDivisionError:
-            if logger:
-                logger.error("One or more NUCmer output files has a problem.")
-                logger.error("This is possibly due to a NUCmer comparison " +
-                             "being too distant for use. If so, please " +
-                             "consider using the --maxmatch option.")
-                logger.error("Alternatively, this may be due to NUCmer " +
-                             "run failure: analysis may continue, but " +
-                             "please investigate.")
             perc_id = 0  # set arbitrary value of zero identity
             results.zero_error = True
 
