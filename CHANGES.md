@@ -3,6 +3,12 @@
 ## v0.2.3.dev
 
 * add `--SGEargs` option to `average_nucleotide_identity.py` for custom qsub settings
+* `README.md` badges now clickable
+* `--version` switch added to `average_nucleotide_identity.py`
+* FTP timeouts are now caught differently in `genbank_get_genomes_by_taxon.py`
+* Additional characters in NCBI FTP URIs now escaped in `genbank_get_genomes_by_taxon.py` - should be fewer failed downloads
+* Modified error messaging when `NUCmer` alignment fails
+* `average_nucleotide_identity.py` argument documentation improvements
 
 
 ## v0.2.3
