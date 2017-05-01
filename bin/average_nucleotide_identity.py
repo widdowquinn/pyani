@@ -740,6 +740,13 @@ if __name__ == '__main__':
             logger.error("(exiting)")
             sys.exit(1)
 
+    if args.labels and not os.path.isfile(args.labels):
+        logger.error("Missing labels file: %s", args.labels)
+        sys.exit(1)
+    if args.classes and not os.path.isfile(args.classes):
+        logger.error("Missing classes file: %s",args.classes)
+        sys.exit(1)
+
     # Have we got a valid method choice?
     # Dictionary below defines analysis function, and output presentation
     # functions/settings, dependent on selected method.
