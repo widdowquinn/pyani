@@ -45,14 +45,22 @@
 
 import logging
 import os
+import re
 import shutil
 import sys
 import time
 import traceback
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from collections import defaultdict, namedtuple
 
 from pyani import __version__, download
+
+class PyaniDownloadException(Exception):
+    """General exception for downloading"""
+    def __init__(self, msg="Error in download subcommand"):
+        Exception.__init__(self, msg)
+
 
 # Report last exception as string
 def last_exception():
@@ -107,7 +115,7 @@ def parse_cmdline(args):
     # Required arguments for NCBI query
     parser_download.add_argument("-t", "--taxon", dest="taxon",
                                  action="store", default=None,
-                                 help="NCBI taxonomy ID (required)",
+                                 help="NCBI taxonomy IDsr (required)",
                                  required=True)
     parser_download.add_argument("--email", dest="email", required=True,
                                  action="store", default=None,
@@ -166,7 +174,92 @@ def parse_cmdline(args):
 # Download sequence/class/label data from NCBI
 def subcmd_download(args, logger):
     """Download all assembled genomes beneath a passed taxon ID from NCBI."""
-    print(args, logger)
+    # Create output directory
+    if os.path.isdir(args.outdir):
+        logger.warning("Output directory %s exists", args.outdir)
+        if not args.force:
+            raise PyaniDownloadException("Will not overwrite existing " +
+                                         "directory {0}".format(args.outdir))
+        elif args.force and not args.noclobber:
+            # Delete old directory and start again
+            logger.warning("Overwrite forced. " +
+                           "Removing {0} ".format(args.outdir) + 
+                           "and everything below it")
+            shutil.rmtree(args.outdir)
+        else:
+            logger.warning("Keeping existing directory, skipping existing " +
+                           "files.")
+    os.makedirs(args.outdir, exist_ok=True)
+    
+    # Set Entrez email
+    download.set_ncbi_email(args.email)
+    logger.info("Set Entrez email address: {0}".format(args.email))
+    
+    # Get list of taxon IDs to download
+    taxon_ids = download.split_taxa(args.taxon)
+    logger.info("Taxa received: {0}".format(taxon_ids))
+
+    # Get assembly UIDs for each taxon
+    asm_dict = dict()
+    for tid in taxon_ids:
+        asm_uids = download.get_asm_uids(tid, args.retries)
+        logger.info("Query: " +\
+                    "{0}\n\t\tasm count: {1}\n\t\tUIDs: {2}".format(*asm_uids))
+        asm_dict[tid] = asm_uids.asm_ids
+    print(asm_dict)
+
+    # Download contigs and hashes for each assembly UID
+    for tid, uids in asm_dict.items():
+        logger.info("\nDownloading contigs for Taxon ID %s", tid)
+        for uid in uids:
+            # Obtain eSummary            
+            logger.info("Get eSummary information for UID %s", uid)
+            esummary, filestem = download.get_ncbi_esummary(uid, args.retries)
+            logger.info("\tTaxid: %s", esummary['SpeciesTaxid'])
+            logger.info("\tAccession: %s", esummary['AssemblyAccession'])
+            logger.info("\tName: %s", esummary['AssemblyName'])
+
+            # Parse classification
+            uid_class = download.get_ncbi_classification(esummary)
+            logger.info("\tOrganism: %s", uid_class.organism)
+            logger.info("\tGenus: %s", uid_class.genus)
+            logger.info("\tSpecies: %s", uid_class.species)
+            logger.info("\tStrain: %s", uid_class.strain)
+
+            # Make label/class text
+            labeltxt, classtxt = download.create_labels(uid_class, filestem)
+            logger.info("\tLabel: %s", labeltxt)
+            logger.info("\tClass: %s", classtxt)
+    
+            # Obtain URLs
+            ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all"
+            suffix="genomic.fna.gz"
+            logger.info("Retrieving URLs for %s", filestem)
+            dlstatus = download.retrieve_genome_and_hash(filestem,
+                                                         suffix,
+                                                         ftpstem,
+                                                         args.outdir,
+                                                         args.timeout)
+            if not dlstatus.refseq:
+                logger.warning("Downloaded GenBank alternative assembly")
+            logger.info("Used URL: %s", dlstatus.url)
+            if dlstatus.skipped:
+                logger.warning("File %s exists, did not download",
+                               dlstatus.outfname)
+            else:
+                logger.info("Wrote assembly to: %s", dlstatus.outfname)
+                logger.info("Wrote MD5 hashes to: %s", dlstatus.outfhash)
+
+            # Check hash for the download
+            hashstatus = download.check_hash(dlstatus.outfname,
+                                             dlstatus.outfhash)
+            logger.info("Local MD5 hash: %s", hashstatus.localhash)
+            logger.info("NCBI MD5 hash: %s", hashstatus.filehash)
+            if hashstatus.passed:
+                logger.info("MD5 hash check passed")
+            else:
+                logger.warning("MD5 hash check failed.")
+                
 
 
 # CLASSIFY
@@ -215,7 +308,20 @@ if __name__ == '__main__':
             logger.error(last_exception())
             sys.exit(1)
 
+    # Do we need verbosity?
+    if args.verbose:
+        err_handler.setLevel(logging.INFO)
+    else:
+        err_handler.setLevel(logging.WARNING)
+    logger.addHandler(err_handler)
+
+    # Report arguments, if verbose
+    logger.info('Processed arguments: %s' % args)
+    logger.info('command-line: %s' % ' '.join(sys.argv))
+
     # Define subcommand main functions, and distribute on basis of subcommand
+    # NOTE: Halting raised during running subcommands are caught and logged
+    #       here - they do not generally need to be caught before this point.
     subcmd = sys.argv[1]
     subcmds = {'classify': subcmd_classify,
                'download': subcmd_download}
@@ -233,16 +339,6 @@ if __name__ == '__main__':
         logger.error(last_exception())
         sys.exit(1)
 
-    # Do we need verbosity?
-    if args.verbose:
-        err_handler.setLevel(logging.INFO)
-    else:
-        err_handler.setLevel(logging.WARNING)
-    logger.addHandler(err_handler)
-
-    # Report arguments, if verbose
-    logger.info('Processed arguments: %s' % args)
-    logger.info('command-line: %s' % ' '.join(sys.argv))
 
 
     # Exit cleanly (POSIX)
