@@ -51,22 +51,21 @@ qualifying matches contribute to the total aligned length, and total
 aligned sequence identity used to calculate ANI.
 """
 
-import pandas as pd
-
-import collections
 import os
 import shutil
-import sys
+
+import pandas as pd
+
+from Bio import SeqIO
 
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
-
-from Bio import SeqIO
+from .pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
 
 
 # Divide input FASTA sequences into fragments
-def fragment_FASTA_files(infiles, outdirname, fragsize):
+def fragment_fasta_files(infiles, outdirname, fragsize):
     """Chops sequences of the passed files into fragments, returns filenames.
 
     - infiles - paths to each input sequence file
@@ -131,19 +130,47 @@ def get_fragment_lengths(fastafile):
     return fraglengths
 
 
+# Create dictionary of database building commands, keyed by dbname
+def build_db_jobs(infiles, blastcmds):
+    """Returns dictionary of db-building commands, keyed by dbname."""
+    dbjobdict = {}  # Dict of database construction jobs, keyed by filename
+    # Create dictionary of database building jobs, keyed by db name
+    # defining jobnum for later use as last job index used
+    for idx, fname in enumerate(infiles):
+        dbjobdict[blastcmds.get_db_name(fname)] = \
+                pyani_jobs.Job("%s_db_%06d" % (blastcmds.prefix, idx),
+                               blastcmds.build_db_cmd(fname))
+    return dbjobdict
+
+
+def make_blastcmd_builder(mode, outdir, format_exe=None, blast_exe=None,
+                          prefix="ANIBLAST"):
+    """Returns BLASTcmds object for construction of BLAST commands."""
+    if mode == "ANIb":  # BLAST/formatting executable depends on mode
+        blastcmds = BLASTcmds(BLASTfunctions(construct_makeblastdb_cmd,
+                                             construct_blastn_cmdline),
+                              BLASTexes(format_exe or \
+                                        pyani_config.MAKEBLASTDB_DEFAULT,
+                                        blast_exe or \
+                                        pyani_config.BLASTN_DEFAULT),
+                              prefix, outdir)
+    else:
+        blastcmds = BLASTcmds(BLASTfunctions(construct_formatdb_cmd,
+                                             construct_blastall_cmdline),
+                              BLASTexes(format_exe or \
+                                        pyani_config.FORMATDB_DEFAULT,
+                                        blast_exe or \
+                                        pyani_config.BLASTALL_DEFAULT),
+                              prefix, outdir)
+    return blastcmds
+
+
 # Make a dependency graph of BLAST commands
-def make_job_graph(infiles, fragfiles, outdir,
-                   format_exe=pyani_config.MAKEBLASTDB_DEFAULT,
-                   blast_exe=pyani_config.BLASTN_DEFAULT,
-                   mode="ANIb", jobprefix="ANIBLAST"):
+def make_job_graph(infiles, fragfiles, blastcmds):
     """Return a job dependency graph, based on the passed input sequence files.
 
     - infiles - a list of paths to input FASTA files
     - fragfiles - a list of paths to fragmented input FASTA files
-    - outdir - path to output directory
-    - blastdb_exe - path to the database formatting executable
-    - blastn_exe - path to BLASTN executable
-    - mode - which BLAST mode are we running in: ANIb or ANIblastall
 
     By default, will run ANIb - it *is* possible to make a mess of passing the
     wrong executable for the mode you're using.
@@ -155,42 +182,31 @@ def make_job_graph(infiles, fragfiles, outdir,
     run_multiprocessing.py, run_sge.py)
     """
     joblist = []    # Holds list of job dependency graphs
-    dbjobdict = {}  # Dict of database construction jobs, keyed by filename
 
-    if mode == "ANIb":  # BLAST/formatting executable depends on mode
-        construct_db_cmdline = construct_makeblastdb_cmd
-        construct_blast_cmdline = construct_blastn_cmdline
-    else:
-        construct_db_cmdline = construct_formatdb_cmd
-        construct_blast_cmdline = construct_blastall_cmdline
-
-    # Create dictionary of database building jobs, keyed by db name
-    for idx, fname in enumerate(infiles):
-        dbcmd, dbname = construct_db_cmdline(fname, outdir, format_exe)
-        job = pyani_jobs.Job("%s_db_%06d" % (jobprefix, idx), dbcmd)
-        dbjobdict[dbname] = job
-    job_offset = idx
+    # Get dictionary of database-building jobs
+    dbjobdict = build_db_jobs(infiles, blastcmds)
 
     # Create list of BLAST executable jobs, with dependencies
-    jobnum = job_offset
+    jobnum = len(dbjobdict)
     for idx, fname1 in enumerate(fragfiles[:-1]):
-        dbname1 = fname1.replace('-fragments', '')
         for fname2 in fragfiles[idx+1:]:
             jobnum += 1
-            dbname2 = fname2.replace('-fragments', '')
-            execmd1 = construct_blast_cmdline(fname1, dbname2,
-                                              outdir, blast_exe)
-            execmd2 = construct_blast_cmdline(fname2, dbname1,
-                                              outdir, blast_exe)
-            job1 = pyani_jobs.Job("%s_exe_%06d_a" %
-                                  (jobprefix, jobnum), execmd1)
-            job2 = pyani_jobs.Job("%s_exe_%06d_b" %
-                                  (jobprefix, jobnum), execmd2)
-            job1.add_dependency(dbjobdict[dbname2])
-            job2.add_dependency(dbjobdict[dbname1])
-            joblist.extend([job1, job2])
+            jobs = \
+                [pyani_jobs.Job("%s_exe_%06d_a" %
+                                (blastcmds.prefix, jobnum),
+                                blastcmds.build_blast_cmd(fname1,
+                                                          fname2.replace\
+                                                          ('-fragments', ''))),
+                 pyani_jobs.Job("%s_exe_%06d_b" %
+                                (blastcmds.prefix, jobnum),
+                                blastcmds.build_blast_cmd(fname2,
+                                                          fname1.replace\
+                                                          ('-fragments', '')))]
+            jobs[0].add_dependency(dbjobdict[fname1.replace('-fragments', '')])
+            jobs[1].add_dependency(dbjobdict[fname2.replace('-fragments', '')])
+            joblist.extend(jobs)
 
-    # Return the dependency graph. This is the joblist.
+    # Return the dependency graph
     return joblist
 
 
@@ -325,7 +341,8 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
     - mode - parsing BLASTN+ or BLASTALL output?
     - logger - a logger for messages
 
-    Returns the following pandas dataframes in a tuple:
+    Returns the following pandas dataframes in an ANIResults object;
+    query sequences are rows, subject sequences are columns:
 
     - alignment_lengths - non-symmetrical: total length of alignment
     - percentage_identity - non-symmetrical: ANIb (Goris) percentage identity
@@ -337,49 +354,42 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
     """
     # Process directory to identify input files
     blastfiles = pyani_files.get_input_files(blast_dir, '.blast_tab')
-    labels = list(org_lengths.keys())
-    # Hold data in pandas dataframe
-    alignment_lengths = pd.DataFrame(index=labels, columns=labels,
-                                     dtype=float)
-    similarity_errors = pd.DataFrame(index=labels, columns=labels,
-                                     dtype=float).fillna(0)
-    percentage_identity = pd.DataFrame(index=labels, columns=labels,
-                                       dtype=float).fillna(1.0)
-    alignment_coverage = pd.DataFrame(index=labels, columns=labels,
-                                      dtype=float).fillna(1.0)
+    # Hold data in ANIResults object
+    results = ANIResults(list(org_lengths.keys()), mode)
+
     # Fill diagonal NA values for alignment_length with org_lengths
     for org, length in list(org_lengths.items()):
-        alignment_lengths[org][org] = length
+        results.alignment_lengths[org][org] = length
+
     # Process .blast_tab files assuming that the filename format holds:
     # org1_vs_org2.blast_tab:
     for blastfile in blastfiles:
         qname, sname = \
             os.path.splitext(os.path.split(blastfile)[-1])[0].split('_vs_')
+
         # We may have BLAST files from other analyses in the same directory
         # If this occurs, we raise a warning, and skip the file
         if qname not in list(org_lengths.keys()):
             if logger:
                 logger.warning("Query name %s not in input " % qname +
-                               "sequence list, skipping %s" % deltafile)
+                               "sequence list, skipping %s" % blastfile)
             continue
         if sname not in list(org_lengths.keys()):
             if logger:
                 logger.warning("Subject name %s not in input " % sname +
-                               "sequence list, skipping %s" % deltafile)
+                               "sequence list, skipping %s" % blastfile)
             continue
-        tot_length, tot_sim_error, ani_pid = parse_blast_tab(blastfile,
-                                                             fraglengths,
-                                                             mode)
-        query_cover = float(tot_length) / org_lengths[qname]
-        # Populate dataframes: when assigning data, pandas dataframes
-        # take column, index order, i.e. df['column']['row'] - this only
-        # matters for asymmetrical data
-        alignment_lengths.loc[qname, sname] = tot_length
-        similarity_errors.loc[qname, sname] = tot_sim_error
-        percentage_identity.loc[qname, sname] = 0.01 * ani_pid
-        alignment_coverage.loc[qname, sname] = query_cover
-    return(alignment_lengths, percentage_identity, alignment_coverage,
-           similarity_errors, percentage_identity * alignment_coverage)
+        resultvals = parse_blast_tab(blastfile, fraglengths, mode)
+        query_cover = float(resultvals[0]) / org_lengths[qname]
+
+        # Populate dataframes: when assigning data, we need to note that
+        # we have asymmetrical data from BLAST output, so only the
+        # upper triangle is populated
+        results.add_tot_length(qname, sname, resultvals[0], sym=False)
+        results.add_sim_errors(qname, sname, resultvals[1], sym=False)
+        results.add_pid(qname, sname, 0.01 * resultvals[2], sym=False)
+        results.add_coverage(qname, sname, query_cover)
+    return results
 
 
 # Parse BLASTALL output to get total alignment length and mismatches
@@ -401,8 +411,7 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     '''
     """
     # Assuming that the filename format holds org1_vs_org2.blast_tab:
-    qname, sname = \
-        os.path.splitext(os.path.split(filename)[-1])[0].split('_vs_')
+    qname = os.path.splitext(os.path.split(filename)[-1])[0].split('_vs_')[0]
     # Load output as dataframe
     if mode == "ANIblastall":
         qfraglengths = fraglengths[qname]
