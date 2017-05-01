@@ -8,6 +8,9 @@
 import hashlib
 import os
 import re
+import sys
+import subprocess
+import traceback
 
 from collections import namedtuple
 from socket import timeout
@@ -30,6 +33,11 @@ class FileExistsException(Exception):
     def __init__(self, msg="Specified file exists"):
         Exception.__init__(self, msg)
 
+def last_exception():
+    """ Returns last exception as a string, or use in logging."""
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    return ''.join(traceback.format_exception(exc_type, exc_value,
+                                              exc_traceback))
 
 def set_ncbi_email(email):
     """Set contact email for NCBI."""
@@ -233,39 +241,22 @@ def construct_output_paths(filestem, suffix, outdir):
 def retrieve_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout):
     """Download genome contigs and MD5 hash data from NCBI."""
     DLStatus = namedtuple("DLStatus",
-                          "url hashurl outfname outfhash skipped refseq")
-    refseq = True    # Flag - set False if the RefSeq download fails
+                          "url hashurl outfname outfhash skipped error")
     skipped = False  # Flag - set True if we skip download for existing file
+    error = None     # Text of last-raised error
 
     # Construct remote URLs and output filenames
     url, hashurl = compile_url(filestem, suffix, ftpstem)
     outfname, outfhash = construct_output_paths(filestem, suffix, outdir)
 
-    if os.path.exists(outfname):
-        skipped = True
-    else:
-        try:
-            download_url(url, outfname, timeout)
-            download_url(hashurl, outfhash, timeout)
-        except:
-            # This is a little hacky. Sometimes, RefSeq assemblies are
-            # suppressed (presumably because they are non-redundant),
-            # but the GenBank assembly persists. In those cases, we
-            # *assume* (because it may not be true) that the 
-            # corresponding genbank sequence shares the same accession
-            # number, except that GCF is replaced by GCA
-            gbfilestem = re.sub('^GCF_', 'GCA_', filestem)
-            refseq = False
-            url, hashurl = compile_url(gbfilestem, suffix, ftpstem)
-            outfname, outfhash = construct_output_paths(gbfilestem, suffix,
-                                                        outdir)
-            if os.path.exists(outfname):
-                skipped = True
-            else:
-                download_url(url, outfname, timeout)
-                download_url(hashurl, outfhash, timeout)
+    # Download the genome sequence and corresponding hash file
+    try:
+        download_url(url, outfname, timeout)
+        download_url(hashurl, outfhash, timeout)
+    except:
+        error = last_exception()                
     
-    return DLStatus(url, hashurl, outfname, outfhash, skipped, refseq)
+    return DLStatus(url, hashurl, outfname, outfhash, skipped, error)
 
 
 def check_hash(fname, hashfile):
@@ -297,37 +288,12 @@ def check_hash(fname, hashfile):
     return Hashstatus(passed, localhash, filehash)
 
 
-def temp():
-    """temp"""
-    # Extract data
-    ename = os.path.splitext(outfname)[0]  # Strips only .gz from filename
-    # The code below would munge the extracted filename to suit the expected
-    # class/label from the old version of this script.
-    # The .gz file downloaded from NCBI has format
-    # <assembly UID>_<string>_genomic.fna.gz - which we would extract to
-    # <assembly UID>.fna
-    #regex = ".{3}_[0-9]{9}.[0-9]"
-    #outparts = os.path.split(outfname)
-    #print(outparts[0])
-    #print(re.match(regex, outparts[-1]).group())
-    #ename = os.path.join(outparts[0],
-    #                     re.match(regex, outparts[-1]).group() + '.fna')
-    if os.path.exists(ename):
-        logger.warning("Output file %s exists, not extracting", ename)
-    else:
-        try:
-            logger.info("Extracting archive %s to %s",
-                        outfname, ename)
-            with open(ename, 'w') as efh:
-                subprocess.call(['gunzip', '-c', outfname],
-                                stdout=efh)  # can be subprocess.run in Py3.5
-                logger.info("Archive extracted to %s", ename)
-        except:
-            logger.error("Extracting archive %s failed", outfname)
-            logger.error(last_exception())
-            raise NCBIDownloadException()
+def extract_contigs(fname, ename):
+    """Extract contents of fname to ename using gunzip"""
+    with open(ename, 'w') as efh:
+        subprocess.run(['gunzip', '-c', fname],
+                        stdout=efh)  # can be subprocess.run
 
-    return ename
 
 def create_labels(classification, filestem):
     """Constructs class and label text from UID classification."""
