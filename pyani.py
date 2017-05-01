@@ -5,7 +5,7 @@
 # This script uses the pyani module to produce ANI analyses and classifications
 # of prokaryotic genome sequences (draft or complete).
 #
-# (c) The James Hutton Institute 2016
+# (c) The James Hutton Institute 2016-2017
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -23,7 +23,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2016 The James Hutton Institute
+# Copyright (c) 2016-2017 The James Hutton Institute
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,9 @@ import sys
 import time
 import traceback
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+
+from pyani import __version__, download
 
 # Report last exception as string
 def last_exception():
@@ -68,12 +70,15 @@ def parse_cmdline(args):
     classify - produce a graph-based classification of each input genome
     """
     # Main parent parser
-    parser_main = ArgumentParser(prog="pyani.py")
+    parser_main = ArgumentParser(prog="pyani.py",
+                                 formatter_class=ArgumentDefaultsHelpFormatter)
     subparsers = parser_main.add_subparsers(title="subcommands",
                                             description="valid subcommands",
                                             help="additional help")
 
     # A 'common' parser, with shared options for all subcommands
+    # Not all commands require input or output directories, but all commands
+    # support verbose output, and logging.
     parser_common = ArgumentParser(add_help=False)
     parser_common.add_argument('-l', '--logfile', dest='logfile',
                                action='store', default=None,
@@ -81,41 +86,96 @@ def parse_cmdline(args):
     parser_common.add_argument('-v', '--verbose', action='store_true',
                                dest='verbose', default=False,
                                help='report verbose progress to log')
-    parser_common.add_argument('-i', '--indir', action='store',
-                               dest='indir', default=None,
-                               help='input directory')
-    parser_common.add_argument('-o', '--outdir', action='store',
-                               dest='outdir', default=None,
-                               help='output directory')
 
     # Subcommand parsers
+    # Download genomes from NCBI
+    parser_download = subparsers.add_parser('download',
+                                            parents=[parser_common],
+                                            formatter_class=\
+                                            ArgumentDefaultsHelpFormatter)
+    # Classify pyani output into genomotypes
     parser_classify = subparsers.add_parser('classify',
-                                            parents=[parser_common])
+                                            parents=[parser_common],
+                                            formatter_class=\
+                                            ArgumentDefaultsHelpFormatter)
 
-    # Genome classification options
+    # DOWNLOAD: Genome download options
+    # Output directory, positional and required
+    parser_download.add_argument(action='store',
+                                 dest='outdir', default=None,
+                                 help='output directory')
+    # Required arguments for NCBI query
+    parser_download.add_argument("-t", "--taxon", dest="taxon",
+                                 action="store", default=None,
+                                 help="NCBI taxonomy ID (required)",
+                                 required=True)
+    parser_download.add_argument("--email", dest="email", required=True,
+                                 action="store", default=None,
+                                 help="Email associated with NCBI queries " +\
+                                 "(required)")
+    # Arguments controlling connection to NCBI for download
+    parser_download.add_argument("--retries", dest="retries",
+                                 action="store", default=20,
+                                 help="Number of Entrez retry attempts per " +\
+                                 "request")
+    parser_download.add_argument("--batchsize", dest="batchsize",
+                                 action="store", default=10000,
+                                 help="Entrez record return batch size")
+    parser_download.add_argument("--timeout", dest="timeout",
+                                 action="store", default=10,
+                                 help="Timeout for URL connection (s)")
+    # Arguments controlling local filehandling
+    parser_download.add_argument("-f", "--force", dest="force",
+                                 action="store_true", default=False,
+                                 help="Allow download to existing directory")
+    parser_download.add_argument("--noclobber", dest="noclobber",
+                                 action="store_true", default=False,
+                                 help="Don't replace existing files")
+
+
+    # CLASSIFY: Genome classification options
+    # Input directory, positional and required
+    parser_classify.add_argument(action='store',
+                                 dest='indir', default=None,
+                                 help='input directory')
+    # Output directory, defaults to input directory indir
+    parser_classify.add_argument('-o', '--outdir', action='store',
+                                 dest='outdir', default=None,
+                                 help='output directory')
+    # Label file, defaults to indir/labels.txt
     parser_classify.add_argument('--labels', dest='labelfile',
                                  action='store', default=None,
                                  help='file with labels for input genomes')
-    parser_classify.add_argument('--cov_threshold', dest='cov_threshold',
+    # Parameters for classification: minimum %coverage, %identity,
+    # and the resolution of thresholds to test
+    parser_classify.add_argument('--cov_min', dest='cov_min',
                                  action='store', type=float, default=0.5,
                                  help='minimum %%coverage for an edge')
-    parser_classify.add_argument('--id_threshold', dest='id_threshold',
-                                 action='store', type=float, default=0.5,
+    parser_classify.add_argument('--id_min', dest='id_min',
+                                 action='store', type=float, default=0.8,
                                  help='minimum %%identity for an edge')
     parser_classify.add_argument('--resolution', dest='resolution',
                                  action='store', type=int, default=1500,
                                  help='number of identity thresholds to test')
     
     # Parse arguments
-    return parser_main.parse_args()
+    return parser_main
 
 
+# DOWNLOAD
+# Download sequence/class/label data from NCBI
+def subcmd_download(args, logger):
+    """Download all assembled genomes beneath a passed taxon ID from NCBI."""
+    print(args, logger)
+
+
+# CLASSIFY
 # Classify input genomes on basis of ANI coverage and identity output
-def subcmd_classify(args):
-    """Take a directory of pyani output files, and generate a series of
-    classifications of the input data.
+def subcmd_classify(args, logger):
+    """Take pyani output, and generate a series of classifications of the
+    input data.
     """
-    # Process the input directory and load data
+    raise NotImplementedError
 
 
     
@@ -124,9 +184,14 @@ def subcmd_classify(args):
 if __name__ == '__main__':
 
     # Parse command-line
-    assert len(sys.argv) > 1, 'pyani.py requires a valid subcommand'
-    args = parse_cmdline(sys.argv)
-    subcmd = sys.argv[1]
+    parser = parse_cmdline(sys.argv)
+    args = parser.parse_args()
+
+    # If no arguments provided, show usage and drop out
+    if len(sys.argv) == 1:
+        print("pyani version: {0}".format(__version__))
+        parser.print_help()
+        sys.exit(1)
 
     # Set up logging
     logger = logging.getLogger('pyani.py: %s' % time.asctime())
@@ -150,6 +215,24 @@ if __name__ == '__main__':
             logger.error(last_exception())
             sys.exit(1)
 
+    # Define subcommand main functions, and distribute on basis of subcommand
+    subcmd = sys.argv[1]
+    subcmds = {'classify': subcmd_classify,
+               'download': subcmd_download}
+    try:
+        subcmds[subcmd](args, logger)
+    except KeyError:
+        logger.error("Subcommand {0} not recognised (exiting)".format(subcmd))
+        sys.exit(1)
+    except NotImplementedError:
+        logger.error("Subcommand {0} not yet ".format(subcmd) +\
+                     "implemented (exiting)")
+        sys.exit(1)
+    except:
+        logger.error("Could not execute subcommand {0}".format(subcmd))
+        logger.error(last_exception())
+        sys.exit(1)
+
     # Do we need verbosity?
     if args.verbose:
         err_handler.setLevel(logging.INFO)
@@ -161,17 +244,6 @@ if __name__ == '__main__':
     logger.info('Processed arguments: %s' % args)
     logger.info('command-line: %s' % ' '.join(sys.argv))
 
-    # Define subcommand main functions, and distribute
-    subcmds = {'classify': subcmd_classify}
-    try:
-        subcmds[subcmd](args)
-    except KeyError:
-        logger.error("Subcommand {0} not recognised".format(subcmd))
-        raise NotImplementedError
-    else:
-        logger.error("Could not execute subcommand {0}".format(subcmd))
-        logger.error(last_exception())
-        sys.exit(1)
 
     # Exit cleanly (POSIX)
     sys.exit(0)
