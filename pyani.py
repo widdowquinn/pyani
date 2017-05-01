@@ -139,7 +139,13 @@ def parse_cmdline(args):
     parser_download.add_argument("--noclobber", dest="noclobber",
                                  action="store_true", default=False,
                                  help="Don't replace existing files")
-
+    # Names for output files
+    parser_download.add_argument("--labels", dest="labelfname",
+                                 action="store", default="labels.txt",
+                                 help="Filename for labels file")
+    parser_download.add_argument("--classes", dest="classfname",
+                                 action="store", default="classes.txt",
+                                 help="Filename for classes file")
 
     # CLASSIFY: Genome classification options
     # Input directory, positional and required
@@ -179,12 +185,11 @@ def subcmd_download(args, logger):
         logger.warning("Output directory %s exists", args.outdir)
         if not args.force:
             raise PyaniDownloadException("Will not overwrite existing " +
-                                         "directory {0}".format(args.outdir))
+                                         "directory %s", args.outdir)
         elif args.force and not args.noclobber:
             # Delete old directory and start again
-            logger.warning("Overwrite forced. " +
-                           "Removing {0} ".format(args.outdir) + 
-                           "and everything below it")
+            logger.warning("Overwrite forced. Removing %s and everything " +
+                           "below it", args.outdir)
             shutil.rmtree(args.outdir)
         else:
             logger.warning("Keeping existing directory, skipping existing " +
@@ -193,41 +198,53 @@ def subcmd_download(args, logger):
     
     # Set Entrez email
     download.set_ncbi_email(args.email)
-    logger.info("Set Entrez email address: {0}".format(args.email))
+    logger.info("Set Entrez email address: %s", args.email)
     
     # Get list of taxon IDs to download
     taxon_ids = download.split_taxa(args.taxon)
-    logger.info("Taxa received: {0}".format(taxon_ids))
+    logger.info("Taxa received: %s", taxon_ids)
 
     # Get assembly UIDs for each taxon
     asm_dict = dict()
     for tid in taxon_ids:
         asm_uids = download.get_asm_uids(tid, args.retries)
         logger.info("Query: " +\
-                    "{0}\n\t\tasm count: {1}\n\t\tUIDs: {2}".format(*asm_uids))
+                    "%s\n\t\tasm count: %s\n\t\tUIDs: %s", *asm_uids)
         asm_dict[tid] = asm_uids.asm_ids
     print(asm_dict)
 
+    # Compile list of outputs for class and label files
+    classes = []
+    labels = []
+
     # Download contigs and hashes for each assembly UID
+    skippedlist = []
+    Skipped = namedtuple("Skipped",
+                         "taxon_id accession organism strain " +
+                         "refseq_url genbank_url")
     for tid, uids in asm_dict.items():
-        logger.info("\nDownloading contigs for Taxon ID %s", tid)
+        logger.info("Downloading contigs for Taxon ID %s", tid)
         for uid in uids:
             # Obtain eSummary            
             logger.info("Get eSummary information for UID %s", uid)
             esummary, filestem = download.get_ncbi_esummary(uid, args.retries)
-            logger.info("\tTaxid: %s", esummary['SpeciesTaxid'])
-            logger.info("\tAccession: %s", esummary['AssemblyAccession'])
-            logger.info("\tName: %s", esummary['AssemblyName'])
-
-            # Parse classification
             uid_class = download.get_ncbi_classification(esummary)
-            logger.info("\tOrganism: %s", uid_class.organism)
-            logger.info("\tGenus: %s", uid_class.genus)
-            logger.info("\tSpecies: %s", uid_class.species)
-            logger.info("\tStrain: %s", uid_class.strain)
+
+            # Report summary
+            outstr = '\n\t'.join(["Taxid: %s" % esummary['SpeciesTaxid'],
+                                  "Accession: %s" %
+                                  esummary['AssemblyAccession'],
+                                  "Name: %s" % esummary['AssemblyName'],
+                                  "Organism: %s" % uid_class.organism,
+                                  "Genus: %s" % uid_class.genus,
+                                  "Species: %s" % uid_class.species,
+                                  "Strain: %s" % uid_class.strain])
+            logger.info("eSummary information:\n\t%s", outstr)
 
             # Make label/class text
             labeltxt, classtxt = download.create_labels(uid_class, filestem)
+            classes.append(classtxt)
+            labels.append(labeltxt)
             logger.info("\tLabel: %s", labeltxt)
             logger.info("\tClass: %s", classtxt)
     
@@ -240,15 +257,33 @@ def subcmd_download(args, logger):
                                                          ftpstem,
                                                          args.outdir,
                                                          args.timeout)
-            if not dlstatus.refseq:
-                logger.warning("Downloaded GenBank alternative assembly")
-            logger.info("Used URL: %s", dlstatus.url)
-            if dlstatus.skipped:
-                logger.warning("File %s exists, did not download",
-                               dlstatus.outfname)
-            else:
-                logger.info("Wrote assembly to: %s", dlstatus.outfname)
-                logger.info("Wrote MD5 hashes to: %s", dlstatus.outfhash)
+            import random
+            if dlstatus.skipped:  # Something went awry
+                logger.warning("Download failed: skipping!")
+                logger.error(dlstatus.error)
+                logger.warning("Trying GenBank alternative assembly")
+                gbfilestem = re.sub('^GCF_', 'GCA_', filestem)
+                logger.info("Retrieving URLs for %s", gbfilestem)
+                gbdlstatus = download.retrieve_genome_and_hash(gbfilestem,
+                                                               suffix,
+                                                               ftpstem,
+                                                               args.outdir,
+                                                               args.timeout)
+                if gbdlstatus.skipped:  # Something went awry again
+                    logger.error("Download failed: skipping!")
+                    logger.error(gbdlstatus.error)
+                    skippedlist.append(Skipped(tid, uid,
+                                               uid_class.organism,
+                                               uid_class.strain,
+                                               dlstatus.url, gbdlstatus.url))
+                    continue
+                else:
+                    dlstatus = gbdlstatus
+
+            # Report the working download
+            logger.info("Downloaded from URL: %s", dlstatus.url)
+            logger.info("Wrote assembly to: %s", dlstatus.outfname)
+            logger.info("Wrote MD5 hashes to: %s", dlstatus.outfhash)
 
             # Check hash for the download
             hashstatus = download.check_hash(dlstatus.outfname,
@@ -259,7 +294,42 @@ def subcmd_download(args, logger):
                 logger.info("MD5 hash check passed")
             else:
                 logger.warning("MD5 hash check failed.")
-                
+
+            # Extract downloaded files
+            ename = os.path.splitext(dlstatus.outfname)[0]
+            if os.path.exists(ename) and args.noclobber:
+                logger.warning("Output file %s exists, not extracting", ename)
+            else:
+                logger.info("Extracting archive %s to %s",
+                            dlstatus.outfname, ename)
+                download.extract_contigs(dlstatus.outfname, ename)
+        
+    # Write class and label files
+    classfname = os.path.join(args.outdir, args.classfname)
+    logger.info("Writing classes file to %s", classfname)
+    if os.path.exists(classfname) and args.noclobber:
+        logger.warning("Class file %s exists, not overwriting", classfname)
+    else:
+        with open(classfname, "w") as cfh:
+            cfh.write('\n'.join(classes) + '\n')
+    labelfname = os.path.join(args.outdir, args.labelfname)
+    logger.info("Writing labels file to %s", labelfname) 
+    if os.path.exists(labelfname) and args.noclobber:
+        logger.warning("Label file %s exists, not overwriting", labelfname)
+    else:
+        with open(labelfname, "w") as lfh:
+            lfh.write('\n'.join(labels) + '\n')     
+
+    # Show skipped genome list
+    if len(skippedlist):
+        logger.warning("%d genome downloads were skipped", len(skippedlist))
+        for skipped in skippedlist:
+            outstr = '\n\t'.join(["taxon id: %s" % skipped.taxon_id,
+                                   "accession: %s" % skipped.accession,
+                                   "RefSeq URL: %s" % skipped.refseq_url,
+                                   "GenBank URL: %s" % skipped.genbank_url])
+            logger.warning("%s %s:\n\t%s", skipped.organism, skipped.strain,
+                           outstr)
 
 
 # CLASSIFY
@@ -328,18 +398,19 @@ if __name__ == '__main__':
     try:
         subcmds[subcmd](args, logger)
     except KeyError:
-        logger.error("Subcommand {0} not recognised (exiting)".format(subcmd))
+        logger.error("Subcommand %s not recognised (exiting)", subcmd)
         sys.exit(1)
     except NotImplementedError:
-        logger.error("Subcommand {0} not yet ".format(subcmd) +\
-                     "implemented (exiting)")
+        logger.error("Subcommand %s not yet implemented (exiting)", subcmd)
         sys.exit(1)
     except:
-        logger.error("Could not execute subcommand {0}".format(subcmd))
+        logger.error("Could not execute subcommand %s", subcmd)
         logger.error(last_exception())
         sys.exit(1)
 
-
+    # Let the user know we're done
+    logger.info(time.asctime())
+    logger.info("Done.")    
 
     # Exit cleanly (POSIX)
     sys.exit(0)
