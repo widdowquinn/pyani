@@ -319,13 +319,13 @@ def make_outdir():
             logger.error("Output directory %s would overwrite existing " +
                          "files (exiting)", args.outdirname)
             sys.exit(1)
+        elif args.noclobber:
+            logger.warning("NOCLOBBER: not actually deleting directory %s",
+                           args.outdirname)
         else:
             logger.info("Removing directory %s and everything below it",
                         args.outdirname)
-            if args.noclobber:
-                logger.warning("NOCLOBBER: not actually deleting directory")
-            else:
-                shutil.rmtree(args.outdirname)
+            shutil.rmtree(args.outdirname)
     logger.info("Creating directory %s", args.outdirname)
     try:
         os.makedirs(args.outdirname)   # We make the directory recursively
