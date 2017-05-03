@@ -254,8 +254,8 @@ def retrieve_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout):
         download_url(url, outfname, timeout)
         download_url(hashurl, outfhash, timeout)
     except:
-        error = last_exception()                
-    
+        error = last_exception()
+
     return DLStatus(url, hashurl, outfname, outfhash, skipped, error)
 
 
