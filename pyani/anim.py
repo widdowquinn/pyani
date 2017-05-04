@@ -195,4 +195,12 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
         results.add_sim_errors(qname, sname, tot_sim_error)
         results.add_pid(qname, sname, perc_id)
         results.add_coverage(qname, sname, query_cover, sbjct_cover)
+    # Check for missing data by using fact that alignment_lengths
+    # default to NaN (other values default to zero or one):
+    missing = results.alignment_lengths.isnull().values.sum()
+    if missing:
+        logger.error("Missing %i alignment lengths. There could be "
+                     "missing delta files if using --skip_nucmer?" %
+                     missing)
+        raise RuntimeError("Missing %i alignment lengths." % missing)
     return results
