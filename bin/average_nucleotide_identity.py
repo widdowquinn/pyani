@@ -617,7 +617,7 @@ def write(results):
 
             
 # Draw ANIb/ANIm/TETRA output
-def draw(filestems, gformat, logger=None):
+def draw(filestems, gformat):
     """Draw ANIb/ANIm/TETRA results
 
     - filestems - filestems for output files
@@ -629,8 +629,7 @@ def draw(filestems, gformat, logger=None):
         outfilename = fullstem + '.%s' % gformat
         infilename = fullstem + '.tab'
         df = pd.read_csv(infilename, index_col=0, sep="\t")
-        if logger:
-            logger.info("Writing heatmap to %s", outfilename)
+        logger.info("Writing heatmap to %s", outfilename)
         params = pyani_graphics.Params(params_mpl(df)[filestem],
                                        pyani_tools.get_labels(args.labels),
                                        pyani_tools.get_labels(args.classes))
@@ -808,7 +807,7 @@ if __name__ == '__main__':
         for gfmt in args.gformat.split(','):
             logger.info("Graphics format: %s", gfmt)
             logger.info("Graphics method: %s", args.gmethod)
-            draw(methods[args.method][1], gfmt, args.rerender)
+            draw(methods[args.method][1], gfmt)
 
     # Report that we've finished
     logger.info("Done: %s.", time.asctime())

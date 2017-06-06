@@ -9,6 +9,9 @@
 * Additional characters in NCBI FTP URIs now escaped in `genbank_get_genomes_by_taxon.py` - should be fewer failed downloads
 * Modified error messaging when `NUCmer` alignment fails
 * `average_nucleotide_identity.py` argument documentation improvements
+* Script now fails immediately if label or class files missing (issue #78)
+* Changes to `--noclobber` log behaviour (issue #79)
+* fixed `--rerender` code (issue #85)
 
 
 ## v0.2.3
