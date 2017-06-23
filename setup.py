@@ -22,8 +22,8 @@ with open('pyani/__init__.py') as fh:
             version = m.group('version')
             break
 
-if sys.version_info <= (3, 0):
-    sys.stderr.write("ERROR: pyani requires Python 3 " +
+if sys.version_info < (3, 5):
+    sys.stderr.write("ERROR: pyani requires Python 3.5 " +
                      "or above...exiting.\n")
     sys.exit(1)
 
