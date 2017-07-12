@@ -23,6 +23,7 @@ from tqdm import tqdm
 taxonregex = re.compile('([0-9]\,?){1,}')
 
 
+# Custom exceptions
 class NCBIDownloadException(Exception):
     """General exception for failed NCBI download."""
     def __init__(self, msg="Error downloading file from NCBI"):
@@ -33,11 +34,13 @@ class FileExistsException(Exception):
     def __init__(self, msg="Specified file exists"):
         Exception.__init__(self, msg)
 
+        
 def last_exception():
     """ Returns last exception as a string, or use in logging."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
     return ''.join(traceback.format_exception(exc_type, exc_value,
                                               exc_traceback))
+
 
 def set_ncbi_email(email):
     """Set contact email for NCBI."""
