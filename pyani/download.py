@@ -72,6 +72,7 @@ def entrez_batch_webhistory(record, expected, batchsize, retries,
     return results
 
 
+# Retry an Entrez query a specified number of times
 def entrez_retry(func, retries, *fnargs, **fnkwargs):
     """Retries the passed function up to the number of times specified
     by retries
@@ -88,6 +89,7 @@ def entrez_retry(func, retries, *fnargs, **fnkwargs):
     return output
 
 
+# Split a list of taxon ids into components, checking for correct formatting
 def split_taxa(taxa):
     """Returns a list of taxon ids from the passed comma-separated list.
 
@@ -101,7 +103,7 @@ def split_taxa(taxa):
     return [taxon for taxon in taxa.split(',') if len(taxon)]
 
 
-# Get assembly UIDs for the root taxon
+# Get assembly UIDs for the subtree rooted at the passed taxon
 def get_asm_uids(taxon_uid, retries):
     """Returns a set of NCBI UIDs associated with the passed taxon UID.
 
@@ -125,6 +127,7 @@ def get_asm_uids(taxon_uid, retries):
     return Results(query, result_count, asm_ids)
         
 
+# Get a filestem from Entrez eSummary data
 def extract_filestem(esummary):
     """Extract filestem from Entrez eSummary data.
 
@@ -140,6 +143,7 @@ def extract_filestem(esummary):
     return '_'.join([esummary['AssemblyAccession'], escname])
 
 
+# Get eSummary data for a single assembly UID
 def get_ncbi_esummary(asm_uid, retries):
     """Obtain full eSummary info for the passed assembly UID."""
     # Obtain full eSummary data for the assembly
@@ -155,6 +159,7 @@ def get_ncbi_esummary(asm_uid, retries):
     return(data, filestem)
 
 
+# Get the taxonomic classification strings for eSummary data
 def get_ncbi_classification(esummary):
     """Return organism, genus, species, strain info from eSummary data."""
     Classification = namedtuple("Classsification",
@@ -173,6 +178,7 @@ def get_ncbi_classification(esummary):
     return Classification(organism, genus, species, strain)
 
 
+# Given a remote filestem, generate URIs for download
 def compile_url(filestem, suffix, ftpstem):
     """Compile download URLs given a passed filestem.
 
@@ -208,6 +214,7 @@ def compile_url(filestem, suffix, ftpstem):
     return (url, hashurl)
 
 
+# Download a remote file to the specified directory
 def download_url(url, outfname, timeout):
     """Downloads a remote URL to a local directory.
 
@@ -234,6 +241,7 @@ def download_url(url, outfname, timeout):
                 pbar.update(bsize)
 
 
+# Construct filepaths for downloaded files and their hashes
 def construct_output_paths(filestem, suffix, outdir):
     """Construct paths to output files for genome and hash."""
     outfname = os.path.join(outdir, '_'.join([filestem, suffix]))
@@ -241,6 +249,7 @@ def construct_output_paths(filestem, suffix, outdir):
     return (outfname, outfhash)
 
 
+# Download a remote genome from NCBI and its MD5 hash
 def retrieve_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout):
     """Download genome contigs and MD5 hash data from NCBI."""
     DLStatus = namedtuple("DLStatus",
@@ -262,6 +271,7 @@ def retrieve_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout):
     return DLStatus(url, hashurl, outfname, outfhash, skipped, error)
 
 
+# Check the file hash against the downloaded hash
 def check_hash(fname, hashfile):
     """Checks the MD5 hash of the passed file against an entry in the
     downloaded NCBI hash file."""
@@ -291,6 +301,7 @@ def check_hash(fname, hashfile):
     return Hashstatus(passed, localhash, filehash)
 
 
+# Extract contigs from a compressed file, using gunzip
 def extract_contigs(fname, ename):
     """Extract contents of fname to ename using gunzip"""
     with open(ename, 'w') as efh:
@@ -298,6 +309,7 @@ def extract_contigs(fname, ename):
                         stdout=efh)  # can be subprocess.run
 
 
+# Using a genomes UID, create class and label text files
 def create_labels(classification, filestem):
     """Constructs class and label text from UID classification."""
     class_data = (filestem, classification.genus[0] + '.',
