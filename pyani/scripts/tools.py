@@ -52,6 +52,12 @@ import traceback
 
 from .. import download
 
+class PyaniException(Exception):
+    """General exception for pyani.py script"""
+    def __init__(self, msg="Error in pyani.py script"):
+        Exception.__init__(self, msg)
+
+        
 # Report last exception as string
 def last_exception():
     """Returns last exception as a string, or use in logging."""
@@ -77,8 +83,8 @@ def make_outdir(outdir, force, noclobber, logger):
     if os.path.isdir(outdir):
         logger.warning("Output directory %s exists", outdir)
         if not force:
-            raise PyaniDownloadException("Will not modify existing " +
-                                         "directory %s", outdir)
+            raise PyaniException("Will not modify existing directory %s" %
+                                 outdir)
         elif force and not noclobber:
             # Delete old directory and start again
             logger.warning("Overwrite forced. Removing %s and everything " +

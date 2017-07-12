@@ -19,6 +19,8 @@ from urllib.request import urlopen
 
 from Bio import Entrez
 from tqdm import tqdm
+from namedlist import namedlist
+
 
 taxonregex = re.compile('([0-9]\,?){1,}')
 
@@ -34,7 +36,7 @@ class FileExistsException(Exception):
     def __init__(self, msg="Specified file exists"):
         Exception.__init__(self, msg)
 
-        
+
 def last_exception():
     """ Returns last exception as a string, or use in logging."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -249,11 +251,13 @@ def construct_output_paths(filestem, suffix, outdir):
     return (outfname, outfhash)
 
 
+
+
 # Download a remote genome from NCBI and its MD5 hash
 def retrieve_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout):
     """Download genome contigs and MD5 hash data from NCBI."""
-    DLStatus = namedtuple("DLStatus",
-                          "url hashurl outfname outfhash skipped error")
+    DLStatus = namedlist("DLStatus",
+                         "url hashurl outfname outfhash skipped error")
     skipped = False  # Flag - set True if we skip download for existing file
     error = None     # Text of last-raised error
 
