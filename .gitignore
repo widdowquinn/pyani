@@ -33,3 +33,6 @@ cover/
 
 # iPython/Jupyter
 .ipynb_checkpoints
+
+# Development virtualenvs
+venv-*
