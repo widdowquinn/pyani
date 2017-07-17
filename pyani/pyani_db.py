@@ -61,8 +61,8 @@ SQL_CREATEDB = """
                          class TEXT
                         );
    DROP TABLE IF EXISTS comparisons;
-   CREATE TABLE comparisons (query_id INTEGER,
-                             subject_id INTEGER,
+   CREATE TABLE comparisons (query_id INTEGER NOT NULL,
+                             subject_id INTEGER NOT NULL,
                              date TEXT,
                              options TEXT,
                              description TEXT,
