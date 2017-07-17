@@ -128,25 +128,3 @@ def download_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout,
 
     return dlstatus
 
-
-# Write class and label files
-def write_classes_labels(classes, labels, outdir, classfname, labelfname,
-                         noclobber, logger):
-    """Write classes and labels files for the downloads."""
-    # Write classes
-    classfname = os.path.join(outdir, classfname)
-    logger.info("Writing classes file to %s", classfname)
-    if os.path.exists(classfname) and noclobber:
-        logger.warning("Class file %s exists, not overwriting", classfname)
-    else:
-        with open(classfname, "w") as cfh:
-            cfh.write('\n'.join(classes) + '\n')
-
-    # Write labels
-    labelfname = os.path.join(outdir, labelfname)
-    logger.info("Writing labels file to %s", labelfname) 
-    if os.path.exists(labelfname) and noclobber:
-        logger.warning("Label file %s exists, not overwriting", labelfname)
-    else:
-        with open(labelfname, "w") as lfh:
-            lfh.write('\n'.join(labels) + '\n')     

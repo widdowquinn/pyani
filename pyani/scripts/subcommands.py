@@ -170,10 +170,23 @@ def subcmd_download(args, logger):
                 download.extract_contigs(dlstatus.outfname, ename)
         
     # Write class and label files
-    tools.write_classes_labels(classes, labels, args.outdir,
-                                     args.classfname,
-                                     args.labelfname, args.noclobber, logger)
+    classfname = os.path.join(args.outdir, args.classfname)
+    logger.info("Writing classes file to %s", classfname)
+    if os.path.exists(classfname) and noclobber:
+        logger.warning("Class file %s exists, not overwriting", classfname)
+    else:
+        with open(classfname, "w") as ofh:
+            ofh.write('\n'.join(classes) + '\n')
+    
+    labelfname = os.path.join(args.outdir, args.labelfname)
+    logger.info("Writing labels file to %s", labelfname)
+    if os.path.exists(labelfname) and noclobber:
+        logger.warning("Labels file %s exists, not overwriting", labelfname)
+    else:
+        with open(labelfname, "w") as ofh:
+            ofh.write('\n'.join(labels) + '\n')
 
+        
     # Show skipped genome list
     if len(skippedlist):
         logger.warning("%d genome downloads were skipped", len(skippedlist))
