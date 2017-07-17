@@ -25,7 +25,7 @@ from . import pyani_config, download
 # General exception for scripts
 class PyaniException(Exception):
     """General exception for pyani.py script"""
-    def __init__(self, msg="Error in pyani.py script"):
+    def __init__(self, msg="Error in pyani module"):
         Exception.__init__(self, msg)
 
         
@@ -147,36 +147,6 @@ class BLASTcmds(object):
 # UTILITY FUNCTIONS
 #===================   
 
-# Create a directory (handling force/noclobber options)
-def make_outdir(outdir, force, noclobber, logger):
-    """Create output directory (allows for force and noclobber).
-
-    The intended outcomes are:
-    outdir doesn't exist: create outdir
-    outdir exists: raise exception
-    outdir exists, --force only: remove the directory tree
-    outdir exists, --force --noclobber: continue with existing directory tree
-                                        but do not overwrite files
-
-    So long as the outdir is created with this function, we need only check
-    for args.noclobber elsewhere to see how to proceed when a file exists.
-    """
-    if os.path.isdir(outdir):
-        logger.warning("Output directory %s exists", outdir)
-        if not force:
-            raise PyaniException("Will not modify existing directory %s" %
-                                 outdir)
-        elif force and not noclobber:
-            # Delete old directory and start again
-            logger.warning("Overwrite forced. Removing %s and everything " +
-                           "below it (--force)", outdir)
-            shutil.rmtree(outdir)
-        else:
-            logger.warning("Keeping existing directory, skipping existing " +
-                           "files (--force --noclobber).")
-    os.makedirs(outdir, exist_ok=True)
-
-
 # Make a dictionary of assembly download info
 def make_asm_dict(taxon_ids, retries):
     """Return a dict of assembly UIDs, keyed by each passed taxon ID."""
@@ -187,87 +157,3 @@ def make_asm_dict(taxon_ids, retries):
         asm_dict[tid] = asm_uids.asm_ids
 
     return asm_dict
-
-
-# Download the genome and MD5 hash from NCBI
-def download_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout,
-                             logger):
-    """Download genome and accompanying MD5 hash from NCBI.
-
-    This function tries the (assumed to be passed) RefSeq FTP URL first and,
-    if that fails, then attempts to download the corresponding GenBank data.
-
-    We attempt to gracefully skip genomes with download errors.
-    """
-    # First attempt: RefSeq download
-    dlstatus = download.retrieve_genome_and_hash(filestem, suffix,
-                                                 ftpstem, outdir, timeout)
-    if dlstatus.error is not None:  # Something went awry
-        logger.warning("RefSeq download failed: skipping!\n%s", dlstatus.error)
-        # Second attempt: GenBank download
-        logger.warning("Trying GenBank alternative assembly")
-        gbfilestem = re.sub('^GCF_', 'GCA_', filestem)
-        logger.info("Retrieving URLs for %s", gbfilestem)
-        gbdlstatus = download.retrieve_genome_and_hash(gbfilestem, suffix,
-                                                       ftpstem, outdir,
-                                                       timeout)
-        if gbdlstatus.error:  # Something went awry again
-            logger.error("GenBank download failed: skipping!\n%s",
-                         gbdlstatus.error)
-            dlstatus = gbdlstatus
-            dlstatus.skipped = True
-
-    return dlstatus
-
-
-# Write class and label files
-def write_classes_labels(classes, labels, outdir, classfname, labelfname,
-                         noclobber, logger):
-    """Write classes and labels files for the downloads."""
-    # Write classes
-    classfname = os.path.join(outdir, classfname)
-    logger.info("Writing classes file to %s", classfname)
-    if os.path.exists(classfname) and noclobber:
-        logger.warning("Class file %s exists, not overwriting", classfname)
-    else:
-        with open(classfname, "w") as cfh:
-            cfh.write('\n'.join(classes) + '\n')
-
-    # Write labels
-    labelfname = os.path.join(outdir, labelfname)
-    logger.info("Writing labels file to %s", labelfname) 
-    if os.path.exists(labelfname) and noclobber:
-        logger.warning("Label file %s exists, not overwriting", labelfname)
-    else:
-        with open(labelfname, "w") as lfh:
-            lfh.write('\n'.join(labels) + '\n')     
-
-            
-# Read sequence annotations in from label file
-def get_labels(filename, logger=None):
-    """Returns a dictionary of alternative sequence labels, or None
-
-    - filename - path to file containing tab-separated table of labels
-
-    Input files should be formatted as <key>\t<label>, one pair per line.
-    """
-    labeldict = {}
-    if filename is not None:
-        if logger:
-            logger.info("Reading labels from %s", filename)
-        with open(filename, 'rU') as ifh:
-            count = 0
-            for line in ifh.readlines():
-                count += 1
-                try:
-                    key, label = line.strip().split('\t')
-                except ValueError:
-                    if logger:
-                        logger.warning("Problem with class file: %s",
-                                       filename)
-                        logger.warning("%d: %s", (count, line.strip()))
-                        logger.warning("(skipping line)")
-                    continue
-                else:
-                    labeldict[key] = label
-    return labeldict

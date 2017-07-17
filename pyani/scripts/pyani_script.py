@@ -45,8 +45,8 @@ import sys
 import time
 
 from .parsers import parse_cmdline
-from .tools import last_exception
 from .. import __version__
+from ..pyani_tools import last_exception
 
 # Main function
 def run_main(namespace=None):

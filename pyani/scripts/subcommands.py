@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """subcommands.py
 
-Provides subcommand functions for the pyani.py script
+Provides subcommand functions for the pyani.py script, and some helper
 
 - download:      download assemblies from NCBI
 - classify:      classify ANI results
@@ -10,6 +10,10 @@ Provides subcommand functions for the pyani.py script
 The code in this module should mediate between the user via CLI and the actual
 'lifting' code in the pyani module - it should not be implementing
 calculations.
+
+This module expects the use of a logger in function calls, as all functions
+should only be called in the context of a CLI interaction with the user, and
+this enforces logging.
 
 (c) The James Hutton Institute 2017
 Author: Leighton Pritchard
@@ -47,18 +51,50 @@ THE SOFTWARE.
 """
 
 import os
+import shutil
 
 from collections import namedtuple
 
 from .. import __version__, download, pyani_tools
-#from . import tools
+from . import tools
+
+
+# Create a directory (handling force/noclobber options)
+def make_outdir(outdir, force, noclobber, logger):
+    """Create output directory (allows for force and noclobber).
+
+    The intended outcomes are:
+
+    outdir doesn't exist: create outdir
+    outdir exists, no modifiers: raise exception
+    outdir exists, --force only: remove the directory tree, create directory
+    outdir exists, --force --noclobber: continue with existing directory tree
+                                        and do not overwrite files
+
+    So long as the outdir is created with this function, we need only check
+    for args.noclobber elsewhere to see how to proceed when a file exists.
+    """
+    if os.path.isdir(outdir):
+        logger.warning("Output directory %s exists", outdir)
+        if not force:
+            raise PyaniScriptException("Will not modify existing directory %s" %
+                                       outdir)
+        elif force and not noclobber:
+            # Delete old directory and start again
+            logger.warning("Overwrite forced. Removing %s and everything " +
+                           "below it (--force)", outdir)
+            shutil.rmtree(outdir)
+        else:
+            logger.warning("Keeping existing directory, skipping existing " +
+                           "files (--force --noclobber).")
+    os.makedirs(outdir, exist_ok=True)
 
 
 # Download sequence/class/label data from NCBI
 def subcmd_download(args, logger):
     """Download all assembled genomes beneath a passed taxon ID from NCBI."""
     # Create output directory
-    pyani_tools.make_outdir(args.outdir, args.force, args.noclobber, logger)
+    tools.make_outdir(args.outdir, args.force, args.noclobber, logger)
     
     # Set Entrez email
     download.set_ncbi_email(args.email)
@@ -69,7 +105,7 @@ def subcmd_download(args, logger):
     logger.info("Taxon IDs received: %s", taxon_ids)
 
     # Get assembly UIDs for each taxon
-    asm_dict = pyani_tools.make_asm_dict(taxon_ids, args.retries)
+    asm_dict = tools.make_asm_dict(taxon_ids, args.retries)
     for tid, uids in asm_dict.items():
         logger.info("Taxon ID summary\n\tQuery: " +\
                     "%s\n\tasm count: %s\n\tUIDs: %s", tid, len(uids), uids)
@@ -116,7 +152,7 @@ def subcmd_download(args, logger):
             ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all"
             suffix="genomic.fna.gz"
             logger.info("Retrieving URLs for %s", filestem)
-            dlstatus = pyani_tools.download_genome_and_hash(filestem, suffix,
+            dlstatus = tools.download_genome_and_hash(filestem, suffix,
                                                             ftpstem,
                                                             args.outdir,
                                                             args.timeout,
@@ -153,7 +189,7 @@ def subcmd_download(args, logger):
                 download.extract_contigs(dlstatus.outfname, ename)
         
     # Write class and label files
-    pyani_tools.write_classes_labels(classes, labels, args.outdir,
+    tools.write_classes_labels(classes, labels, args.outdir,
                                      args.classfname,
                                      args.labelfname, args.noclobber, logger)
 
