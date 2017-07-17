@@ -7,6 +7,7 @@
 
 """Code to support pyani."""
 
+import os
 import sys
 import traceback
 
@@ -180,3 +181,11 @@ def get_labels(filename, logger=None):
                 else:
                     labeldict[key] = label
     return labeldict
+
+
+# Return a list of paths to FASTA files in a directory
+def get_fasta_paths(dirname, extlist=['.fna', '.fa', '.fasta', '.fas']):
+    """Returns a list of paths to files matching a list of FASTA extensions."""
+    return [fname for fname in os.listdir(dirname) if
+            os.path.isfile(os.path.join(dirname, fname)) and
+            os.path.splitext(fname)[-1] in extlist]

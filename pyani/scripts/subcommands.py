@@ -215,9 +215,25 @@ def subcmd_index(args, logger):
     Identify the genome files in the input directory, and generate a single
     MD5 for each so that <genome>.fna produces <genome>.md5
 
-    Genome files are identified from the 
+    Genome files are identified from the file extension.
     """
-    raise NotImplementedError
+    # Get list of FASTA files in the input directory
+    logger.info("Scanning directory %s for FASTA files", args.indir)
+    fnames = pyani_tools.get_fasta_paths(args.indir)
+    logger.info('\n'.join(["Found FASTA files:"] +
+                          ['\t' + fname for fname in fnames]))
+
+    # Create MD5 hash for each file
+    for fname in fnames:
+        fpath = os.path.join(args.indir, fname)
+        hashfname = os.path.splitext(fpath)[0] + '.md5'
+        if os.path.isfile(hashfname):
+            logger.info("%s already indexed", fpath)
+        else:
+            logger.info("Writing hash to %s", hashfname)
+            with open(hashfname, "w") as hfh:
+                hfh.write('\t'.join([download.create_hash(fpath),
+                                     fpath]) + '\n')
 
 
 def subcmd_db(args, logger):
