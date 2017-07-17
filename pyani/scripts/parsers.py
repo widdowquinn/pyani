@@ -170,6 +170,67 @@ def build_parser_classify(subparsers, parents=None):
     parser.set_defaults(func=subcommands.subcmd_classify)
     
 
+def build_parser_index(subparsers, parents=None):
+    """Returns a command-line parser for the index subcommand
+
+    The index subcommand takes a single positional argument:
+
+    indir           (directory containing input genome sequence files)
+    """
+    parser = subparsers.add_parser('index', parents=parents,
+                                   formatter_class=\
+                                   ArgumentDefaultsHelpFormatter)
+    # Required positional argument: input directory
+    parser.add_argument(action='store',
+                        dest='indir', default=None,
+                        help='input directory')
+    parser.set_defaults(func=subcommands.subcmd_index)
+
+
+def build_parser_db(subparsers, parents=None):
+    """Returns a command-line parser for the db subcommand
+    """
+    parser = subparsers.add_parser('db', parents=parents,
+                                   formatter_class=\
+                                   ArgumentDefaultsHelpFormatter)
+    parser.set_defaults(func=subcommands.subcmd_db)
+
+
+def build_parser_anim(subparsers, parents=None):
+    """Returns a command-line parser for the anim subcommand
+    """
+    parser = subparsers.add_parser('anim', parents=parents,
+                                   formatter_class=\
+                                   ArgumentDefaultsHelpFormatter)
+    parser.set_defaults(func=subcommands.subcmd_anim)
+
+
+def build_parser_anib(subparsers, parents=None):
+    """Returns a command-line parser for the anib subcommand
+    """
+    parser = subparsers.add_parser('anib', parents=parents,
+                                   formatter_class=\
+                                   ArgumentDefaultsHelpFormatter)
+    parser.set_defaults(func=subcommands.subcmd_anib)
+
+
+def build_parser_aniblastall(subparsers, parents=None):
+    """Returns a command-line parser for the aniblastall subcommand
+    """
+    parser = subparsers.add_parser('aniblastall', parents=parents,
+                                   formatter_class=\
+                                   ArgumentDefaultsHelpFormatter)
+    parser.set_defaults(func=subcommands.subcmd_aniblastall)
+
+
+def build_parser_render(subparsers, parents=None):
+    """Returns a command-line parser for the render subcommand
+    """
+    parser = subparsers.add_parser('render', parents=parents,
+                                   formatter_class=\
+                                   ArgumentDefaultsHelpFormatter)
+    parser.set_defaults(func=subcommands.subcmd_render)
+    
     
 # Process command-line
 def parse_cmdline():
@@ -193,6 +254,12 @@ def parse_cmdline():
 
     # Add subcommand parsers
     build_parser_download(subparsers, parents=[parser_common])
+    build_parser_index(subparsers, parents=[parser_common])
+    build_parser_db(subparsers, parents=[parser_common])
+    build_parser_anim(subparsers, parents=[parser_common])
+    build_parser_anib(subparsers, parents=[parser_common])
+    build_parser_aniblastall(subparsers, parents=[parser_common])
+    build_parser_render(subparsers, parents=[parser_common])
     build_parser_classify(subparsers, parents=[parser_common])
     
     # Parse arguments

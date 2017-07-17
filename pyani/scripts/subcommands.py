@@ -7,6 +7,10 @@ Provides subcommand functions for the pyani.py script
 - download:      download assemblies from NCBI
 - classify:      classify ANI results
 
+The code in this module should mediate between the user via CLI and the actual
+'lifting' code in the pyani module - it should not be implementing
+calculations.
+
 (c) The James Hutton Institute 2017
 Author: Leighton Pritchard
 Contact: leighton.pritchard@hutton.ac.uk
@@ -161,9 +165,52 @@ def subcmd_download(args, logger):
                            outstr)
 
 
+# Generate MD5 hashes for each genome in an input directory
+def subcmd_index(args, logger):
+    """Generate an MD5 hash for each genome in an input directory.
+
+    Identify the genome files in the input directory, and generate a single
+    MD5 for each so that <genome>.fna produces <genome>.md5
+    """
+    raise NotImplementedError
+
+
+def subcmd_db(args, logger):
+    """Perform operations on the SQLite3 database containing analysis info.
+
+    - set the current database associated with this analysis
+    - create the database if it does not exist
+    - update a database with existing pyani results
+    - merge two or more databases
+    """
+    raise NotImplementedError
+
+
+def subcmd_anim(args, logger):
+    """Perform ANIm on all genome files in an input directory.
+    """
+    raise NotImplementedError
+
+
+def subcmd_anib(args, logger):
+    """Perform ANIm on all genome files in an input directory.
+    """
+    raise NotImplementedError
+
+
+def subcmd_aniblastall(args, logger):
+    """Perform ANIm on all genome files in an input directory.
+    """
+    raise NotImplementedError
+
+
+def subcmd_render(args, logger):
+    """Visualise ANI results for an analysis.
+    """
+    raise NotImplementedError
+            
 # Classify input genomes on basis of ANI coverage and identity output
 def subcmd_classify(args, logger):
-    """Take pyani output, and generate a series of classifications of the
-    input data.
+    """Take pyani output, and generate of classifications of the input data.
     """
     raise NotImplementedError
