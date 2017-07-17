@@ -55,7 +55,7 @@ import shutil
 
 from collections import namedtuple
 
-from .. import __version__, download, pyani_tools
+from .. import __version__, download, pyani_tools, pyani_db
 from . import tools
 
 
@@ -238,8 +238,20 @@ def subcmd_index(args, logger):
 
 def subcmd_createdb(args, logger):
     """Create an empty pyani database."""
-    raise NotImplementedError
+    # If the database exists, raise an error rather than overwrite
+    if os.path.isfile(args.dbpath) and not args.force:
+        logger.error("Database %s already exists (exiting)", args.dbpath)
+        raise SystemError(1)
+    # If the path to the database doesn't exist, create it
+    dbdir = os.path.split(args.dbpath)[0]
+    if not os.path.isdir(dbdir):
+        logger.info("Creating database directory %s", dbdir)
+        os.makedirs(dbdir, exist_ok=True)
 
+    # Create the empty database
+    logger.info("Creating pyani database at %s", args.dbpath)
+    pyani_db.create_db(args.dbpath)
+    
 
 def subcmd_anim(args, logger):
     """Perform ANIm on all genome files in an input directory.

@@ -194,6 +194,13 @@ def build_parser_createdb(subparsers, parents=None):
     parser = subparsers.add_parser('createdb', parents=parents,
                                    formatter_class=\
                                    ArgumentDefaultsHelpFormatter)
+    # Path to database (default: .pyani/pyanidb)
+    parser.add_argument("--dbpath", action='store',
+                        dest='dbpath', default='.pyani/pyanidb',
+                        help='path to pyani database')
+    parser.add_argument("-f", "--force", action='store_true',
+                        dest='force', default=False,
+                        help='force creation of new empty database')
     parser.set_defaults(func=subcommands.subcmd_createdb)
 
 

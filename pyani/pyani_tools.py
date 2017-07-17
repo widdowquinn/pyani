@@ -20,7 +20,7 @@ from . import pyani_config, download
 
 # General exception for scripts
 class PyaniException(Exception):
-    """General exception for pyani.py script"""
+    """General exception for pyani"""
     def __init__(self, msg="Error in pyani module"):
         Exception.__init__(self, msg)
 
