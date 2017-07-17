@@ -223,12 +223,12 @@ def subcmd_index(args, logger):
     logger.info('\n'.join(["Found FASTA files:"] +
                           ['\t' + fname for fname in fnames]))
 
-    # Create MD5 hash for each file
+    # Create MD5 hash for each file, if needed
     for fname in fnames:
         fpath = os.path.join(args.indir, fname)
         hashfname = os.path.splitext(fpath)[0] + '.md5'
         if os.path.isfile(hashfname):
-            logger.info("%s already indexed", fpath)
+            logger.info("%s already indexed (skipping)", fpath)
         else:
             logger.info("Writing hash to %s", hashfname)
             with open(hashfname, "w") as hfh:
@@ -236,14 +236,8 @@ def subcmd_index(args, logger):
                                      fpath]) + '\n')
 
 
-def subcmd_db(args, logger):
-    """Perform operations on the SQLite3 database containing analysis info.
-
-    - set the current database associated with this analysis
-    - create the database if it does not exist
-    - update a database with existing pyani results
-    - merge two or more databases
-    """
+def subcmd_createdb(args, logger):
+    """Create an empty pyani database."""
     raise NotImplementedError
 
 

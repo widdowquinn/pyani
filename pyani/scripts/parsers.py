@@ -188,13 +188,13 @@ def build_parser_index(subparsers, parents=None):
     parser.set_defaults(func=subcommands.subcmd_index)
 
 
-def build_parser_db(subparsers, parents=None):
-    """Returns a command-line parser for the db subcommand
+def build_parser_createdb(subparsers, parents=None):
+    """Returns a command-line parser for the createdb subcommand
     """
-    parser = subparsers.add_parser('db', parents=parents,
+    parser = subparsers.add_parser('createdb', parents=parents,
                                    formatter_class=\
                                    ArgumentDefaultsHelpFormatter)
-    parser.set_defaults(func=subcommands.subcmd_db)
+    parser.set_defaults(func=subcommands.subcmd_createdb)
 
 
 def build_parser_anim(subparsers, parents=None):
@@ -256,7 +256,7 @@ def parse_cmdline():
     # Add subcommand parsers
     build_parser_download(subparsers, parents=[parser_common])
     build_parser_index(subparsers, parents=[parser_common])
-    build_parser_db(subparsers, parents=[parser_common])
+    build_parser_createdb(subparsers, parents=[parser_common])
     build_parser_anim(subparsers, parents=[parser_common])
     build_parser_anib(subparsers, parents=[parser_common])
     build_parser_aniblastall(subparsers, parents=[parser_common])
