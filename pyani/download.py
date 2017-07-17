@@ -284,19 +284,11 @@ def check_hash(fname, hashfile):
     passed = False   # Flag - set to True if the hash matches
 
     # Generate MD5 hash
-    hash_md5 = hashlib.md5()
-    with open(fname, "rb") as fhandle:
-        for chunk in iter(lambda: fhandle.read(65536), b""):
-            hash_md5.update(chunk)
-    localhash = hash_md5.hexdigest()
+    localhash = create_hash(fname)
 
     # Get hash from file
     localfname = os.path.split(fname)[-1]
-    with open(hashfile, "r") as hhandle:
-        for l in [l.strip().split() for l in hhandle if len(l.strip())]:
-            hashfname = os.path.split(l[1])[-1]
-            if os.path.split(l[1])[-1] == localfname:
-                filehash = l[0]
+    filehash = extract_hash(hashfile, localfname)
     
     # Check for match
     if filehash == localhash:
@@ -323,5 +315,31 @@ def create_labels(classification, filestem):
     
     return (labeltxt, classtxt)
 
+
+# Create an MD5 hash for the passed genome
+def create_hash(fname):
+    """Return MD5 hash of the passed file contents."""
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as fhandle:
+        for chunk in iter(lambda: fhandle.read(65536), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+    
+
+# Create an MD5 hash for the passed genome
+def extract_hash(hashfile, name):
+    """Return MD5 hash from file of name:MD5 hashes
+
+    - hashfile             path to file containing name:MD5 pairs
+    - name                 name asspcoated with hash
+    """
+    filehash = None
+    with open(hashfile, "r") as hhandle:
+        for l in [l.strip().split() for l in hhandle if len(l.strip())]:
+            hashfname = os.path.split(l[1])[-1]
+            if os.path.split(l[1])[-1] == name:
+                filehash = l[0]
+    return filehash
+    
 
 

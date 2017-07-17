@@ -158,7 +158,7 @@ def subcmd_download(args, logger):
             if hashstatus.passed:
                 logger.info("MD5 hash check passed")
             else:
-                logger.warning("MD5 hash check failed.")
+                logger.warning("MD5 hash check failed. Please check and retry.")
 
             # Extract downloaded files
             ename = os.path.splitext(dlstatus.outfname)[0]
@@ -168,6 +168,15 @@ def subcmd_download(args, logger):
                 logger.info("Extracting archive %s to %s",
                             dlstatus.outfname, ename)
                 download.extract_contigs(dlstatus.outfname, ename)
+
+            # Create MD5 hash for the downloaded contigs
+            logger.info("Creating local MD5 hash for %s" % ename)
+            hashfname = os.path.splitext(ename)[0] + '.md5'
+            logger.info("Writing hash to %s" % hashfname)
+            with open(hashfname, "w") as hfh:
+                hfh.write('\t'.join([download.create_hash(ename),
+                                     ename]) + '\n')
+                
         
     # Write class and label files
     classfname = os.path.join(args.outdir, args.classfname)
@@ -205,6 +214,8 @@ def subcmd_index(args, logger):
 
     Identify the genome files in the input directory, and generate a single
     MD5 for each so that <genome>.fna produces <genome>.md5
+
+    Genome files are identified from the 
     """
     raise NotImplementedError
 
