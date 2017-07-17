@@ -50,15 +50,15 @@ import os
 
 from collections import namedtuple
 
-from .. import __version__, download
-from . import tools
+from .. import __version__, download, pyani_tools
+#from . import tools
 
 
 # Download sequence/class/label data from NCBI
 def subcmd_download(args, logger):
     """Download all assembled genomes beneath a passed taxon ID from NCBI."""
     # Create output directory
-    tools.make_outdir(args.outdir, args.force, args.noclobber, logger)
+    pyani_tools.make_outdir(args.outdir, args.force, args.noclobber, logger)
     
     # Set Entrez email
     download.set_ncbi_email(args.email)
@@ -69,7 +69,7 @@ def subcmd_download(args, logger):
     logger.info("Taxon IDs received: %s", taxon_ids)
 
     # Get assembly UIDs for each taxon
-    asm_dict = tools.make_asm_dict(taxon_ids, args.retries)
+    asm_dict = pyani_tools.make_asm_dict(taxon_ids, args.retries)
     for tid, uids in asm_dict.items():
         logger.info("Taxon ID summary\n\tQuery: " +\
                     "%s\n\tasm count: %s\n\tUIDs: %s", tid, len(uids), uids)
@@ -116,9 +116,11 @@ def subcmd_download(args, logger):
             ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all"
             suffix="genomic.fna.gz"
             logger.info("Retrieving URLs for %s", filestem)
-            dlstatus = tools.download_genome_and_hash(filestem, suffix,
-                                                      ftpstem, args.outdir,
-                                                      args.timeout, logger)
+            dlstatus = pyani_tools.download_genome_and_hash(filestem, suffix,
+                                                            ftpstem,
+                                                            args.outdir,
+                                                            args.timeout,
+                                                            logger)
             if dlstatus.skipped:
                 skippedlist.append(Skipped(tid, uid,
                                            uid_class.organism,
@@ -151,8 +153,9 @@ def subcmd_download(args, logger):
                 download.extract_contigs(dlstatus.outfname, ename)
         
     # Write class and label files
-    tools.write_classes_labels(classes, labels, args.outdir, args.classfname,
-                               args.labelfname, args.noclobber, logger)
+    pyani_tools.write_classes_labels(classes, labels, args.outdir,
+                                     args.classfname,
+                                     args.labelfname, args.noclobber, logger)
 
     # Show skipped genome list
     if len(skippedlist):
