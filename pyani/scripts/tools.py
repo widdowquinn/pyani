@@ -107,9 +107,9 @@ def make_asm_dict(taxon_ids, retries):
     return asm_dict
 
 
-# Download the genome and MD5 hash from NCBI
+# Download the RefSeq genome and MD5 hash from NCBI
 def download_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout,
-                             logger):
+                             logger, dltype="RefSeq"):
     """Download genome and accompanying MD5 hash from NCBI.
 
     This function tries the (assumed to be passed) RefSeq FTP URL first and,
@@ -117,23 +117,14 @@ def download_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout,
 
     We attempt to gracefully skip genomes with download errors.
     """
-    # First attempt: RefSeq download
+    if dltype == "GenBank":
+        filestem = re.sub('^GCF_', 'GCA_', filestem)
     dlstatus = download.retrieve_genome_and_hash(filestem, suffix,
                                                  ftpstem, outdir, timeout)
     if dlstatus.error is not None:  # Something went awry
-        logger.warning("RefSeq download failed: skipping!\n%s", dlstatus.error)
-        # Second attempt: GenBank download
-        logger.warning("Trying GenBank alternative assembly")
-        gbfilestem = re.sub('^GCF_', 'GCA_', filestem)
-        logger.info("Retrieving URLs for %s", gbfilestem)
-        gbdlstatus = download.retrieve_genome_and_hash(gbfilestem, suffix,
-                                                       ftpstem, outdir,
-                                                       timeout)
-        if gbdlstatus.error:  # Something went awry again
-            logger.error("GenBank download failed: skipping!\n%s",
-                         gbdlstatus.error)
-            dlstatus = gbdlstatus
-            dlstatus.skipped = True
+        logger.warning("%s download failed: skipping!\n%s",
+                       dltype, dlstatus.error)
+        dlstatus.skipped = True
 
     return dlstatus
 

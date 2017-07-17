@@ -59,41 +59,11 @@ from .. import __version__, download, pyani_tools
 from . import tools
 
 
-# Create a directory (handling force/noclobber options)
-def make_outdir(outdir, force, noclobber, logger):
-    """Create output directory (allows for force and noclobber).
-
-    The intended outcomes are:
-
-    outdir doesn't exist: create outdir
-    outdir exists, no modifiers: raise exception
-    outdir exists, --force only: remove the directory tree, create directory
-    outdir exists, --force --noclobber: continue with existing directory tree
-                                        and do not overwrite files
-
-    So long as the outdir is created with this function, we need only check
-    for args.noclobber elsewhere to see how to proceed when a file exists.
-    """
-    if os.path.isdir(outdir):
-        logger.warning("Output directory %s exists", outdir)
-        if not force:
-            raise PyaniScriptException("Will not modify existing directory %s" %
-                                       outdir)
-        elif force and not noclobber:
-            # Delete old directory and start again
-            logger.warning("Overwrite forced. Removing %s and everything " +
-                           "below it (--force)", outdir)
-            shutil.rmtree(outdir)
-        else:
-            logger.warning("Keeping existing directory, skipping existing " +
-                           "files (--force --noclobber).")
-    os.makedirs(outdir, exist_ok=True)
-
-
 # Download sequence/class/label data from NCBI
 def subcmd_download(args, logger):
-    """Download all assembled genomes beneath a passed taxon ID from NCBI."""
-    # Create output directory
+    """Download all assembled genomes in the subtree of a passed NCBI taxon ID
+    """
+    # Create output directory, respecting force/noclobber
     tools.make_outdir(args.outdir, args.force, args.noclobber, logger)
     
     # Set Entrez email
@@ -119,9 +89,9 @@ def subcmd_download(args, logger):
     skippedlist = []
     Skipped = namedtuple("Skipped",
                          "taxon_id accession organism strain " +
-                         "url")
+                         "url dltype")
 
-    # Download contigs and hashes for each assembly UID
+    # Download contigs and hashes for each assembly UID in the list
     for tid, uids in asm_dict.items():
         logger.info("Downloading contigs for Taxon ID %s", tid)
         for uid in uids:
@@ -148,21 +118,32 @@ def subcmd_download(args, logger):
             logger.info("Label and class file entries\n" + 
                         "\tLabel: %s\n\tClass: %s", labeltxt, classtxt)
     
-            # Obtain URLs
+            # Obtain URLs - trying the RefSeq filestem first
             ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all"
             suffix="genomic.fna.gz"
             logger.info("Retrieving URLs for %s", filestem)
+            # Try RefSeq first
             dlstatus = tools.download_genome_and_hash(filestem, suffix,
-                                                            ftpstem,
-                                                            args.outdir,
-                                                            args.timeout,
-                                                            logger)
-            if dlstatus.skipped:
+                                                      ftpstem, args.outdir,
+                                                      args.timeout, logger,
+                                                      dltype="RefSeq")
+            if dlstatus.skipped:  # RefSeq failed, try GenBank
+                logger.warning("RefSeq failed. Trying GenBank alternative " +
+                               "assembly")
                 skippedlist.append(Skipped(tid, uid,
                                            uid_class.organism,
                                            uid_class.strain,
-                                           dlstatus.url))
-                continue  # Move straight on to the next download
+                                           dlstatus.url, "RefSeq"))
+                dlstatus = tools.download_genome_and_hash(filestem, suffix,
+                                                          ftpstem, args.outdir,
+                                                          args.timeout, logger,
+                                                          dltype="GenBank")
+                if dlstatus.skipped:
+                    skippedlist.append(Skipped(tid, uid,
+                                               uid_class.organism,
+                                               uid_class.strain,
+                                               dlstatus.url, "GenBank"))
+                    continue  # Move straight on to the next download
 
             # Report the working download
             logger.info("Downloaded from URL: %s", dlstatus.url)
@@ -198,8 +179,9 @@ def subcmd_download(args, logger):
         logger.warning("%d genome downloads were skipped", len(skippedlist))
         for skipped in skippedlist:
             outstr = '\n\t'.join(["taxon id: %s" % skipped.taxon_id,
-                                   "accession: %s" % skipped.accession,
-                                   "URL: %s" % skipped.url])
+                                  "accession: %s" % skipped.accession,
+                                  "URL: %s" % skipped.url,
+                                  "source: %s" % skipped.dltype])
             logger.warning("%s %s:\n\t%s", skipped.organism, skipped.strain,
                            outstr)
 

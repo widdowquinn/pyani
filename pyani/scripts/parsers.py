@@ -76,7 +76,7 @@ def build_parser_download(subparsers, parents=None):
 
     The download subcommand takes specific arguments:
 
-    -t, --taxon (NCBI taxonomy IDs)
+    -t, --taxon (NCBI taxonomy IDs - comma-separated list, or one ID)
     --email     (email for providing to Entrez services)
     --retries   (number of Entrez retry attempts to make)
     --batchsize (number of Entrez records to download in a batch)
@@ -96,7 +96,8 @@ def build_parser_download(subparsers, parents=None):
     # Required arguments for NCBI query
     parser.add_argument("-t", "--taxon", dest="taxon",
                         action="store", default=None,
-                        help="NCBI taxonomy IDsr (required)",
+                        help="NCBI taxonomy IDs (required, " +
+                        "comma-separated list)",
                         required=True)
     parser.add_argument("--email", dest="email",
                         action="store", default=None,
