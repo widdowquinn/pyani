@@ -238,7 +238,8 @@ def parse_cmdline():
     parser.add_argument("--scheduler", dest="scheduler",
                         action="store", default="multiprocessing",
                         choices=["multiprocessing", "SGE"],
-                        help="Job scheduler (default multiprocessing, i.e. locally)")
+                        help="Job scheduler (default multiprocessing, " +
+                        "i.e. locally)")
     parser.add_argument("--workers", dest="workers",
                         action="store", default=None, type=int,
                         help="Number of worker processes for multiprocessing "
