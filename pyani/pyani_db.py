@@ -56,21 +56,23 @@ SQL_CREATEDB = """
    CREATE TABLE genomes (genome_id INTEGER PRIMARY KEY AUTOINCREMENT,
                          hash TEXT,
                          path TEXT,
-                         name TEXT,
-                         label TEXT,
-                         class TEXT
+                         description TEXT
                         );
+   DROP TABLE IF EXISTS runs;
+   CREATE TABLE runs (run_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      method TEXT,
+                      cmdline TEXT,
+                      date TEXT
+                     );
    DROP TABLE IF EXISTS comparisons;
    CREATE TABLE comparisons (query_id INTEGER NOT NULL,
                              subject_id INTEGER NOT NULL,
-                             date TEXT,
-                             options TEXT,
-                             description TEXT,
+                             run_id INTEGER NOT NULL,
                              identity REAL,
                              coverage REAL,
                              mismatches REAL,
                              aligned_length REAL,
-                             PRIMARY KEY (query_id, subject_id)
+                             PRIMARY KEY (query_id, subject_id, run_id),
                             );
    """
 
@@ -82,3 +84,5 @@ def create_db(path):
     with conn:
         cur = conn.cursor()
         cur.executescript(SQL_CREATEDB)
+
+
