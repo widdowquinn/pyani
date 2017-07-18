@@ -49,6 +49,7 @@ THE SOFTWARE.
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 from . import subcommands
+from .. import pyani_config
 
 
 # Common parser for all subcommands
@@ -68,6 +69,37 @@ def build_parser_common():
                         dest='verbose', default=False,
                         help='report verbose progress to log')    
     return parser
+
+
+# Common parser for all subcommands
+def build_parser_scheduler():
+    """Returns the common argument parser for job scheduling
+
+    Common arguments are:
+
+    """
+    parser = ArgumentParser(add_help=False)
+    parser.add_argument("--scheduler", dest="scheduler",
+                        action="store", default="multiprocessing",
+                        choices=["multiprocessing", "SGE"],
+                        help="Job scheduler (default multiprocessing, " +
+                        "i.e. locally)")
+    parser.add_argument("--workers", dest="workers",
+                        action="store", default=None, type=int,
+                        help="Number of worker processes for multiprocessing "
+                        "(default zero, meaning use all available cores)")
+    parser.add_argument("--SGEgroupsize", dest="sgegroupsize",
+                        action="store", default=10000, type=int,
+                        help="Number of jobs to place in an SGE array group "
+                        "(default 10000)")
+    parser.add_argument("--SGEargs", dest="sgeargs",
+                        action="store", default=None, type=str,
+                        help="Additional arguments for qsub")
+    parser.add_argument("--jobprefix", dest="jobprefix",
+                        action="store", default="PYANI",
+                        help="Prefix for SGE jobs (default PYANI).")
+    return parser
+
 
 
 # Subcommand parsers
@@ -210,6 +242,27 @@ def build_parser_anim(subparsers, parents=None):
     parser = subparsers.add_parser('anim', parents=parents,
                                    formatter_class=\
                                    ArgumentDefaultsHelpFormatter)
+    # Required positional arguments:
+    parser.add_argument(action='store',
+                        dest='indir', default=None,
+                        help='input genome directory')
+    # Optional arguments
+    parser.add_argument("--dbpath", action='store',
+                        dest='dbpath', default='.pyani/pyanidb',
+                        help='path to pyani database')
+    parser.add_argument("--nucmer_exe", dest="nucmer_exe",
+                        action="store", default=pyani_config.NUCMER_DEFAULT,
+                        help="path to NUCmer executable")
+    parser.add_argument("--skip_nucmer", dest="skip_nucmer",
+                        action="store_true", default=False,
+                        help="Skip NUCmer runs, for testing " +
+                        "(e.g. if output already present)")
+    parser.add_argument("--nocompress", dest="nocompress",
+                        action="store_true", default=False,
+                        help="Don't compress/delete the comparison output")
+    parser.add_argument("--maxmatch", dest="maxmatch",
+                        action="store_true", default=False,
+                        help="Override MUMmer to allow all NUCmer matches")    
     parser.set_defaults(func=subcommands.subcmd_anim)
 
 
@@ -257,16 +310,20 @@ def parse_cmdline():
                                             description="valid subcommands",
                                             help="additional help")
 
-    # Common parser, included with all the subcommand parsers
+    # Common parsers
     parser_common = build_parser_common()
+    parser_scheduler = build_parser_scheduler()
 
     # Add subcommand parsers
     build_parser_download(subparsers, parents=[parser_common])
     build_parser_index(subparsers, parents=[parser_common])
     build_parser_createdb(subparsers, parents=[parser_common])
-    build_parser_anim(subparsers, parents=[parser_common])
-    build_parser_anib(subparsers, parents=[parser_common])
-    build_parser_aniblastall(subparsers, parents=[parser_common])
+    build_parser_anim(subparsers, parents=[parser_common,
+                                           parser_scheduler])
+    build_parser_anib(subparsers, parents=[parser_common,
+                                           parser_scheduler])
+    build_parser_aniblastall(subparsers, parents=[parser_common,
+                                                  parser_scheduler])
     build_parser_render(subparsers, parents=[parser_common])
     build_parser_classify(subparsers, parents=[parser_common])
     
