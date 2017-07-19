@@ -36,3 +36,6 @@ cover/
 
 # Development virtualenvs
 venv-*
+
+# Don't include the development local config dir
+.pyani
