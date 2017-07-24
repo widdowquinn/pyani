@@ -91,8 +91,9 @@ def run_main(namespace=None):
     logger.addHandler(err_handler)
 
     # Report arguments, if verbose
+    args.cmdline = ' '.join(sys.argv)
     logger.info('Processed arguments: %s', args)
-    logger.info('command-line: %s', ' '.join(sys.argv))
+    logger.info('command-line: %s', args.cmdline)
 
     # Run the subcommand
     returnval = args.func(args, logger)

@@ -124,6 +124,11 @@ SQL_INDEXGENOMEHASH = """
 """
 
 # Add a genome to the database
+SQL_ADDRUN = """
+   INSERT INTO runs (method, cmdline, date, status) VALUES (?, ?, ?, ?);
+"""
+
+# Add a genome to the database
 SQL_ADDGENOME = """
    INSERT INTO genomes (hash, path, description) VALUES (?, ?, ?);
 """
@@ -143,6 +148,16 @@ def create_db(path):
         cur.executescript(SQL_INDEXGENOMEHASH)
 
 
+# Add a new run to the database
+def add_run(dbpath, method, cmdline, date, status):
+    """Add run information to the passed database, and return a run ID."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_ADDRUN, (method, cmdline, date, status))
+    return cur.lastrowid
+
+        
 # Add a new genome to the database
 def add_genome(dbpath, hash, filepath, desc):
     """Add a genome to the passed SQLite3 database."""

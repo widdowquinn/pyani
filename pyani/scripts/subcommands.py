@@ -49,6 +49,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import datetime
 import os
 import shutil
 import sqlite3
@@ -288,7 +289,11 @@ def subcmd_anim(args, logger):
     # Announce the analysis
     logger.info("Running ANIm analysis")
 
-    # Add this run to the database
+    # Add this analysis to the database
+    logger.info("Adding analysis information to database %s", args.dbpath)
+    run_id = pyani_db.add_run(args.dbpath, "ANIm", args.cmdline,
+                              datetime.datetime.now().isoformat(), "started")
+    logger.info("Current analysis has ID %s in this database", run_id)
     
     # Identify input files for comparison, and populate the database
     logger.info("Identifying input genome/hash files:")
