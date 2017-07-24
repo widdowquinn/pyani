@@ -259,6 +259,29 @@ def subcmd_createdb(args, logger):
 
 def subcmd_anim(args, logger):
     """Perform ANIm on all genome files in an input directory.
+
+    Finds ANI by the ANIm method, as described in Richter et al (2009)
+    Proc Natl Acad Sci USA 106: 19126-19131 doi:10.1073/pnas.0906412106.
+
+    All FASTA format files (selected by suffix) in the input directory
+    are compared against each other, pairwise, using NUCmer (whose path must
+    be provided).
+
+    For each pairwise comparison, the NUCmer .delta file output is parsed to
+    obtain an alignment length and similarity error count for every unique
+    region alignment between the two organisms, as represented by
+    sequences in the FASTA files. These are processed to calculated aligned
+    sequence lengths, average nucleotide identity (ANI) percentages, coverage
+    (aligned percentage of whole genome - forward direction), and similarity
+    error count for each pairwise comparison.
+
+    The calculated values are deposited in the SQLite3 database being used for
+    the analysis.
+
+    For each pairwise comparison the NUCmer output is stored in the output
+    directory for long enough to extract summary information, but for each run
+    the output is gzip compressed. Once all runs are complete, the outputs
+    for each comparison are concatenated into a single gzip archive.
     """
     raise NotImplementedError
 

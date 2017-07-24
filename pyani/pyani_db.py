@@ -51,6 +51,37 @@ import sqlite3
 # be out of the way when reading code.
 
 # Create database tables
+#
+# genomes            - a row of data, one per genome
+# runs               - a row of data, one per pyani run
+# comparisons        - a row of data, one per pairwise comparison
+# run_genomes        - table providing many:many comparisons
+#
+# The intention is that a run applies to some/all genomes from the genomes
+# table, and that all the relevant pairwise comparisons/results are stored
+# in the comparisons table.
+#
+# Information about the run (when it was run, what command/method, etc.) are
+# stored in the runs table.
+#
+# All genomes (whether used or not) are described in the genomes table. An MD5
+# hash is used to uniquely identify/validate a genome that is used for any
+# comparison. The path to the source data, and a description of the genome are
+# stored. We expect the path information to be live, so that a comparison may
+# be run or re-run. The hash will be used to verify the contents of the file
+# at the end of the path, when there is a run.
+#
+# Each pairwise comparison is stored (forward/reverse comparisons are stored
+# separately, to allow method flexibility) in the comparisons table. The
+# comparisons are tied directly to genomes, but only transitively to a
+# particular run; this reduces redundancy, and allows pairwise comparison
+# data to be used without recalculation, if the same input genome and
+# path/hash are provided.
+#
+# The runs_genomes table provides a link so that each genome is associated with
+# all runs in which it has participated, and each run can be associated with
+# all the genomes that it has participated in.
+
 SQL_CREATEDB = """
    DROP TABLE IF EXISTS genomes;
    CREATE TABLE genomes (genome_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,15 +95,23 @@ SQL_CREATEDB = """
                       cmdline TEXT,
                       date TEXT
                      );
+   DROP TABLE IF EXISTS runs_genomes;
+   CREATE TABLE runs_genomes(run_id INTEGER NOT NULL,
+                             genome_id INTEGER NOT NULL,
+                             PRIMARY KEY (run_id, genome_id),
+                             FOREIGN KEY(run_id) REFERENCES
+                                                   runs(run_id),
+                             FOREIGN KEY(genome_id) REFERENCES 
+                                                      genomes(genome_id)
+                            );
    DROP TABLE IF EXISTS comparisons;
    CREATE TABLE comparisons (query_id INTEGER NOT NULL,
                              subject_id INTEGER NOT NULL,
-                             run_id INTEGER NOT NULL,
                              identity REAL,
                              coverage REAL,
                              mismatches REAL,
                              aligned_length REAL,
-                             PRIMARY KEY (query_id, subject_id, run_id),
+                             PRIMARY KEY (query_id, subject_id)
                             );
    """
 
