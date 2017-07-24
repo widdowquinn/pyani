@@ -9,20 +9,40 @@
 
 import os
 
-from Bio import SeqIO
+from . import pyani_tools
 
 
-# Get a list of FASTA files from the input directory
-def get_fasta_files(dirname=None):
-    """Returns a list of FASTA files in the passed directory
+# Return a list of paths to FASTA files in a directory
+def get_fasta_paths(dirname, extlist=['.fna', '.fa', '.fasta', '.fas']):
+    """Returns a list of paths to files matching a list of FASTA extensions.
 
-    - dirname - path to input directory
+    Returns the full path to each file.
     """
-    if dirname is None:
-        dirname = '.'
-    infiles = get_input_files(dirname, '.fasta', '.fas', '.fa', '.fna',
-                              '.fsa_nt')
+    return [os.path.join(dirname, fname) for fname in os.listdir(dirname) if
+            os.path.isfile(os.path.join(dirname, fname)) and
+            os.path.splitext(fname)[-1] in extlist]
+
+
+# Get a list of FASTA files and corresponding hashes from the input directory
+def get_fasta_and_hash_paths(dirname='.', create_hash=True):
+    """Returns a list of (FASTA file, hash file) tuples in passed directory
+
+    - dirname             - path to input directory
+    - create_hash         - Boolean; if True and the FASTA file has no
+                            corresponding hash ('.md5') file, a hash file
+                            is created.
+
+    If the FASTA file does not have a corresponding hash, then the
+    corresponding hash is created, when create_hash=True. Otherwise the file
+    path is not returned.
+    """
+    infiles = pyani_tools.get_fasta_paths(dirname)
+    for file in infiles:
+        hashfile = os.path.splitext(infile) + '.md5'
+        if not os.path.isfile(hashfile):
+            raise IOError("Hashfile %s does not exist" % hashfile)
     return infiles
+
 
 
 # Get list of FASTA files in a directory

@@ -54,7 +54,8 @@ import shutil
 
 from collections import namedtuple
 
-from .. import __version__, download, pyani_tools, pyani_db
+from .. import __version__, download, pyani_tools, pyani_db, pyani_files
+from ..pyani_config import ALIGNDIR
 from . import tools
 
 
@@ -222,13 +223,12 @@ def subcmd_index(args, logger):
     """
     # Get list of FASTA files in the input directory
     logger.info("Scanning directory %s for FASTA files", args.indir)
-    fnames = pyani_tools.get_fasta_paths(args.indir)
+    fpaths = pyani_files.get_fasta_paths(args.indir)
     logger.info('\n'.join(["Found FASTA files:"] +
-                          ['\t' + fname for fname in fnames]))
+                          ['\t' + fpath for fpath in fpaths]))
 
     # Create MD5 hash for each file, if needed
-    for fname in fnames:
-        fpath = os.path.join(args.indir, fname)
+    for fpath in fpaths:
         hashfname = os.path.splitext(fpath)[0] + '.md5'
         if os.path.isfile(hashfname):
             logger.info("%s already indexed (skipping)", fpath)
@@ -283,7 +283,20 @@ def subcmd_anim(args, logger):
     the output is gzip compressed. Once all runs are complete, the outputs
     for each comparison are concatenated into a single gzip archive.
     """
-    raise NotImplementedError
+    # Announce the analysis
+    logger.info("Running ANIm analysis")
+
+    # Generate commandlines for NUCmer analysis and output compression
+    logger.info("Generating ANIm command-lines")
+    deltadir = os.path.join(os.path.join(args.outdir,
+                                         ALIGNDIR['ANIm']))
+    logger.info("NUCmer output will be written temporarily to %s", deltadir)
+
+    # Identify input files for comparison, and populate the database
+    logger.info("Identifying input genome files")
+    
+    
+    # Generate NUCmer/gzip command-lines for each pairwise comparison
 
 
 def subcmd_anib(args, logger):

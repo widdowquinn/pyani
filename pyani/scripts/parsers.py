@@ -242,10 +242,13 @@ def build_parser_anim(subparsers, parents=None):
     parser = subparsers.add_parser('anim', parents=parents,
                                    formatter_class=\
                                    ArgumentDefaultsHelpFormatter)
-    # Required positional arguments:
+    # Required positional arguments: input and output directories
     parser.add_argument(action='store',
                         dest='indir', default=None,
                         help='input genome directory')
+    parser.add_argument(action='store',
+                        dest='outdir', default=None,
+                        help='output analysis results directory')
     # Optional arguments
     parser.add_argument("--dbpath", action='store',
                         dest='dbpath', default='.pyani/pyanidb',
@@ -253,13 +256,6 @@ def build_parser_anim(subparsers, parents=None):
     parser.add_argument("--nucmer_exe", dest="nucmer_exe",
                         action="store", default=pyani_config.NUCMER_DEFAULT,
                         help="path to NUCmer executable")
-    parser.add_argument("--skip_nucmer", dest="skip_nucmer",
-                        action="store_true", default=False,
-                        help="Skip NUCmer runs, for testing " +
-                        "(e.g. if output already present)")
-    parser.add_argument("--nocompress", dest="nocompress",
-                        action="store_true", default=False,
-                        help="Don't compress/delete the comparison output")
     parser.add_argument("--maxmatch", dest="maxmatch",
                         action="store_true", default=False,
                         help="Override MUMmer to allow all NUCmer matches")    
