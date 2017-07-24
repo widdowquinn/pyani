@@ -51,11 +51,13 @@ THE SOFTWARE.
 
 import os
 import shutil
+import sqlite3
 
 from collections import namedtuple
 
 from .. import __version__, download, pyani_tools, pyani_db, pyani_files
 from ..pyani_config import ALIGNDIR
+from ..pyani_tools import last_exception
 from . import tools
 
 
@@ -286,15 +288,35 @@ def subcmd_anim(args, logger):
     # Announce the analysis
     logger.info("Running ANIm analysis")
 
+    # Add this run to the database
+    
+    # Identify input files for comparison, and populate the database
+    logger.info("Identifying input genome/hash files:")
+    infiles = pyani_files.get_fasta_and_hash_paths(args.indir)
+    # Get hash string and sequence description for each FASTA/hash pair,
+    # and add info to the current database
+    for fastafile, hashfile in infiles:
+        # Get data
+        inhash, filecheck = pyani_files.read_hash_string(hashfile)
+        indesc = pyani_files.read_fasta_description(fastafile)
+        outstr = ["FASTA file:\t%s" % fastafile,
+                  "description:\t%s" % indesc,
+                  "hash file:\t%s" % hashfile,
+                  "MD5 hash:\t%s" % inhash]
+        logger.info('\t' + '\n\t'.join(outstr))
+        # Add to database, if the genome is not already present
+        if pyani_db.check_genome(args.dbpath, inhash):
+            logger.warning("Genome %s already in database (skipping)",
+                           fastafile)
+            continue
+        logger.info("Adding data to database...")
+        pyani_db.add_genome(args.dbpath, inhash, fastafile, indesc)
+
     # Generate commandlines for NUCmer analysis and output compression
     logger.info("Generating ANIm command-lines")
     deltadir = os.path.join(os.path.join(args.outdir,
                                          ALIGNDIR['ANIm']))
     logger.info("NUCmer output will be written temporarily to %s", deltadir)
-
-    # Identify input files for comparison, and populate the database
-    logger.info("Identifying input genome files")
-    
     
     # Generate NUCmer/gzip command-lines for each pairwise comparison
 

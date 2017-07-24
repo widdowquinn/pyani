@@ -9,6 +9,8 @@
 
 import os
 
+from Bio import SeqIO
+
 from . import pyani_tools
 
 
@@ -24,24 +26,21 @@ def get_fasta_paths(dirname, extlist=['.fna', '.fa', '.fasta', '.fas']):
 
 
 # Get a list of FASTA files and corresponding hashes from the input directory
-def get_fasta_and_hash_paths(dirname='.', create_hash=True):
+def get_fasta_and_hash_paths(dirname='.'):
     """Returns a list of (FASTA file, hash file) tuples in passed directory
 
     - dirname             - path to input directory
-    - create_hash         - Boolean; if True and the FASTA file has no
-                            corresponding hash ('.md5') file, a hash file
-                            is created.
 
-    If the FASTA file does not have a corresponding hash, then the
-    corresponding hash is created, when create_hash=True. Otherwise the file
-    path is not returned.
+    Raises an IOError if the corresponding hash for a FASTA file does not exist
     """
-    infiles = pyani_tools.get_fasta_paths(dirname)
-    for file in infiles:
-        hashfile = os.path.splitext(infile) + '.md5'
+    infiles = get_fasta_paths(dirname)
+    outfiles = []
+    for infile in infiles:
+        hashfile = os.path.splitext(infile)[0] + '.md5'
         if not os.path.isfile(hashfile):
             raise IOError("Hashfile %s does not exist" % hashfile)
-    return infiles
+        outfiles.append((infile, hashfile))
+    return outfiles
 
 
 
@@ -72,3 +71,24 @@ def get_sequence_lengths(fastafilenames):
         tot_lengths[os.path.splitext(os.path.split(fn)[-1])[0]] = \
             sum([len(s) for s in SeqIO.parse(fn, 'fasta')])
     return tot_lengths
+
+
+# Get hash string from hash file
+def read_hash_string(filename):
+    """Returns the hash and file strings from the passed hash file."""
+    with open(filename, 'r') as ifh:
+        data = ifh.read().strip().split()
+
+    # We expect the first string in the file to be the hash (the second is the
+    # filename)
+    return (data[0], data[1])
+        
+
+# Get description string from FASTA file
+def read_fasta_description(filename):
+    """Returns the first description string from a FASTA file."""
+    for data in SeqIO.parse(filename, 'fasta'):
+        if data.description:
+            return data.description
+
+    

@@ -82,6 +82,7 @@ import sqlite3
 # all runs in which it has participated, and each run can be associated with
 # all the genomes that it has participated in.
 
+# Create database tables
 SQL_CREATEDB = """
    DROP TABLE IF EXISTS genomes;
    CREATE TABLE genomes (genome_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -93,7 +94,8 @@ SQL_CREATEDB = """
    CREATE TABLE runs (run_id INTEGER PRIMARY KEY AUTOINCREMENT,
                       method TEXT,
                       cmdline TEXT,
-                      date TEXT
+                      date TEXT,
+                      status TEXT
                      );
    DROP TABLE IF EXISTS runs_genomes;
    CREATE TABLE runs_genomes(run_id INTEGER NOT NULL,
@@ -115,6 +117,21 @@ SQL_CREATEDB = """
                             );
    """
 
+# Create index on hash in genome table
+SQL_INDEXGENOMEHASH = """
+   DROP INDEX IF EXISTS genomehash_index;
+   CREATE UNIQUE INDEX genomehash_index ON genomes (hash);
+"""
+
+# Add a genome to the database
+SQL_ADDGENOME = """
+   INSERT INTO genomes (hash, path, description) VALUES (?, ?, ?);
+"""
+
+# Get a specific genome hash
+SQL_GETGENOMEHASH = """
+   SELECT * FROM genomes WHERE hash=?;
+"""
 
 # Create an empty pyani SQLite3 database
 def create_db(path):
@@ -123,5 +140,27 @@ def create_db(path):
     with conn:
         cur = conn.cursor()
         cur.executescript(SQL_CREATEDB)
+        cur.executescript(SQL_INDEXGENOMEHASH)
 
 
+# Add a new genome to the database
+def add_genome(dbpath, hash, filepath, desc):
+    """Add a genome to the passed SQLite3 database."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        # The following line will fail if the genome is already in the
+        # database, i.e. if the hash is not unique
+        cur.execute(SQL_ADDGENOME, (hash, filepath, desc))
+
+
+# Check if a genome is already in the database (using the hash)
+def check_genome(dbpath, hash):
+    """Returns True if the passed hash is in the genomes table."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETGENOMEHASH, (hash,))
+        if len(cur.fetchall()):
+            return True
+    return False
