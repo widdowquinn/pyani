@@ -79,10 +79,9 @@ def subcmd_download(args, logger):
         logger.info("Taxon ID summary\n\tQuery: " +\
                     "%s\n\tasm count: %s\n\tUIDs: %s", tid, len(uids), uids)
 
-
-    # Compile list of outputs for class and label files, and a list of
-    # skipped downloads (and a helper tuple for collating skipped genome
-    # information)
+    # Compile outputs to write class and label files, and a list of
+    # skipped downloads (and define a helper tuple for collating skipped
+    # genome information)
     classes = []
     labels = []
     skippedlist = []
@@ -91,6 +90,10 @@ def subcmd_download(args, logger):
                          "url dltype")
 
     # Download contigs and hashes for each assembly UID in the list
+    # On completion of this loop, each assembly in the list will either be
+    # downloaded or skipped (with skipped genome information preserved in
+    # skippedlist), and class/label info will be collated, ready for writing
+    # to file.
     for tid, uids in asm_dict.items():
         logger.info("Downloading contigs for Taxon ID %s", tid)
         for uid in uids:
@@ -117,7 +120,8 @@ def subcmd_download(args, logger):
             logger.info("Label and class file entries\n" + 
                         "\tLabel: %s\n\tClass: %s", labeltxt, classtxt)
     
-            # Obtain URLs - trying the RefSeq filestem first
+            # Obtain URLs, trying the RefSeq filestem first, then GenBank if
+            # there's a failure
             ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all"
             suffix="genomic.fna.gz"
             logger.info("Retrieving URLs for %s", filestem)
@@ -127,12 +131,13 @@ def subcmd_download(args, logger):
                                                       args.timeout, logger,
                                                       dltype="RefSeq")
             if dlstatus.skipped:  # RefSeq failed, try GenBank
-                logger.warning("RefSeq failed. Trying GenBank alternative " +
-                               "assembly")
                 skippedlist.append(Skipped(tid, uid,
                                            uid_class.organism,
                                            uid_class.strain,
                                            dlstatus.url, "RefSeq"))
+                logger.warning("RefSeq failed. Trying GenBank alternative " +
+                               "assembly")
+                # Try GenBank assembly
                 dlstatus = tools.download_genome_and_hash(filestem, suffix,
                                                           ftpstem, args.outdir,
                                                           args.timeout, logger,
@@ -142,9 +147,10 @@ def subcmd_download(args, logger):
                                                uid_class.organism,
                                                uid_class.strain,
                                                dlstatus.url, "GenBank"))
+                    logger.warning("GenBank failed.")
                     continue  # Move straight on to the next download
 
-            # Report the working download
+            # One of the downloads worked: report information
             logger.info("Downloaded from URL: %s", dlstatus.url)
             logger.info("Wrote assembly to: %s", dlstatus.outfname)
             logger.info("Wrote MD5 hashes to: %s", dlstatus.outfhash)
@@ -176,7 +182,6 @@ def subcmd_download(args, logger):
                 hfh.write('\t'.join([download.create_hash(ename),
                                      ename]) + '\n')
                 
-        
     # Write class and label files
     classfname = os.path.join(args.outdir, args.classfname)
     logger.info("Writing classes file to %s", classfname)
@@ -194,8 +199,7 @@ def subcmd_download(args, logger):
         with open(labelfname, "w") as ofh:
             ofh.write('\n'.join(labels) + '\n')
 
-        
-    # Show skipped genome list
+    # Report skipped genome list
     if len(skippedlist):
         logger.warning("%d genome downloads were skipped", len(skippedlist))
         for skipped in skippedlist:
@@ -209,7 +213,7 @@ def subcmd_download(args, logger):
 
 # Generate MD5 hashes for each genome in an input directory
 def subcmd_index(args, logger):
-    """Generate an MD5 hash for each genome in an input directory.
+    """Generate a file with the MD5 hash for each genome in an input directory.
 
     Identify the genome files in the input directory, and generate a single
     MD5 for each so that <genome>.fna produces <genome>.md5
@@ -241,6 +245,7 @@ def subcmd_createdb(args, logger):
     if os.path.isfile(args.dbpath) and not args.force:
         logger.error("Database %s already exists (exiting)", args.dbpath)
         raise SystemError(1)
+
     # If the path to the database doesn't exist, create it
     dbdir = os.path.split(args.dbpath)[0]
     if not os.path.isdir(dbdir):
