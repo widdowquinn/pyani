@@ -289,7 +289,7 @@ def subcmd_anim(args, logger):
     # Announce the analysis
     logger.info("Running ANIm analysis")
 
-    # Add this analysis to the database
+    # Add info for this analysis to the database
     logger.info("Adding analysis information to database %s", args.dbpath)
     run_id = pyani_db.add_run(args.dbpath, "ANIm", args.cmdline,
                               datetime.datetime.now().isoformat(), "started")
@@ -301,21 +301,32 @@ def subcmd_anim(args, logger):
     # Get hash string and sequence description for each FASTA/hash pair,
     # and add info to the current database
     for fastafile, hashfile in infiles:
-        # Get data
+        # Get genome data
         inhash, filecheck = pyani_files.read_hash_string(hashfile)
         indesc = pyani_files.read_fasta_description(fastafile)
-        outstr = ["FASTA file:\t%s" % fastafile,
+        abspath = os.path.abspath(fastafile)
+        outstr = ["FASTA file:\t%s" % abspath,
                   "description:\t%s" % indesc,
                   "hash file:\t%s" % hashfile,
                   "MD5 hash:\t%s" % inhash]
         logger.info('\t' + '\n\t'.join(outstr))
-        # Add to database, if the genome is not already present
-        if pyani_db.check_genome(args.dbpath, inhash):
-            logger.warning("Genome %s already in database (skipping)",
-                           fastafile)
-            continue
-        logger.info("Adding data to database...")
-        pyani_db.add_genome(args.dbpath, inhash, fastafile, indesc)
+        # Attempt to add current genome/path combination to database
+        logger.info("Adding genome data to database...")
+        try:
+            genome_id = pyani_db.add_genome(args.dbpath, inhash,
+                                            abspath, indesc)
+        except sqlite3.IntegrityError:  # genome data already in database
+            logger.warning("Genome already in database with this " +
+                           "hash and path!")
+            genome_db = pyani_db.get_genome(args.dbpath, inhash, abspath)
+            if len(genome_db) > 1:  # This shouldn't happen
+                logger.error("More than one genome with same hash and path: " +
+                             "please investigate (exiting)")
+                raise SystemError(1)
+            logger.warning("Using existing genome from database, row %s",
+                           genome_db[0][0])
+            genome_id = genome_db[0][0]
+        logger.info("Genome row ID: %s", genome_id)
 
     # Generate commandlines for NUCmer analysis and output compression
     logger.info("Generating ANIm command-lines")

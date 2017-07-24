@@ -117,10 +117,15 @@ SQL_CREATEDB = """
                             );
    """
 
-# Create index on hash in genome table
+# Create indexes on hash in genome table
+# The hash index is a standard single column index
+# The hashpath index is a UNIQUE index to ensure that we don't duplicate the
+# exact same file (though copies of the file in other places are allowed).
 SQL_INDEXGENOMEHASH = """
    DROP INDEX IF EXISTS genomehash_index;
-   CREATE UNIQUE INDEX genomehash_index ON genomes (hash);
+   CREATE INDEX genomehash_index ON genomes (hash);
+   DROP INDEX IF EXISTS genomehashpath_index;
+   CREATE UNIQUE INDEX genomehashpath_index ON genomes (hash, path);
 """
 
 # Add a genome to the database
@@ -137,6 +142,12 @@ SQL_ADDGENOME = """
 SQL_GETGENOMEHASH = """
    SELECT * FROM genomes WHERE hash=?;
 """
+
+# Get a specific genome hash/path combination
+SQL_GETGENOMEHASHPATH = """
+   SELECT * FROM genomes WHERE hash=? AND path=?;
+"""
+
 
 # Create an empty pyani SQLite3 database
 def create_db(path):
@@ -167,15 +178,18 @@ def add_genome(dbpath, hash, filepath, desc):
         # The following line will fail if the genome is already in the
         # database, i.e. if the hash is not unique
         cur.execute(SQL_ADDGENOME, (hash, filepath, desc))
+    return cur.lastrowid
 
 
-# Check if a genome is already in the database (using the hash)
-def check_genome(dbpath, hash):
-    """Returns True if the passed hash is in the genomes table."""
+# Return the row corresponding to a single genome, defined by hash
+def get_genome(dbpath, hash, path=None):
+    """Returns genome data if the passed hash is in the genomes table."""
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_GETGENOMEHASH, (hash,))
-        if len(cur.fetchall()):
-            return True
-    return False
+        if path is None:
+            cur.execute(SQL_GETGENOMEHASH, (hash,))
+        else:
+            cur.execute(SQL_GETGENOMEHASHPATH, (hash, path))
+        result = cur.fetchall()
+    return result
