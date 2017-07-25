@@ -75,8 +75,9 @@ import sqlite3
 # separately, to allow method flexibility) in the comparisons table. The
 # comparisons are tied directly to genomes, but only transitively to a
 # particular run; this reduces redundancy, and allows pairwise comparison
-# data to be used without recalculation, if the same input genome and
-# path/hash are provided.
+# data to be used without recalculation, if the same input genome,
+# path/hash, and analysis settings (fragsize for ANIb/ANIblastall and maxmatch
+# for NUCmer),  are provided.
 #
 # The runs_genomes table provides a link so that each genome is associated with
 # all runs in which it has participated, and each run can be associated with
@@ -113,6 +114,10 @@ SQL_CREATEDB = """
                              coverage REAL,
                              mismatches REAL,
                              aligned_length REAL,
+                             program TEXT,
+                             version TEXT,
+                             fragsize TEXT,
+                             maxmatch TEXT,
                              PRIMARY KEY (query_id, subject_id)
                             );
    """
