@@ -31,6 +31,18 @@ from . import pyani_jobs
 from .pyani_tools import ANIResults
 
 
+# Get a list of FASTA files from the input directory
+def get_fasta_files(dirname=None):
+    """Returns a list of FASTA files in the passed directory
+    - dirname - path to input directory
+    """
+    if dirname is None:
+        dirname = '.'
+    infiles = get_input_files(dirname, '.fasta', '.fas', '.fa', '.fna',
+                              '.fsa_nt')
+    return infiles
+
+
 # Get NUCmer version
 def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
     """Return the NUCmer package version as a string.

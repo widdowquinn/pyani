@@ -14,6 +14,18 @@ from Bio import SeqIO
 from . import pyani_tools
 
 
+# Get a list of FASTA files from the input directory
+def get_fasta_files(dirname=None):
+    """Returns a list of FASTA files in the passed directory
+    - dirname - path to input directory
+    """
+    if dirname is None:
+        dirname = '.'
+    infiles = get_input_files(dirname, '.fasta', '.fas', '.fa', '.fna',
+                              '.fsa_nt')
+    return infiles
+
+
 # Return a list of paths to FASTA files in a directory
 def get_fasta_paths(dirname, extlist=['.fna', '.fa', '.fasta', '.fas']):
     """Returns a list of paths to files matching a list of FASTA extensions.
