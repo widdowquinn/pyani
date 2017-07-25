@@ -153,6 +153,11 @@ SQL_GETGENOMEHASH = """
    SELECT * FROM genomes WHERE hash=?;
 """
 
+# Get a specific genome path
+SQL_GETGENOMEPATH = """
+   SELECT path FROM genomes WHERE genome_id=?;
+"""
+
 # Get a specific genome hash/path combination
 SQL_GETGENOMEHASHPATH = """
    SELECT * FROM genomes WHERE hash=? AND path=?;
@@ -225,6 +230,17 @@ def get_genome(dbpath, hash, path=None):
             cur.execute(SQL_GETGENOMEHASHPATH, (hash, path))
         result = cur.fetchall()
     return result
+
+
+# Return the filepath associated with a genome_id
+def get_genome_path(dbpath, genome_id):
+    """Returns the file path associated with a genome_id."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETGENOMEPATH, (genome_id, ))
+        result = cur.fetchone()
+    return result[0]
 
 
 # Return genome IDs associated with a specific run

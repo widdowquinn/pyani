@@ -350,17 +350,31 @@ def subcmd_anim(args, logger):
     comparison_ids = list(combinations(genome_ids, 2))
     logger.info("Complete pairwise comparison list:\n\t%s", comparison_ids)
 
-    # Check for existing comparisons
-    for query_id, subject_id in comparison_ids:
-        print(pyani_db.get_comparison(args.dbpath, query_id, subject_id,
-                                      "nucmer",
-                                      anim.get_version(args.nucmer_exe),
-                                      maxmatch=args.maxmatch))
-    
-    
-    # Generate NUCmer/gzip command-lines for each pairwise comparison
-    
+    # Check for existing comparisons; if one has been done (for the same
+    # software package, version, and setting) we remove it from the list
+    # TODO: turn this into a generator or some such?
+    logger.info("Excluding pre-calculated comparisons")
+    version = anim.get_version(args.nucmer_exe)
+    comparison_ids = [(qid, sid) for (qid, sid) in comparison_ids if
+                      pyani_db.get_comparison(args.dbpath, qid, sid, "nucmer",
+                                              version,
+                                              maxmatch=args.maxmatch) is None]
+    logger.info("Comparisons still to be performed:\n\t%s", comparison_ids)
 
+    # Create list of NUCmer command-lines for each comparison still to be
+    # performed
+    logger.info("Creating NUCmer commands for ANIm")
+    joblist = []
+    for (qid, sid) in comparison_ids:
+        qpath = pyani_db.get_genome_path(args.dbpath, qid)
+        spath = pyani_db.get_genome_path(args.dbpath, sid)
+        joblist.append(anim.construct_nucmer_cmdline(qpath, spath,
+                                                     args.outdir,
+                                                     args.nucmer_exe,
+                                                     args.maxmatch))
+    logger.info("Commands to be scheduled:%s", '\n\t'.join(joblist))
+
+    
 
 def subcmd_anib(args, logger):
     """Perform ANIm on all genome files in an input directory.
