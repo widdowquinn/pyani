@@ -58,9 +58,11 @@ from collections import namedtuple
 from itertools import combinations
 
 from .. import (__version__, download, anim,
-                pyani_tools, pyani_db, pyani_files)
+                pyani_tools, pyani_db, pyani_files, pyani_jobs)
 from ..pyani_config import ALIGNDIR
 from ..pyani_tools import last_exception
+from .. import run_multiprocessing as run_mp
+
 from . import tools
 
 
@@ -290,7 +292,7 @@ def subcmd_anim(args, logger):
     """
     # Announce the analysis
     logger.info("Running ANIm analysis")
-
+    
     # Add info for this analysis to the database
     logger.info("Adding analysis information to database %s", args.dbpath)
     run_id = pyani_db.add_run(args.dbpath, "ANIm", args.cmdline,
@@ -341,6 +343,15 @@ def subcmd_anim(args, logger):
                                          ALIGNDIR['ANIm']))
     logger.info("NUCmer output will be written temporarily to %s", deltadir)
 
+    # Create output directories
+    logger.info("Creating output directory %s", deltadir)
+    try:
+        os.makedirs(deltadir, exist_ok=True)
+    except IOError:
+        logger.error("Could not create output directory (exiting)")
+        logger.error(last_exception())
+        raise SystemError(1)
+    
     # Get list of genome IDs for this analysis from the database
     genome_ids = pyani_db.get_genome_ids_by_run(args.dbpath, run_id)
     logger.info("Genome IDs for analysis with ID %s:\n\t%s",
@@ -364,16 +375,38 @@ def subcmd_anim(args, logger):
     # Create list of NUCmer command-lines for each comparison still to be
     # performed
     logger.info("Creating NUCmer commands for ANIm")
-    joblist = []
+    cmdlines = []
     for (qid, sid) in comparison_ids:
         qpath = pyani_db.get_genome_path(args.dbpath, qid)
         spath = pyani_db.get_genome_path(args.dbpath, sid)
-        joblist.append(anim.construct_nucmer_cmdline(qpath, spath,
-                                                     args.outdir,
-                                                     args.nucmer_exe,
-                                                     args.maxmatch))
-    logger.info("Commands to be scheduled:%s", '\n\t'.join(joblist))
+        cmdlines.append(anim.construct_nucmer_cmdline(qpath, spath,
+                                                      args.outdir,
+                                                      args.nucmer_exe,
+                                                      args.maxmatch))
+    logger.info("Commands to be scheduled:%s", '\n\t'.join(cmdlines))
 
+    # Create joblist of NUCmer command-lines
+    joblist = [pyani_jobs.Job("%s_%06d" % (args.jobprefix, idx), cmd) for
+               idx, cmd in enumerate(cmdlines)]
+        
+
+    # Pass commands to the appropriate scheduler
+    if args.scheduler == 'multiprocessing':
+        logger.info("Running jobs with multiprocessing")
+        if not args.workers:
+            logger.info("(using maximum number of worker threads)")
+        else:
+            logger.info("(using %d worker threads, if available)",
+                        args.workers)
+        cumval = run_mp.run_dependency_graph(joblist, workers=args.workers,
+                                             logger=logger)
+        if 0 < cumval:
+            logger.error("At least one NUCmer comparison failed. " +
+                         "Please investigate (exiting)")
+            raise pyani_tools.PyaniException("Multiprocessing run failed " +
+                                             "in ANIm")
+        else:
+            logger.info("Multiprocessing run completed without error")
     
 
 def subcmd_anib(args, logger):
