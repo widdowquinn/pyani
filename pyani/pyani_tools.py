@@ -181,6 +181,4 @@ def get_labels(filename, logger=None):
                 else:
                     labeldict[key] = label
     return labeldict
-
-
-
+    

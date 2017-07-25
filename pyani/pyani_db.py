@@ -160,7 +160,14 @@ SQL_GETGENOMEHASHPATH = """
 
 # Get all genome IDs associated with a specified run
 SQL_GETGENOMESBYRUN = """
-   SELECT genome_id FROM genomes WHERE 
+   SELECT genome_id FROM runs_genomes WHERE run_id=?;
+"""
+
+# Get a comparison (if it exists)
+SQL_GETCOMPARISON = """
+   SELECT * FROM comparisons WHERE query_id=? AND subject_id=? AND
+                                   program=? AND version=? AND
+                                   fragsize=? AND maxmatch=?;
 """
 
 
@@ -217,4 +224,28 @@ def get_genome(dbpath, hash, path=None):
         else:
             cur.execute(SQL_GETGENOMEHASHPATH, (hash, path))
         result = cur.fetchall()
+    return result
+
+
+# Return genome IDs associated with a specific run
+def get_genome_ids_by_run(dbpath, run_id):
+    """Returns list of genome IDs corresponding to the run with passed ID."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETGENOMESBYRUN, (run_id,))
+        result = cur.fetchall()
+    return [gid[0] for gid in result]
+
+
+# Check if a comparison has been performed
+def get_comparison(dbpath, subj_id, targ_id, program, version,
+                   fragsize=None, maxmatch=None):
+    """Returns the genome ID of a specified comparison."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETCOMPARISON, (subj_id, targ_id, program, version,
+                                        fragsize, maxmatch))
+        result = cur.fetchone()
     return result

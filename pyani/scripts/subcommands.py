@@ -55,8 +55,10 @@ import shutil
 import sqlite3
 
 from collections import namedtuple
+from itertools import combinations
 
-from .. import __version__, download, pyani_tools, pyani_db, pyani_files
+from .. import (__version__, download, anim,
+                pyani_tools, pyani_db, pyani_files)
 from ..pyani_config import ALIGNDIR
 from ..pyani_tools import last_exception
 from . import tools
@@ -340,8 +342,20 @@ def subcmd_anim(args, logger):
     logger.info("NUCmer output will be written temporarily to %s", deltadir)
 
     # Get list of genome IDs for this analysis from the database
-    #genome_ids = pyani_db.get_genome_ids_by_run(args.dbpath, run_id)
-    
+    genome_ids = pyani_db.get_genome_ids_by_run(args.dbpath, run_id)
+    logger.info("Genome IDs for analysis with ID %s:\n\t%s",
+                run_id, genome_ids)
+
+    # Generate all pair combinations of genome IDs
+    comparison_ids = list(combinations(genome_ids, 2))
+    logger.info("Complete pairwise comparison list:\n\t%s", comparison_ids)
+
+    # Check for existing comparisons
+    for query_id, subject_id in comparison_ids:
+        print(pyani_db.get_comparison(args.dbpath, query_id, subject_id,
+                                      "nucmer",
+                                      anim.get_version(args.nucmer_exe),
+                                      maxmatch=args.maxmatch))
     
     
     # Generate NUCmer/gzip command-lines for each pairwise comparison

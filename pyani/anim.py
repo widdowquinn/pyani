@@ -32,19 +32,19 @@ from .pyani_tools import ANIResults
 
 
 # Get NUCmer version
-def get_nucmer_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
+def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
     """Return the NUCmer package version as a string.
 
-    We expect NUCmer to return a string on STDOUT as
+    We expect NUCmer to return a string on STDERR as
 
     nucmer 
     NUCmer (NUCleotide MUMmer) version 3.1
     """
     cmdline = "nucmer -V"
-    subprocess.run(cmdline, shell=True,
-                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                   check=True)
-    return re.search("(?<=version\s)[0-9\.]*", s).group()
+    result = subprocess.run(cmdline, shell=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            check=True)
+    return re.search(b"(?<=version\s)[0-9\.]*", result.stderr).group()
 
 
 # Generate list of Job objects, one per NUCmer run
