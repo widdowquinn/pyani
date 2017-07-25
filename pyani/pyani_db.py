@@ -79,6 +79,10 @@ import sqlite3
 # path/hash, and analysis settings (fragsize for ANIb/ANIblastall and maxmatch
 # for NUCmer),  are provided.
 #
+#    NOTE: Due to issues with Python/SQLite NULL queries,
+#          fragsize default is zero
+#
+#
 # The runs_genomes table provides a link so that each genome is associated with
 # all runs in which it has participated, and each run can be associated with
 # all the genomes that it has participated in.
@@ -89,6 +93,7 @@ SQL_CREATEDB = """
    CREATE TABLE genomes (genome_id INTEGER PRIMARY KEY AUTOINCREMENT,
                          hash TEXT,
                          path TEXT,
+                         length INTEGER,
                          description TEXT
                         );
    DROP TABLE IF EXISTS runs;
@@ -110,15 +115,17 @@ SQL_CREATEDB = """
    DROP TABLE IF EXISTS comparisons;
    CREATE TABLE comparisons (query_id INTEGER NOT NULL,
                              subject_id INTEGER NOT NULL,
+                             aln_length INTEGER,
+                             sim_errs INTEGER,
                              identity REAL,
-                             coverage REAL,
-                             mismatches REAL,
-                             aligned_length REAL,
+                             cov_query REAL,
+                             cov_subject REAL,
                              program TEXT,
                              version TEXT,
                              fragsize TEXT,
                              maxmatch TEXT,
-                             PRIMARY KEY (query_id, subject_id)
+                             PRIMARY KEY (query_id, subject_id, program,
+                                          version, fragsize, maxmatch)
                             );
    """
 
@@ -140,7 +147,7 @@ SQL_ADDRUN = """
 
 # Add a genome to the database
 SQL_ADDGENOME = """
-   INSERT INTO genomes (hash, path, description) VALUES (?, ?, ?);
+   INSERT INTO genomes (hash, path, length, description) VALUES (?, ?, ?, ?);
 """
 
 # Associate a run with a genome
@@ -158,6 +165,11 @@ SQL_GETGENOMEPATH = """
    SELECT path FROM genomes WHERE genome_id=?;
 """
 
+# Get the length of a genome
+SQL_GETGENOMELENGTH = """
+   SELECT length FROM genomes WHERE genome_id=?;
+"""
+
 # Get a specific genome hash/path combination
 SQL_GETGENOMEHASHPATH = """
    SELECT * FROM genomes WHERE hash=? AND path=?;
@@ -167,6 +179,16 @@ SQL_GETGENOMEHASHPATH = """
 SQL_GETGENOMESBYRUN = """
    SELECT genome_id FROM runs_genomes WHERE run_id=?;
 """
+
+# Add a comparison to the database
+SQL_ADDCOMPARISON = """
+   INSERT INTO comparisons
+     (query_id, subject_id, aln_length, sim_errs, identity, cov_query,
+      cov_subject, program, version, fragsize, maxmatch)
+     VALUES
+     (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
 
 # Get a comparison (if it exists)
 SQL_GETCOMPARISON = """
@@ -197,14 +219,14 @@ def add_run(dbpath, method, cmdline, date, status):
 
         
 # Add a new genome to the database
-def add_genome(dbpath, hash, filepath, desc):
+def add_genome(dbpath, hash, filepath, length, desc):
     """Add a genome to the passed SQLite3 database."""
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
         # The following line will fail if the genome is already in the
         # database, i.e. if the hash is not unique
-        cur.execute(SQL_ADDGENOME, (hash, filepath, desc))
+        cur.execute(SQL_ADDGENOME, (hash, filepath, length, desc))
     return cur.lastrowid
 
 
@@ -243,6 +265,17 @@ def get_genome_path(dbpath, genome_id):
     return result[0]
 
 
+# Return the total length of a genome, identified by genome_id
+def get_genome_length(dbpath, genome_id):
+    """Returns the genome length associated with a genome_id."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETGENOMELENGTH, (genome_id, ))
+        result = cur.fetchone()
+    return result[0]
+
+
 # Return genome IDs associated with a specific run
 def get_genome_ids_by_run(dbpath, run_id):
     """Returns list of genome IDs corresponding to the run with passed ID."""
@@ -254,14 +287,36 @@ def get_genome_ids_by_run(dbpath, run_id):
     return [gid[0] for gid in result]
 
 
-# Check if a comparison has been performed
-def get_comparison(dbpath, subj_id, targ_id, program, version,
-                   fragsize=None, maxmatch=None):
-    """Returns the genome ID of a specified comparison."""
+# Add a comparison to the database
+def add_comparison(dbpath, qid, sid, aln_len, sim_errs, pid, qcov, scov,
+                   program, version, fragsize=0, maxmatch=None):
+    """Add a single pairwise comparison to the database.
+
+
+    NOTE: Due to issues with Python/SQLite NULL queries,
+          fragsize default is zero
+    """
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_GETCOMPARISON, (subj_id, targ_id, program, version,
+        cur.execute(SQL_ADDCOMPARISON, (qid, sid, aln_len, sim_errs, pid,
+                                        qcov, scov, program, version,
+                                        fragsize, maxmatch))
+    return cur.lastrowid    
+
+
+# Check if a comparison has been performed
+def get_comparison(dbpath, qid, sid, program, version,
+                   fragsize=0, maxmatch=None):
+    """Returns the genome ID of a specified comparison.
+
+    NOTE: Due to issues with Python/SQLite NULL queries,
+          fragsize default is zero
+    """
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETCOMPARISON, (qid, sid, program, version,
                                         fragsize, maxmatch))
         result = cur.fetchone()
     return result

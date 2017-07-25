@@ -56,7 +56,8 @@ def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
     result = subprocess.run(cmdline, shell=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             check=True)
-    return re.search(b"(?<=version\s)[0-9\.]*", result.stderr).group()
+    return re.search("(?<=version\s)[0-9\.]*",
+                     str(result.stderr, "utf-8")).group()
 
 
 # Generate list of Job objects, one per NUCmer run

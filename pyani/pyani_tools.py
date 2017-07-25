@@ -14,6 +14,7 @@ import traceback
 import pandas as pd
 from . import pyani_config, download
 
+from Bio import SeqIO
 
 # EXCEPTIONS
 #============
@@ -182,3 +183,10 @@ def get_labels(filename, logger=None):
                     labeldict[key] = label
     return labeldict
     
+
+# Return the total length of sequences in a passed FASTA file
+def get_genome_length(filename):
+    """Returns the total length of all sequences in a FASTA file."""
+    with open(filename, 'r') as ifh:
+        return sum([len(record) for record in SeqIO.parse(ifh, 'fasta')])
+        

@@ -60,10 +60,15 @@ from itertools import combinations
 from .. import (__version__, download, anim,
                 pyani_tools, pyani_db, pyani_files, pyani_jobs)
 from ..pyani_config import ALIGNDIR
-from ..pyani_tools import last_exception
+from ..pyani_tools import last_exception, get_genome_length
 from .. import run_multiprocessing as run_mp
 
 from . import tools
+
+
+# Named tuple describing a pairwise comparison
+Comparison = namedtuple("Comparison",
+                        "query_id subject_id cmdline outfile")
 
 
 # Download sequence/class/label data from NCBI
@@ -309,17 +314,19 @@ def subcmd_anim(args, logger):
         inhash, filecheck = pyani_files.read_hash_string(hashfile)
         indesc = pyani_files.read_fasta_description(fastafile)
         abspath = os.path.abspath(fastafile)
+        genome_len = pyani_tools.get_genome_length(abspath)
         outstr = ["FASTA file:\t%s" % abspath,
                   "description:\t%s" % indesc,
                   "hash file:\t%s" % hashfile,
-                  "MD5 hash:\t%s" % inhash]
+                  "MD5 hash:\t%s" % inhash,
+                  "Total length:\t%d" % genome_len]
         logger.info('\t' + '\n\t'.join(outstr))
 
         # Attempt to add current genome/path combination to database
         logger.info("Adding genome data to database...")
         try:
             genome_id = pyani_db.add_genome(args.dbpath, inhash,
-                                            abspath, indesc)
+                                            abspath, genome_len, indesc)
         except sqlite3.IntegrityError:  # genome data already in database
             logger.warning("Genome already in database with this " +
                            "hash and path!")
@@ -365,49 +372,85 @@ def subcmd_anim(args, logger):
     # software package, version, and setting) we remove it from the list
     # TODO: turn this into a generator or some such?
     logger.info("Excluding pre-calculated comparisons")
-    version = anim.get_version(args.nucmer_exe)
+    nucmer_version = anim.get_version(args.nucmer_exe)
     comparison_ids = [(qid, sid) for (qid, sid) in comparison_ids if
                       pyani_db.get_comparison(args.dbpath, qid, sid, "nucmer",
-                                              version,
+                                              nucmer_version,
                                               maxmatch=args.maxmatch) is None]
     logger.info("Comparisons still to be performed:\n\t%s", comparison_ids)
 
-    # Create list of NUCmer command-lines for each comparison still to be
-    # performed
-    logger.info("Creating NUCmer commands for ANIm")
-    cmdlines = []
-    for (qid, sid) in comparison_ids:
-        qpath = pyani_db.get_genome_path(args.dbpath, qid)
-        spath = pyani_db.get_genome_path(args.dbpath, sid)
-        cmdlines.append(anim.construct_nucmer_cmdline(qpath, spath,
-                                                      args.outdir,
-                                                      args.nucmer_exe,
-                                                      args.maxmatch))
-    logger.info("Commands to be scheduled:%s", '\n\t'.join(cmdlines))
+    if not len(comparison_ids):
+        logger.info("All comparison results already present in database " +
+                    "(skipping comparisons)")
+    else:
+        # Create list of NUCmer command-lines for each comparison still to be
+        # performed
+        logger.info("Creating NUCmer commands for ANIm")
+        cmdlines = []
+        comparisons = []
+        for (qid, sid) in comparison_ids:
+            qpath = pyani_db.get_genome_path(args.dbpath, qid)
+            spath = pyani_db.get_genome_path(args.dbpath, sid)
+            cmdline = anim.construct_nucmer_cmdline(qpath, spath,
+                                                    args.outdir,
+                                                    args.nucmer_exe,
+                                                    args.maxmatch)
+            outprefix = cmdline.split()[3]  # prefix for NUCmer output
+            cmdlines.append(cmdline)
+            comparisons.append(Comparison(qid, sid, cmdline,
+                                          outprefix + '.delta'))
+        logger.info("Commands to be scheduled:%s", '\n\t'.join(cmdlines))
 
-    # Create joblist of NUCmer command-lines
-    joblist = [pyani_jobs.Job("%s_%06d" % (args.jobprefix, idx), cmd) for
-               idx, cmd in enumerate(cmdlines)]
+        # Create joblist of NUCmer command-lines
+        joblist = [pyani_jobs.Job("%s_%06d" % (args.jobprefix, idx), cmd) for
+                   idx, cmd in enumerate(cmdlines)]
         
 
-    # Pass commands to the appropriate scheduler
-    if args.scheduler == 'multiprocessing':
-        logger.info("Running jobs with multiprocessing")
-        if not args.workers:
-            logger.info("(using maximum number of worker threads)")
+        # Pass commands to the appropriate scheduler
+        if args.scheduler == 'multiprocessing':
+            logger.info("Running jobs with multiprocessing")
+            if not args.workers:
+                logger.info("(using maximum number of worker threads)")
+            else:
+                logger.info("(using %d worker threads, if available)",
+                            args.workers)
+            cumval = run_mp.run_dependency_graph(joblist,
+                                                 workers=args.workers,
+                                                 logger=logger)
+            if 0 < cumval:
+                logger.error("At least one NUCmer comparison failed. " +
+                             "Please investigate (exiting)")
+                raise pyani_tools.PyaniException("Multiprocessing run " +
+                                                 "failed in ANIm")
+            else:
+                logger.info("Multiprocessing run completed without error")
         else:
-            logger.info("(using %d worker threads, if available)",
-                        args.workers)
-        cumval = run_mp.run_dependency_graph(joblist, workers=args.workers,
-                                             logger=logger)
-        if 0 < cumval:
-            logger.error("At least one NUCmer comparison failed. " +
-                         "Please investigate (exiting)")
-            raise pyani_tools.PyaniException("Multiprocessing run failed " +
-                                             "in ANIm")
-        else:
-            logger.info("Multiprocessing run completed without error")
-    
+            logger.info("Running jobs with SGE")
+            logger.info("Setting jobarray group size to %d", args.sgegroupsize)
+            run_sge.run_dependency_graph(joblist, logger=logger,
+                                         jgprefix=args.jobprefix,
+                                         sgegroupsize=args.sgegroupsize,
+                                         sgeargs=args.sgeargs)
+
+        # Process output and add results to database
+        # We have to drop out of threading/multiprocessing to do this: Python's
+        # SQLite3 interface doesn't allow sharing connections and cursors
+        logger.info("Adding comparison results to database")
+        for comp in comparisons:
+            aln_length, sim_errs = anim.parse_delta(comp.outfile)
+            qlen = pyani_db.get_genome_length(args.dbpath, comp.query_id)
+            slen = pyani_db.get_genome_length(args.dbpath, comp.subject_id)
+            qcov = aln_length / qlen
+            scov = aln_length / slen
+            pid = 1 - sim_errs / aln_length
+            comp_id = pyani_db.add_comparison(args.dbpath, comp.query_id,
+                                              comp.subject_id, aln_length,
+                                              sim_errs, pid, qcov, scov,
+                                              "nucmer", nucmer_version,
+                                              maxmatch=args.maxmatch)
+            logger.info("Added ID %s vs %s, as comparison %s",
+                        comp.query_id, comp.subject_id, comp_id)
+            
 
 def subcmd_anib(args, logger):
     """Perform ANIm on all genome files in an input directory.
