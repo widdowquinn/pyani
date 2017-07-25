@@ -143,6 +143,11 @@ SQL_ADDGENOME = """
    INSERT INTO genomes (hash, path, description) VALUES (?, ?, ?);
 """
 
+# Associate a run with a genome
+SQL_ADDRUNGENOME = """
+   INSERT INTO runs_genomes (run_id, genome_id) VALUES (?, ?);
+"""
+
 # Get a specific genome hash
 SQL_GETGENOMEHASH = """
    SELECT * FROM genomes WHERE hash=?;
@@ -151,6 +156,11 @@ SQL_GETGENOMEHASH = """
 # Get a specific genome hash/path combination
 SQL_GETGENOMEHASHPATH = """
    SELECT * FROM genomes WHERE hash=? AND path=?;
+"""
+
+# Get all genome IDs associated with a specified run
+SQL_GETGENOMESBYRUN = """
+   SELECT genome_id FROM genomes WHERE 
 """
 
 
@@ -183,6 +193,16 @@ def add_genome(dbpath, hash, filepath, desc):
         # The following line will fail if the genome is already in the
         # database, i.e. if the hash is not unique
         cur.execute(SQL_ADDGENOME, (hash, filepath, desc))
+    return cur.lastrowid
+
+
+# Associate a run ID with a genome ID
+def add_genome_to_run(dbpath, run_id, genome_id):
+    """Associate a run with a genome."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_ADDRUNGENOME, (run_id, genome_id))
     return cur.lastrowid
 
 

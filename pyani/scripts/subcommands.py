@@ -310,6 +310,7 @@ def subcmd_anim(args, logger):
                   "hash file:\t%s" % hashfile,
                   "MD5 hash:\t%s" % inhash]
         logger.info('\t' + '\n\t'.join(outstr))
+
         # Attempt to add current genome/path combination to database
         logger.info("Adding genome data to database...")
         try:
@@ -328,13 +329,23 @@ def subcmd_anim(args, logger):
             genome_id = genome_db[0][0]
         logger.info("Genome row ID: %s", genome_id)
 
+        # Populate the linker table associating each run with the genome IDs
+        # for that run
+        pyani_db.add_genome_to_run(args.dbpath, run_id, genome_id)
+        
     # Generate commandlines for NUCmer analysis and output compression
     logger.info("Generating ANIm command-lines")
     deltadir = os.path.join(os.path.join(args.outdir,
                                          ALIGNDIR['ANIm']))
     logger.info("NUCmer output will be written temporarily to %s", deltadir)
+
+    # Get list of genome IDs for this analysis from the database
+    #genome_ids = pyani_db.get_genome_ids_by_run(args.dbpath, run_id)
+    
+    
     
     # Generate NUCmer/gzip command-lines for each pairwise comparison
+    
 
 
 def subcmd_anib(args, logger):
