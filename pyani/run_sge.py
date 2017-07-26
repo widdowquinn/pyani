@@ -1,14 +1,46 @@
-# Copyright 2013-2015, The James Hutton Insitute
-# Author: Leighton Pritchard
-#
-# This code is part of the pyani package, and is governed by its licence.
-# Please see the LICENSE file that should have been included as part of
-# this package.
-
-"""Code to run a set of command-line jobs using SGE/Grid Engine
+# -*- coding: utf-8 -*-
+"""Code to run a set of command-line jobs using SGE/Grid Engine.
 
 For parallelisation on multi-node system, we use some custom code to submit
 jobs.
+
+(c) The James Hutton Institute 2013-2017
+Author: Leighton Pritchard
+
+Contact:
+leighton.pritchard@hutton.ac.uk
+
+Leighton Pritchard,
+Information and Computing Sciences,
+James Hutton Institute,
+Errol Road,
+Invergowrie,
+Dundee,
+DD6 9LH,
+Scotland,
+UK
+
+The MIT License
+
+Copyright (c) 2013-2017 The James Hutton Institute
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 """
 
 import itertools
@@ -21,7 +53,7 @@ from .pyani_jobs import JobGroup
 
 
 def split_seq(iterable, size):
-    """Splits a passed iterable into chunks of a given size."""
+    """Split a passed iterable into chunks of a given size."""
     elm = iter(iterable)
     item = list(itertools.islice(elm, size))
     while item:
@@ -31,7 +63,7 @@ def split_seq(iterable, size):
 
 # Build a list of SGE jobs from a graph
 def build_joblist(jobgraph):
-    """Returns a list of jobs, from a passed jobgraph."""
+    """Return a list of jobs, from a passed jobgraph."""
     jobset = set()
     for job in jobgraph:
         jobset = populate_jobset(job, jobset, depth=1)
@@ -61,8 +93,7 @@ def compile_jobgroups_from_joblist(joblist, jgprefix, sgegroupsize):
 # Run a job dependency graph, with SGE
 def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
                          sgegroupsize=10000, sgeargs=None):
-    """Creates and runs GridEngine scripts for jobs based on the passed
-    jobgraph.
+    """Create and runs SGE scripts for jobs based on passed jobgraph.
 
     - jobgraph - list of jobs, which may have dependencies.
     - verbose - flag for multiprocessing verbosity
@@ -113,8 +144,10 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
 
 
 def populate_jobset(job, jobset, depth):
-    """ Creates a set of jobs, containing jobs at difference depths of the
-    dependency tree, retaining dependencies as strings, not Jobs.
+    """Create set of jobs reflecting dependency tree.
+
+    The set contains jobs at different depths of the dependency tree,
+    retaining dependencies as strings, not Jobs.
     """
     jobset.add(job)
     if len(job.dependencies) == 0:
@@ -125,8 +158,10 @@ def populate_jobset(job, jobset, depth):
 
 
 def build_directories(root_dir):
-    """Constructs the subdirectories output, stderr, stdout, and jobs in the
-    passed root directory. These subdirectories have the following roles:
+    """Construct the subdirectories output, stderr, stdout, and jobs.
+
+    Subdirectories are created in the passed root directory. These
+    subdirectories have the following roles:
 
         jobs             Stores the scripts for each job
         stderr           Stores the stderr output from SGE
@@ -147,7 +182,7 @@ def build_directories(root_dir):
 
 
 def build_job_scripts(root_dir, jobs):
-    """Constructs the script for each passed Job in the jobs iterable
+    """Construct script for each passed Job in the jobs iterable.
 
     - root_dir      Path to output directory
     """
@@ -161,8 +196,7 @@ def build_job_scripts(root_dir, jobs):
 
 
 def extract_submittable_jobs(waiting):
-    """Obtain a list of jobs that are able to be submitted from the passed
-    list of pending jobs
+    """Obtain list of jobs that are able to be submitted from pending list.
 
     - waiting           List of Job objects
     """
@@ -179,8 +213,7 @@ def extract_submittable_jobs(waiting):
 
 
 def submit_safe_jobs(root_dir, jobs, sgeargs=None):
-    """Submit the passed list of jobs to the Grid Engine server, using the
-    passed directory as the root for scheduler output.
+    """Submit passed list of jobs to SGE server with dir as root for output.
 
     - root_dir      Path to output directory
     - jobs          Iterable of Job objects
@@ -223,8 +256,7 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
 
 
 def submit_jobs(root_dir, jobs, sgeargs=None):
-    """ Submit each of the passed jobs to the SGE server, using the passed
-    directory as root for SGE output.
+    """Submit passed jobs to SGE server with passed directory as root.
 
     - root_dir       Path to output directory
     - jobs           List of Job objects
@@ -242,8 +274,9 @@ def submit_jobs(root_dir, jobs, sgeargs=None):
 
 
 def build_and_submit_jobs(root_dir, jobs, sgeargs=None):
-    """Submits the passed iterable of Job objects to SGE, placing SGE's
-    output in the passed root directory
+    """Submit passed iterable of Job objects to SGE.
+
+    This places SGE's output in the passed root directory
 
     - root_dir   Root directory for SGE and job output
     - jobs       List of Job objects, describing each job to be submitted

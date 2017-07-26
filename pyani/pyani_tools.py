@@ -1,13 +1,45 @@
-# Copyright 2016, The James Hutton Insitute
-# Author: Leighton Pritchard
-#
-# This code is part of the pyani package, and is governed by its licence.
-# Please see the LICENSE file that should have been included as part of
-# this package.
+# -*- coding: utf-8 -*-
+"""Code to support pyani.
 
-"""Code to support pyani."""
+(c) The James Hutton Institute 2013-2017
+Author: Leighton Pritchard
 
-import os
+Contact:
+leighton.pritchard@hutton.ac.uk
+
+Leighton Pritchard,
+Information and Computing Sciences,
+James Hutton Institute,
+Errol Road,
+Invergowrie,
+Dundee,
+DD6 9LH,
+Scotland,
+UK
+
+The MIT License
+
+Copyright (c) 2013-2017 The James Hutton Institute
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+"""
+
 import sys
 import traceback
 
@@ -23,15 +55,16 @@ from Bio import SeqIO
 
 
 class PyaniException(Exception):
-    """General exception for pyani"""
+    """General exception for pyani."""
 
     def __init__(self, msg="Error in pyani module"):
+        """Instantiate class."""
         Exception.__init__(self, msg)
 
 
 # Report last exception as string
 def last_exception():
-    """Returns last exception as a string, or use in logging."""
+    """Return last exception as a string, or use in logging."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
     return ''.join(traceback.format_exception(exc_type, exc_value,
                                               exc_traceback))
@@ -107,6 +140,7 @@ class BLASTfunctions(object):
     """Class to hold BLAST functions."""
 
     def __init__(self, db_func, blastn_func):
+        """Instantiate class."""
         self.db_func = db_func
         self.blastn_func = blastn_func
 
@@ -116,34 +150,34 @@ class BLASTexes(object):
     """Class to hold BLAST functions."""
 
     def __init__(self, format_exe, blast_exe):
+        """Instantiate class."""
         self.format_exe = format_exe
         self.blast_exe = blast_exe
 
 
 # Class to hold/build BLAST commands
 class BLASTcmds(object):
-    """Class to hold BLAST command data for construction of BLASTN and
-    database formatting commands.
-    """
+    """Class for construction of BLASTN and database formatting commands."""
 
     def __init__(self, funcs, exes, prefix, outdir):
+        """Instantiate class."""
         self.funcs = funcs
         self.exes = exes
         self.prefix = prefix
         self.outdir = outdir
 
     def build_db_cmd(self, fname):
-        """Return database format/build command"""
+        """Return database format/build command."""
         return self.funcs.db_func(fname, self.outdir,
                                   self.exes.format_exe)[0]
 
     def get_db_name(self, fname):
-        """Return database filename"""
+        """Return database filename."""
         return self.funcs.db_func(fname, self.outdir,
                                   self.exes.format_exe)[1]
 
     def build_blast_cmd(self, fname, dbname):
-        """Return BLASTN command"""
+        """Return BLASTN command."""
         return self.funcs.blastn_func(fname, dbname, self.outdir,
                                       self.exes.blast_exe)
 
@@ -153,7 +187,7 @@ class BLASTcmds(object):
 
 # Make a dictionary of assembly download info
 def make_asm_dict(taxon_ids, retries):
-    """Return a dict of assembly UIDs, keyed by each passed taxon ID."""
+    """Return dict of assembly UIDs, keyed by each passed taxon ID."""
     asm_dict = dict()
 
     for tid in taxon_ids:
@@ -165,7 +199,8 @@ def make_asm_dict(taxon_ids, retries):
 
 # Read sequence annotations in from file
 def get_labels(filename, logger=None):
-    """Returns a dictionary of alternative sequence labels, or None
+    r"""Return dictionary of alternative sequence labels, or None.
+
     - filename - path to file containing tab-separated table of labels
     Input files should be formatted as <key>\t<label>, one pair per line.
     """
@@ -193,6 +228,6 @@ def get_labels(filename, logger=None):
 
 # Return the total length of sequences in a passed FASTA file
 def get_genome_length(filename):
-    """Returns the total length of all sequences in a FASTA file."""
+    """Return total length of all sequences in a FASTA file."""
     with open(filename, 'r') as ifh:
         return sum([len(record) for record in SeqIO.parse(ifh, 'fasta')])

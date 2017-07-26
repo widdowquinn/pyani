@@ -20,7 +20,7 @@ CUMRETVAL = 0
 
 # Run a job dependency graph with multiprocessing
 def run_dependency_graph(jobgraph, workers=None, logger=None):
-    """Creates and runs pools of jobs based on the passed jobgraph.
+    """Create and run pools of jobs based on the passed jobgraph.
 
     - jobgraph - list of jobs, which may have dependencies.
     - verbose - flag for multiprocessing verbosity
@@ -49,8 +49,7 @@ def run_dependency_graph(jobgraph, workers=None, logger=None):
 
 
 def populate_cmdsets(job, cmdsets, depth):
-    """Creates a list of sets containing jobs at different depths of the
-    dependency tree.
+    """Create list of jobsets at different depths of dependency tree.
 
     This is a recursive function (is there something quicker in the itertools
     module?) that descends each 'root' job in turn, populating each

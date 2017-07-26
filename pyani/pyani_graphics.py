@@ -46,6 +46,7 @@ class Params(object):  # pylint: disable=too-few-public-methods
     """Convenience class to hold heatmap rendering parameters."""
 
     def __init__(self, params, labels=None, classes=None):
+        """Instantiate class."""
         self.cmap = plt.get_cmap(params[0])
         self.vmin = params[1]
         self.vmax = params[2]
@@ -54,13 +55,13 @@ class Params(object):  # pylint: disable=too-few-public-methods
 
     @property
     def vdiff(self):
-        """Returns difference between max and min values for presentation"""
+        """Return difference between max and min values for presentation."""
         return max(0.01, self.vmax - self.vmin)
 
 
 # helper for cleaning up matplotlib axes by removing ticks etc.
 def clean_axis(axis):
-    """Remove ticks, tick labels, and frame from axis"""
+    """Remove ticks, tick labels, and frame from axis."""
     axis.get_xaxis().set_ticks([])
     axis.get_yaxis().set_ticks([])
     for spine in list(axis.spines.values()):
@@ -95,7 +96,7 @@ def get_seaborn_colorbar(dfr, classes):
 
 # Get safe Seaborn labels
 def get_safe_seaborn_labels(dfr, labels):
-    """Returns labels guaranteed to correspond to the dataframe."""
+    """Return labels guaranteed to correspond to the dataframe."""
     if labels is not None:
         return [labels.get(i, i) for i in dfr.index]
     return [i for i in dfr.index]
@@ -103,7 +104,7 @@ def get_safe_seaborn_labels(dfr, labels):
 
 # Return a clustermap
 def get_seaborn_clustermap(dfr, params, title=None, annot=True):
-    """Returns a Seaborn clustermap."""
+    """Return a Seaborn clustermap."""
     fig = sns.clustermap(dfr,
                          cmap=params.cmap,
                          vmin=params.vmin,
@@ -132,7 +133,7 @@ def get_seaborn_clustermap(dfr, params, title=None, annot=True):
 
 # Generate Seaborn heatmap output
 def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
-    """Returns seaborn heatmap with cluster dendrograms.
+    """Return seaborn heatmap with cluster dendrograms.
 
     - dfr - pandas DataFrame with relevant data
     - outfilename - path to output file (indicates output format)
@@ -173,7 +174,7 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
 
 # Add dendrogram and axes to passed figure
 def add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation='col'):
-    """Return a dendrogram and corresponding gridspec, attached to the fig
+    """Return a dendrogram and corresponding gridspec, attached to the fig.
 
     Modifies the fig in-place. Orientation is either 'row' or 'col' and
     determines location and orientation of the rendered dendrogram.
@@ -298,7 +299,7 @@ def add_mpl_colorscale(fig, heatmap_gs, ax_map, params, title=None):
 
 # Generate Matplotlib heatmap output
 def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
-    """Returns matplotlib heatmap with cluster dendrograms.
+    """Return matplotlib heatmap with cluster dendrograms.
 
     - dfr - pandas DataFrame with relevant data
     - outfilename - path to output file (indicates output format)

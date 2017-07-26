@@ -31,7 +31,7 @@ from Bio import SeqIO
 
 # Calculate tetranucleotide Z-score for a set of input sequences
 def calculate_tetra_zscores(infilenames):
-    """Returns dictionary of TETRA Z-scores for each input file.
+    """Return dictionary of TETRA Z-scores for each input file.
 
     - infilenames - collection of paths to sequence files
     """
@@ -44,7 +44,7 @@ def calculate_tetra_zscores(infilenames):
 
 # Calculate tetranucleotide Z-score for a single sequence file
 def calculate_tetra_zscore(filename):
-    """Returns TETRA Z-score for the sequence in the passed file.
+    """Return TETRA Z-score for the sequence in the passed file.
 
     - filename - path to sequence file
 
@@ -104,9 +104,10 @@ def calculate_tetra_zscore(filename):
 
 # Returns true if the passed string contains only A, C, G or T
 def tetra_clean(string):
-    """ Checks that a passed string contains only unambiguous IUPAC nucleotide
-        symbols. We are assuming that a low frequency of IUPAC ambiguity
-        symbols doesn't affect our calculation.
+    """Check passed string contains only unambiguous IUPAC nucleotide symbols.
+
+    We are assuming that a low frequency of IUPAC ambiguity symbols doesn't
+    affect our calculation.
     """
     if not len(set(string) - set('ACGT')):
         return True
@@ -116,7 +117,7 @@ def tetra_clean(string):
 # Calculate Pearson's correlation coefficient from the Z-scores for each
 # tetranucleotide. If we're forcing rpy2, might as well use that, though...
 def calculate_correlations(tetra_z):
-    """Returns dataframe of Pearson correlation coefficients.
+    """Return dataframe of Pearson correlation coefficients.
 
     - tetra_z - dictionary of Z-scores, keyed by sequence ID
 

@@ -1,10 +1,4 @@
-# Copyright 2013-2015, The James Hutton Insitute
-# Author: Leighton Pritchard
-#
-# This code is part of the pyani package, and is governed by its licence.
-# Please see the LICENSE file that should have been included as part of
-# this package.
-
+# -*- coding: utf-8 -*-
 """Code to manage jobs for pyani.
 
 In order to be a little more consistent behind the scenes for schedulers,
@@ -27,6 +21,44 @@ interleaved by the scheduler with no need for pools.
 
 This code is essentially a frozen and cut-down version of pysge
 (https://github.com/widdowquinn/pysge)
+
+(c) The James Hutton Institute 2013-2017
+Author: Leighton Pritchard
+
+Contact:
+leighton.pritchard@hutton.ac.uk
+
+Leighton Pritchard,
+Information and Computing Sciences,
+James Hutton Institute,
+Errol Road,
+Invergowrie,
+Dundee,
+DD6 9LH,
+Scotland,
+UK
+
+The MIT License
+
+Copyright (c) 2013-2017 The James Hutton Institute
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 """
 
 import os
@@ -41,12 +73,10 @@ from .pyani_config import SGE_WAIT
 # The Job class describes a single command-line job, with dependencies (jobs
 # that must be run first.
 class Job:
-    """Objects in this class represent individual jobs to be run, with a list
-    of dependencies (jobs that must be run first).
-    """
+    """Individual job to be run, with list of dependencies."""
 
     def __init__(self, name, command, queue=None):
-        """Instantiates a Job object.
+        """Instantiate a Job object.
 
         - name           String describing the job (uniquely)
         - command        String, the valid shell command to run the job
@@ -61,15 +91,16 @@ class Job:
         self.submitted = False           # Flag: is job submitted?
 
     def add_dependency(self, job):
-        """Add the passed job to the dependency list for this Job.  This
-        Job should not execute until all dependent jobs are completed
+        """Add passed job to the dependency list for this Job.
+
+        This Job should not execute until all dependent jobs are completed
 
         - job     Job to be added to the Job's dependency list
         """
         self.dependencies.append(job)
 
     def remove_dependency(self, job):
-        """Remove the passed job from this Job's dependency list
+        """Remove passed job from this Job's dependency list.
 
         - job     Job to be removed from the Job's dependency list
         """
@@ -85,12 +116,13 @@ class Job:
 
 
 class JobGroup:
-    """ Class that stores a group of jobs, permitting parameter sweeps."""
+    """Class that stores a group of jobs, permitting parameter sweeps."""
 
     def __init__(self, name, command, queue=None, arguments=None):
-        """ Instantiate a JobGroup object.  JobGroups allow for the use of
-        combinatorial parameter sweeps by using the 'command' and 'arguments'
-        arguments.
+        """Instantiate a JobGroup object.
+
+        JobGroups allow for the use of combinatorial parameter sweeps by
+        using the 'command' and 'arguments' arguments.
 
         - name              String, the JobGroup name
         - command           String, the command to be run, with arguments
@@ -119,9 +151,7 @@ class JobGroup:
         self.generate_script()         # Make SGE script for sweep/array
 
     def generate_script(self):
-        """Create the SGE script that will run the jobs in the JobGroup, with
-        the passed arguments.
-        """
+        """Create the SGE script that will run the jobs in the JobGroup."""
         self.script = ""        # Holds the script string
         total = 1               # total number of jobs in this group
 
@@ -156,15 +186,17 @@ class JobGroup:
         self.tasks = total
 
     def add_dependency(self, job):
-        """Add the passed job to the dependency list for this JobGroup.  This
-        JobGroup should not execute until all dependent jobs are completed
+        """Add the passed job to the dependency list for this JobGroup.
+
+        This JobGroup should not execute until all dependent jobs are
+        completed
 
         - job      Job, job to be added to the JobGroup's dependency list
         """
         self.dependencies.append(job)
 
     def remove_dependency(self, job):
-        """ Remove the passed job from this JobGroup's dependency list
+        """Remove passed job from this JobGroup's dependency list.
 
         - job      Job, job to be removed from the JobGroup's dependency list
         """

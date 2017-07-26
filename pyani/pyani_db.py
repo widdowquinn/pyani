@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-"""pyani_db.py
-
-This module provides useful functions for creating and manipulating pyani's
-SQLite3 databases
+"""Module providing useful functions for manipulating pyani's SQLite3 db.
 
 (c) The James Hutton Institute 2016-2017
 Author: Leighton Pritchard
@@ -242,7 +239,7 @@ def add_genome_to_run(dbpath, run_id, genome_id):
 
 # Return the row corresponding to a single genome, defined by hash
 def get_genome(dbpath, hash, path=None):
-    """Returns genome data if the passed hash is in the genomes table."""
+    """Return genome data if the passed hash is in the genomes table."""
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
@@ -256,7 +253,7 @@ def get_genome(dbpath, hash, path=None):
 
 # Return the filepath associated with a genome_id
 def get_genome_path(dbpath, genome_id):
-    """Returns the file path associated with a genome_id."""
+    """Return the file path associated with a genome_id."""
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
@@ -267,7 +264,7 @@ def get_genome_path(dbpath, genome_id):
 
 # Return the total length of a genome, identified by genome_id
 def get_genome_length(dbpath, genome_id):
-    """Returns the genome length associated with a genome_id."""
+    """Return the genome length associated with a genome_id."""
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
@@ -278,7 +275,7 @@ def get_genome_length(dbpath, genome_id):
 
 # Return genome IDs associated with a specific run
 def get_genome_ids_by_run(dbpath, run_id):
-    """Returns list of genome IDs corresponding to the run with passed ID."""
+    """Return list of genome IDs corresponding to the run with passed ID."""
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
@@ -291,7 +288,6 @@ def get_genome_ids_by_run(dbpath, run_id):
 def add_comparison(dbpath, qid, sid, aln_len, sim_errs, pid, qcov, scov,
                    program, version, fragsize=0, maxmatch=None):
     """Add a single pairwise comparison to the database.
-
 
     NOTE: Due to issues with Python/SQLite NULL queries,
           fragsize default is zero
@@ -308,7 +304,7 @@ def add_comparison(dbpath, qid, sid, aln_len, sim_errs, pid, qcov, scov,
 # Check if a comparison has been performed
 def get_comparison(dbpath, qid, sid, program, version,
                    fragsize=0, maxmatch=None):
-    """Returns the genome ID of a specified comparison.
+    """Return the genome ID of a specified comparison.
 
     NOTE: Due to issues with Python/SQLite NULL queries,
           fragsize default is zero
