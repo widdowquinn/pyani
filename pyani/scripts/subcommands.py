@@ -396,7 +396,7 @@ def subcmd_anim(args, logger):
             cmdlines.append(cmdline)
             comparisons.append(Comparison(qid, sid, cmdline,
                                           outprefix + '.delta'))
-        logger.info("Commands to be scheduled:%s", '\n\t'.join(cmdlines))
+        logger.info("Commands to be scheduled:\n\t%s", '\n\t'.join(cmdlines))
 
         # Create joblist of NUCmer command-lines
         joblist = [pyani_jobs.Job("%s_%06d" % (args.jobprefix, idx), cmd) for
