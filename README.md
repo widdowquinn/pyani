@@ -7,12 +7,9 @@
 [![Code Health](https://landscape.io/github/widdowquinn/pyani/master/landscape.svg?style=flat)](https://landscape.io/github/widdowquinn/pyani/master) 
 
 ## Overview
-`pyani` is a Python3 module that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
+`pyani` is a Python3 module and script that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
 
-`pyani` also installs two scripts:
-
-* `average_nucleotide_identity.py` that enables command-line ANI analysis.
-* `genbank_get_genomes_by_taxon.py` that downloads publicly-available genomes from NCBI.
+`pyani` also installs the script `pyani.py`, which enables command-line based analysis of genomes.
 
 ## Installation
 
@@ -27,6 +24,147 @@ From version 0.1.3.2 onwards, this should also install all the required Python p
 ```
 pip3 install -r requirements.txt
 ```
+
+## Walkthrough: A First Analysis
+
+The command-line interface to `pyani` uses subcommands. These separate individual steps of an analysis into separate actions.
+
+1. Download genomes
+2. Create a database to hold genome data and analysis results
+3. Perform ANI analysis
+4. Report and visualise analysis results
+5. Generate species hypotheses (classify genomes) using the analysis results
+
+The steps are described in detail with examples, below.
+
+### 1. Download genome data
+
+The first step is to obtain genome data for analysis. `pyani` expects to find each individual genome in its own FASTA file (that file can contain multiple sequences - chromosomes and plasmids; sequenced scaffolds, etc). All the FASTA files for an analysis are expected to be located in a single subdirectory (with optional `labels` and `classes` files). You can arrange your data manually, but `pyani` provides a subcommand that downloads all genomes in a taxon subtree from NCBI, and organises them ready for use with `pyani`.
+
+We'll use the `pyani.py download` subcommand to download all available genomes for *Candidatus Blochmannia* from NCBI. The taxon ID for this grouping is [203804](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=203804&lvl=3&lin=f&keep=1&srchmode=1&unlock).
+
+```bash
+pyani.py download C_blochmannia --email my.email@my.domain -t 203804 -v -l C_blochmannia_dl.log 
+```
+
+The first argument is the output directory into which the downloaded genomes will be written (`C_blochmannia`). To download anything from NCBI we must provide an email address (`--email my.email@my.domain`), and to specify which taxon subtree we want to download we provide the taxon ID (`-t 203804`).
+
+Here we have also requested verbose output (`-v`), and write a log file for reproducible research/diagnosing bugs and errors (`-l C_blochmannia_dl.log`). 
+
+This produces a new subdirectory (`C_blochmannia`) with the following contents:
+
+```bash
+$ tree C_blochmannia
+C_blochmannia
+├── GCF_000011745.1_ASM1174v1_genomic.fna
+├── GCF_000011745.1_ASM1174v1_genomic.fna.gz
+├── GCF_000011745.1_ASM1174v1_genomic.md5
+├── GCF_000011745.1_ASM1174v1_hashes.txt
+├── GCF_000043285.1_ASM4328v1_genomic.fna
+├── GCF_000043285.1_ASM4328v1_genomic.fna.gz
+├── GCF_000043285.1_ASM4328v1_genomic.md5
+├── GCF_000043285.1_ASM4328v1_hashes.txt
+├── GCF_000185985.2_ASM18598v2_genomic.fna
+├── GCF_000185985.2_ASM18598v2_genomic.fna.gz
+├── GCF_000185985.2_ASM18598v2_genomic.md5
+├── GCF_000185985.2_ASM18598v2_hashes.txt
+├── GCF_000331065.1_ASM33106v1_genomic.fna
+├── GCF_000331065.1_ASM33106v1_genomic.fna.gz
+├── GCF_000331065.1_ASM33106v1_genomic.md5
+├── GCF_000331065.1_ASM33106v1_hashes.txt
+├── GCF_000973505.1_ASM97350v1_genomic.fna
+├── GCF_000973505.1_ASM97350v1_genomic.fna.gz
+├── GCF_000973505.1_ASM97350v1_genomic.md5
+├── GCF_000973505.1_ASM97350v1_hashes.txt
+├── GCF_000973545.1_ASM97354v1_genomic.fna
+├── GCF_000973545.1_ASM97354v1_genomic.fna.gz
+├── GCF_000973545.1_ASM97354v1_genomic.md5
+├── GCF_000973545.1_ASM97354v1_hashes.txt
+├── classes.txt
+└── labels.txt
+```
+
+Seven genomes have been downloaded, and each is represented by four files:
+
+- `_genomic.fna.gz`: the compressed genome sequence
+- `_genomic.fna`: the uncompressed genome sequence
+- `_genomic.md5`: an MD5 hash/checksum of the (uncompressed) genome sequence; this was generated during the download
+- `_hashes.txt`: a list of MD5 hashes; this is provided by NCBI and is a reference to be sure that the download did not corrupt the genome sequence
+
+There are two additional plain text files: `classes.txt` and `labels.txt`, which provide alternative labels for use in the analysis. These files are generated during the download.
+
+### 2. Create an analysis database
+
+`pyani` uses a database to store genome data and analysis results. This is convenient for data sharing and developing custom analyses, but also makes it easier to extend an existing ANI analysis with new genomes, without having to repeat calculations that were already performed. 
+
+To create a new, clean, database in the default location (`.pyani/pyanidb`) issue the command:
+
+```bash
+pyani.py createdb -v -l C_blochmannia_createdb.log
+```
+
+As above, the verbose (`-v`) and log file (`-l C_blochmannia_createdb.log`) options allow for reproducible work. The default database location is in the hidden directory (`.pyani`):
+
+```bash
+$ tree .pyani
+.pyani
+└── pyanidb
+```
+
+Subsequent `pyani` commands will assume this location for the database, but you can specify the location when creating a database, or using an existing database.
+
+### 3. Conduct ANI analysis
+
+`pyani` provides four subcommands to run ANI analyses:
+
+- `anim`: ANIm
+- `anib`: ANIb, using BLAST+
+- `aniblastall`: ANIb, using legacy BLAST
+- `tetra`: TETRA
+
+In this walkthrough, we'll run ANIm on the downloaded genomes, using the command:
+
+```bash
+pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log
+```
+
+All four analysis commands operate in a similar way. The first two arguments are paths to directories: the first path is to a directory containing input genomes, and the second is the path to an output directory for storing intermediate results. The `-v` and `-l` arguments work as above, specifying verbose output and logging output to a file. 
+
+You will probably notice that the verbose output is very verbose, to enable informative identification of any problems. In particular, the verbose output (which is also written to the log file) writes out the command-lines used for the pairwise comparisons so, if something goes wrong, you can test whether a specific comparison can be run at the command-line *at all*, to aid diagnosis of any problems.
+
+#### Rerunning the same analysis
+
+One reason for using a database backend for analysis results is so that, for very large analyses, we do not ever need to recalculate a pairwise genome comparison. All the analysis subcommands check whether input genomes have been used before (using the unique MD5 hash for each genome to identify whether it's been used previously), and whether the comparison of two genomes has been run, with the particular analysis settings that were used. If either genome was not seen before, or if the analysis settings are different, the comparison is performed.
+
+You can test this for yourself by running the analysis command again, as below. You will see a number of messages indicating that genomes have been seen before, and that analyses performed before were skipped:
+
+```bash
+$ pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log
+INFO: command-line: pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log
+INFO: Running ANIm analysis
+INFO: Adding analysis information to database .pyani/pyanidb
+INFO: Current analysis has ID 2 in this database
+INFO: Identifying input genome/hash files:
+[…]
+INFO: Adding genome data to database...
+WARNING: Genome already in database with this hash and path!
+WARNING: Using existing genome from database, row 1
+[…]
+INFO: Complete pairwise comparison list:
+	[(1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (2, 3), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 6), (4, 5), (4, 6), (5, 6)]
+INFO: Excluding pre-calculated comparisons
+INFO: Comparisons still to be performed:
+	[]
+INFO: All comparison results already present in database (skipping comparisons)
+INFO: Completed. Time taken: 0.211
+```
+
+### 4. Reporting Analyses and Analysis Results
+
+
+### 5. Classifying Genomes from Analysis Results
+
+
 
 ## Testing `pyani`
 
