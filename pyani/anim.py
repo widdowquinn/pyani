@@ -1,10 +1,4 @@
-# Copyright 2013-2016, The James Hutton Insitute
-# Author: Leighton Pritchard
-#
-# This code is part of the pyani package, and is governed by its licence.
-# Please see the LICENSE file that should have been included as part of
-# this package.
-
+# -*- coding: utf-8 -*-
 """Code to implement the ANIm average nucleotide identity method.
 
 Calculates ANI by the ANIm method, as described in Richter et al (2009)
@@ -19,6 +13,44 @@ and similarity error count for every unique region alignment. These are
 processed to give matrices of aligned sequence lengths, similarity error
 counts, average nucleotide identity (ANI) percentages, and minimum aligned
 percentage (of whole genome) for each pairwise comparison.
+
+(c) The James Hutton Institute 2016-2017
+Author: Leighton Pritchard
+
+Contact:
+leighton.pritchard@hutton.ac.uk
+
+Leighton Pritchard,
+Information and Computing Sciences,
+James Hutton Institute,
+Errol Road,
+Invergowrie,
+Dundee,
+DD6 9LH,
+Scotland,
+UK
+
+The MIT License
+
+Copyright (c) 2016-2017 The James Hutton Institute
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 """
 
 import os
@@ -33,19 +65,20 @@ from .pyani_tools import ANIResults
 
 # Get a list of FASTA files from the input directory
 def get_fasta_files(dirname=None):
-    """Returns a list of FASTA files in the passed directory
+    """Return list of FASTA files in the passed directory.
+
     - dirname - path to input directory
     """
     if dirname is None:
         dirname = '.'
-    infiles = get_input_files(dirname, '.fasta', '.fas', '.fa', '.fna',
-                              '.fsa_nt')
+    infiles = pyani_files.get_input_files(dirname, '.fasta', '.fas', '.fa',
+                                          '.fna', '.fsa_nt')
     return infiles
 
 
 # Get NUCmer version
 def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
-    """Return the NUCmer package version as a string.
+    """Return NUCmer package version as a string.
 
     We expect NUCmer to return a string on STDERR as
 
@@ -65,7 +98,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
                          nucmer_exe=pyani_config.NUCMER_DEFAULT,
                          maxmatch=False,
                          jobprefix="ANINUCmer"):
-    """Return a list of Jobs describing NUCmer command-lines for ANIm
+    """Return list of Jobs describing NUCmer command-lines for ANIm.
 
     - filenames - a list of paths to input FASTA files
     - outdir - path to output directory
@@ -88,7 +121,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
 def generate_nucmer_commands(filenames, outdir='.',
                              nucmer_exe=pyani_config.NUCMER_DEFAULT,
                              maxmatch=False):
-    """Return a list of NUCmer command-lines for ANIm
+    """Return list of NUCmer command-lines for ANIm.
 
     - filenames - a list of paths to input FASTA files
     - outdir - path to output directory
@@ -111,7 +144,7 @@ def generate_nucmer_commands(filenames, outdir='.',
 def construct_nucmer_cmdline(fname1, fname2, outdir='.',
                              nucmer_exe=pyani_config.NUCMER_DEFAULT,
                              maxmatch=False):
-    """Returns a single NUCmer pairwise comparison command.
+    """Return single NUCmer pairwise comparison command.
 
     NOTE: This command-line writes output data to a subdirectory of the passed
     outdir, called "nucmer_output".
@@ -136,7 +169,7 @@ def construct_nucmer_cmdline(fname1, fname2, outdir='.',
 
 # Parse NUCmer delta file to get total alignment length and total sim_errors
 def parse_delta(filename):
-    """Returns (alignment length, similarity errors) tuple from passed .delta.
+    """Return (alignment length, similarity errors) tuple from passed .delta.
 
     - filename - path to the input .delta file
 
@@ -157,7 +190,7 @@ def parse_delta(filename):
 
 # Parse all the .delta files in the passed directory
 def process_deltadir(delta_dir, org_lengths, logger=None):
-    """Returns a tuple of ANIm results for .deltas in passed directory.
+    """Return tuple of ANIm results for .deltas in passed directory.
 
     - delta_dir - path to the directory containing .delta files
     - org_lengths - dictionary of total sequence lengths, keyed by sequence

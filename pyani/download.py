@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""download.py
-
-This module provides functions useful for downloading genomes from NCBI
+"""Module providing functions useful for downloading genomes from NCBI.
 
 (c) The James Hutton Institute 2016-2017
 Author: Leighton Pritchard
@@ -50,7 +48,6 @@ import subprocess
 import traceback
 
 from collections import namedtuple
-from socket import timeout
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
@@ -67,6 +64,7 @@ class NCBIDownloadException(Exception):
     """General exception for failed NCBI download."""
 
     def __init__(self, msg="Error downloading file from NCBI"):
+        """Instantiate class."""
         Exception.__init__(self, msg)
 
 
@@ -74,11 +72,12 @@ class FileExistsException(Exception):
     """A specified file exists."""
 
     def __init__(self, msg="Specified file exists"):
+        """Instantiate class."""
         Exception.__init__(self, msg)
 
 
 def last_exception():
-    """ Returns last exception as a string, or use in logging."""
+    """Return last exception as a string."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
     return ''.join(traceback.format_exception(exc_type, exc_value,
                                               exc_traceback))
@@ -93,8 +92,10 @@ def set_ncbi_email(email):
 # Get results from NCBI web history, in batches
 def entrez_batch_webhistory(record, expected, batchsize, retries,
                             *fnargs, **fnkwargs):
-    """Recovers the Entrez data from a prior NCBI webhistory search, in
-    batches of defined size, using Efetch. Returns all results as a list.
+    """Recover the Entrez data from a prior NCBI webhistory search.
+
+    Recovers results in batches of defined size, using Efetch.
+    Returns all results as a list.
 
     - record: Entrez webhistory record
     - expected: number of expected search returns
@@ -116,9 +117,7 @@ def entrez_batch_webhistory(record, expected, batchsize, retries,
 
 # Retry an Entrez query a specified number of times
 def entrez_retry(func, retries, *fnargs, **fnkwargs):
-    """Retries the passed function up to the number of times specified
-    by retries
-    """
+    """Retry the passed function up to the number of times specified."""
     tries, success = 0, False
     while not success and tries < retries:
         try:
@@ -133,7 +132,7 @@ def entrez_retry(func, retries, *fnargs, **fnkwargs):
 
 # Split a list of taxon ids into components, checking for correct formatting
 def split_taxa(taxa):
-    """Returns a list of taxon ids from the passed comma-separated list.
+    """Return list of taxon ids from the passed comma-separated list.
 
     The function checks the passed taxon argument against a regular expression
     that permits comma-separated numerical symbols only.
@@ -147,7 +146,7 @@ def split_taxa(taxa):
 
 # Get assembly UIDs for the subtree rooted at the passed taxon
 def get_asm_uids(taxon_uid, retries):
-    """Returns a set of NCBI UIDs associated with the passed taxon UID.
+    """Return set of NCBI UIDs associated with the passed taxon UID.
 
     This query at NCBI returns all assemblies for the taxon subtree
     rooted at the passed taxon_uid.
@@ -257,7 +256,7 @@ def compile_url(filestem, suffix, ftpstem):
 
 # Download a remote file to the specified directory
 def download_url(url, outfname, timeout):
-    """Downloads a remote URL to a local directory.
+    """Download remote URL to a local directory.
 
     This function downloads the contents of the passed URL to the passed
     filename, in buffered chunks
@@ -306,7 +305,7 @@ def retrieve_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout):
     try:
         download_url(url, outfname, timeout)
         download_url(hashurl, outfhash, timeout)
-    except:
+    except IOError:
         error = last_exception()
 
     return DLStatus(url, hashurl, outfname, outfhash, skipped, error)
@@ -314,8 +313,7 @@ def retrieve_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout):
 
 # Check the file hash against the downloaded hash
 def check_hash(fname, hashfile):
-    """Checks the MD5 hash of the passed file against an entry in the
-    downloaded NCBI hash file."""
+    """Check MD5 of passed file against downloaded NCBI hash file."""
     Hashstatus = namedtuple("Hashstatus", "passed localhash filehash")
     filehash = ""
     passed = False   # Flag - set to True if the hash matches
@@ -336,7 +334,7 @@ def check_hash(fname, hashfile):
 
 # Extract contigs from a compressed file, using gunzip
 def extract_contigs(fname, ename):
-    """Extract contents of fname to ename using gunzip"""
+    """Extract contents of fname to ename using gunzip."""
     with open(ename, 'w') as efh:
         subprocess.run(['gunzip', '-c', fname],
                        stdout=efh)  # can be subprocess.run
@@ -344,7 +342,7 @@ def extract_contigs(fname, ename):
 
 # Using a genomes UID, create class and label text files
 def create_labels(classification, filestem):
-    """Constructs class and label text from UID classification."""
+    """Construct class and label text from UID classification."""
     class_data = (filestem, classification.genus[0] + '.',
                   classification.species, classification.strain)
     labeltxt = "{0}_genomic\t{1} {2} {3}".format(*class_data)
@@ -365,7 +363,7 @@ def create_hash(fname):
 
 # Create an MD5 hash for the passed genome
 def extract_hash(hashfile, name):
-    """Return MD5 hash from file of name:MD5 hashes
+    """Return MD5 hash from file of name:MD5 hashes.
 
     - hashfile             path to file containing name:MD5 pairs
     - name                 name asspcoated with hash
@@ -373,7 +371,6 @@ def extract_hash(hashfile, name):
     filehash = None
     with open(hashfile, "r") as hhandle:
         for l in [l.strip().split() for l in hhandle if len(l.strip())]:
-            hashfname = os.path.split(l[1])[-1]
-            if os.path.split(l[1])[-1] == name:
+            if os.path.split(l[1])[-1] == name:  # hash filename
                 filehash = l[0]
     return filehash

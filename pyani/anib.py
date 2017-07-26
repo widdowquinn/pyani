@@ -1,10 +1,4 @@
-# Copyright 2013-2015, The James Hutton Insitute
-# Author: Leighton Pritchard
-#
-# This code is part of the pyani package, and is governed by its licence.
-# Please see the LICENSE file that should have been included as part of
-# this package.
-
+# -*- coding: utf-8 -*-
 """Code to implement the ANIb average nucleotide identity method.
 
 Calculates ANI by the ANIb method, as described in Goris et al. (2007)
@@ -49,6 +43,44 @@ choice and doesn't correspond to the twilight zone limit as implied by
 Goris et al. We persist with their definition, however.  Only these
 qualifying matches contribute to the total aligned length, and total
 aligned sequence identity used to calculate ANI.
+
+(c) The James Hutton Institute 2016-2017
+Author: Leighton Pritchard
+
+Contact:
+leighton.pritchard@hutton.ac.uk
+
+Leighton Pritchard,
+Information and Computing Sciences,
+James Hutton Institute,
+Errol Road,
+Invergowrie,
+Dundee,
+DD6 9LH,
+Scotland,
+UK
+
+The MIT License
+
+Copyright (c) 2016-2017 The James Hutton Institute
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 """
 
 import os
@@ -66,7 +98,7 @@ from .pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
 
 # Divide input FASTA sequences into fragments
 def fragment_fasta_files(infiles, outdirname, fragsize):
-    """Chops sequences of the passed files into fragments, returns filenames.
+    """Chop sequences of the passed files into fragments, return filenames.
 
     - infiles - paths to each input sequence file
     - outdirname - path to output directory
@@ -100,7 +132,7 @@ def fragment_fasta_files(infiles, outdirname, fragsize):
 
 # Get lengths of all sequences in all files
 def get_fraglength_dict(fastafiles):
-    """Returns dictionary of sequence fragment lengths, keyed by query name.
+    """Return dictionary of sequence fragment lengths, keyed by query name.
 
     - fastafiles - list of FASTA input whole sequence files
 
@@ -117,7 +149,7 @@ def get_fraglength_dict(fastafiles):
 
 # Get lengths of all sequences in a file
 def get_fragment_lengths(fastafile):
-    """Returns dictionary of sequence fragment lengths, keyed by fragment ID.
+    """Return dictionary of sequence fragment lengths, keyed by fragment ID.
 
     Biopython's SeqIO module is used to parse all sequences in the FASTA
     file.
@@ -132,7 +164,7 @@ def get_fragment_lengths(fastafile):
 
 # Create dictionary of database building commands, keyed by dbname
 def build_db_jobs(infiles, blastcmds):
-    """Returns dictionary of db-building commands, keyed by dbname."""
+    """Return dictionary of db-building commands, keyed by dbname."""
     dbjobdict = {}  # Dict of database construction jobs, keyed by filename
     # Create dictionary of database building jobs, keyed by db name
     # defining jobnum for later use as last job index used
@@ -145,7 +177,7 @@ def build_db_jobs(infiles, blastcmds):
 
 def make_blastcmd_builder(mode, outdir, format_exe=None, blast_exe=None,
                           prefix="ANIBLAST"):
-    """Returns BLASTcmds object for construction of BLAST commands."""
+    """Return BLASTcmds object for construction of BLAST commands."""
     if mode == "ANIb":  # BLAST/formatting executable depends on mode
         blastcmds = BLASTcmds(BLASTfunctions(construct_makeblastdb_cmd,
                                              construct_blastn_cmdline),
@@ -167,7 +199,7 @@ def make_blastcmd_builder(mode, outdir, format_exe=None, blast_exe=None,
 
 # Make a dependency graph of BLAST commands
 def make_job_graph(infiles, fragfiles, blastcmds):
-    """Return a job dependency graph, based on the passed input sequence files.
+    """Return job dependency graph, based on the passed input sequence files.
 
     - infiles - a list of paths to input FASTA files
     - fragfiles - a list of paths to fragmented input FASTA files
@@ -214,7 +246,7 @@ def make_job_graph(infiles, fragfiles, blastcmds):
 def generate_blastdb_commands(filenames, outdir,
                               blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT,
                               mode="ANIb"):
-    """Return a list of makeblastdb command-lines for ANIb/ANIblastall
+    """Return list of makeblastdb command-lines for ANIb/ANIblastall.
 
     - filenames - a list of paths to input FASTA files
     - outdir - path to output directory
@@ -232,7 +264,7 @@ def generate_blastdb_commands(filenames, outdir,
 # Generate single makeblastdb command line
 def construct_makeblastdb_cmd(filename, outdir,
                               blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT):
-    """Returns a single makeblastdb command.
+    """Return single makeblastdb command.
 
     - filename - input filename
     - blastdb_exe - path to the makeblastdb executable
@@ -249,7 +281,7 @@ def construct_makeblastdb_cmd(filename, outdir,
 # Generate single makeblastdb command line
 def construct_formatdb_cmd(filename, outdir,
                            blastdb_exe=pyani_config.FORMATDB_DEFAULT):
-    """Returns a single formatdb command.
+    """Return single formatdb command.
 
     - filename - input filename
     - blastdb_exe - path to the formatdb executable
@@ -265,7 +297,7 @@ def construct_formatdb_cmd(filename, outdir,
 def generate_blastn_commands(filenames, outdir,
                              blast_exe=pyani_config.BLASTN_DEFAULT,
                              mode="ANIb"):
-    """Return a list of blastn command-lines for ANIm
+    """Return a list of blastn command-lines for ANIm.
 
     - filenames - a list of paths to fragmented input FASTA files
     - outdir - path to output directory
@@ -295,7 +327,7 @@ def generate_blastn_commands(filenames, outdir,
 # Generate single BLASTN command line
 def construct_blastn_cmdline(fname1, fname2, outdir,
                              blastn_exe=pyani_config.BLASTN_DEFAULT):
-    """Returns a single blastn command.
+    """Return a single blastn command.
 
     - filename - input filename
     - blastn_exe - path to BLASTN executable
@@ -315,7 +347,7 @@ def construct_blastn_cmdline(fname1, fname2, outdir,
 # Generate single BLASTALL command line
 def construct_blastall_cmdline(fname1, fname2, outdir,
                                blastall_exe=pyani_config.BLASTALL_DEFAULT):
-    """Returns a single blastall command.
+    """Return single blastall command.
 
     - blastall_exe - path to BLASTALL executable
     """
@@ -332,7 +364,7 @@ def construct_blastall_cmdline(fname1, fname2, outdir,
 # Process pairwise BLASTN output
 def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
                   logger=None):
-    """Returns a tuple of ANIb results for .blast_tab files in the output dir.
+    """Return tuple of ANIb results for .blast_tab files in the output dir.
 
     - blast_dir - path to the directory containing .blast_tab files
     - org_lengths - the base count for each input sequence
@@ -394,8 +426,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
 
 # Parse BLASTALL output to get total alignment length and mismatches
 def parse_blast_tab(filename, fraglengths, mode="ANIb"):
-    """Returns (alignment length, similarity errors, mean_pid) tuple
-    from .blast_tab
+    """Return (alignment length, similarity errors, mean_pid) tuple.
 
     - filename - path to .blast_tab file
 
