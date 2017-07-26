@@ -15,8 +15,9 @@ A workflow might look like this:
 1. Identify something you think you can change or add
 2. Fork this repository into your own account
 3. Create a new branch with a short, descriptive name (for the thing you're fixing/adding), and work on this branch locally
-4. When you're finished, commit the branch, and submit a pull request
-5. Continue the discussion in the [`Pull requests` section](https://github.com/widdowquinn/pyani/pulls) of this repository on GitHub.
+4. When you're finished, check the changes/additions with `flake8` and test locally
+5. Commit the branch, and submit a pull request
+6. Continue the discussion in the [`Pull requests` section](https://github.com/widdowquinn/pyani/pulls) of this repository on GitHub.
 
 ## Coding Conventions
 
