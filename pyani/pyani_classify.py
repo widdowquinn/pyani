@@ -18,7 +18,6 @@ def get_pyani_inputs(indir, logger=None):
     """Check files in the input directory, and return the names of the %id
     and %cov output files from the analysis.
     """
-    
 
 
 # Load pyani output into dataframes
@@ -38,9 +37,9 @@ def load_pyani_data(covfile, idfile, labelfile=None, logger=None):
     if labelfile:
         with open(labels, mode='r') as fh:
             reader = csv.reader(fh, delimiter='\t')
-            labeldict = {rows[0]:rows[1] for rows in reader
+            labeldict = {rows[0]: rows[1] for rows in reader
                          if rows[0] in covdata.columns}
     else:
-        labeldict = {name:name for name in covdata.columns}
+        labeldict = {name: name for name in covdata.columns}
 
     return(covdata, iddata, labeldict)

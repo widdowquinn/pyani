@@ -217,7 +217,7 @@ def add_run(dbpath, method, cmdline, date, status):
         cur.execute(SQL_ADDRUN, (method, cmdline, date, status))
     return cur.lastrowid
 
-        
+
 # Add a new genome to the database
 def add_genome(dbpath, hash, filepath, length, desc):
     """Add a genome to the passed SQLite3 database."""
@@ -302,7 +302,7 @@ def add_comparison(dbpath, qid, sid, aln_len, sim_errs, pid, qcov, scov,
         cur.execute(SQL_ADDCOMPARISON, (qid, sid, aln_len, sim_errs, pid,
                                         qcov, scov, program, version,
                                         fragsize, maxmatch))
-    return cur.lastrowid    
+    return cur.lastrowid
 
 
 # Check if a comparison has been performed

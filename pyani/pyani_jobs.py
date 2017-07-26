@@ -44,6 +44,7 @@ class Job:
     """Objects in this class represent individual jobs to be run, with a list
     of dependencies (jobs that must be run first).
     """
+
     def __init__(self, name, command, queue=None):
         """Instantiates a Job object.
 
@@ -85,6 +86,7 @@ class Job:
 
 class JobGroup:
     """ Class that stores a group of jobs, permitting parameter sweeps."""
+
     def __init__(self, name, command, queue=None, arguments=None):
         """ Instantiate a JobGroup object.  JobGroups allow for the use of
         combinatorial parameter sweeps by using the 'command' and 'arguments'
@@ -111,7 +113,7 @@ class JobGroup:
         self.dependencies = []         # Create empty list for dependencies
         self.submitted = True          # Set submitted Boolean
         if arguments is not None:
-            self.arguments = arguments # Dictionary of arguments for command
+            self.arguments = arguments  # Dictionary of arguments for command
         else:
             self.arguments = {}
         self.generate_script()         # Make SGE script for sweep/array

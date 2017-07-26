@@ -44,6 +44,7 @@ plt.register_cmap(cmap=pyani_config.CMAP_BURD)
 # Convenience class to hold heatmap graphics parameters
 class Params(object):  # pylint: disable=too-few-public-methods
     """Convenience class to hold heatmap rendering parameters."""
+
     def __init__(self, params, labels=None, classes=None):
         self.cmap = plt.get_cmap(params[0])
         self.vmin = params[1]
@@ -54,7 +55,7 @@ class Params(object):  # pylint: disable=too-few-public-methods
     @property
     def vdiff(self):
         """Returns difference between max and min values for presentation"""
-        return max(0.01, self.vmax-self.vmin)
+        return max(0.01, self.vmax - self.vmin)
 
 
 # helper for cleaning up matplotlib axes by removing ticks etc.
@@ -143,7 +144,7 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
     calcfigsize = dfr.shape[0] * 1.1
     figsize = min(max(8, calcfigsize), maxfigsize)
     if figsize == maxfigsize:
-        scale = maxfigsize/calcfigsize
+        scale = maxfigsize / calcfigsize
         sns.set_context("notebook", font_scale=scale)
 
     # Add a colorbar?
@@ -210,8 +211,8 @@ def get_mpl_heatmap_axes(dfr, fig, heatmap_gs):
     """Return axis for Matplotlib heatmap."""
     # Create heatmap axis
     heatmap_axes = fig.add_subplot(heatmap_gs[1, 1])
-    heatmap_axes.set_xticks(np.linspace(0, dfr.shape[0]-1, dfr.shape[0]))
-    heatmap_axes.set_yticks(np.linspace(0, dfr.shape[0]-1, dfr.shape[0]))
+    heatmap_axes.set_xticks(np.linspace(0, dfr.shape[0] - 1, dfr.shape[0]))
+    heatmap_axes.set_yticks(np.linspace(0, dfr.shape[0] - 1, dfr.shape[0]))
     heatmap_axes.grid('off')
     heatmap_axes.xaxis.tick_bottom()
     heatmap_axes.yaxis.tick_right()
@@ -344,7 +345,6 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
                    dfr.index[rowdend['dendrogram']['leaves']],
                    dfr.index[coldend['dendrogram']['leaves']],
                    params)
-
 
     # Add colour scale
     add_mpl_colorscale(fig, heatmap_gs, ax_map, params, title)

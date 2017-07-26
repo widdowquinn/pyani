@@ -89,7 +89,7 @@ def fragment_fasta_files(infiles, outdirname, fragsize):
             idx = 0
             while idx < len(seq):
                 count += 1
-                newseq = seq[idx:idx+fragsize]
+                newseq = seq[idx:idx + fragsize]
                 newseq.id = "frag%05d" % count
                 outseqs.append(newseq)
                 idx += fragsize
@@ -138,8 +138,8 @@ def build_db_jobs(infiles, blastcmds):
     # defining jobnum for later use as last job index used
     for idx, fname in enumerate(infiles):
         dbjobdict[blastcmds.get_db_name(fname)] = \
-                pyani_jobs.Job("%s_db_%06d" % (blastcmds.prefix, idx),
-                               blastcmds.build_db_cmd(fname))
+            pyani_jobs.Job("%s_db_%06d" % (blastcmds.prefix, idx),
+                           blastcmds.build_db_cmd(fname))
     return dbjobdict
 
 
@@ -149,17 +149,17 @@ def make_blastcmd_builder(mode, outdir, format_exe=None, blast_exe=None,
     if mode == "ANIb":  # BLAST/formatting executable depends on mode
         blastcmds = BLASTcmds(BLASTfunctions(construct_makeblastdb_cmd,
                                              construct_blastn_cmdline),
-                              BLASTexes(format_exe or \
+                              BLASTexes(format_exe or
                                         pyani_config.MAKEBLASTDB_DEFAULT,
-                                        blast_exe or \
+                                        blast_exe or
                                         pyani_config.BLASTN_DEFAULT),
                               prefix, outdir)
     else:
         blastcmds = BLASTcmds(BLASTfunctions(construct_formatdb_cmd,
                                              construct_blastall_cmdline),
-                              BLASTexes(format_exe or \
+                              BLASTexes(format_exe or
                                         pyani_config.FORMATDB_DEFAULT,
-                                        blast_exe or \
+                                        blast_exe or
                                         pyani_config.BLASTALL_DEFAULT),
                               prefix, outdir)
     return blastcmds
@@ -189,18 +189,18 @@ def make_job_graph(infiles, fragfiles, blastcmds):
     # Create list of BLAST executable jobs, with dependencies
     jobnum = len(dbjobdict)
     for idx, fname1 in enumerate(fragfiles[:-1]):
-        for fname2 in fragfiles[idx+1:]:
+        for fname2 in fragfiles[idx + 1:]:
             jobnum += 1
             jobs = \
                 [pyani_jobs.Job("%s_exe_%06d_a" %
                                 (blastcmds.prefix, jobnum),
                                 blastcmds.build_blast_cmd(fname1,
-                                                          fname2.replace\
+                                                          fname2.replace
                                                           ('-fragments', ''))),
                  pyani_jobs.Job("%s_exe_%06d_b" %
                                 (blastcmds.prefix, jobnum),
                                 blastcmds.build_blast_cmd(fname2,
-                                                          fname1.replace\
+                                                          fname1.replace
                                                           ('-fragments', '')))]
             jobs[0].add_dependency(dbjobdict[fname1.replace('-fragments', '')])
             jobs[1].add_dependency(dbjobdict[fname2.replace('-fragments', '')])
@@ -283,7 +283,7 @@ def generate_blastn_commands(filenames, outdir,
     cmdlines = []
     for idx, fname1 in enumerate(filenames[:-1]):
         dbname1 = fname1.replace('-fragments', '')
-        for fname2 in filenames[idx+1:]:
+        for fname2 in filenames[idx + 1:]:
             dbname2 = fname2.replace('-fragments', '')
             cmdlines.append(construct_blast_cmdline(fname1, dbname2,
                                                     outdir, blast_exe))

@@ -120,7 +120,7 @@ def populate_jobset(job, jobset, depth):
     if len(job.dependencies) == 0:
         return jobset
     for j in job.dependencies:
-        jobset = populate_jobset(j, jobset, depth+1)
+        jobset = populate_jobset(j, jobset, depth + 1)
     return jobset
 
 
@@ -198,7 +198,7 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
 
         # If a queue is specified, add this to the SGE command line
         # LP: This has an undeclared variable, not sure why - delete?
-        #if job.queue is not None and job.queue in local_queues:
+        # if job.queue is not None and job.queue in local_queues:
         #    args += local_queues[job.queue]
 
         # If the job is actually a JobGroup, add the task numbering argument

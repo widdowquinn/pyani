@@ -65,11 +65,14 @@ taxonregex = re.compile('([0-9]\,?){1,}')
 # Custom exceptions
 class NCBIDownloadException(Exception):
     """General exception for failed NCBI download."""
+
     def __init__(self, msg="Error downloading file from NCBI"):
         Exception.__init__(self, msg)
 
+
 class FileExistsException(Exception):
     """A specified file exists."""
+
     def __init__(self, msg="Specified file exists"):
         Exception.__init__(self, msg)
 
@@ -164,7 +167,7 @@ def get_asm_uids(taxon_uid, retries):
                                       db="assembly", retmode="xml")
 
     return Results(query, result_count, asm_ids)
-        
+
 
 # Get a filestem from Entrez eSummary data
 def extract_filestem(esummary):
@@ -207,8 +210,7 @@ def get_ncbi_classification(esummary):
     # Extract species/strain info
     organism = esummary['SpeciesName']
     try:
-        strain = esummary['Biosource']['InfraspeciesList'][0]\
-                 ['Sub_value']
+        strain = esummary['Biosource']['InfraspeciesList'][0]['Sub_value']
     except (KeyError, IndexError):
         # we consider this an error/incompleteness in the NCBI metadata
         strain = ""
@@ -244,8 +246,8 @@ def compile_url(filestem, suffix, ftpstem):
     """
     gc, aa, an = tuple(filestem.split('_', 2))
     aaval = aa.split('.')[0]
-    subdirs = '/'.join([aa[i:i+3] for i in range(0, len(aaval), 3)])
-               
+    subdirs = '/'.join([aa[i:i + 3] for i in range(0, len(aaval), 3)])
+
     url = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gc, subdirs,
                                            filestem, suffix)
     hashurl = "{0}/{1}/{2}/{3}/{4}".format(ftpstem, gc, subdirs,
@@ -267,7 +269,7 @@ def download_url(url, outfname, timeout):
     # Define buffer sizes
     bsize = 1048576  # buffer size
     fsize_dl = 0     # bytes downloaded
- 
+
     # Download file
     with open(outfname, "wb") as ofh:
         with tqdm(total=fsize) as pbar:
@@ -286,8 +288,6 @@ def construct_output_paths(filestem, suffix, outdir):
     outfname = os.path.join(outdir, '_'.join([filestem, suffix]))
     outfhash = os.path.join(outdir, '_'.join([filestem, "hashes.txt"]))
     return (outfname, outfhash)
-
-
 
 
 # Download a remote genome from NCBI and its MD5 hash
@@ -326,7 +326,7 @@ def check_hash(fname, hashfile):
     # Get hash from file
     localfname = os.path.split(fname)[-1]
     filehash = extract_hash(hashfile, localfname)
-    
+
     # Check for match
     if filehash == localhash:
         passed = True
@@ -339,7 +339,7 @@ def extract_contigs(fname, ename):
     """Extract contents of fname to ename using gunzip"""
     with open(ename, 'w') as efh:
         subprocess.run(['gunzip', '-c', fname],
-                        stdout=efh)  # can be subprocess.run
+                       stdout=efh)  # can be subprocess.run
 
 
 # Using a genomes UID, create class and label text files
@@ -349,7 +349,7 @@ def create_labels(classification, filestem):
                   classification.species, classification.strain)
     labeltxt = "{0}_genomic\t{1} {2} {3}".format(*class_data)
     classtxt = "{0}_genomic\t{1}".format(filestem, classification.organism)
-    
+
     return (labeltxt, classtxt)
 
 
@@ -361,7 +361,7 @@ def create_hash(fname):
         for chunk in iter(lambda: fhandle.read(65536), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
-    
+
 
 # Create an MD5 hash for the passed genome
 def extract_hash(hashfile, name):
@@ -377,6 +377,3 @@ def extract_hash(hashfile, name):
             if os.path.split(l[1])[-1] == name:
                 filehash = l[0]
     return filehash
-    
-
-

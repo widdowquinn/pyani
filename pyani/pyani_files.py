@@ -55,7 +55,6 @@ def get_fasta_and_hash_paths(dirname='.'):
     return outfiles
 
 
-
 # Get list of FASTA files in a directory
 def get_input_files(dirname, *ext):
     """Returns files in passed directory, filtered by extension.
@@ -94,7 +93,7 @@ def read_hash_string(filename):
     # We expect the first string in the file to be the hash (the second is the
     # filename)
     return (data[0], data[1])
-        
+
 
 # Get description string from FASTA file
 def read_fasta_description(filename):
@@ -102,5 +101,3 @@ def read_fasta_description(filename):
     for data in SeqIO.parse(filename, 'fasta'):
         if data.description:
             return data.description
-
-    
