@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""pyani_script.py
-
-Implements the pyani script for classifying prokaryotic genomes
+"""Implements the pyani script for classifying prokaryotic genomes.
 
 (c) The James Hutton Institute 2017
 Author: Leighton Pritchard
@@ -51,7 +49,7 @@ from ..pyani_tools import last_exception
 
 # Main function
 def run_main(namespace=None):
-    """Main process for pyani.py script."""
+    """Run main process for pyani.py script."""
     # If we need to (i.e. a namespace isn't passed), parse the command-line
     if namespace is None:
         args = parse_cmdline()
@@ -77,7 +75,7 @@ def run_main(namespace=None):
             logstream = open(args.logfile, 'w')
         except OSError:
             logger.error('Could not open %s for logging', args.logfile)
-            logger.error(tools.last_exception())
+            logger.error(last_exception())
             sys.exit(1)
         err_handler_file = logging.StreamHandler(logstream)
         err_handler_file.setFormatter(err_formatter)

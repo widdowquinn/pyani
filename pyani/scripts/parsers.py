@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-"""parsers.py
-
-This module provides command-line (and subcommand) parsers for the pyani.py
-script.
+"""Provides command-line/subcommand parsers for the pyani.py script.
 
 - download:        download genome files from NCBI
 - classify:        classify input sequences on the basis of ANI output
@@ -54,7 +51,7 @@ from .. import pyani_config
 
 # Common parser for all subcommands
 def build_parser_common():
-    """Returns the common argument parser for all script subcommands
+    """Return the common argument parser for all script subcommands.
 
     Common arguments are:
 
@@ -73,7 +70,7 @@ def build_parser_common():
 
 # Common parser for all subcommands
 def build_parser_scheduler():
-    """Returns the common argument parser for job scheduling
+    """Return the common argument parser for job scheduling.
 
     Common arguments are:
 
@@ -103,7 +100,7 @@ def build_parser_scheduler():
 
 # Subcommand parsers
 def build_parser_download(subps, parents=None):
-    """Returns a command-line parser for the download subcommand
+    """Return a command-line parser for the download subcommand.
 
     The download subcommand takes specific arguments:
 
@@ -161,7 +158,7 @@ def build_parser_download(subps, parents=None):
 
 
 def build_parser_classify(subps, parents=None):
-    """Returns a command-line parser for the classify subcommand
+    """Return a command-line parser for the classify subcommand.
 
     The classify subcommand takes specific arguments:
 
@@ -200,7 +197,7 @@ def build_parser_classify(subps, parents=None):
 
 
 def build_parser_index(subps, parents=None):
-    """Returns a command-line parser for the index subcommand
+    """Return a command-line parser for the index subcommand.
 
     The index subcommand takes a single positional argument:
 
@@ -216,8 +213,7 @@ def build_parser_index(subps, parents=None):
 
 
 def build_parser_createdb(subps, parents=None):
-    """Returns a command-line parser for the createdb subcommand
-    """
+    """Return a command-line parser for the createdb subcommand."""
     parser = subps.add_parser('createdb', parents=parents,
                               formatter_class=ArgumentDefaultsHelpFormatter)
     # Path to database (default: .pyani/pyanidb)
@@ -231,8 +227,7 @@ def build_parser_createdb(subps, parents=None):
 
 
 def build_parser_anim(subps, parents=None):
-    """Returns a command-line parser for the anim subcommand
-    """
+    """Return a command-line parser for the anim subcommand."""
     parser = subps.add_parser('anim', parents=parents,
                               formatter_class=ArgumentDefaultsHelpFormatter)
     # Required positional arguments: input and output directories
@@ -256,24 +251,21 @@ def build_parser_anim(subps, parents=None):
 
 
 def build_parser_anib(subps, parents=None):
-    """Returns a command-line parser for the anib subcommand
-    """
+    """Return a command-line parser for the anib subcommand."""
     parser = subps.add_parser('anib', parents=parents,
                               formatter_class=ArgumentDefaultsHelpFormatter)
     parser.set_defaults(func=subcommands.subcmd_anib)
 
 
 def build_parser_aniblastall(subps, parents=None):
-    """Returns a command-line parser for the aniblastall subcommand
-    """
+    """Return a command-line parser for the aniblastall subcommand."""
     parser = subps.add_parser('aniblastall', parents=parents,
                               formatter_class=ArgumentDefaultsHelpFormatter)
     parser.set_defaults(func=subcommands.subcmd_aniblastall)
 
 
 def build_parser_render(subps, parents=None):
-    """Returns a command-line parser for the render subcommand
-    """
+    """Return a command-line parser for the render subcommand."""
     parser = subps.add_parser('render', parents=parents,
                               formatter_class=ArgumentDefaultsHelpFormatter)
     parser.set_defaults(func=subcommands.subcmd_render)
