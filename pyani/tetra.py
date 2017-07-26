@@ -69,7 +69,7 @@ def calculate_tetra_zscore(filename):
             # For di, tri and tetranucleotide counts, loop over the
             # sequence and its reverse complement, until near the end:
             for i in range(len(seq[:-4])):
-                din, tri, tetra = seq[i:i+2], seq[i:i+3], seq[i:i+4]
+                din, tri, tetra = seq[i:i + 2], seq[i:i + 3], seq[i:i + 4]
                 counts[1][str(din)] += 1
                 counts[2][str(tri)] += 1
                 counts[3][str(tetra)] += 1
@@ -84,7 +84,7 @@ def calculate_tetra_zscore(filename):
     tetra_exp = {}
     for tet in [tetn for tetn in counts[3] if tetra_clean(tetn)]:
         tetra_exp[tet] = 1. * counts[2][tet[:3]] * counts[2][tet[1:]] / \
-                         counts[1][tet[1:3]]
+            counts[1][tet[1:3]]
     # Following Teeling (2004) we approximate the std dev and Z-score for each
     # tetranucleotide
     tetra_sd = {}
@@ -94,7 +94,7 @@ def calculate_tetra_zscore(filename):
         tetra_sd[tet] = math.sqrt(exp * (den - counts[2][tet[:3]]) *
                                   (den - counts[2][tet[1:]]) / (den * den))
         try:
-            tetra_z[tet] = (counts[3][tet] - exp)/tetra_sd[tet]
+            tetra_z[tet] = (counts[3][tet] - exp) / tetra_sd[tet]
         except ZeroDivisionError:
             # To record if we hit a zero in the estimation of variance
             # zeroes = [k for k, v in list(tetra_sd.items()) if v == 0]
@@ -131,12 +131,12 @@ def calculate_correlations(tetra_z):
     correlations = pd.DataFrame(index=orgs, columns=orgs,
                                 dtype=float).fillna(1.0)
     for idx, org1 in enumerate(orgs[:-1]):
-        for org2 in orgs[idx+1:]:
+        for org2 in orgs[idx + 1:]:
             assert sorted(tetra_z[org1].keys()) == sorted(tetra_z[org2].keys())
             tets = sorted(tetra_z[org1].keys())
             zscores = [[tetra_z[org1][t] for t in tets],
                        [tetra_z[org2][t] for t in tets]]
-            zmeans = [sum(zscore)/len(zscore) for zscore in zscores]
+            zmeans = [sum(zscore) / len(zscore) for zscore in zscores]
             zdiffs = [[z - zmeans[0] for z in zscores[0]],
                       [z - zmeans[1] for z in zscores[1]]]
             diffprods = sum([zdiffs[0][i] * zdiffs[1][i] for i in
@@ -144,6 +144,6 @@ def calculate_correlations(tetra_z):
             zdiffs2 = [sum([z * z for z in zdiffs[0]]),
                        sum([z * z for z in zdiffs[1]])]
             correlations[org1][org2] = diffprods / \
-                                       math.sqrt(zdiffs2[0] * zdiffs2[1])
+                math.sqrt(zdiffs2[0] * zdiffs2[1])
             correlations[org2][org1] = correlations[org1][org2]
     return correlations
