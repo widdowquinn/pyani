@@ -1,20 +1,45 @@
 #!/usr/bin/env python3
-#
-# genbank_get_genomes_by_taxon.py
-#
-# Copyright 2015-2016, The James Hutton Insitute
-# Author: Leighton Pritchard
-#
-# This code is part of the pyani package, and is governed by its licence.
-# Please see the LICENSE file that should have been included as part of
-# this package.
-
-"""A script to download sequence/class/label data from NCBI
+# -*- coding: utf-8 -*-
+"""Script to download from NCBI all genomes in a specified taxon subtree.
 
 This script takes an NCBI taxonomy identifier (or string, though this is
 not always reliable for taxonomy tree subgraphs...) and downloads all genomes
 it can find from NCBI in the corresponding taxon subgraph that has
 the passed argument as root.
+
+(c) The James Hutton Institute 2017
+Author: Leighton Pritchard
+Contact: leighton.pritchard@hutton.ac.uk
+Leighton Pritchard,
+Information and Computing Sciences,
+James Hutton Institute,
+Errol Road,
+Invergowrie,
+Dundee,
+DD6 9LH,
+Scotland,
+UK
+
+The MIT License
+
+Copyright (c) 2017 The James Hutton Institute
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 """
 
 import logging
@@ -38,13 +63,15 @@ from Bio import Entrez, SeqIO
 
 class NCBIDownloadException(Exception):
     """General exception for failed NCBI download."""
+
     def __init__(self):
+        """Instantiate exception."""
         Exception.__init__(self, "Error downloading file from NCBI")
 
 
 # Parse command-line
 def parse_cmdline():
-    """Parse command-line arguments"""
+    """Parse command-line arguments."""
     parser = ArgumentParser(prog="genbank_get_genomes_by_taxon.py")
     parser.add_argument("-o", "--outdir", dest="outdirname", required=True,
                         action="store", default=None,
@@ -84,7 +111,7 @@ def parse_cmdline():
 
 # Report last exception as string
 def last_exception():
-    """ Returns last exception as a string, or use in logging."""
+    """Return last exception as a string, or use in logging."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
     return ''.join(traceback.format_exception(exc_type, exc_value,
                                               exc_traceback))
@@ -101,6 +128,7 @@ def set_ncbi_email():
 # Create output directory if it doesn't exist
 def make_outdir():
     """Make the output directory, if required.
+
     This is a little involved.  If the output directory already exists,
     we take the safe option by default, and stop with an error.  We can,
     however, choose to force the program to go on, in which case we can
@@ -135,12 +163,10 @@ def make_outdir():
             logger.error(last_exception)
             sys.exit(1)
 
-            
+
 # Retry Entrez requests (or any other function)
 def entrez_retry(func, *fnargs, **fnkwargs):
-    """Retries the passed function up to the number of times specified
-    by args.retries
-    """
+    """Retry the passed function a defined number of times."""
     tries, success = 0, False
     while not success and tries < args.retries:
         try:
@@ -159,8 +185,10 @@ def entrez_retry(func, *fnargs, **fnkwargs):
 
 # Get results from NCBI web history, in batches
 def entrez_batch_webhistory(record, expected, batchsize, *fnargs, **fnkwargs):
-    """Recovers the Entrez data from a prior NCBI webhistory search, in
-    batches of defined size, using Efetch. Returns all results as a list.
+    """Recover Entrez data from a prior NCBI webhistory search.
+
+    Recovery is performed in in batches of defined size, using Efetch.
+    Returns all results as a list.
 
     - record: Entrez webhistory record
     - expected: number of expected search returns
@@ -182,7 +210,7 @@ def entrez_batch_webhistory(record, expected, batchsize, *fnargs, **fnkwargs):
 
 # Get assembly UIDs for the root taxon
 def get_asm_uids(taxon_uid):
-    """Returns a set of NCBI UIDs associated with the passed taxon.
+    """Return a set of NCBI UIDs associated with the passed taxon.
 
     This query at NCBI returns all assemblies for the taxon subtree
     rooted at the passed taxon_uid.
@@ -223,8 +251,9 @@ def extract_filestem(data):
 
 # Download NCBI assembly file for a passed Assembly UID
 def get_ncbi_asm(asm_uid):
-    """Returns the NCBI AssemblyAccession and AssemblyName for the assembly
-    with passed UID, and organism data for class/label files also, as well
+    """Return the NCBI AssemblyAccession and AssemblyName for an assembly.
+
+    Returns organism data for class/label files also, as well
     as accession, so we can track whether downloads fail because only the
     most recent version is available..
 
@@ -294,7 +323,7 @@ def get_ncbi_asm(asm_uid):
 def retrieve_asm_contigs(filestem,
                          ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all",
                          suffix="genomic.fna.gz"):
-    """Downloads an assembly sequence to a local directory.
+    """Download assembly sequence to a local directory.
 
     The filestem corresponds to <AA>_<AN>, where <AA> and <AN> are
     AssemblyAccession and AssemblyName: data fields in the eSummary record.
@@ -374,7 +403,7 @@ def retrieve_asm_contigs(filestem,
                     status = r"%10d  [%3.2f%%]" % (fsize_dl,
                                                    fsize_dl * 100. / fsize)
                     logger.info(status)
-        except:
+        except IOError:
             logger.error("Download failed for %s", url)
             logger.error(last_exception())
             raise NCBIDownloadException()
@@ -384,14 +413,13 @@ def retrieve_asm_contigs(filestem,
     if os.path.exists(ename):
         logger.warning("Output file %s exists, not extracting", ename)
     else:
+        logger.info("Extracting archive %s to %s", outfname, ename)
         try:
-            logger.info("Extracting archive %s to %s",
-                        outfname, ename)
             with open(ename, 'w') as efh:
                 subprocess.call(['gunzip', '-c', outfname],
                                 stdout=efh)  # can be subprocess.run in Py3.5
                 logger.info("Archive extracted to %s", ename)
-        except:
+        except IOError:
             logger.error("Extracting archive %s failed", outfname)
             logger.error(last_exception())
             raise NCBIDownloadException()
@@ -401,8 +429,7 @@ def retrieve_asm_contigs(filestem,
 
 # Write contigs for a single assembly out to file
 def write_contigs(asm_uid, contig_uids, batchsize=10000):
-    """Writes assembly contigs out to a single FASTA file in the script's
-    designated output directory.
+    """Write assembly contigs to a single FASTA file.
 
     FASTA records are returned, as GenBank and even GenBankWithParts format
     records don't reliably give correct sequence in all cases.
@@ -464,7 +491,7 @@ def write_contigs(asm_uid, contig_uids, batchsize=10000):
             # Could also check expected assembly sequence length?
             logger.info("Downloaded genome size: %d",
                         sum([len(r) for r in records]))
-        except:
+        except HTTPError:
             logger.warning("FASTA download for assembly %s failed", asm_uid)
             logger.warning(last_exception())
             logger.warning("try %d/20", tries)
@@ -480,9 +507,7 @@ def write_contigs(asm_uid, contig_uids, batchsize=10000):
 
 # Function to report whether an accession has been downloaded
 def logreport_downloaded(accession, skippedlist, accessiondict, uidaccdict):
-    """Reports to logger whether alternative assemblies for an accession that
-    was missing have been downloaded
-    """
+    """Report to logger if alternative assemblies were downloaded."""
     for vid in accessiondict[accession.split('.')[0]]:
         if vid in skippedlist:
             status = "NOT DOWNLOADED"
@@ -490,6 +515,7 @@ def logreport_downloaded(accession, skippedlist, accessiondict, uidaccdict):
             status = "DOWNLOADED"
         logger.warning("\t\t%s: %s - %s",
                        vid, uidaccdict[vid], status)
+
 
 # Run as script
 if __name__ == '__main__':
@@ -508,14 +534,14 @@ if __name__ == '__main__':
     if args.logfile is not None:
         try:
             logstream = open(args.logfile, 'w')
-            err_handler_file = logging.StreamHandler(logstream)
-            err_handler_file.setFormatter(err_formatter)
-            err_handler_file.setLevel(logging.INFO)
-            logger.addHandler(err_handler_file)
-        except:
+        except IOError:
             logger.error("Could not open %s for logging",
                          args.logfile)
             sys.exit(1)
+        err_handler_file = logging.StreamHandler(logstream)
+        err_handler_file.setFormatter(err_formatter)
+        err_handler_file.setLevel(logging.INFO)
+        logger.addHandler(err_handler_file)
 
     # Do we need verbosity?
     if args.verbose:
