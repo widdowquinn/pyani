@@ -17,7 +17,7 @@ from . import pyani_config, download
 from Bio import SeqIO
 
 # EXCEPTIONS
-#============
+# ==========
 
 # General exception for scripts
 
@@ -38,7 +38,7 @@ def last_exception():
 
 
 # CLASSES
-#=========
+# =======
 
 # Class to hold ANI dataframe results
 class ANIResults(object):
@@ -149,7 +149,7 @@ class BLASTcmds(object):
 
 
 # UTILITY FUNCTIONS
-#===================
+# =================
 
 # Make a dictionary of assembly download info
 def make_asm_dict(taxon_ids, retries):

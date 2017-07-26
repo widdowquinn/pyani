@@ -49,7 +49,7 @@ def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
 
     We expect NUCmer to return a string on STDERR as
 
-    nucmer 
+    nucmer
     NUCmer (NUCleotide MUMmer) version 3.1
     """
     cmdline = "nucmer -V"

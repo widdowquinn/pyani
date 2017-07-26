@@ -14,12 +14,10 @@
 #            generating-a-png-with-matplotlib-when-display-is-undefined
 # This needs to be done before importing pyplot
 
+from . import pyani_config
+
 from math import floor, log10
 import warnings
-
-import matplotlib
-# Specify matplotlib backend
-matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -32,7 +30,9 @@ import scipy.spatial.distance as distance
 import seaborn as sns
 import pandas as pd
 
-from . import pyani_config
+import matplotlib
+# Specify matplotlib backend
+matplotlib.use('Agg')
 
 
 # Register Matplotlib colourmaps

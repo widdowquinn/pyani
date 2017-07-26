@@ -46,7 +46,7 @@ THE SOFTWARE.
 import sqlite3
 
 # SQL SCRIPTS
-#==============
+# ============
 # The following is SQL for various database admin tasks, defined here to
 # be out of the way when reading code.
 
@@ -109,7 +109,7 @@ SQL_CREATEDB = """
                              PRIMARY KEY (run_id, genome_id),
                              FOREIGN KEY(run_id) REFERENCES
                                                    runs(run_id),
-                             FOREIGN KEY(genome_id) REFERENCES 
+                             FOREIGN KEY(genome_id) REFERENCES
                                                       genomes(genome_id)
                             );
    DROP TABLE IF EXISTS comparisons;
