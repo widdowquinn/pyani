@@ -398,7 +398,7 @@ def calculate_anim(infiles, org_lengths):
                 logger.info("(using %d worker threads, if available)",
                             args.workers)
             cumval = run_mp.run_dependency_graph(joblist,
-                                                 workers=args.workers, 
+                                                 workers=args.workers,
                                                  logger=logger)
             logger.info("Cumulative return value: %d", cumval)
             if 0 < cumval:
@@ -525,22 +525,11 @@ def unified_anib(infiles, org_lengths):
                                'fraglengths.json'), 'w') as outfile:
             json.dump(fraglengths, outfile)
 
-        # Which executables are we using?
-        #if args.method == "ANIblastall":
-        #    format_exe = args.formatdb_exe
-        #    blast_exe = args.blastall_exe
-        #else:
-        #    format_exe = args.makeblastdb_exe
-        #    blast_exe = args.blastn_exe
-
         # Run BLAST database-building and executables from a jobgraph
         logger.info("Creating job dependency graph")
         jobgraph = anib.make_job_graph(infiles, fragfiles,
                                        anib.make_blastcmd_builder(args.method,
                                                                   blastdir))
-        #jobgraph = anib.make_job_graph(infiles, fragfiles, blastdir,
-        #                               format_exe, blast_exe, args.method,
-        #                               jobprefix=args.jobprefix)
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             logger.info("Running job dependency graph")
@@ -585,7 +574,7 @@ def unified_anib(infiles, org_lengths):
 
     # Return processed BLAST data
     return data
-               
+
 
 # Write ANIb/ANIm/TETRA output
 def write(results):
@@ -606,7 +595,6 @@ def write(results):
         if args.write_excel:
             results.to_excel(out_excel, index=True)
         results.to_csv(out_csv, index=True, sep="\t")
-            
     else:
         for dfr, filestem in results.data:
             out_excel = os.path.join(args.outdirname, filestem) + '.xlsx'
@@ -616,7 +604,7 @@ def write(results):
                 dfr.to_excel(out_excel, index=True)
             dfr.to_csv(out_csv, index=True, sep="\t")
 
-            
+
 # Draw ANIb/ANIm/TETRA output
 def draw(filestems, gformat):
     """Draw ANIb/ANIm/TETRA results
@@ -657,7 +645,7 @@ def subsample_input(infiles):
         logger.error("--subsample must be int or float, got %s (exiting)",
                      type(args.subsample))
         sys.exit(1)
-    if samplesize <= 0: # Not a positive value
+    if samplesize <= 0:  # Not a positive value
         logger.error("--subsample must be positive value, got %s",
                      str(args.subsample))
         sys.exit(1)
@@ -725,7 +713,7 @@ if __name__ == '__main__':
     if args.outdirname is None:
         logger.error("No output directory name (exiting)")
         sys.exit(1)
-    if args.rerender: # Rerendering, we want to overwrite graphics
+    if args.rerender:  # Rerendering, we want to overwrite graphics
         args.force, args.noclobber = True, True
     make_outdir()
     logger.info("Output directory: %s", args.outdirname)
@@ -734,7 +722,7 @@ if __name__ == '__main__':
     # or output directory. If we have any, abort here and now.
     filenames = [args.outdirname] + os.listdir(args.indirname)
     for fname in filenames:
-        if ' ' in  os.path.abspath(fname):
+        if ' ' in os.path.abspath(fname):
             logger.error("File or directory '%s' contains whitespace", fname)
             logger.error("This will cause issues with MUMmer and BLAST")
             logger.error("(exiting)")
@@ -744,7 +732,7 @@ if __name__ == '__main__':
         logger.error("Missing labels file: %s", args.labels)
         sys.exit(1)
     if args.classes and not os.path.isfile(args.classes):
-        logger.error("Missing classes file: %s",args.classes)
+        logger.error("Missing classes file: %s", args.classes)
         sys.exit(1)
 
     # Have we got a valid method choice?
@@ -774,7 +762,7 @@ if __name__ == '__main__':
             logger.error("Valid schedulers are: %s", '; '.join(schedulers))
             sys.exit(1)
         logger.info("Using scheduler method: %s", args.scheduler)
-        
+
         # Get input files
         logger.info("Identifying FASTA files in %s", args.indirname)
         infiles = pyani_files.get_fasta_files(args.indirname)
@@ -812,4 +800,4 @@ if __name__ == '__main__':
 
     # Report that we've finished
     logger.info("Done: %s.", time.asctime())
-    logger.info("Time taken: %.2fs", (time.time() - t0)) 
+    logger.info("Time taken: %.2fs", (time.time() - t0))

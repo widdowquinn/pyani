@@ -89,6 +89,7 @@ def last_exception():
     return ''.join(traceback.format_exception(exc_type, exc_value,
                                               exc_traceback))
 
+
 # Set contact email for NCBI
 def set_ncbi_email():
     """Set contact email for NCBI."""
@@ -134,6 +135,7 @@ def make_outdir():
             logger.error(last_exception)
             sys.exit(1)
 
+            
 # Retry Entrez requests (or any other function)
 def entrez_retry(func, *fnargs, **fnkwargs):
     """Retries the passed function up to the number of times specified
@@ -324,7 +326,7 @@ def retrieve_asm_contigs(filestem,
     gc, aa, an = tuple(filestem.split('_', 2))
     aaval = aa.split('.')[0]
     subdirs = '/'.join([aa[i:i+3] for i in range(0, len(aaval), 3)])
-               
+
     url = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gc, subdirs,
                                            filestem, suffix)
     logger.info("Using URL: %s", url)
@@ -379,17 +381,6 @@ def retrieve_asm_contigs(filestem,
 
     # Extract data
     ename = os.path.splitext(outfname)[0]  # Strips only .gz from filename
-    # The code below would munge the extracted filename to suit the expected
-    # class/label from the old version of this script.
-    # The .gz file downloaded from NCBI has format
-    # <assembly UID>_<string>_genomic.fna.gz - which we would extract to
-    # <assembly UID>.fna
-    #regex = ".{3}_[0-9]{9}.[0-9]"
-    #outparts = os.path.split(outfname)
-    #print(outparts[0])
-    #print(re.match(regex, outparts[-1]).group())
-    #ename = os.path.join(outparts[0],
-    #                     re.match(regex, outparts[-1]).group() + '.fna')
     if os.path.exists(ename):
         logger.warning("Output file %s exists, not extracting", ename)
     else:
@@ -425,18 +416,15 @@ def write_contigs(asm_uid, contig_uids, batchsize=10000):
     asm_record = Entrez.read(entrez_retry(Entrez.esummary, db='assembly',
                                           id=asm_uid, rettype='text'),
                              validate=False)
-    asm_organism = asm_record['DocumentSummarySet']['DocumentSummary']\
-                   [0]['SpeciesName']
+    asm_smry = asm_record['DocumentSummarySet']['DocumentSummary'][0]
+    asm_organism = asm_smry['SpeciesName']
     try:
-        asm_strain = asm_record['DocumentSummarySet']['DocumentSummary']\
-                     [0]['Biosource']['InfraspeciesList'][0]['Sub_value']
+        asm_strain = asm_smry['Biosource']['InfraspeciesList'][0]['Sub_value']
     except KeyError:
         asm_strain = ""
     # Assembly UID (long form) for the output filename
     outfilename = "%s.fasta" % os.path.join(args.outdirname,
-                                            asm_record['DocumentSummarySet']\
-                                            ['DocumentSummary']\
-                                            [0]['AssemblyAccession'])
+                                            asm_smry['AssemblyAccession'])
 
     # Create label and class strings
     genus, species = asm_organism.split(' ', 1)

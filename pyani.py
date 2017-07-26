@@ -50,16 +50,3 @@ from pyani.scripts import pyani_script
 
 if __name__ == '__main__':
     sys.exit(pyani_script.run_main())
-
-
-
-
-
-
-
-
-
-
-
-
-
