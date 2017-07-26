@@ -215,7 +215,7 @@ def build_parser_index(subps, parents=None):
     parser.set_defaults(func=subcommands.subcmd_index)
 
 
-def build_parser_createdb(subparsers, parents=None):
+def build_parser_createdb(subps, parents=None):
     """Returns a command-line parser for the createdb subcommand
     """
     parser = subps.add_parser('createdb', parents=parents,
