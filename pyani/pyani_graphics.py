@@ -19,20 +19,17 @@ from . import pyani_config
 from math import floor, log10
 import warnings
 
-import numpy as np
-
-import scipy.cluster.hierarchy as sch
-import scipy.spatial.distance as distance
-
-import seaborn as sns
-import pandas as pd
-
-import matplotlib
 # Specify matplotlib backend. This *must* be done before pyplot import, but
 # raises errors with flake8 etc. So we comment out the specific error
+import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt            # noqa: E402
 import matplotlib.gridspec as gridspec     # noqa: E402
+import numpy as np                         # noqa: E402
+import scipy.cluster.hierarchy as sch      # noqa: E402
+import scipy.spatial.distance as distance  # noqa: E402
+import seaborn as sns                      # noqa: E402
+import pandas as pd                        # noqa: E402
 
 
 # Register Matplotlib colourmaps
