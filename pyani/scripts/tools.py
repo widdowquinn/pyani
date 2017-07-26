@@ -52,19 +52,19 @@ import traceback
 
 from .. import download
 
-# EXCEPTIONS
-#============
 
+# EXCEPTIONS
+# ==========
 # General errors that occur in a script
 class PyaniScriptException(Exception):
     """General exception for pyani.py script"""
     def __init__(self, msg="Error in pyani.py script"):
         Exception.__init__(self, msg)
-        
+
 
 # UTILITY FUNCTIONS
-#===================   
-        
+# =================
+
 # Create a directory (handling force/noclobber options)
 def make_outdir(outdir, force, noclobber, logger):
     """Create output directory (allows for force and noclobber).
@@ -127,4 +127,3 @@ def download_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout,
         dlstatus.skipped = True
 
     return dlstatus
-

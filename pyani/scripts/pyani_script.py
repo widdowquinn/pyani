@@ -48,6 +48,7 @@ from .parsers import parse_cmdline
 from .. import __version__
 from ..pyani_tools import last_exception
 
+
 # Main function
 def run_main(namespace=None):
     """Main process for pyani.py script."""
@@ -61,7 +62,7 @@ def run_main(namespace=None):
     if len(sys.argv) == 1:
         sys.stderr.write("pyani version: {0}\n".format(__version__))
         return 0
-        
+
     # Set up logging
     logger = logging.getLogger('labbook.py: %s' % time.asctime())
     time0 = time.time()

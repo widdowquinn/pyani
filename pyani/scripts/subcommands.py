@@ -77,11 +77,11 @@ def subcmd_download(args, logger):
     """
     # Create output directory, respecting force/noclobber
     tools.make_outdir(args.outdir, args.force, args.noclobber, logger)
-    
+
     # Set Entrez email
     download.set_ncbi_email(args.email)
     logger.info("Setting Entrez email address: %s", args.email)
-    
+
     # Get list of taxon IDs to download
     taxon_ids = download.split_taxa(args.taxon)
     logger.info("Taxon IDs received: %s", taxon_ids)
@@ -89,7 +89,7 @@ def subcmd_download(args, logger):
     # Get assembly UIDs for each taxon
     asm_dict = tools.make_asm_dict(taxon_ids, args.retries)
     for tid, uids in asm_dict.items():
-        logger.info("Taxon ID summary\n\tQuery: " +\
+        logger.info("Taxon ID summary\n\tQuery: " +
                     "%s\n\tasm count: %s\n\tUIDs: %s", tid, len(uids), uids)
 
     # Compile outputs to write class and label files, and a list of
@@ -110,7 +110,7 @@ def subcmd_download(args, logger):
     for tid, uids in asm_dict.items():
         logger.info("Downloading contigs for Taxon ID %s", tid)
         for uid in uids:
-            # Obtain eSummary            
+            # Obtain eSummary
             logger.info("Get eSummary information for UID %s", uid)
             esummary, filestem = download.get_ncbi_esummary(uid, args.retries)
             uid_class = download.get_ncbi_classification(esummary)
@@ -130,13 +130,13 @@ def subcmd_download(args, logger):
             labeltxt, classtxt = download.create_labels(uid_class, filestem)
             classes.append(classtxt)
             labels.append(labeltxt)
-            logger.info("Label and class file entries\n" + 
+            logger.info("Label and class file entries\n" +
                         "\tLabel: %s\n\tClass: %s", labeltxt, classtxt)
-    
+
             # Obtain URLs, trying the RefSeq filestem first, then GenBank if
             # there's a failure
-            ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all"
-            suffix="genomic.fna.gz"
+            ftpstem = "ftp://ftp.ncbi.nlm.nih.gov/genomes/all"
+            suffix = "genomic.fna.gz"
             logger.info("Retrieving URLs for %s", filestem)
             # Try RefSeq first
             dlstatus = tools.download_genome_and_hash(filestem, suffix,
@@ -176,7 +176,8 @@ def subcmd_download(args, logger):
             if hashstatus.passed:
                 logger.info("MD5 hash check passed")
             else:
-                logger.warning("MD5 hash check failed. Please check and retry.")
+                logger.warning("MD5 hash check failed. " +
+                               "Please check and retry.")
 
             # Extract downloaded files
             ename = os.path.splitext(dlstatus.outfname)[0]
@@ -194,7 +195,7 @@ def subcmd_download(args, logger):
             with open(hashfname, "w") as hfh:
                 hfh.write('\t'.join([download.create_hash(ename),
                                      ename]) + '\n')
-                
+
     # Write class and label files
     classfname = os.path.join(args.outdir, args.classfname)
     logger.info("Writing classes file to %s", classfname)
@@ -203,7 +204,7 @@ def subcmd_download(args, logger):
     else:
         with open(classfname, "w") as ofh:
             ofh.write('\n'.join(classes) + '\n')
-    
+
     labelfname = os.path.join(args.outdir, args.labelfname)
     logger.info("Writing labels file to %s", labelfname)
     if os.path.exists(labelfname) and noclobber:
@@ -267,7 +268,7 @@ def subcmd_createdb(args, logger):
     # Create the empty database
     logger.info("Creating pyani database at %s", args.dbpath)
     pyani_db.create_db(args.dbpath)
-    
+
 
 def subcmd_anim(args, logger):
     """Perform ANIm on all genome files in an input directory.
@@ -297,13 +298,13 @@ def subcmd_anim(args, logger):
     """
     # Announce the analysis
     logger.info("Running ANIm analysis")
-    
+
     # Add info for this analysis to the database
     logger.info("Adding analysis information to database %s", args.dbpath)
     run_id = pyani_db.add_run(args.dbpath, "ANIm", args.cmdline,
                               datetime.datetime.now().isoformat(), "started")
     logger.info("Current analysis has ID %s in this database", run_id)
-    
+
     # Identify input files for comparison, and populate the database
     logger.info("Identifying input genome/hash files:")
     infiles = pyani_files.get_fasta_and_hash_paths(args.indir)
@@ -343,7 +344,7 @@ def subcmd_anim(args, logger):
         # Populate the linker table associating each run with the genome IDs
         # for that run
         pyani_db.add_genome_to_run(args.dbpath, run_id, genome_id)
-        
+
     # Generate commandlines for NUCmer analysis and output compression
     logger.info("Generating ANIm command-lines")
     deltadir = os.path.join(os.path.join(args.outdir,
@@ -358,7 +359,7 @@ def subcmd_anim(args, logger):
         logger.error("Could not create output directory (exiting)")
         logger.error(last_exception())
         raise SystemError(1)
-    
+
     # Get list of genome IDs for this analysis from the database
     genome_ids = pyani_db.get_genome_ids_by_run(args.dbpath, run_id)
     logger.info("Genome IDs for analysis with ID %s:\n\t%s",
@@ -404,7 +405,6 @@ def subcmd_anim(args, logger):
         # Create joblist of NUCmer command-lines
         joblist = [pyani_jobs.Job("%s_%06d" % (args.jobprefix, idx), cmd) for
                    idx, cmd in enumerate(cmdlines)]
-        
 
         # Pass commands to the appropriate scheduler
         if args.scheduler == 'multiprocessing':
@@ -450,7 +450,7 @@ def subcmd_anim(args, logger):
                                               maxmatch=args.maxmatch)
             logger.info("Added ID %s vs %s, as comparison %s",
                         comp.query_id, comp.subject_id, comp_id)
-            
+
 
 def subcmd_anib(args, logger):
     """Perform ANIm on all genome files in an input directory.
@@ -468,7 +468,8 @@ def subcmd_render(args, logger):
     """Visualise ANI results for an analysis.
     """
     raise NotImplementedError
-            
+
+
 # Classify input genomes on basis of ANI coverage and identity output
 def subcmd_classify(args, logger):
     """Take pyani output, and generate of classifications of the input data.

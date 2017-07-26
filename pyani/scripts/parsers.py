@@ -67,7 +67,7 @@ def build_parser_common():
                         help='logfile location')
     parser.add_argument('-v', '--verbose', action='store_true',
                         dest='verbose', default=False,
-                        help='report verbose progress to log')    
+                        help='report verbose progress to log')
     return parser
 
 
@@ -101,9 +101,8 @@ def build_parser_scheduler():
     return parser
 
 
-
 # Subcommand parsers
-def build_parser_download(subparsers, parents=None):
+def build_parser_download(subps, parents=None):
     """Returns a command-line parser for the download subcommand
 
     The download subcommand takes specific arguments:
@@ -118,9 +117,8 @@ def build_parser_download(subparsers, parents=None):
     --labels    (path to write labels file)
     --classes   (path to write classes file)
     """
-    parser = subparsers.add_parser('download', parents=parents,
-                                   formatter_class=\
-                                   ArgumentDefaultsHelpFormatter)
+    parser = subps.add_parser('download', parents=parents,
+                              formatter_class=ArgumentDefaultsHelpFormatter)
     # Required positional argument: output directory
     parser.add_argument(action='store',
                         dest='outdir', default=None,
@@ -138,8 +136,7 @@ def build_parser_download(subparsers, parents=None):
     # Arguments controlling connection to NCBI for download
     parser.add_argument("--retries", dest="retries",
                         action="store", default=20,
-                        help="Number of Entrez retry attempts per " +\
-                        "request")
+                        help="Number of Entrez retry attempts per request")
     parser.add_argument("--batchsize", dest="batchsize",
                         action="store", default=10000,
                         help="Entrez record return batch size")
@@ -163,7 +160,7 @@ def build_parser_download(subparsers, parents=None):
     parser.set_defaults(func=subcommands.subcmd_download)
 
 
-def build_parser_classify(subparsers, parents=None):
+def build_parser_classify(subps, parents=None):
     """Returns a command-line parser for the classify subcommand
 
     The classify subcommand takes specific arguments:
@@ -174,9 +171,8 @@ def build_parser_classify(subparsers, parents=None):
     --id_min        (minimum identity threshold for an edge)
     --resolution    (number of identity thresholds to test)
     """
-    parser = subparsers.add_parser('classify', parents=parents,
-                                   formatter_class=\
-                                   ArgumentDefaultsHelpFormatter)
+    parser = subps.add_parser('classify', parents=parents,
+                              formatter_class=ArgumentDefaultsHelpFormatter)
     # Required positional argument: input directory
     parser.add_argument(action='store',
                         dest='indir', default=None,
@@ -201,18 +197,17 @@ def build_parser_classify(subparsers, parents=None):
                         action='store', type=int, default=1500,
                         help='number of identity thresholds to test')
     parser.set_defaults(func=subcommands.subcmd_classify)
-    
 
-def build_parser_index(subparsers, parents=None):
+
+def build_parser_index(subps, parents=None):
     """Returns a command-line parser for the index subcommand
 
     The index subcommand takes a single positional argument:
 
     indir           (directory containing input genome sequence files)
     """
-    parser = subparsers.add_parser('index', parents=parents,
-                                   formatter_class=\
-                                   ArgumentDefaultsHelpFormatter)
+    parser = subps.add_parser('index', parents=parents,
+                              formatter_class=ArgumentDefaultsHelpFormatter)
     # Required positional argument: input directory
     parser.add_argument(action='store',
                         dest='indir', default=None,
@@ -223,9 +218,8 @@ def build_parser_index(subparsers, parents=None):
 def build_parser_createdb(subparsers, parents=None):
     """Returns a command-line parser for the createdb subcommand
     """
-    parser = subparsers.add_parser('createdb', parents=parents,
-                                   formatter_class=\
-                                   ArgumentDefaultsHelpFormatter)
+    parser = subps.add_parser('createdb', parents=parents,
+                              formatter_class=ArgumentDefaultsHelpFormatter)
     # Path to database (default: .pyani/pyanidb)
     parser.add_argument("--dbpath", action='store',
                         dest='dbpath', default='.pyani/pyanidb',
@@ -236,12 +230,11 @@ def build_parser_createdb(subparsers, parents=None):
     parser.set_defaults(func=subcommands.subcmd_createdb)
 
 
-def build_parser_anim(subparsers, parents=None):
+def build_parser_anim(subps, parents=None):
     """Returns a command-line parser for the anim subcommand
     """
-    parser = subparsers.add_parser('anim', parents=parents,
-                                   formatter_class=\
-                                   ArgumentDefaultsHelpFormatter)
+    parser = subps.add_parser('anim', parents=parents,
+                              formatter_class=ArgumentDefaultsHelpFormatter)
     # Required positional arguments: input and output directories
     parser.add_argument(action='store',
                         dest='indir', default=None,
@@ -258,37 +251,34 @@ def build_parser_anim(subparsers, parents=None):
                         help="path to NUCmer executable")
     parser.add_argument("--maxmatch", dest="maxmatch",
                         action="store_true", default=False,
-                        help="Override MUMmer to allow all NUCmer matches")    
+                        help="Override MUMmer to allow all NUCmer matches")
     parser.set_defaults(func=subcommands.subcmd_anim)
 
 
-def build_parser_anib(subparsers, parents=None):
+def build_parser_anib(subps, parents=None):
     """Returns a command-line parser for the anib subcommand
     """
-    parser = subparsers.add_parser('anib', parents=parents,
-                                   formatter_class=\
-                                   ArgumentDefaultsHelpFormatter)
+    parser = subps.add_parser('anib', parents=parents,
+                              formatter_class=ArgumentDefaultsHelpFormatter)
     parser.set_defaults(func=subcommands.subcmd_anib)
 
 
-def build_parser_aniblastall(subparsers, parents=None):
+def build_parser_aniblastall(subps, parents=None):
     """Returns a command-line parser for the aniblastall subcommand
     """
-    parser = subparsers.add_parser('aniblastall', parents=parents,
-                                   formatter_class=\
-                                   ArgumentDefaultsHelpFormatter)
+    parser = subps.add_parser('aniblastall', parents=parents,
+                              formatter_class=ArgumentDefaultsHelpFormatter)
     parser.set_defaults(func=subcommands.subcmd_aniblastall)
 
 
-def build_parser_render(subparsers, parents=None):
+def build_parser_render(subps, parents=None):
     """Returns a command-line parser for the render subcommand
     """
-    parser = subparsers.add_parser('render', parents=parents,
-                                   formatter_class=\
-                                   ArgumentDefaultsHelpFormatter)
+    parser = subps.add_parser('render', parents=parents,
+                              formatter_class=ArgumentDefaultsHelpFormatter)
     parser.set_defaults(func=subcommands.subcmd_render)
-    
-    
+
+
 # Process command-line
 def parse_cmdline():
     """Parse command-line arguments for script.
@@ -322,6 +312,6 @@ def parse_cmdline():
                                                   parser_scheduler])
     build_parser_render(subparsers, parents=[parser_common])
     build_parser_classify(subparsers, parents=[parser_common])
-    
+
     # Parse arguments
     return parser_main.parse_args()
