@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""subcommands.py
-
-Provides subcommand functions for the pyani.py script, and some helper
+"""Module providing subcommand functions for pyani.py script.
 
 - download:      download assemblies from NCBI
 - classify:      classify ANI results
@@ -51,16 +49,15 @@ THE SOFTWARE.
 
 import datetime
 import os
-import shutil
 import sqlite3
 
 from collections import namedtuple
 from itertools import combinations
 
-from .. import (__version__, download, anim,
+from .. import (download, anim, run_sge,
                 pyani_tools, pyani_db, pyani_files, pyani_jobs)
 from ..pyani_config import ALIGNDIR
-from ..pyani_tools import last_exception, get_genome_length
+from ..pyani_tools import last_exception
 from .. import run_multiprocessing as run_mp
 
 from . import tools
@@ -73,8 +70,7 @@ Comparison = namedtuple("Comparison",
 
 # Download sequence/class/label data from NCBI
 def subcmd_download(args, logger):
-    """Download all assembled genomes in the subtree of a passed NCBI taxon ID
-    """
+    """Download assembled genomes in subtree of passed NCBI taxon ID."""
     # Create output directory, respecting force/noclobber
     tools.make_outdir(args.outdir, args.force, args.noclobber, logger)
 
@@ -199,7 +195,7 @@ def subcmd_download(args, logger):
     # Write class and label files
     classfname = os.path.join(args.outdir, args.classfname)
     logger.info("Writing classes file to %s", classfname)
-    if os.path.exists(classfname) and noclobber:
+    if os.path.exists(classfname) and args.noclobber:
         logger.warning("Class file %s exists, not overwriting", classfname)
     else:
         with open(classfname, "w") as ofh:
@@ -207,7 +203,7 @@ def subcmd_download(args, logger):
 
     labelfname = os.path.join(args.outdir, args.labelfname)
     logger.info("Writing labels file to %s", labelfname)
-    if os.path.exists(labelfname) and noclobber:
+    if os.path.exists(labelfname) and args.noclobber:
         logger.warning("Labels file %s exists, not overwriting", labelfname)
     else:
         with open(labelfname, "w") as ofh:
@@ -453,25 +449,21 @@ def subcmd_anim(args, logger):
 
 
 def subcmd_anib(args, logger):
-    """Perform ANIm on all genome files in an input directory.
-    """
+    """Perform ANIm on all genome files in an input directory."""
     raise NotImplementedError
 
 
 def subcmd_aniblastall(args, logger):
-    """Perform ANIm on all genome files in an input directory.
-    """
+    """Perform ANIm on all genome files in an input directory."""
     raise NotImplementedError
 
 
 def subcmd_render(args, logger):
-    """Visualise ANI results for an analysis.
-    """
+    """Visualise ANI results for an analysis."""
     raise NotImplementedError
 
 
 # Classify input genomes on basis of ANI coverage and identity output
 def subcmd_classify(args, logger):
-    """Take pyani output, and generate of classifications of the input data.
-    """
+    """Generate classifications for an analysis."""
     raise NotImplementedError

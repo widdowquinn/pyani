@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tools.py
-
-This module provides functions in support of the pyani command-line scripts
+"""Module providing functions in support of the pyani command-line scripts.
 
 (c) The James Hutton Institute 2016-2017
 Author: Leighton Pritchard
@@ -42,13 +40,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import logging
 import os
 import re
 import shutil
-import sys
-import time
-import traceback
 
 from .. import download
 
@@ -57,8 +51,10 @@ from .. import download
 # ==========
 # General errors that occur in a script
 class PyaniScriptException(Exception):
-    """General exception for pyani.py script"""
+    """General exception for pyani.py script."""
+
     def __init__(self, msg="Error in pyani.py script"):
+        """Insantiate exception."""
         Exception.__init__(self, msg)
 
 
@@ -82,8 +78,8 @@ def make_outdir(outdir, force, noclobber, logger):
     if os.path.isdir(outdir):
         logger.warning("Output directory %s exists", outdir)
         if not force:
-            raise PyaniException("Will not modify existing directory %s" %
-                                 outdir)
+            raise PyaniScriptException("Will not modify existing directory " +
+                                       "%s" % outdir)
         elif force and not noclobber:
             # Delete old directory and start again
             logger.warning("Overwrite forced. Removing %s and everything " +
