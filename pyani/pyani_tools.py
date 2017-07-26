@@ -20,12 +20,15 @@ from Bio import SeqIO
 #============
 
 # General exception for scripts
+
+
 class PyaniException(Exception):
     """General exception for pyani"""
+
     def __init__(self, msg="Error in pyani module"):
         Exception.__init__(self, msg)
 
-        
+
 # Report last exception as string
 def last_exception():
     """Returns last exception as a string, or use in logging."""
@@ -40,6 +43,7 @@ def last_exception():
 # Class to hold ANI dataframe results
 class ANIResults(object):
     """Holds ANI dataframe results."""
+
     def __init__(self, labels, mode):
         """Initialise with four empty, labelled dataframes."""
         self.alignment_lengths = pd.DataFrame(index=labels, columns=labels,
@@ -91,7 +95,7 @@ class ANIResults(object):
         return zip((self.alignment_lengths, self.percentage_identity,
                     self.alignment_coverage, self.similarity_errors,
                     self.hadamard), stemdict[self.mode])
-        #return [(self.alignment_lengths, "ANIm_alignment_lengths"),
+        # return [(self.alignment_lengths, "ANIm_alignment_lengths"),
         #        (self.percentage_identity, "ANIm_percentage_identity"),
         #        (self.alignment_coverage, "ANIm_alignment_coverage"),
         #        (self.similarity_errors, "ANIm_similarity_errors"),
@@ -101,6 +105,7 @@ class ANIResults(object):
 # Class to hold BLAST functions
 class BLASTfunctions(object):
     """Class to hold BLAST functions."""
+
     def __init__(self, db_func, blastn_func):
         self.db_func = db_func
         self.blastn_func = blastn_func
@@ -109,6 +114,7 @@ class BLASTfunctions(object):
 # Class to hold BLAST executables
 class BLASTexes(object):
     """Class to hold BLAST functions."""
+
     def __init__(self, format_exe, blast_exe):
         self.format_exe = format_exe
         self.blast_exe = blast_exe
@@ -119,6 +125,7 @@ class BLASTcmds(object):
     """Class to hold BLAST command data for construction of BLASTN and
     database formatting commands.
     """
+
     def __init__(self, funcs, exes, prefix, outdir):
         self.funcs = funcs
         self.exes = exes
@@ -142,7 +149,7 @@ class BLASTcmds(object):
 
 
 # UTILITY FUNCTIONS
-#===================   
+#===================
 
 # Make a dictionary of assembly download info
 def make_asm_dict(taxon_ids, retries):
@@ -182,11 +189,10 @@ def get_labels(filename, logger=None):
                 else:
                     labeldict[key] = label
     return labeldict
-    
+
 
 # Return the total length of sequences in a passed FASTA file
 def get_genome_length(filename):
     """Returns the total length of all sequences in a FASTA file."""
     with open(filename, 'r') as ifh:
         return sum([len(record) for record in SeqIO.parse(ifh, 'fasta')])
-        
