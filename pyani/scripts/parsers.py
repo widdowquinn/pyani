@@ -268,8 +268,25 @@ def build_parser_report(subps, parents=None):
     """Return a command-line parser for the report subcommand."""
     parser = subps.add_parser('report', parents=parents,
                               formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.set_defaults(func=subcommands.subcmd_render)
-
+    # Required positional argument: output directory
+    parser.add_argument(action='store',
+                        dest='outdir', default=None,
+                        help='output analysis results directory')
+    # Optional arguments
+    parser.add_argument("--dbpath", action='store',
+                        dest='dbpath', default='.pyani/pyanidb',
+                        help='path to pyani database')    
+    parser.add_argument("--runs", action="store_true",
+                        dest="show_runs", default=False,
+                        help="Report table of analysis runs in database")
+    parser.add_argument("--genomes", action="store_true",
+                        dest="show_genomes", default=False,
+                        help="Report table of genomes in database")
+    parser.add_argument("--formats", dest="formats",
+                        action="store", default=None,
+                        help="Output formats, in addition to plain text")
+    parser.set_defaults(func=subcommands.subcmd_report)
+    
 
 # Process command-line
 def parse_cmdline():

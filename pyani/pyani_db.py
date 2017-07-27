@@ -186,13 +186,26 @@ SQL_ADDCOMPARISON = """
      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 """
 
-
 # Get a comparison (if it exists)
 SQL_GETCOMPARISON = """
    SELECT * FROM comparisons WHERE query_id=? AND subject_id=? AND
                                    program=? AND version=? AND
                                    fragsize=? AND maxmatch=?;
 """
+
+# Get all analysis runs
+SQL_GETALLRUNS = """
+   SELECT run_id, method, date FROM runs;
+"""
+
+# Get all genomes from the database
+SQL_GETALLGENOMES = """
+   SELECT genome_id, description, path, hash, length FROM genomes;
+"""
+
+
+# DATABASE INTERACTIONS
+# =====================
 
 
 # Create an empty pyani SQLite3 database
@@ -315,4 +328,26 @@ def get_comparison(dbpath, qid, sid, program, version,
         cur.execute(SQL_GETCOMPARISON, (qid, sid, program, version,
                                         fragsize, maxmatch))
         result = cur.fetchone()
+    return result
+
+
+# Return a table of all runs in the database
+def get_all_runs(dbpath):
+    """Return a table of all runs in the database."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETALLRUNS)
+        result = cur.fetchall()
+    return result
+
+
+# Return a table of all runs in the database
+def get_all_genomes(dbpath):
+    """Return a table of all genomes in the database."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETALLGENOMES)
+        result = cur.fetchall()
     return result

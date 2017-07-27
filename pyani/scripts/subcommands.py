@@ -55,7 +55,7 @@ from collections import namedtuple
 from itertools import combinations
 
 from .. import (download, anim, run_sge,
-                pyani_tools, pyani_db, pyani_files, pyani_jobs)
+                pyani_tools, pyani_db, pyani_files, pyani_jobs, pyani_report)
 from ..pyani_config import ALIGNDIR
 from ..pyani_tools import last_exception
 from .. import run_multiprocessing as run_mp
@@ -458,10 +458,42 @@ def subcmd_aniblastall(args, logger):
     raise NotImplementedError
 
 
-def subcmd_render(args, logger):
-    """Visualise ANI results for an analysis."""
-    raise NotImplementedError
+def subcmd_report(args, logger):
+    """Present report on ANI results and/or database contents.
 
+    The report subcommand takes any of several long options that do one of two
+    things: 
+
+    1. perform a single action.
+    2. set a parameter/format
+
+    These will typically take an output path to a file or directory into which
+    the report will be written (whatever form it takes). By default, text
+    output is written in plain text format, but for some outputs this can
+    be modified by a --excel or --html format specifier, which writes outputs
+    in that format, where possible.
+    """
+    # Output formats will apply across all tabular data requested
+    # Expect comma-separated, and turn them into an iterable
+    if args.formats:
+        formats = ['tab'] + [fmt.strip() for fmt in args.formats.split(',')]
+
+    # Report runs in the database
+    if args.show_runs:  
+        data = pyani_db.get_all_runs(args.dbpath)
+        headers = ['run ID', 'method', 'date run']
+        pyani_report.write_dbtable(data, headers,
+                                   os.path.join(args.outdir, "runs"), formats)
+
+    # Report genomes in the database
+    if args.show_genomes:
+        data = pyani_db.get_all_genomes(args.dbpath)
+        headers = ['genome ID', 'description', 'path',
+                   'MD5 hash', 'genome length']
+        pyani_report.write_dbtable(data, headers,
+                                   os.path.join(args.outdir, "genomes"),
+                                   formats)
+        
 
 # Classify input genomes on basis of ANI coverage and identity output
 def subcmd_classify(args, logger):
