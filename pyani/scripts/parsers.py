@@ -264,9 +264,9 @@ def build_parser_aniblastall(subps, parents=None):
     parser.set_defaults(func=subcommands.subcmd_aniblastall)
 
 
-def build_parser_render(subps, parents=None):
-    """Return a command-line parser for the render subcommand."""
-    parser = subps.add_parser('render', parents=parents,
+def build_parser_report(subps, parents=None):
+    """Return a command-line parser for the report subcommand."""
+    parser = subps.add_parser('report', parents=parents,
                               formatter_class=ArgumentDefaultsHelpFormatter)
     parser.set_defaults(func=subcommands.subcmd_render)
 
@@ -302,7 +302,7 @@ def parse_cmdline():
                                            parser_scheduler])
     build_parser_aniblastall(subparsers, parents=[parser_common,
                                                   parser_scheduler])
-    build_parser_render(subparsers, parents=[parser_common])
+    build_parser_report(subparsers, parents=[parser_common])
     build_parser_classify(subparsers, parents=[parser_common])
 
     # Parse arguments
