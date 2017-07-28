@@ -2,6 +2,7 @@
 
 ## v0.2.3.dev
 
+* fixed `--format` option so that GenBank downloads work again (issue #89)
 * add `--SGEargs` option to `average_nucleotide_identity.py` for custom qsub settings
 * `README.md` badges now clickable
 * `--version` switch added to `average_nucleotide_identity.py`
