@@ -250,7 +250,7 @@ def extract_filestem(data):
 
 
 # Download NCBI assembly file for a passed Assembly UID
-def get_ncbi_asm(asm_uid):
+def get_ncbi_asm(asm_uid, fmt='fasta'):
     """Return the NCBI AssemblyAccession and AssemblyName for an assembly.
 
     Returns organism data for class/label files also, as well
@@ -300,7 +300,7 @@ def get_ncbi_asm(asm_uid):
 
     # Download and extract genome assembly
     try:
-        fastafilename = retrieve_asm_contigs(filestem)
+        fastafilename = retrieve_asm_contigs(filestem, fmt=fmt)
     except NCBIDownloadException:
         # This is a little hacky. Sometimes, RefSeq assemblies are
         # suppressed (presumably because they are non-redundant),
@@ -312,7 +312,7 @@ def get_ncbi_asm(asm_uid):
         logger.warning("Could not download %s, trying %s",
                        filestem, gbfilestem)
         try:
-            fastafilename = retrieve_asm_contigs(gbfilestem)
+            fastafilename = retrieve_asm_contigs(gbfilestem, fmt=fmt)
         except NCBIDownloadException:
             fastafilename = None
 
@@ -322,7 +322,7 @@ def get_ncbi_asm(asm_uid):
 # Download and extract an NCBI assembly file, given a filestem
 def retrieve_asm_contigs(filestem,
                          ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all",
-                         suffix="genomic.fna.gz"):
+                         fmt='fasta'):
     """Download assembly sequence to a local directory.
 
     The filestem corresponds to <AA>_<AN>, where <AA> and <AN> are
@@ -351,6 +351,13 @@ def retrieve_asm_contigs(filestem,
     """
     logger.info("Retrieving assembly sequence for %s", filestem)
 
+    # Define format suffix
+    logger.info("%s format requested", fmt)
+    if fmt == 'fasta':
+        suffix="genomic.fna.gz"
+    elif fmt == 'gbk':
+        suffix = 'genomic.gbff.gz'
+    
     # Compile URL
     gc, aa, an = tuple(filestem.split('_', 2))
     aaval = aa.split('.')[0]
@@ -587,7 +594,8 @@ if __name__ == '__main__':
     skippedlist = []
     for tid, asm_uids in list(asm_dict.items()):
         for uid in asm_uids:
-            fastafilename, classtxt, labeltxt, accession = get_ncbi_asm(uid)
+            (fastafilename, classtxt,
+             labeltxt, accession) = get_ncbi_asm(uid, args.format)
             # fastafilename is None if there was an error thrown
             if fastafilename is not None:
                 contig_dict[uid] = fastafilename
