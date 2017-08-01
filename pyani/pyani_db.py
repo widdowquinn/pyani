@@ -140,6 +140,15 @@ SQL_CREATEDB = """
                              PRIMARY KEY (query_id, subject_id, program,
                                           version, fragsize, maxmatch)
                             );
+   DROP TABLE IF EXISTS runs_comparisons;
+   CREATE TABLE runs_comparisons(run_id INTEGER NOT NULL,
+                                 comparison_id INTEGER NOT NULL,
+                                 PRIMARY KEY (run_id, comparison_id),
+                                 FOREIGN KEY(run_id) REFERENCES
+                                                       runs(run_id),
+                                 FOREIGN KEY(comparison_id) REFERENCES
+                                                    comparisons(comparison_id)
+                            );
    """
 
 # Create indexes on hash in genome table
