@@ -72,6 +72,24 @@ def header_font():
                        ('font-size', 'small')])
 
 
+def colour_identity(series, threshold=0.95, colour="#FF2222"):
+    """Highlight percentage identities over a threshold."""
+    if series.name == 'percentage identity':
+        mask = series >= threshold
+        return ['color: %s' % colour if v else '' for v in mask]
+    else:
+        return ['' for v in series]
+
+
+def colour_coverage(series, threshold=0.95, colour="#FF2222"):
+    """Highlight percent coverage over a threshold."""
+    if 'coverage' in series.name:
+        mask = series >= threshold
+        return ['color: %s' % colour if v else '' for v in mask]
+    else:
+        return ['' for v in series]
+
+
 # Write a dataframe in pyani-styled HTML
 def write_styled_html(path, df, index=None):
     """Add CSS styling to a dataframe and write as HTML.
@@ -86,6 +104,9 @@ def write_styled_html(path, df, index=None):
 
     # Colour rows in alternating shades of blue
     styled = df.style.apply(colour_rows)
+
+    # Colour percentage identity threshold/coverage values > 95% in red
+    styled = styled.apply(colour_identity).apply(colour_coverage)
 
     # Apply styles
     styled = styled.set_table_styles([hover_highlight(),
