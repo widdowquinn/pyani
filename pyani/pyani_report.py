@@ -45,53 +45,66 @@ import os
 import numpy as np
 import pandas as pd
 
+def colour_rows(series, even="#DDECF5", odd="#6CB6E4"):
+    """Colour rows in a dataframe."""
+    is_odd = [row % 2 for row in list(series.index)]
+    return ['background-color: %s' % odd if v
+            else 'background-color: %s' % even for v in is_odd]
 
-def highlight_odd_rows(s):
-    """Highlight odd rows in a dataframe."""
-    print(s)
+
+def hover_highlight(hover_colour="#FFFF99"):
+    """Return HTML style to colour dataframe row when hovering."""
+    return dict(selector="tr:hover",
+                props=[('background-color', '%s' % hover_colour)])
+
+
+def header_font():
+    """Return header HTML font style."""
+    return dict(selector="th",
+                props=[('text-align', 'center'),
+                       ('font-family', 'Helvetica'),
+                       ('font-size', 'small')])
 
 
 # Write a dataframe in pyani-styled HTML
-def write_styled_html(path, index, df):
-    """Add CSS styling to a dataframe."""
-    numeric_col_mask = df.dtypes.apply(lambda d:
-                                       issubclass(np.dtype(d).type,
-                                                  np.number))
-    # Header styles
-    header_styles = dict(selector="th",
-                         props=[('text-align', 'center'),
-                                ('font-family', 'Helvetica')])
-    # Pre-render HTML with styling for dataframe
-    # Set global background and font colour for cells, also cell font
-    df = df.style.set_properties(**{'background-color': 'black',
-                                    'color': 'lawngreen',
-                                    'border-color': 'white',
-                                    'font-family': 'Helvetica',
-                                    'font-size': 'small'})
-    df = df.set_properties(subset=df.columns[numeric_col_mask], 
-                                 **{'width':'10em', 'text-align':'right'})
-    df = df.set_properties(subset=df.columns[~numeric_col_mask],
-                                 **{'width':'10em', 'text-align':'left'})
-    df = df.format(lambda x: '{:,.0f}'.format(x) if
-                   x > 1e3 else '{:,.2f}'.format(x),
-                   subset=pd.IndexSlice[:,
-                                        df.columns[numeric_col_mask]])
-    df = df.set_table_styles([header_styles])
-    html = df.render()
+def write_styled_html(path, df, index=None):
+    """Add CSS styling to a dataframe and write as HTML.
+
+    path       path to write output file
+    df         dataframe to be written out
+    index      column to be set as index (if necessary)
+    """
+    # Reset the index to a specified column
+    if index is not None and index in df.columns:
+        df.set_index(index, inplace=True)
+
+    # Colour rows in alternating shades of blue
+    styled = df.style.apply(colour_rows)
+
+    # Apply styles
+    styled = styled.set_table_styles([hover_highlight(),
+                                      header_font()])
+
+    # Set font to Helvetica
+    styled = styled.set_properties(**{'font-family': 'Helvetica',
+                                      'font-size': 'small'})
+
     # Write styled HTML to path
+    html = styled.render()
     with open(path, 'w') as ofh:
         ofh.write(html)
 
 
 # Write a table returned from the pyani database in the requested format
-def write_dbtable(data, headers, path=None, formats=('tab',)):
+def write_dbtable(data, headers, path=None, formats=('tab',), index=False):
     """Write database result table to output file in named format."""
     df = pd.DataFrame(data)
     df.columns = headers
-    formatdict = {'tab': (df.to_csv, {'sep': '\t'}, '.tab'),
-                  'excel': (df.to_excel, {}, '.xlsx'),
-                  'html': (write_styled_html, {'df': df}, '.html')}
+    formatdict = {'tab': (df.to_csv, {'sep': '\t', 'index': False}, '.tab'),
+                  'excel': (df.to_excel, {'index': False}, '.xlsx'),
+                  'html': (write_styled_html, {'df': df, 'index': index},
+                           '.html')}
     for format in formats:
         func, args, ext = formatdict[format]
         ofname = path + ext
-        func(ofname, index=False, **args)
+        func(ofname, **args)

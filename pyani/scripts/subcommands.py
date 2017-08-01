@@ -487,7 +487,7 @@ def subcmd_report(args, logger):
         headers = ['run ID', 'method', 'date run']
         pyani_report.write_dbtable(data, headers,
                                    os.path.join(args.outdir, "runs"),
-                                   formats)
+                                   formats, index='run ID')
 
     # Report genomes in the database
     if args.show_genomes:
