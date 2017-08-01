@@ -510,7 +510,7 @@ def subcmd_report(args, logger):
         outfname = os.path.join(args.outdir, "runs_genomes")
         logger.info("Writing table of pyani runs, with associated genomes " +
                     "to %s.*", outfname)
-        data = pyani_db.get_runs_by_genomes(args.dbpath)
+        data = pyani_db.get_genomes_by_runs(args.dbpath)
         headers = ['run ID', 'method', 'date run',
                    'genome ID', 'description', 'path', 'MD5 hash',
                    'genome length']
@@ -521,10 +521,20 @@ def subcmd_report(args, logger):
         outfname = os.path.join(args.outdir, "genomes_runs")
         logger.info("Writing table of genomes, with associated pyani runs" +
                     "to %s.*", outfname)
-        data = pyani_db.get_genomes_by_runs(args.dbpath)
+        data = pyani_db.get_runs_by_genomes(args.dbpath)
         headers = ['genome ID', 'description', 'path', 'MD5 hash',
                    'genome length', 'run ID', 'method', 'date run']
         pyani_report.write_dbtable(data, headers, outfname, formats)
+
+    # Report table of comparison results for the indicated runs
+    if args.run_results:
+        outfstem = os.path.join(args.outdir, "results")
+        run_ids = [run_id.strip() for run_id in args.run_results.split(',')]
+        logger.info("Attempting to write results tables for runs: %s",
+                    run_ids)
+        for run_id in run_ids:
+            logger.info("Collecting data for run with ID: %s", run_id)
+
         
 
 # Classify input genomes on basis of ANI coverage and identity output

@@ -290,6 +290,9 @@ def build_parser_report(subps, parents=None):
                         dest="show_genomes_runs", default=False,
                         help="Report table of all runs in which each genome " +
                         "in the database participates") 
+    parser.add_argument("--run_results", action="store",
+                        dest="run_results", default=False,
+                        help="Report table of results for a pyani run") 
     parser.add_argument("--formats", dest="formats",
                         action="store", default=None,
                         help="Output formats (in addition to .tab)")
