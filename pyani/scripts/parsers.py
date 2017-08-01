@@ -286,6 +286,10 @@ def build_parser_report(subps, parents=None):
                         dest="show_runs_genomes", default=False,
                         help="Report table of all genomes for each run in " +
                         "database") 
+    parser.add_argument("--genomes_runs", action="store_true",
+                        dest="show_genomes_runs", default=False,
+                        help="Report table of all runs in which each genome " +
+                        "in the database participates") 
     parser.add_argument("--formats", dest="formats",
                         action="store", default=None,
                         help="Output formats (in addition to .tab)")

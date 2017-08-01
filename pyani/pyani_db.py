@@ -213,6 +213,17 @@ SQL_GETRUNSGENOMES = """
            runs_genomes.genome_id=genomes.genome_id
 """
 
+# Get the JOIN of all genomes to all runs in the database
+SQL_GETGENOMESRUNS = """
+   SELECT genomes.genome_id, genomes.description, genomes.path,
+          genomes.hash, genomes.length,
+          runs.run_id, runs.method, runs.date
+     FROM genomes, runs_genomes, runs
+     WHERE genomes.genome_id=runs_genomes.genome_id AND
+           runs_genomes.run_id=runs.run_id
+     ORDER BY genomes.genome_id
+"""
+
 
 # DATABASE INTERACTIONS
 # =====================
@@ -371,6 +382,17 @@ def get_runs_by_genomes(dbpath):
     with conn:
         cur = conn.cursor()
         cur.execute(SQL_GETRUNSGENOMES)
+        result = cur.fetchall()
+    return result
+    
+# Return a table of all genomes in the database, joined with all the runs
+# in which it participates
+def get_genomes_by_runs(dbpath):
+    """Return a table JOINing all genomes to the runs in the database."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETGENOMESRUNS)
         result = cur.fetchall()
     return result
     

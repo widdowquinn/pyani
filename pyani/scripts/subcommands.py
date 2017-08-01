@@ -470,7 +470,7 @@ def subcmd_report(args, logger):
     These will typically take an output path to a file or directory into which
     the report will be written (whatever form it takes). By default, text
     output is written in plain text format, but for some outputs this can
-    be modified by a --excel or --html format specifier, which writes outputs
+    be modified by an 'excel' or 'html' format specifier, which writes outputs
     in that format, where possible.
     """
     # Output formats will apply across all tabular data requested
@@ -506,6 +506,15 @@ def subcmd_report(args, logger):
                    'genome length']
         pyani_report.write_dbtable(data, headers,
                                    os.path.join(args.outdir, "runs_genomes"),
+                                   formats)
+        
+    # Report table of all runs in which a genome is involved
+    if args.show_genomes_runs:
+        data = pyani_db.get_genomes_by_runs(args.dbpath)
+        headers = ['genome ID', 'description', 'path', 'MD5 hash',
+                   'genome length', 'run ID', 'method', 'date run']
+        pyani_report.write_dbtable(data, headers,
+                                   os.path.join(args.outdir, "genomes_runs"),
                                    formats)
         
 
