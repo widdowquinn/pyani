@@ -367,9 +367,26 @@ def subcmd_anim(args, logger):
 
     # Check for existing comparisons; if one has been done (for the same
     # software package, version, and setting) we remove it from the list
+    # of comparisons to be performed, but we add a new entry to the
+    # runs_comparisons table.
     # TODO: turn this into a generator or some such?
-    logger.info("Excluding pre-calculated comparisons")
     nucmer_version = anim.get_version(args.nucmer_exe)
+
+    # Existing entries for the comparison:run link table
+    new_link_ids = [(qid, sid) for (qid, sid) in comparison_ids if
+                    pyani_db.get_comparison(args.dbpath, qid, sid, "nucmer",
+                                            nucmer_version,
+                                            maxmatch=args.maxmatch) is
+                    not None]
+    logger.info("Existing comparisons to be associated with new run:\n\t%s",
+                new_link_ids)
+    for (qid, sid) in new_link_ids:
+        pyani_db.add_comparison_link(args.dbpath, run_id, qid, sid,
+                                     "nucmer", nucmer_version,
+                                     maxmatch=args.maxmatch)
+
+    # New comparisons to be run for this analysis
+    logger.info("Excluding pre-calculated comparisons")
     comparison_ids = [(qid, sid) for (qid, sid) in comparison_ids if
                       pyani_db.get_comparison(args.dbpath, qid, sid, "nucmer",
                                               nucmer_version,
@@ -444,8 +461,13 @@ def subcmd_anim(args, logger):
                                               sim_errs, pid, qcov, scov,
                                               "nucmer", nucmer_version,
                                               maxmatch=args.maxmatch)
-            logger.info("Added ID %s vs %s, as comparison %s",
-                        comp.query_id, comp.subject_id, comp_id)
+            link_id = pyani_db.add_comparison_link(args.dbpath, run_id,
+                                                   comp.query_id,
+                                                   comp.subject_id,
+                                                   "nucmer", nucmer_version,
+                                                   maxmatch=args.maxmatch)
+            logger.info("Added ID %s vs %s, as comparison %s (link: %s)",
+                        comp.query_id, comp.subject_id, comp_id, link_id)
 
 
 def subcmd_anib(args, logger):
@@ -533,8 +555,15 @@ def subcmd_report(args, logger):
         logger.info("Attempting to write results tables for runs: %s",
                     run_ids)
         for run_id in run_ids:
+            outfname = '_'.join([outfstem, str(run_id)])
             logger.info("Collecting data for run with ID: %s", run_id)
-
+            data = pyani_db.get_comparisons_by_run(args.dbpath, run_id)
+            headers = ['query', 'subject',
+                       'query ID', 'subject ID', 'aligned length',
+                       'similarity errors', 'percentage identity',
+                       'query coverage', 'subject coverage', 'program',
+                       'version', 'fragsize', 'maxmatch']
+            pyani_report.write_dbtable(data, headers, outfname, formats)
         
 
 # Classify input genomes on basis of ANI coverage and identity output

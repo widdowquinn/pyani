@@ -103,11 +103,11 @@ SQL_CREATEDB = """
                         );
    DROP TABLE IF EXISTS labels;
    CREATE TABLE labels (genome_id INTEGER NOT NULL,
-                         run_id INTEGER NOT NULL,
-                         label TEXT,
-                         PRIMARY KEY (genome_id, run_id),
-                         FOREIGN KEY(run_id) REFERENCES runs(run_id),
-                         FOREIGN KEY(genome_id) REFERENCES genomes(genome_id)
+                        run_id INTEGER NOT NULL,
+                        label TEXT,
+                        PRIMARY KEY (genome_id, run_id),
+                        FOREIGN KEY(run_id) REFERENCES runs(run_id),
+                        FOREIGN KEY(genome_id) REFERENCES genomes(genome_id)
                        );
    DROP TABLE IF EXISTS runs;
    CREATE TABLE runs (run_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -142,12 +142,21 @@ SQL_CREATEDB = """
                             );
    DROP TABLE IF EXISTS runs_comparisons;
    CREATE TABLE runs_comparisons(run_id INTEGER NOT NULL,
-                                 comparison_id INTEGER NOT NULL,
-                                 PRIMARY KEY (run_id, comparison_id),
+                                 query_id INTEGER NOT NULL,
+                                 subject_id INTEGER NOT NULL,
+                                 program TEXT,
+                                 version TEXT,
+                                 fragsize TEXT,
+                                 maxmatch TEXT,
+                                 PRIMARY KEY (run_id, query_id, subject_id),
                                  FOREIGN KEY(run_id) REFERENCES
                                                        runs(run_id),
-                                 FOREIGN KEY(comparison_id) REFERENCES
-                                                    comparisons(comparison_id)
+                                 FOREIGN KEY(query_id, subject_id, program,
+                                             version, fragsize, maxmatch)
+                                   REFERENCES
+                                     comparisons(query_id, subject_id,
+                                                 program, version, fragsize,
+                                                 maxmatch)
                             );
    """
 
@@ -211,11 +220,29 @@ SQL_ADDCOMPARISON = """
      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 """
 
+# Add a comparison to the database
+SQL_ADDCOMPARISONLINK = """
+   INSERT INTO runs_comparisons
+     (run_id, query_id, subject_id, program, version, fragsize, maxmatch)
+     VALUES (?, ?, ?, ?, ?, ?, ?);
+"""
+
 # Get a comparison (if it exists)
 SQL_GETCOMPARISON = """
    SELECT * FROM comparisons WHERE query_id=? AND subject_id=? AND
                                    program=? AND version=? AND
                                    fragsize=? AND maxmatch=?;
+"""
+
+# Get all comparisons for a given run ID
+SQL_GETRUNCOMPARISONS = """
+   SELECT query.description, subject.description, comparisons.*
+      FROM runs_comparisons
+      JOIN comparisons USING
+         (query_id, subject_id, program, version, fragsize, maxmatch)
+      JOIN genomes query ON query_id=query.genome_id
+      JOIN genomes subject ON subject_id=subject.genome_id
+    WHERE runs_comparisons.run_id=?;
 """
 
 # Get all analysis runs
@@ -361,6 +388,22 @@ def add_comparison(dbpath, qid, sid, aln_len, sim_errs, pid, qcov, scov,
     return cur.lastrowid
 
 
+# Add a comparison/run link to the database
+def add_comparison_link(dbpath, run_id, qid, sid, program, version,
+                        fragsize=0, maxmatch=None):
+    """Add a single pairwise comparison:run ID link to the database.
+
+    NOTE: Due to issues with Python/SQLite NULL queries,
+          fragsize default is zero
+    """
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_ADDCOMPARISONLINK, (run_id, qid, sid, program,
+                                            version, fragsize, maxmatch))
+    return cur.lastrowid
+
+
 # Check if a comparison has been performed
 def get_comparison(dbpath, qid, sid, program, version,
                    fragsize=0, maxmatch=None):
@@ -375,6 +418,18 @@ def get_comparison(dbpath, qid, sid, program, version,
         cur.execute(SQL_GETCOMPARISON, (qid, sid, program, version,
                                         fragsize, maxmatch))
         result = cur.fetchone()
+    return result
+
+
+# Get comparisons associated with a run
+def get_comparisons_by_run(dbpath, run_id):
+    """Return the comparisons associated with a specific run
+    """
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETRUNCOMPARISONS, (run_id))
+        result = cur.fetchall()
     return result
 
 
