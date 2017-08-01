@@ -195,12 +195,22 @@ SQL_GETCOMPARISON = """
 
 # Get all analysis runs
 SQL_GETALLRUNS = """
-   SELECT run_id, method, date FROM runs;
+   SELECT run_id, method, date, cmdline FROM runs;
 """
 
 # Get all genomes from the database
 SQL_GETALLGENOMES = """
    SELECT genome_id, description, path, hash, length FROM genomes;
+"""
+
+# Get the JOIN of all runs to all genomes in the database
+SQL_GETRUNSGENOMES = """
+   SELECT runs.run_id, runs.method, runs.date,
+          genomes.genome_id, genomes.description, genomes.path,
+          genomes.hash, genomes.length
+     FROM runs, runs_genomes, genomes
+     WHERE runs.run_id=runs_genomes.run_id AND
+           runs_genomes.genome_id=genomes.genome_id
 """
 
 
@@ -351,3 +361,16 @@ def get_all_genomes(dbpath):
         cur.execute(SQL_GETALLGENOMES)
         result = cur.fetchall()
     return result
+
+
+# Return a table of all runs in the database, joined with all genomes in the
+# run
+def get_runs_by_genomes(dbpath):
+    """Return a table JOINing all runs to the genomes in the run."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETRUNSGENOMES)
+        result = cur.fetchall()
+    return result
+    

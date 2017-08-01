@@ -52,6 +52,12 @@ def colour_rows(series, even="#DDECF5", odd="#6CB6E4"):
             else 'background-color: %s' % even for v in is_odd]
 
 
+def table_padding():
+    """Return HTML for table cell padding."""
+    return dict(selector="td",
+                props=[('padding', '15px')])
+
+
 def hover_highlight(hover_colour="#FFFF99"):
     """Return HTML style to colour dataframe row when hovering."""
     return dict(selector="tr:hover",
@@ -83,7 +89,8 @@ def write_styled_html(path, df, index=None):
 
     # Apply styles
     styled = styled.set_table_styles([hover_highlight(),
-                                      header_font()])
+                                      header_font(),
+                                      table_padding()])
 
     # Set font to Helvetica
     styled = styled.set_properties(**{'font-family': 'Helvetica',

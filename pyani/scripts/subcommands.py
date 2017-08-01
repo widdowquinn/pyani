@@ -484,7 +484,7 @@ def subcmd_report(args, logger):
     # Report runs in the database
     if args.show_runs:  
         data = pyani_db.get_all_runs(args.dbpath)
-        headers = ['run ID', 'method', 'date run']
+        headers = ['run ID', 'method', 'date run', 'command-line']
         pyani_report.write_dbtable(data, headers,
                                    os.path.join(args.outdir, "runs"),
                                    formats, index='run ID')
@@ -496,6 +496,16 @@ def subcmd_report(args, logger):
                    'MD5 hash', 'genome length']
         pyani_report.write_dbtable(data, headers,
                                    os.path.join(args.outdir, "genomes"),
+                                   formats, index='genome ID')
+
+    # Report table of all genomes used for each run
+    if args.show_runs_genomes:
+        data = pyani_db.get_runs_by_genomes(args.dbpath)
+        headers = ['run ID', 'method', 'date run',
+                   'genome ID', 'description', 'path', 'MD5 hash',
+                   'genome length']
+        pyani_report.write_dbtable(data, headers,
+                                   os.path.join(args.outdir, "runs_genomes"),
                                    formats)
         
 

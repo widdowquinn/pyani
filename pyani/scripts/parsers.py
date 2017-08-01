@@ -275,13 +275,17 @@ def build_parser_report(subps, parents=None):
     # Optional arguments
     parser.add_argument("--dbpath", action='store',
                         dest='dbpath', default='.pyani/pyanidb',
-                        help='path to pyani database')    
+                        help='path to pyani database')
     parser.add_argument("--runs", action="store_true",
                         dest="show_runs", default=False,
                         help="Report table of analysis runs in database")
     parser.add_argument("--genomes", action="store_true",
                         dest="show_genomes", default=False,
                         help="Report table of genomes in database")
+    parser.add_argument("--runs_genomes", action="store_true",
+                        dest="show_runs_genomes", default=False,
+                        help="Report table of all genomes for each run in " +
+                        "database") 
     parser.add_argument("--formats", dest="formats",
                         action="store", default=None,
                         help="Output formats (in addition to .tab)")
