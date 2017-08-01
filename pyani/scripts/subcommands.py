@@ -481,41 +481,50 @@ def subcmd_report(args, logger):
     formats = list(set(formats)) # remove duplicates
     logger.info("Creating output in formats: %s", formats)
 
+    # Declare which database is being used
+    logger.info("Using database: %s", args.dbpath)
+
     # Report runs in the database
-    if args.show_runs:  
+    if args.show_runs:
+        outfname = os.path.join(args.outdir, "runs")
+        logger.info("Writing table of pyani runs from the database to %s.*",
+                    outfname)
         data = pyani_db.get_all_runs(args.dbpath)
         headers = ['run ID', 'method', 'date run', 'command-line']
-        pyani_report.write_dbtable(data, headers,
-                                   os.path.join(args.outdir, "runs"),
-                                   formats, index='run ID')
+        pyani_report.write_dbtable(data, headers, outfname, formats,
+                                   index='run ID')
 
     # Report genomes in the database
     if args.show_genomes:
+        outfname = os.path.join(args.outdir, "genomes")
+        logger.info("Writing table of genomes from the database to %s.*",
+                    outfname)
         data = pyani_db.get_all_genomes(args.dbpath)
         headers = ['genome ID', 'description', 'path',
                    'MD5 hash', 'genome length']
-        pyani_report.write_dbtable(data, headers,
-                                   os.path.join(args.outdir, "genomes"),
-                                   formats, index='genome ID')
+        pyani_report.write_dbtable(data, headers, outfname, formats,
+                                   index='genome ID')
 
     # Report table of all genomes used for each run
     if args.show_runs_genomes:
+        outfname = os.path.join(args.outdir, "runs_genomes")
+        logger.info("Writing table of pyani runs, with associated genomes " +
+                    "to %s.*", outfname)
         data = pyani_db.get_runs_by_genomes(args.dbpath)
         headers = ['run ID', 'method', 'date run',
                    'genome ID', 'description', 'path', 'MD5 hash',
                    'genome length']
-        pyani_report.write_dbtable(data, headers,
-                                   os.path.join(args.outdir, "runs_genomes"),
-                                   formats)
+        pyani_report.write_dbtable(data, headers, outfname, formats)
         
     # Report table of all runs in which a genome is involved
     if args.show_genomes_runs:
+        outfname = os.path.join(args.outdir, "genomes_runs")
+        logger.info("Writing table of genomes, with associated pyani runs" +
+                    "to %s.*", outfname)
         data = pyani_db.get_genomes_by_runs(args.dbpath)
         headers = ['genome ID', 'description', 'path', 'MD5 hash',
                    'genome length', 'run ID', 'method', 'date run']
-        pyani_report.write_dbtable(data, headers,
-                                   os.path.join(args.outdir, "genomes_runs"),
-                                   formats)
+        pyani_report.write_dbtable(data, headers, outfname, formats)
         
 
 # Classify input genomes on basis of ANI coverage and identity output
