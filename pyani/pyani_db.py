@@ -93,6 +93,22 @@ SQL_CREATEDB = """
                          length INTEGER,
                          description TEXT
                         );
+   DROP TABLE IF EXISTS classes;
+   CREATE TABLE classes (genome_id INTEGER NOT NULL,
+                         run_id INTEGER NOT NULL,
+                         class TEXT,
+                         PRIMARY KEY (genome_id, run_id),
+                         FOREIGN KEY(run_id) REFERENCES runs(run_id),
+                         FOREIGN KEY(genome_id) REFERENCES genomes(genome_id)
+                        );
+   DROP TABLE IF EXISTS labels;
+   CREATE TABLE labels (genome_id INTEGER NOT NULL,
+                         run_id INTEGER NOT NULL,
+                         label TEXT,
+                         PRIMARY KEY (genome_id, run_id),
+                         FOREIGN KEY(run_id) REFERENCES runs(run_id),
+                         FOREIGN KEY(genome_id) REFERENCES genomes(genome_id)
+                       );
    DROP TABLE IF EXISTS runs;
    CREATE TABLE runs (run_id INTEGER PRIMARY KEY AUTOINCREMENT,
                       method TEXT,
