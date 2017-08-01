@@ -475,15 +475,19 @@ def subcmd_report(args, logger):
     """
     # Output formats will apply across all tabular data requested
     # Expect comma-separated, and turn them into an iterable
+    formats = ['tab']
     if args.formats:
-        formats = ['tab'] + [fmt.strip() for fmt in args.formats.split(',')]
+        formats += [fmt.strip() for fmt in args.formats.split(',')]
+    formats = list(set(formats)) # remove duplicates
+    logger.info("Creating output in formats: %s", formats)
 
     # Report runs in the database
     if args.show_runs:  
         data = pyani_db.get_all_runs(args.dbpath)
         headers = ['run ID', 'method', 'date run']
         pyani_report.write_dbtable(data, headers,
-                                   os.path.join(args.outdir, "runs"), formats)
+                                   os.path.join(args.outdir, "runs"),
+                                   formats)
 
     # Report genomes in the database
     if args.show_genomes:

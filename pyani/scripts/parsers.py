@@ -284,7 +284,7 @@ def build_parser_report(subps, parents=None):
                         help="Report table of genomes in database")
     parser.add_argument("--formats", dest="formats",
                         action="store", default=None,
-                        help="Output formats, in addition to plain text")
+                        help="Output formats (in addition to .tab)")
     parser.set_defaults(func=subcommands.subcmd_report)
     
 
