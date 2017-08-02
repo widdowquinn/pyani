@@ -573,6 +573,13 @@ def subcmd_report(args, logger):
                        'query coverage', 'subject coverage', 'program',
                        'version', 'fragsize', 'maxmatch']
             pyani_report.write_dbtable(data, headers, outfname, formats)
+
+    # Report matrices of comparison results for the indicated runs
+    if args.run_matrices:
+        outfstem = os.path.join(args.outdir, "matrix")
+        run_ids = [run_id.strip() for run_id in args.run_matrices.split(',')]
+        logger.info("Attempting to write results matrices for runs: %s",
+                    run_ids)
         
 
 # Classify input genomes on basis of ANI coverage and identity output
