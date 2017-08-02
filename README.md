@@ -161,6 +161,33 @@ INFO: Completed. Time taken: 0.211
 
 ### 4. Reporting Analyses and Analysis Results
 
+Once an analysis is run, the results are placed in a local `SQLite` database, which can be queried for information about the analyses that have been run. You can request information about:
+
+* `--runs`: show all analysis runs with results stored in the database
+* `--runs_genomes`: show all the analysis runs with results in the database, and all the genomes analysed in each run
+* `--genomes`: show all the genomes used for any analysis in the database
+* `--genomes_runs`: for each genome in the database, also list the analysis results it participates in
+* `--run_results`: show all the pairwise comparison results for a named run (run IDs can be obtained with the `--runs` argument
+
+The report tables are written to a named directory (compulsory argument), and are written by default `.tab` plain-text format, but HTML and Excel format can alos be requested with the `--formats` argument:
+
+```bash
+$ ./pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel
+INFO: Processed arguments: Namespace(cmdline='./pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel', dbpath='.pyani/pyanidb', formats='html,excel', func=<function subcmd_report at 0x10c674a60>, logfile=None, outdir='C_blochmannia_ANIm/', run_results=False, show_genomes=False, show_genomes_runs=False, show_runs=True, show_runs_genomes=False, verbose=True)
+INFO: command-line: ./pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel
+INFO: Creating output in formats: ['excel', 'tab', 'html']
+INFO: Using database: .pyani/pyanidb
+INFO: Writing table of pyani runs from the database to C_blochmannia_ANIm/runs.*
+INFO: Completed. Time taken: 0.937
+$ tree -L 1 C_blochmannia_ANIm/
+C_blochmannia_ANIm/
+├── nucmer_output
+├── runs.html
+├── runs.tab
+└── runs.xlsx
+```
+
+
 
 ### 5. Classifying Genomes from Analysis Results
 
