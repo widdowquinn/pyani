@@ -348,6 +348,18 @@ def subcmd_anim(args, logger):
         # for that run
         pyani_db.add_genome_to_run(args.dbpath, run_id, genome_id)
 
+    # Add classes metadata to the database, if provided
+    if args.classes is not None:
+        logger.info("Collecting class metadata from %s", args.classes)
+        classes = pyani_tools.get_labels(args.classes)
+        logger.info(classes)
+
+    # Add labels metadata to the database, if provided
+    if args.labels is not None:
+        logger.info("Collecting labels metadata from %s", args.labels)
+        labels = pyani_tools.get_labels(args.labels)
+        logger.info(labels)
+
     # Generate commandlines for NUCmer analysis and output compression
     logger.info("Generating ANIm command-lines")
     deltadir = os.path.join(os.path.join(args.outdir,

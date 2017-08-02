@@ -243,7 +243,7 @@ def build_parser_run_common():
     parser.add_argument("--classes", dest="classes",
                         action="store", default=None,
                         help="Path to genome classes for the run")
-    parser.add_argument("--labels", dest="name",
+    parser.add_argument("--labels", dest="labels",
                         action="store", default=None,
                         help="Path to genome labels for the run")
     return parser
