@@ -114,7 +114,8 @@ SQL_CREATEDB = """
                       method TEXT,
                       cmdline TEXT,
                       date TEXT,
-                      status TEXT
+                      status TEXT,
+                      name TEXT
                      );
    DROP TABLE IF EXISTS runs_genomes;
    CREATE TABLE runs_genomes(run_id INTEGER NOT NULL,
@@ -173,7 +174,8 @@ SQL_INDEXGENOMEHASH = """
 
 # Add a genome to the database
 SQL_ADDRUN = """
-   INSERT INTO runs (method, cmdline, date, status) VALUES (?, ?, ?, ?);
+   INSERT INTO runs (method, cmdline, date, status, name)
+            VALUES (?, ?, ?, ?, ?);
 """
 
 # Add a genome to the database
@@ -247,7 +249,7 @@ SQL_GETRUNCOMPARISONS = """
 
 # Get all analysis runs
 SQL_GETALLRUNS = """
-   SELECT run_id, method, date, cmdline FROM runs;
+   SELECT run_id, name, method, date, cmdline FROM runs;
 """
 
 # Get all genomes from the database
@@ -257,7 +259,7 @@ SQL_GETALLGENOMES = """
 
 # Get the JOIN of all runs to all genomes in the database
 SQL_GETRUNSGENOMES = """
-   SELECT runs.run_id, runs.method, runs.date,
+   SELECT runs.run_id, runs.name, runs.method, runs.date,
           genomes.genome_id, genomes.description, genomes.path,
           genomes.hash, genomes.length
      FROM runs, runs_genomes, genomes
@@ -269,7 +271,7 @@ SQL_GETRUNSGENOMES = """
 SQL_GETGENOMESRUNS = """
    SELECT genomes.genome_id, genomes.description, genomes.path,
           genomes.hash, genomes.length,
-          runs.run_id, runs.method, runs.date
+          runs.run_id, runs.name, runs.method, runs.date
      FROM genomes, runs_genomes, runs
      WHERE genomes.genome_id=runs_genomes.genome_id AND
            runs_genomes.run_id=runs.run_id
@@ -293,12 +295,12 @@ def create_db(path):
 
 
 # Add a new run to the database
-def add_run(dbpath, method, cmdline, date, status):
+def add_run(dbpath, method, cmdline, date, status, name):
     """Add run information to the passed database, and return a run ID."""
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_ADDRUN, (method, cmdline, date, status))
+        cur.execute(SQL_ADDRUN, (method, cmdline, date, status, name))
     return cur.lastrowid
 
 

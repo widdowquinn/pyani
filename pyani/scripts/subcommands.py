@@ -295,10 +295,17 @@ def subcmd_anim(args, logger):
     # Announce the analysis
     logger.info("Running ANIm analysis")
 
+    # Use the provided name or make one for the analysis
+    start_time = datetime.datetime.now().isoformat()
+    if args.name is None:
+        name = '_'.join(["ANIm", start_time])
+    else:
+        name = args.name
+
     # Add info for this analysis to the database
     logger.info("Adding analysis information to database %s", args.dbpath)
     run_id = pyani_db.add_run(args.dbpath, "ANIm", args.cmdline,
-                              datetime.datetime.now().isoformat(), "started")
+                              start_time, "started", name)
     logger.info("Current analysis has ID %s in this database", run_id)
 
     # Identify input files for comparison, and populate the database
@@ -512,7 +519,7 @@ def subcmd_report(args, logger):
         logger.info("Writing table of pyani runs from the database to %s.*",
                     outfname)
         data = pyani_db.get_all_runs(args.dbpath)
-        headers = ['run ID', 'method', 'date run', 'command-line']
+        headers = ['run ID', 'name', 'method', 'date run', 'command-line']
         pyani_report.write_dbtable(data, headers, outfname, formats,
                                    index='run ID')
 
@@ -533,7 +540,7 @@ def subcmd_report(args, logger):
         logger.info("Writing table of pyani runs, with associated genomes " +
                     "to %s.*", outfname)
         data = pyani_db.get_genomes_by_runs(args.dbpath)
-        headers = ['run ID', 'method', 'date run',
+        headers = ['run ID', 'name', 'method', 'date run',
                    'genome ID', 'description', 'path', 'MD5 hash',
                    'genome length']
         pyani_report.write_dbtable(data, headers, outfname, formats)
@@ -545,7 +552,7 @@ def subcmd_report(args, logger):
                     "to %s.*", outfname)
         data = pyani_db.get_runs_by_genomes(args.dbpath)
         headers = ['genome ID', 'description', 'path', 'MD5 hash',
-                   'genome length', 'run ID', 'method', 'date run']
+                   'genome length', 'run ID', 'name', 'method', 'date run']
         pyani_report.write_dbtable(data, headers, outfname, formats)
 
     # Report table of comparison results for the indicated runs

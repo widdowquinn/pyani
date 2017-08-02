@@ -247,6 +247,9 @@ def build_parser_anim(subps, parents=None):
     parser.add_argument("--maxmatch", dest="maxmatch",
                         action="store_true", default=False,
                         help="Override MUMmer to allow all NUCmer matches")
+    parser.add_argument("--name", dest="name",
+                        action="store", default=None,
+                        help="Provide a name to help identify the analysis run")
     parser.set_defaults(func=subcommands.subcmd_anim)
 
 
