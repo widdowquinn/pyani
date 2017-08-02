@@ -563,7 +563,9 @@ def subcmd_report(args, logger):
                     run_ids)
         for run_id in run_ids:
             outfname = '_'.join([outfstem, str(run_id)])
-            logger.info("Collecting data for run with ID: %s", run_id)
+            run_data = pyani_db.get_run(args.dbpath, run_id)
+            logger.info("Collecting data for run with ID: %s (%s)", run_id,
+                        run_data[5])
             data = pyani_db.get_comparisons_by_run(args.dbpath, run_id)
             headers = ['query', 'subject',
                        'query ID', 'subject ID', 'aligned length',

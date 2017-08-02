@@ -226,6 +226,29 @@ def build_parser_createdb(subps, parents=None):
     parser.set_defaults(func=subcommands.subcmd_createdb)
 
 
+# Common parser for all subcommands
+def build_parser_run_common():
+    """Return the common argument parser for analysis run subcommands.
+
+    Common arguments are:
+
+    --name     (human-readable name for the run)
+    --labels   (genome labels for this run)
+    --classes  (genome classes for this run)
+    """
+    parser = ArgumentParser(add_help=False)
+    parser.add_argument("--name", dest="name",
+                        action="store", default=None,
+                        help="Provide a name to help identify the analysis run")
+    parser.add_argument("--classes", dest="classes",
+                        action="store", default=None,
+                        help="Path to genome classes for the run")
+    parser.add_argument("--labels", dest="name",
+                        action="store", default=None,
+                        help="Path to genome labels for the run")
+    return parser
+
+
 def build_parser_anim(subps, parents=None):
     """Return a command-line parser for the anim subcommand."""
     parser = subps.add_parser('anim', parents=parents,
@@ -247,9 +270,6 @@ def build_parser_anim(subps, parents=None):
     parser.add_argument("--maxmatch", dest="maxmatch",
                         action="store_true", default=False,
                         help="Override MUMmer to allow all NUCmer matches")
-    parser.add_argument("--name", dest="name",
-                        action="store", default=None,
-                        help="Provide a name to help identify the analysis run")
     parser.set_defaults(func=subcommands.subcmd_anim)
 
 
@@ -322,17 +342,21 @@ def parse_cmdline():
     # Common parsers
     parser_common = build_parser_common()
     parser_scheduler = build_parser_scheduler()
+    parser_run_common = build_parser_run_common()
 
     # Add subcommand parsers
     build_parser_download(subparsers, parents=[parser_common])
     build_parser_index(subparsers, parents=[parser_common])
     build_parser_createdb(subparsers, parents=[parser_common])
     build_parser_anim(subparsers, parents=[parser_common,
-                                           parser_scheduler])
+                                           parser_scheduler,
+                                           parser_run_common])
     build_parser_anib(subparsers, parents=[parser_common,
-                                           parser_scheduler])
+                                           parser_scheduler,
+                                           parser_run_common])
     build_parser_aniblastall(subparsers, parents=[parser_common,
-                                                  parser_scheduler])
+                                                  parser_scheduler,
+                                                  parser_run_common])
     build_parser_report(subparsers, parents=[parser_common])
     build_parser_classify(subparsers, parents=[parser_common])
 

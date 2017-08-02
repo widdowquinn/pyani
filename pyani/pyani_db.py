@@ -172,11 +172,17 @@ SQL_INDEXGENOMEHASH = """
    CREATE UNIQUE INDEX genomehashpath_index ON genomes (hash, path);
 """
 
-# Add a genome to the database
+# Add an analysis run to the database
 SQL_ADDRUN = """
    INSERT INTO runs (method, cmdline, date, status, name)
             VALUES (?, ?, ?, ?, ?);
 """
+
+# Get information for a single analysis run
+SQL_GETRUN = """
+   SELECT * FROM runs WHERE run_id=?;
+"""
+
 
 # Add a genome to the database
 SQL_ADDGENOME = """
@@ -302,6 +308,16 @@ def add_run(dbpath, method, cmdline, date, status, name):
         cur = conn.cursor()
         cur.execute(SQL_ADDRUN, (method, cmdline, date, status, name))
     return cur.lastrowid
+
+
+# Get a specified run row from the database
+def get_run(dbpath, run_id):
+    """Return the information associated with a specified run ID."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETRUN, (run_id))
+    return cur.fetchone()
 
 
 # Add a new genome to the database

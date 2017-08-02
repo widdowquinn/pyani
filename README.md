@@ -187,6 +187,23 @@ C_blochmannia_ANIm/
 └── runs.xlsx
 ```
 
+To see all the pairwise results for an individual run, the run ID must be provided. It is possible to get results for more than one run ID by providing a comma-separated list of run IDs (though each run's results will be provided in a separate file):
+
+```bash
+$ ./pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
+INFO: Processed arguments: Namespace(cmdline='./pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4', dbpath='.pyani/pyanidb', formats='html,excel', func=<function subcmd_report at 0x108616a60>, logfile=None, outdir='C_blochmannia_ANIm/', run_results='1,2,3,4', show_genomes=False, show_genomes_runs=False, show_runs=True, show_runs_genomes=False, verbose=True)
+INFO: command-line: ./pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
+INFO: Creating output in formats: ['tab', 'excel', 'html']
+INFO: Using database: .pyani/pyanidb
+INFO: Writing table of pyani runs from the database to C_blochmannia_ANIm/runs.*
+INFO: Attempting to write results tables for runs: ['1', '2', '3', '4']
+INFO: Collecting data for run with ID: 1
+INFO: Collecting data for run with ID: 2
+INFO: Collecting data for run with ID: 3
+INFO: Collecting data for run with ID: 4
+INFO: Completed. Time taken: 1.285
+```
+
 
 
 ### 5. Classifying Genomes from Analysis Results
