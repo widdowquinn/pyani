@@ -199,9 +199,14 @@ SQL_GETGENOMEHASH = """
    SELECT * FROM genomes WHERE hash=?;
 """
 
-# Add a genome to the database
+# Add a genome label to the database
 SQL_ADDGENOMELABEL = """
    INSERT INTO labels (genome_id, run_id, label) VALUES (?, ?, ?);
+"""
+
+# Add a genome class to the database
+SQL_ADDGENOMECLASS = """
+   INSERT INTO classes (genome_id, run_id, class) VALUES (?, ?, ?);
 """
 
 # Get a specific genome path
@@ -509,6 +514,16 @@ def add_genome_label(dbpath, genome_id, run_id, label):
     with conn:
         cur = conn.cursor()
         cur.execute(SQL_ADDGENOMELABEL, (genome_id, run_id, label))
+    return cur.lastrowid
+
+
+# Add a genome class to the database
+def add_genome_class(dbpath, genome_id, run_id, gclass):
+    """Add a single genome class to the database."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_ADDGENOMECLASS, (genome_id, run_id, gclass))
     return cur.lastrowid
 
 

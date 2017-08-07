@@ -257,3 +257,29 @@ def add_dblabels(dbpath, run_id, labelspath):
             label_ids.append(pyani_db.add_genome_label(dbpath, genome_id,
                                                        run_id, label))
     return label_ids
+
+
+# Add the contents of a classes file to the pyani database for a given run
+def add_dbclasses(dbpath, run_id, classespath):
+    """Add the contents of a classes file to the pyani database.
+
+    - dbpath       path to the pyani database
+    - run_id       the ID of this run (for the database)
+    - classespath  path to the file with classes inforamtion
+
+    The expected format of the classes file is: <HASH>\t<FILESTEM>\t<CLASS>,
+    where <HASH> is the MD5 hash of the genome data (this is not checked);
+    <FILESTEM> is the path to the genome file (this is intended to be a
+    record for humans to audit, it's not needed for the database interaction;
+    and <CLASS> is the class associated with that genome.
+
+    Returns a list of IDs for each class
+    """
+    class_ids = []
+    with open(classespath, 'r') as lfh:
+        for line in lfh.readlines():
+            hash, stem, gclass = line.strip().split('\t')
+            genome_id = pyani_db.get_genome(dbpath, hash)[0][0]
+            class_ids.append(pyani_db.add_genome_class(dbpath, genome_id,
+                                                       run_id, gclass))
+    return class_ids

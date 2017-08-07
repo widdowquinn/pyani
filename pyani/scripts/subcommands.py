@@ -351,8 +351,8 @@ def subcmd_anim(args, logger):
     # Add classes metadata to the database, if provided
     if args.classes is not None:
         logger.info("Collecting class metadata from %s", args.classes)
-        classes = pyani_tools.get_labels(args.classes)
-        logger.info(classes)
+        classes = pyani_tools.add_dbclasses(args.dbpath, run_id, args.classes)
+        logger.info("Added class IDs: %s", classes)
 
     # Add labels metadata to the database, if provided
     if args.labels is not None:
