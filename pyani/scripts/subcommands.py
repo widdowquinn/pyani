@@ -554,7 +554,7 @@ def subcmd_report(args, logger):
         data = pyani_db.get_genomes_by_runs(args.dbpath)
         headers = ['run ID', 'name', 'method', 'date run',
                    'genome ID', 'description', 'path', 'MD5 hash',
-                   'genome length']
+                   'genome length', 'class', 'label']
         pyani_report.write_dbtable(data, headers, outfname, formats)
         
     # Report table of all runs in which a genome is involved

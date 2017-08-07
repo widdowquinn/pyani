@@ -277,10 +277,15 @@ SQL_GETALLGENOMES = """
 SQL_GETRUNSGENOMES = """
    SELECT runs.run_id, runs.name, runs.method, runs.date,
           genomes.genome_id, genomes.description, genomes.path,
-          genomes.hash, genomes.length
-     FROM runs, runs_genomes, genomes
-     WHERE runs.run_id=runs_genomes.run_id AND
-           runs_genomes.genome_id=genomes.genome_id
+          genomes.hash, genomes.length, classes.class, labels.label
+     FROM runs
+          JOIN runs_genomes ON runs.run_id=runs_genomes.run_id
+          JOIN genomes ON runs_genomes.genome_id=genomes.genome_id
+          JOIN classes ON runs.run_id=classes.run_id AND
+                          genomes.genome_id=classes.genome_id
+          
+          JOIN labels ON runs.run_id=labels.run_id AND
+                         genomes.genome_id=labels.genome_id
 """
 
 # Get the JOIN of all genomes to all runs in the database
