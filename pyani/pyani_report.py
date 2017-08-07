@@ -41,6 +41,7 @@ THE SOFTWARE.
 """
 
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -123,6 +124,13 @@ def write_styled_html(path, df, index=None):
         ofh.write(html)
 
 
+# Write a dataframe to STDOUT
+def write_to_stdout(stem, df, index=None, line_width=None):
+    """Write dataframe in tab-separated form to STDOUT."""
+    sys.stdout.write("TABLE: %s\n" % stem)
+    sys.stdout.write(df.to_string(index=index, line_width=line_width) + '\n\n')
+        
+        
 # Write a table returned from the pyani database in the requested format
 def write_dbtable(data, headers, path=None, formats=('tab',), index=False):
     """Write database result table to output file in named format."""
@@ -131,7 +139,9 @@ def write_dbtable(data, headers, path=None, formats=('tab',), index=False):
     formatdict = {'tab': (df.to_csv, {'sep': '\t', 'index': False}, '.tab'),
                   'excel': (df.to_excel, {'index': False}, '.xlsx'),
                   'html': (write_styled_html, {'df': df, 'index': index},
-                           '.html')}
+                           '.html'),
+                  'stdout': (write_to_stdout, {'df': df, 'index': False}, '')
+    }
     for format in formats:
         func, args, ext = formatdict[format]
         ofname = path + ext
