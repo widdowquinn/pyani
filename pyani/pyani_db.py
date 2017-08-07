@@ -286,6 +286,7 @@ SQL_GETRUNSGENOMES = """
           
           JOIN labels ON runs.run_id=labels.run_id AND
                          genomes.genome_id=labels.genome_id
+     ORDER BY runs.run_id, genomes.genome_id
 """
 
 # Get the JOIN of all genomes to all runs in the database
@@ -299,6 +300,25 @@ SQL_GETGENOMESRUNS = """
      ORDER BY genomes.genome_id
 """
 
+# Get the label for a genome in a given run
+SQL_GETGENOMELABEL = """
+   SELECT genomes.genome_id, genomes.hash, labels.label
+     FROM genomes, labels
+     WHERE genomes.genome_id=labels.genome_id AND
+           labels.genome_id=? AND
+           labels.run_id=?
+     ORDER BY genomes.genome_id
+"""
+
+# Get the label for a genome in a given run
+SQL_GETGENOMECLASS = """
+   SELECT genomes.genome_id, genomes.hash, classes.class
+     FROM genomes, classes
+     WHERE genomes.genome_id=classes.genome_id AND
+           classes.genome_id=? AND
+           classes.run_id=?
+     ORDER BY genomes.genome_id
+"""
 
 
 # DATABASE INTERACTIONS
@@ -522,6 +542,17 @@ def add_genome_label(dbpath, genome_id, run_id, label):
     return cur.lastrowid
 
 
+# Get a genome's label (for a specific run)
+def get_genome_label(dbpath, genome_id, run_id):
+    """Return the label associated with a genome for a given run."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETGENOMELABEL, (genome_id, run_id))
+        result = cur.fetchone()
+    return result    
+
+
 # Add a genome class to the database
 def add_genome_class(dbpath, genome_id, run_id, gclass):
     """Add a single genome class to the database."""
@@ -530,5 +561,16 @@ def add_genome_class(dbpath, genome_id, run_id, gclass):
         cur = conn.cursor()
         cur.execute(SQL_ADDGENOMECLASS, (genome_id, run_id, gclass))
     return cur.lastrowid
+
+
+# Get a genome's class (for a specific run)
+def get_genome_class(dbpath, genome_id, run_id):
+    """Return the class associated with a genome for a given run."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETGENOMECLASS, (genome_id, run_id))
+        result = cur.fetchone()
+    return result    
 
 
