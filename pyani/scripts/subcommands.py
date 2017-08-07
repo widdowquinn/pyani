@@ -587,12 +587,23 @@ def subcmd_report(args, logger):
             pyani_report.write_dbtable(data, headers, outfname, formats)
 
     # Report matrices of comparison results for the indicated runs
+    # For ANIm, the identity results are a symmetric matrix
     if args.run_matrices:
         outfstem = os.path.join(args.outdir, "matrix")
         run_ids = [run_id.strip() for run_id in args.run_matrices.split(',')]
         logger.info("Attempting to write results matrices for runs: %s",
                     run_ids)
-        
+        for run_id in run_ids:
+            # Get genome IDs
+            genome_ids = pyani_db.get_genome_ids_by_run(args.dbpath, run_id)
+            logger.info("Genome IDs associated with run %s: %s", run_id,
+                        genome_ids)
+            # Get genome labels
+            labels = [pyani_db.get_genome_label(args.dbpath,
+                                                genome_id, run_id) for
+                      genome_id in genome_ids]
+            logger.info("Labels:\n\t%s", '\n\t'.join(labels))
+
 
 # Classify input genomes on basis of ANI coverage and identity output
 def subcmd_classify(args, logger):

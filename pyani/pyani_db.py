@@ -351,7 +351,7 @@ def get_run(dbpath, run_id):
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_GETRUN, (run_id))
+        cur.execute(SQL_GETRUN, (run_id,))
     return cur.fetchone()
 
 
@@ -481,7 +481,7 @@ def get_comparisons_by_run(dbpath, run_id):
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_GETRUNCOMPARISONS, (run_id))
+        cur.execute(SQL_GETRUNCOMPARISONS, (run_id,))
         result = cur.fetchall()
     return result
 
@@ -550,7 +550,7 @@ def get_genome_label(dbpath, genome_id, run_id):
         cur = conn.cursor()
         cur.execute(SQL_GETGENOMELABEL, (genome_id, run_id))
         result = cur.fetchone()
-    return result    
+    return result[2]
 
 
 # Add a genome class to the database
@@ -571,6 +571,6 @@ def get_genome_class(dbpath, genome_id, run_id):
         cur = conn.cursor()
         cur.execute(SQL_GETGENOMECLASS, (genome_id, run_id))
         result = cur.fetchone()
-    return result    
+    return result[2]  
 
 
