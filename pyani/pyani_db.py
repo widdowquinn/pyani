@@ -199,6 +199,11 @@ SQL_GETGENOMEHASH = """
    SELECT * FROM genomes WHERE hash=?;
 """
 
+# Add a genome to the database
+SQL_ADDGENOMELABEL = """
+   INSERT INTO labels (genome_id, run_id, label) VALUES (?, ?, ?);
+"""
+
 # Get a specific genome path
 SQL_GETGENOMEPATH = """
    SELECT path FROM genomes WHERE genome_id=?;
@@ -495,3 +500,15 @@ def get_runs_by_genomes(dbpath):
         cur.execute(SQL_GETGENOMESRUNS)
         result = cur.fetchall()
     return result
+
+
+# Add a genome label to the database
+def add_genome_label(dbpath, genome_id, run_id, label):
+    """Add a single genome label to the database."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_ADDGENOMELABEL, (genome_id, run_id, label))
+    return cur.lastrowid
+
+

@@ -168,14 +168,6 @@ def subcmd_download(args, logger):
                 logger.warning("MD5 hash check failed. " +
                                "Please check and retry.")
 
-            # Make label/class text
-            labeltxt, classtxt = download.create_labels(uid_class, filestem,
-                                                        hashstatus.localhash)
-            classes.append(classtxt)
-            labels.append(labeltxt)
-            logger.info("Label and class file entries\n" +
-                        "\tLabel: %s\n\tClass: %s", labeltxt, classtxt)
-                
             # Extract downloaded files
             ename = os.path.splitext(dlstatus.outfname)[0]
             if os.path.exists(ename) and args.noclobber:
@@ -188,11 +180,18 @@ def subcmd_download(args, logger):
             # Create MD5 hash for the downloaded contigs
             logger.info("Creating local MD5 hash for %s" % ename)
             hashfname = os.path.splitext(ename)[0] + '.md5'
+            datahash = download.create_hash(ename)
             logger.info("Writing hash to %s" % hashfname)
             with open(hashfname, "w") as hfh:
-                hfh.write('\t'.join([download.create_hash(ename),
-                                     ename]) + '\n')
-
+                hfh.write('\t'.join([datahash, ename]) + '\n')
+            # Make label/class text
+            labeltxt, classtxt = download.create_labels(uid_class, filestem,
+                                                        datahash)
+            classes.append(classtxt)
+            labels.append(labeltxt)
+            logger.info("Label and class file entries\n" +
+                        "\tLabel: %s\n\tClass: %s", labeltxt, classtxt)
+                
     # Write class and label files
     classfname = os.path.join(args.outdir, args.classfname)
     logger.info("Writing classes file to %s", classfname)
@@ -358,8 +357,8 @@ def subcmd_anim(args, logger):
     # Add labels metadata to the database, if provided
     if args.labels is not None:
         logger.info("Collecting labels metadata from %s", args.labels)
-        labels = pyani_tools.get_labels(args.labels)
-        logger.info(labels)
+        labels = pyani_tools.add_dblabels(args.dbpath, run_id, args.labels)
+        logger.info("Added label IDs: %s", labels)
 
     # Generate commandlines for NUCmer analysis and output compression
     logger.info("Generating ANIm command-lines")

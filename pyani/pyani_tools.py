@@ -44,7 +44,7 @@ import sys
 import traceback
 
 import pandas as pd
-from . import pyani_config, download
+from . import pyani_config, pyani_db, download
 
 from Bio import SeqIO
 
@@ -231,3 +231,29 @@ def get_genome_length(filename):
     """Return total length of all sequences in a FASTA file."""
     with open(filename, 'r') as ifh:
         return sum([len(record) for record in SeqIO.parse(ifh, 'fasta')])
+
+
+# Add the contents of a labels file to the pyani database for a given run
+def add_dblabels(dbpath, run_id, labelspath):
+    """Add the contents of a labels file to the pyani database.
+
+    - dbpath       path to the pyani database
+    - run_id       the ID of this run (for the database)
+    - labelspath   path to the file with labels inforamtion
+
+    The expected format of the labels file is: <HASH>\t<FILESTEM>\t<LABEL>,
+    where <HASH> is the MD5 hash of the genome data (this is not checked);
+    <FILESTEM> is the path to the genome file (this is intended to be a
+    record for humans to audit, it's not needed for the database interaction;
+    and <LABEL> is the label associated with that genome.
+
+    Returns a list of IDs for each label
+    """
+    label_ids = []
+    with open(labelspath, 'r') as lfh:
+        for line in lfh.readlines():
+            hash, stem, label = line.strip().split('\t')
+            genome_id = pyani_db.get_genome(dbpath, hash)[0][0]
+            label_ids.append(pyani_db.add_genome_label(dbpath, genome_id,
+                                                       run_id, label))
+    return label_ids
