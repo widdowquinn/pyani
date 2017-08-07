@@ -341,12 +341,29 @@ def extract_contigs(fname, ename):
 
 
 # Using a genomes UID, create class and label text files
-def create_labels(classification, filestem):
-    """Construct class and label text from UID classification."""
+def create_labels(classification, filestem, hash):
+    """Return class and label text from UID classification.
+
+    - classification  Classification named tuple (org, genus, species, strain)
+    - filestem        filestem of input genome file
+    - hash            MD5 hash of genome data
+
+    The 'class' data is the organism as provided in the passed Classification
+    named tuple; the 'label' data is genus, species and strain information
+    from the same tuple. The label is intended to be human-readable, the class
+    data to be a genuine class identifier.
+
+    Returns a tuple of two strings: (label, class).
+
+    The two strings are tab-separated strings: <HASH>\t<FILE>\t<CLASS/LABEL>.
+    The hash is used to help uniquely identify the genome in the database
+    (label/class is unique by a combination of hash and run ID).
+    """
     class_data = (filestem, classification.genus[0] + '.',
                   classification.species, classification.strain)
-    labeltxt = "{0}_genomic\t{1} {2} {3}".format(*class_data)
-    classtxt = "{0}_genomic\t{1}".format(filestem, classification.organism)
+    labeltxt = "{0}\t{1}_genomic\t{2} {3} {4}".format(hash, *class_data)
+    classtxt = "{0}\t{1}_genomic\t{2}".format(hash, filestem,
+                                              classification.organism)
 
     return (labeltxt, classtxt)
 

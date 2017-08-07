@@ -122,13 +122,6 @@ def subcmd_download(args, logger):
                                   "Strain: %s" % uid_class.strain])
             logger.info("eSummary information:\n\t%s", outstr)
 
-            # Make label/class text
-            labeltxt, classtxt = download.create_labels(uid_class, filestem)
-            classes.append(classtxt)
-            labels.append(labeltxt)
-            logger.info("Label and class file entries\n" +
-                        "\tLabel: %s\n\tClass: %s", labeltxt, classtxt)
-
             # Obtain URLs, trying the RefSeq filestem first, then GenBank if
             # there's a failure
             ftpstem = "ftp://ftp.ncbi.nlm.nih.gov/genomes/all"
@@ -175,6 +168,14 @@ def subcmd_download(args, logger):
                 logger.warning("MD5 hash check failed. " +
                                "Please check and retry.")
 
+            # Make label/class text
+            labeltxt, classtxt = download.create_labels(uid_class, filestem,
+                                                        hashstatus.localhash)
+            classes.append(classtxt)
+            labels.append(labeltxt)
+            logger.info("Label and class file entries\n" +
+                        "\tLabel: %s\n\tClass: %s", labeltxt, classtxt)
+                
             # Extract downloaded files
             ename = os.path.splitext(dlstatus.outfname)[0]
             if os.path.exists(ename) and args.noclobber:
