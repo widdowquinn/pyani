@@ -495,6 +495,3 @@ def get_runs_by_genomes(dbpath):
         cur.execute(SQL_GETGENOMESRUNS)
         result = cur.fetchall()
     return result
-
-    
-    
