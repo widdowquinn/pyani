@@ -699,8 +699,9 @@ class ANIResults(object):
     def __get_labels(self):
         """Retrieve genome IDs and labels for this run."""
         self.genome_ids = get_genome_ids_by_run(self.dbpath, self.run_id)
-        self.labels = {genome_id: get_genome_label(self.dbpath, genome_id,
-                                                   self.run_id) for
+        self.labels = {genome_id: '_'.join([
+            get_genome_label(self.dbpath, genome_id,
+                             self.run_id), str(genome_id)]) for
                        genome_id in self.genome_ids}
         self.lengths = {genome_id: get_genome_length(self.dbpath, genome_id)
                         for genome_id in self.genome_ids}
