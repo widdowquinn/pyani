@@ -267,6 +267,9 @@ def build_parser_anim(subps, parents=None):
     parser.add_argument("--nucmer_exe", dest="nucmer_exe",
                         action="store", default=pyani_config.NUCMER_DEFAULT,
                         help="path to NUCmer executable")
+    parser.add_argument("--filter_exe", dest="filter_exe",
+                        action="store", default=pyani_config.FILTER_DEFAULT,
+                        help="path to delta-filter executable")
     parser.add_argument("--maxmatch", dest="maxmatch",
                         action="store_true", default=False,
                         help="Override MUMmer to allow all NUCmer matches")

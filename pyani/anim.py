@@ -143,6 +143,7 @@ def generate_nucmer_commands(filenames, outdir='.',
 # input filenames
 def construct_nucmer_cmdline(fname1, fname2, outdir='.',
                              nucmer_exe=pyani_config.NUCMER_DEFAULT,
+                             filter_exe=pyani_config.FILTER_DEFAULT,
                              maxmatch=False):
     """Return single NUCmer pairwise comparison command.
 
@@ -160,12 +161,15 @@ def construct_nucmer_cmdline(fname1, fname2, outdir='.',
                              (os.path.splitext(os.path.split(fname1)[-1])[0],
                               os.path.splitext(os.path.split(fname2)[-1])[0]))
     if maxmatch:
-        mode = "-maxmatch"
+        mode = "--maxmatch"
     else:
-        mode = "-mum"
-    return "{0} {1} -p {2} {3} {4}".format(nucmer_exe, mode, outprefix,
-                                           fname1, fname2)
-
+        mode = "--mum"
+    nucmercmd = "{0} {1} -p {2} {3} {4}".format(nucmer_exe, mode, outprefix,
+                                                fname1, fname2)
+    filtercmd = "{0} -1 {1} > {2}".format(filter_exe,
+                                          outprefix + '.delta',
+                                          outprefix + '.filter')
+    return "{0}; {1}".format(nucmercmd, filtercmd)
 
 # Parse NUCmer delta file to get total alignment length and total sim_errors
 def parse_delta(filename):
@@ -184,7 +188,9 @@ def parse_delta(filename):
         # We only process lines with seven columns:
         if len(line) == 7:
             aln_length += abs(int(line[1]) - int(line[0]) + 1)
-            sim_errors += int(line[4])
+            indels = int(line[4]) - int(line[5])
+            aln_length -= indels
+            sim_errors += int(line[5])
     return aln_length, sim_errors
 
 

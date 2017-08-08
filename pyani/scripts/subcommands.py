@@ -427,11 +427,12 @@ def subcmd_anim(args, logger):
             cmdline = anim.construct_nucmer_cmdline(qpath, spath,
                                                     args.outdir,
                                                     args.nucmer_exe,
+                                                    args.filter_exe,
                                                     args.maxmatch)
             outprefix = cmdline.split()[3]  # prefix for NUCmer output
             cmdlines.append(cmdline)
             comparisons.append(Comparison(qid, sid, cmdline,
-                                          outprefix + '.delta'))
+                                          outprefix + '.filter'))
         logger.info("Commands to be scheduled:\n\t%s", '\n\t'.join(cmdlines))
 
         # Create joblist of NUCmer command-lines

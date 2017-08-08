@@ -44,6 +44,7 @@ from matplotlib.colors import LinearSegmentedColormap
 
 # Defaults assume that common binaries are on the $PATH
 NUCMER_DEFAULT = "nucmer"
+FILTER_DEFAULT = "delta-filter"
 BLASTN_DEFAULT = "blastn"
 MAKEBLASTDB_DEFAULT = "makeblastdb"
 BLASTALL_DEFAULT = "blastall"
