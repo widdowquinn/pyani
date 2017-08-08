@@ -96,6 +96,7 @@ def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
 # Generate list of Job objects, one per NUCmer run
 def generate_nucmer_jobs(filenames, outdir='.',
                          nucmer_exe=pyani_config.NUCMER_DEFAULT,
+                         filter_exe=pyani_config.FILTER_DEFAULT,
                          maxmatch=False,
                          jobprefix="ANINUCmer"):
     """Return list of Jobs describing NUCmer command-lines for ANIm.
@@ -109,7 +110,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
     for each pairwise comparison.
     """
     cmdlines = generate_nucmer_commands(filenames, outdir, nucmer_exe,
-                                        maxmatch)
+                                        filter_exe, maxmatch)
     joblist = []
     for idx, cmd in enumerate(cmdlines):
         joblist.append(pyani_jobs.Job("%s_%06d" % (jobprefix, idx), cmd))
@@ -120,6 +121,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
 # passed sequence filenames
 def generate_nucmer_commands(filenames, outdir='.',
                              nucmer_exe=pyani_config.NUCMER_DEFAULT,
+                             filter_exe=pyani_config.FILTER_DEFAULT,
                              maxmatch=False):
     """Return list of NUCmer command-lines for ANIm.
 
@@ -134,7 +136,8 @@ def generate_nucmer_commands(filenames, outdir='.',
     cmdlines = []
     for idx, fname1 in enumerate(filenames[:-1]):
         cmdlines.extend([construct_nucmer_cmdline(fname1, fname2, outdir,
-                                                  nucmer_exe, maxmatch) for
+                                                  nucmer_exe, filter_exe,
+                                                  maxmatch) for
                          fname2 in filenames[idx + 1:]])
     return cmdlines
 
