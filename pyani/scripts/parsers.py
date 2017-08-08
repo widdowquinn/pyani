@@ -196,6 +196,30 @@ def build_parser_classify(subps, parents=None):
     parser.set_defaults(func=subcommands.subcmd_classify)
 
 
+def build_parser_plot(subps, parents=None):
+    """Return a command-line parser for the plot subcommand.
+
+    The plot subcommand takes specific arguments:
+
+    --method        (graphics method to use)
+    """
+    parser = subps.add_parser('plot', parents=parents,
+                              formatter_class=ArgumentDefaultsHelpFormatter)
+    # Required positional arguments: output directory and run ID
+    parser.add_argument(action='store',
+                        dest='outdir', default=None,
+                        help='output directory')
+    parser.add_argument(action='store',
+                        dest='run_id', default=None,
+                        help='run ID to plot')
+    # Label file, defaults to indir/labels.txt
+    parser.add_argument('--method', dest='method',
+                        action='store', default='seaborn',
+                        help='graphics method to use for plotting',
+                        choices=['seaborn', 'mpl', 'plotly'])
+    parser.set_defaults(func=subcommands.subcmd_plot)
+    
+
 def build_parser_index(subps, parents=None):
     """Return a command-line parser for the index subcommand.
 
@@ -367,6 +391,7 @@ def parse_cmdline():
                                                   parser_scheduler,
                                                   parser_run_common])
     build_parser_report(subparsers, parents=[parser_common])
+    build_parser_plot(subparsers, parents=[parser_common])
     build_parser_classify(subparsers, parents=[parser_common])
 
     # Parse arguments
