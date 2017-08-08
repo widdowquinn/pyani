@@ -18,7 +18,7 @@ def test_anim_pairwise_basic():
     """Test generation of basic NUCmer pairwise comparison command.
     """
     cmd = anim.construct_nucmer_cmdline("file1.fna", "file2.fna")
-    assert_equal(cmd, "nucmer -mum -p ./nucmer_output/file1_vs_file2 " +
+    assert_equal(cmd, "nucmer --mum -p ./nucmer_output/file1_vs_file2 " +
                  "file1.fna file2.fna")
     print(cmd)
 
@@ -27,7 +27,7 @@ def test_anim_pairwise_maxmatch():
     """
     cmd = anim.construct_nucmer_cmdline("file1.fna", "file2.fna",
                                         maxmatch=True)
-    assert_equal(cmd, "nucmer -maxmatch -p ./nucmer_output/file1_vs_file2 " +
+    assert_equal(cmd, "nucmer --maxmatch -p ./nucmer_output/file1_vs_file2 " +
                  "file1.fna file2.fna")
     print(cmd)
 
@@ -38,16 +38,16 @@ def test_anim_collection():
     """
     files = ["file1", "file2", "file3", "file4"]
     cmdlist = anim.generate_nucmer_commands(files)
-    assert_equal(cmdlist, ['nucmer -mum -p ./nucmer_output/file1_vs_file2 ' +
+    assert_equal(cmdlist, ['nucmer --mum -p ./nucmer_output/file1_vs_file2 ' +
                            'file1 file2',
-                           'nucmer -mum -p ./nucmer_output/file1_vs_file3 ' +
+                           'nucmer --mum -p ./nucmer_output/file1_vs_file3 ' +
                            'file1 file3',
-                           'nucmer -mum -p ./nucmer_output/file1_vs_file4 ' +
+                           'nucmer --mum -p ./nucmer_output/file1_vs_file4 ' +
                            'file1 file4',
-                           'nucmer -mum -p ./nucmer_output/file2_vs_file3 ' +
+                           'nucmer --mum -p ./nucmer_output/file2_vs_file3 ' +
                            'file2 file3',
-                           'nucmer -mum -p ./nucmer_output/file2_vs_file4 ' +
+                           'nucmer --mum -p ./nucmer_output/file2_vs_file4 ' +
                            'file2 file4',
-                           'nucmer -mum -p ./nucmer_output/file3_vs_file4 ' +
+                           'nucmer --mum -p ./nucmer_output/file3_vs_file4 ' +
                            'file3 file4'])
     print(cmdlist)
