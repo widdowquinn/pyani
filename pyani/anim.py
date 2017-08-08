@@ -183,7 +183,7 @@ def parse_delta(filename):
             continue
         # We only process lines with seven columns:
         if len(line) == 7:
-            aln_length += abs(int(line[1]) - int(line[0]))
+            aln_length += abs(int(line[1]) - int(line[0]) + 1)
             sim_errors += int(line[4])
     return aln_length, sim_errors
 
