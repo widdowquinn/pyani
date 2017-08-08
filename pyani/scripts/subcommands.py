@@ -587,14 +587,24 @@ def subcmd_report(args, logger):
         for run_id in run_ids:
             logger.info("Extracting comparison results for run %s", run_id)
             results = pyani_db.ANIResults(args.dbpath, run_id)
-            for matname in ['identity', 'coverage', 'aln_lengths',
-                            'sim_errors', 'hadamard']:
+            for matname, args in [('identity', {'colour_num': 0.95}),
+                                  ('coverage', {'colour_num': 0.95}),
+                                  ('aln_lengths', {}),
+                                  ('sim_errors', {}),
+                                  ('hadamard', {})]:
                 logger.info("Writing %s results", matname)
                 outfname = '_'.join([outfstem, matname, str(run_id)])
                 pyani_report.write_dbtable(getattr(results, matname),
-                                           outfname, formats, show_index=True)
+                                           outfname, formats, show_index=True,
+                                           **args)
             
 
+# Generate plots of pyani outputs
+def subcmd_plot(args, logger):
+    """Generate plots for an analysis."""
+    raise NotImplementedError
+
+                
 # Classify input genomes on basis of ANI coverage and identity output
 def subcmd_classify(args, logger):
     """Generate classifications for an analysis."""

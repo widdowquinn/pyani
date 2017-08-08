@@ -91,8 +91,17 @@ def colour_coverage(series, threshold=0.95, colour="#FF2222"):
         return ['' for v in series]
 
 
+def colour_numeric(val, threshold=0.95, colour="#FF2222"):
+    """Highlight numeric values over a threshold."""
+    if val > threshold:
+        colour = colour
+    else:
+        colour = 'black'
+    return 'color: %s' % colour
+    
+
 # Write a dataframe in pyani-styled HTML
-def write_styled_html(path, df, index=None):
+def write_styled_html(path, df, index=None, colour_num=False):
     """Add CSS styling to a dataframe and write as HTML.
 
     path       path to write output file
@@ -108,6 +117,10 @@ def write_styled_html(path, df, index=None):
 
     # Colour percentage identity threshold/coverage values > 95% in red
     styled = styled.apply(colour_identity).apply(colour_coverage)
+
+    # Colour numbers over a given threshold
+    if colour_num:
+        styled = styled.applymap(colour_numeric)
 
     # Apply styles
     styled = styled.set_table_styles([hover_highlight(),
@@ -134,11 +147,16 @@ def write_to_stdout(stem, df, show_index=False, line_width=None):
         
 # Write a table returned from the pyani database in the requested format
 def write_dbtable(df, path=None, formats=('tab',), index=False,
-                  show_index=False):
-    """Write database result table to output file in named format."""
+                  show_index=False, colour_num=False):
+    """Write database result table to output file in named format.
+
+    - colour_num     use colours for values in HTML output for identity/
+                     coverage tables
+    """
     formatdict = {'tab': (df.to_csv, {'sep': '\t', 'index': False}, '.tab'),
                   'excel': (df.to_excel, {'index': show_index}, '.xlsx'),
-                  'html': (write_styled_html, {'df': df, 'index': index},
+                  'html': (write_styled_html, {'df': df, 'index': index,
+                                               'colour_num': colour_num},
                            '.html'),
                   'stdout': (write_to_stdout, {'df': df,
                                                'show_index': show_index}, '')
