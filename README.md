@@ -204,6 +204,55 @@ INFO: Collecting data for run with ID: 4
 INFO: Completed. Time taken: 1.285
 ```
 
+You can see a run's results in the terminal by specifying the `stdout` format. For example, to see the identity, coverage, and other output matrices, you would specify `--run_matrices <RUN>` and `--formats=stdout` as below:
+
+```bash
+$ ./pyani.py report C_blochmannia_ANIm --formats=stdout --run_matrices 1
+TABLE: C_blochmannia_ANIm/matrix_identity_1
+                                                    C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
+C. Blochmannia pennsylvanicus BPEN                                            1.000000                   0.834866                   0.836903                        0.980244                                           0.843700                                                0.829509      
+C. Blochmannia floridanus                                                     0.834866                   1.000000                   0.828733                        0.834916                                           0.847060                                                0.857859      
+C. Blochmannia vafer BVAF                                                     0.836903                   0.828733                   1.000000                        0.837811                                           0.866015                                                0.844438      
+C. Blochmannia chromaiodes 640                                                0.980244                   0.834916                   0.837811                        1.000000                                           0.849834                                                0.834769      
+B. endosymbiont of Polyrhachis (Hedomyrma) turn...                            0.843700                   0.847060                   0.866015                        0.849834                                           1.000000                                                0.844228      
+B. endosymbiont of Camponotus (Colobopsis) obli...                            0.829509                   0.857859                   0.844438                        0.834769                                           0.844228                                                1.000000      
+
+TABLE: C_blochmannia_ANIm/matrix_coverage_1
+                                                    C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
+C. Blochmannia pennsylvanicus BPEN                                            1.000000                   0.045736                   0.041404                        1.000306                                           0.017263                                                0.021027      
+C. Blochmannia floridanus                                                     0.051317                   1.000000                   0.152609                        0.054930                                           0.016366                                                0.010749      
+C. Blochmannia vafer BVAF                                                     0.045362                   0.149012                   1.000000                        0.046520                                           0.008356                                                0.014706      
+C. Blochmannia chromaiodes 640                                                1.000856                   0.048983                   0.042485                        1.000000                                           0.014056                                                0.016140      
+B. endosymbiont of Polyrhachis (Hedomyrma) turn...                            0.018238                   0.015410                   0.008058                        0.014841                                           1.000000                                                0.020416      
+B. endosymbiont of Camponotus (Colobopsis) obli...                            0.021508                   0.009799                   0.013730                        0.016500                                           0.019766                                                1.000000      
+
+TABLE: C_blochmannia_ANIm/matrix_aln_lengths_1
+                                                    C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
+C. Blochmannia pennsylvanicus BPEN                                            791654.0                    36207.0                    32778.0                        791896.0                                            13666.0                                                 16646.0      
+C. Blochmannia floridanus                                                      36207.0                   705557.0                   107674.0                         38756.0                                            11547.0                                                  7584.0      
+C. Blochmannia vafer BVAF                                                      32778.0                   107674.0                   722585.0                         33615.0                                             6038.0                                                 10626.0      
+C. Blochmannia chromaiodes 640                                                791896.0                    38756.0                    33615.0                        791219.0                                            11121.0                                                 12770.0      
+B. endosymbiont of Polyrhachis (Hedomyrma) turn...                             13666.0                    11547.0                     6038.0                         11121.0                                           749321.0                                                 15298.0      
+B. endosymbiont of Camponotus (Colobopsis) obli...                             16646.0                     7584.0                    10626.0                         12770.0                                            15298.0                                                     NaN      
+
+TABLE: C_blochmannia_ANIm/matrix_sim_errors_1
+                                                    C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
+C. Blochmannia pennsylvanicus BPEN                                                 0.0                     5979.0                     5346.0                         15645.0                                             2136.0                                                  2838.0      
+C. Blochmannia floridanus                                                       5979.0                        0.0                    18441.0                          6398.0                                             1766.0                                                  1078.0      
+C. Blochmannia vafer BVAF                                                       5346.0                    18441.0                        0.0                          5452.0                                              809.0                                                  1653.0      
+C. Blochmannia chromaiodes 640                                                 15645.0                     6398.0                     5452.0                             0.0                                             1670.0                                                  2110.0      
+B. endosymbiont of Polyrhachis (Hedomyrma) turn...                              2136.0                     1766.0                      809.0                          1670.0                                                0.0                                                  2383.0      
+B. endosymbiont of Camponotus (Colobopsis) obli...                              2838.0                     1078.0                     1653.0                          2110.0                                             2383.0                                                     0.0      
+
+TABLE: C_blochmannia_ANIm/matrix_hadamard_1
+                                                    C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
+C. Blochmannia pennsylvanicus BPEN                                            1.000000                   0.038183                   0.034652                        0.980543                                           0.014564                                                0.017442      
+C. Blochmannia floridanus                                                     0.042843                   1.000000                   0.126472                        0.045862                                           0.013863                                                0.009221      
+C. Blochmannia vafer BVAF                                                     0.037964                   0.123491                   1.000000                        0.038975                                           0.007237                                                0.012418      
+C. Blochmannia chromaiodes 640                                                0.981082                   0.040896                   0.035594                        1.000000                                           0.011945                                                0.013473      
+B. endosymbiont of Polyrhachis (Hedomyrma) turn...                            0.015387                   0.013053                   0.006978                        0.012613                                           1.000000                                                0.017236      
+B. endosymbiont of Camponotus (Colobopsis) obli...                            0.017841                   0.008406                   0.011594                        0.013774                                           0.016687                                                1.000000   
+```
 
 
 ### 5. Classifying Genomes from Analysis Results
