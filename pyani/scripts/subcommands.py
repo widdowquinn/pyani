@@ -530,42 +530,32 @@ def subcmd_report(args, logger):
         outfname = os.path.join(args.outdir, "runs")
         logger.info("Writing table of pyani runs from the database to %s.*",
                     outfname)
-        data = pyani_db.get_all_runs(args.dbpath)
-        headers = ['run ID', 'name', 'method', 'date run', 'command-line']
-        pyani_report.write_dbtable(data, headers, outfname, formats,
-                                   index='run ID')
+        data = pyani_db.get_df_runs(args.dbpath)
+        pyani_report.write_dbtable(data, outfname, formats, index='run ID')
 
     # Report genomes in the database
     if args.show_genomes:
         outfname = os.path.join(args.outdir, "genomes")
         logger.info("Writing table of genomes from the database to %s.*",
                     outfname)
-        data = pyani_db.get_all_genomes(args.dbpath)
-        headers = ['genome ID', 'description', 'path',
-                   'MD5 hash', 'genome length']
-        pyani_report.write_dbtable(data, headers, outfname, formats,
-                                   index='genome ID')
+        data = pyani_db.get_df_genomes(args.dbpath)
+        pyani_report.write_dbtable(data, outfname, formats, index='genome ID')
 
     # Report table of all genomes used for each run
     if args.show_runs_genomes:
         outfname = os.path.join(args.outdir, "runs_genomes")
         logger.info("Writing table of pyani runs, with associated genomes " +
                     "to %s.*", outfname)
-        data = pyani_db.get_genomes_by_runs(args.dbpath)
-        headers = ['run ID', 'name', 'method', 'date run',
-                   'genome ID', 'description', 'path', 'MD5 hash',
-                   'genome length', 'class', 'label']
-        pyani_report.write_dbtable(data, headers, outfname, formats)
+        data = pyani_db.get_df_run_genomes(args.dbpath)
+        pyani_report.write_dbtable(data, outfname, formats)
         
     # Report table of all runs in which a genome is involved
     if args.show_genomes_runs:
         outfname = os.path.join(args.outdir, "genomes_runs")
         logger.info("Writing table of genomes, with associated pyani runs" +
                     "to %s.*", outfname)
-        data = pyani_db.get_runs_by_genomes(args.dbpath)
-        headers = ['genome ID', 'description', 'path', 'MD5 hash',
-                   'genome length', 'run ID', 'name', 'method', 'date run']
-        pyani_report.write_dbtable(data, headers, outfname, formats)
+        data = pyani_db.get_df_genome_runs(args.dbpath)
+        pyani_report.write_dbtable(data, outfname, formats)
 
     # Report table of comparison results for the indicated runs
     if args.run_results:
@@ -578,32 +568,27 @@ def subcmd_report(args, logger):
             run_data = pyani_db.get_run(args.dbpath, run_id)
             logger.info("Collecting data for run with ID: %s (%s)", run_id,
                         run_data[5])
-            data = pyani_db.get_comparisons_by_run(args.dbpath, run_id)
-            headers = ['query', 'subject',
-                       'query ID', 'subject ID', 'aligned length',
-                       'similarity errors', 'percentage identity',
-                       'query coverage', 'subject coverage', 'program',
-                       'version', 'fragsize', 'maxmatch']
-            pyani_report.write_dbtable(data, headers, outfname, formats)
+            data = pyani_db.get_df_comparisons(args.dbpath, run_id)
+            pyani_report.write_dbtable(data, outfname, formats)
 
     # Report matrices of comparison results for the indicated runs
-    # For ANIm, the identity results are a symmetric matrix
+    # For ANIm, all results other than coverage are symmetric matrices,
+    # so we only get results in the forward direction.
     if args.run_matrices:
         outfstem = os.path.join(args.outdir, "matrix")
         run_ids = [run_id.strip() for run_id in args.run_matrices.split(',')]
         logger.info("Attempting to write results matrices for runs: %s",
                     run_ids)
         for run_id in run_ids:
-            # Get genome IDs
-            genome_ids = pyani_db.get_genome_ids_by_run(args.dbpath, run_id)
-            logger.info("Genome IDs associated with run %s: %s", run_id,
-                        genome_ids)
-            # Get genome labels
-            labels = [pyani_db.get_genome_label(args.dbpath,
-                                                genome_id, run_id) for
-                      genome_id in genome_ids]
-            logger.info("Labels:\n\t%s", '\n\t'.join(labels))
-
+            logger.info("Extracting comparison results for run %s", run_id)
+            results = pyani_db.ANIResults(args.dbpath, run_id)
+            for matname in ['identity', 'coverage', 'aln_lengths',
+                            'sim_errors', 'hadamard']:
+                logger.info("Writing %s results", matname)
+                outfname = '_'.join([outfstem, matname, str(run_id)])
+                pyani_report.write_dbtable(getattr(results, matname),
+                                           outfname, formats, show_index=True)
+            
 
 # Classify input genomes on basis of ANI coverage and identity output
 def subcmd_classify(args, logger):

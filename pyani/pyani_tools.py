@@ -134,7 +134,7 @@ class ANIResults(object):
         #        (self.similarity_errors, "ANIm_similarity_errors"),
         #        (self.hadamard, "ANIm_hadamard")]
 
-
+        
 # Class to hold BLAST functions
 class BLASTfunctions(object):
     """Class to hold BLAST functions."""

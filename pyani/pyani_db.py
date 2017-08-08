@@ -40,6 +40,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import numpy as np
+import pandas as pd
 import sqlite3
 
 # SQL SCRIPTS
@@ -183,6 +185,10 @@ SQL_GETRUN = """
    SELECT * FROM runs WHERE run_id=?;
 """
 
+# Get method for a single analysis run
+SQL_GETMETHOD = """
+   SELECT method FROM runs WHERE run_id=?;
+"""
 
 # Add a genome to the database
 SQL_ADDGENOME = """
@@ -353,6 +359,16 @@ def get_run(dbpath, run_id):
         cur = conn.cursor()
         cur.execute(SQL_GETRUN, (run_id,))
     return cur.fetchone()
+
+
+# Get a specified run's method from the database
+def get_method(dbpath, run_id):
+    """Return the method used for a specified run."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_GETMETHOD, (run_id,))
+    return cur.fetchone()[0]
 
 
 # Add a new genome to the database
@@ -574,3 +590,162 @@ def get_genome_class(dbpath, genome_id, run_id):
     return result[2]  
 
 
+# RESULTS AS DATAFRAMES
+# =====================
+
+# Get comparisons for a single result, as a dataframe
+def get_df_comparisons(dbpath, run_id):
+    """Return a dataframe describing all comparisons for a single run."""
+    data = get_comparisons_by_run(dbpath, run_id)
+    headers = ['query', 'subject',
+               'query ID', 'subject ID', 'aligned length',
+               'similarity errors', 'percentage identity',
+               'query coverage', 'subject coverage', 'program',
+               'version', 'fragsize', 'maxmatch']
+    df = pd.DataFrame(data)
+    df.columns = headers
+    return df
+
+
+# Get all runs for which each genome is involved
+def get_df_genome_runs(dbpath):
+    """Return dataframe describing all runs for which a genome is involved."""
+    data = get_runs_by_genomes(dbpath)
+    headers = ['genome ID', 'description', 'path', 'MD5 hash',
+               'genome length', 'run ID', 'name', 'method', 'date run']
+    df = pd.DataFrame(data)
+    df.columns = headers
+    return df
+
+
+# Get all genomes used for each run
+def get_df_run_genomes(dbpath):
+    """Return dataframe describing all genomes involved with each run."""
+    data = get_genomes_by_runs(dbpath)
+    headers = ['run ID', 'name', 'method', 'date run',
+               'genome ID', 'description', 'path', 'MD5 hash',
+               'genome length', 'class', 'label']
+    df = pd.DataFrame(data)
+    df.columns = headers
+    return df
+
+
+# Get all genomes in the database
+def get_df_genomes(dbpath):
+    """Return dataframe describing all genomes in the database."""
+    data = get_all_genomes(dbpath)
+    headers = ['genome ID', 'description', 'path',
+               'MD5 hash', 'genome length']
+    df = pd.DataFrame(data)
+    df.columns = headers
+    return df
+    
+
+# Get all runs in the database
+def get_df_runs(dbpath):
+    """Return dataframe describing all runs in the database."""
+    data = get_all_runs(dbpath)
+    headers = ['run ID', 'name', 'method', 'date run', 'command-line']
+    df = pd.DataFrame(data)
+    df.columns = headers
+    return df
+    
+
+
+
+# RESULTS CLASS
+# =============
+
+# Class to produce/hold ANI results from a named run
+class ANIResults(object):
+    """Interfaces with the pyani database to extract and hold run output.
+
+    Provides five dataframes, populated on instantiation
+
+    - identity    %ID of aligned regions, symmetrical for ANIm,
+                  not necessarily for other methods
+    - coverage    %coverage of query sequence by aligned regions
+    - aln_lengths total length of aligned region (symmetrical)
+    - sim_errors  total number of alignment errors (mismatches, etc.
+                  -symmetrical)
+    - hadamard    dot product of coverage and identity matrices
+    """
+
+    def __init__(self, dbpath, run_id):
+        """Initialise with empty dataframes and path to database."""
+        self.dbpath = dbpath
+        self.run_id = run_id
+        self.method = get_method(self.dbpath, self.run_id)
+        self.__get_labels()
+        self.__initialise_dataframes()
+        self.__get_data()
+
+    def __initialise_dataframes(self):
+        """Initialise empty dataframes for object.
+
+        Creates five empty dataframes for ANI results.
+        """
+        self.identity = pd.DataFrame(index=self.genome_ids,
+                                     columns=self.genome_ids, dtype=float)
+        self.coverage = pd.DataFrame(index=self.genome_ids,
+                                     columns=self.genome_ids, dtype=float)
+        self.aln_lengths = pd.DataFrame(index=self.genome_ids,
+                                     columns=self.genome_ids, dtype=float)
+        self.sim_errors = pd.DataFrame(index=self.genome_ids,
+                                     columns=self.genome_ids, dtype=float)
+        self.hadamard = pd.DataFrame(index=self.genome_ids,
+                                     columns=self.genome_ids, dtype=float)
+
+    def __get_labels(self):
+        """Retrieve genome IDs and labels for this run."""
+        self.genome_ids = get_genome_ids_by_run(self.dbpath, self.run_id)
+        self.labels = {genome_id: get_genome_label(self.dbpath, genome_id,
+                                                   self.run_id) for
+                       genome_id in self.genome_ids}
+        self.lengths = {genome_id: get_genome_length(self.dbpath, genome_id)
+                        for genome_id in self.genome_ids}
+
+    def __get_data(self):
+        """Populate dataframes from database."""
+        comparisons = get_df_comparisons(self.dbpath, self.run_id)
+        for idx, row in comparisons.iterrows():
+            qid, sid = row['query ID'], row['subject ID']
+            
+            # Add percentage identity values; ANIm is symmetrical
+            self.identity.loc[qid, sid] = row['percentage identity']
+            if self.method == 'ANIm':
+                self.identity.loc[sid, qid] = row['percentage identity']
+
+            # Add query coverage values; ANIm only has a single comparison,
+            # so the lower triangle is subject coverage
+            self.coverage.loc[qid, sid] = row['query coverage']
+            if self.method == 'ANIm':
+                self.coverage.loc[sid, qid] = row['subject coverage']
+
+            # Add similarity errors; ANIm is symmetrical
+            self.sim_errors.loc[qid, sid] = row['similarity errors']
+            if self.method == 'ANIm':
+                self.sim_errors.loc[sid, qid] = row['similarity errors']
+
+            # Add alignment lengths; ANIm is symmetrical
+            self.aln_lengths.loc[qid, sid] = row['aligned length']
+            if self.method == 'ANIm':
+                self.aln_lengths.loc[sid, qid] = row['aligned length']
+            self.aln_lengths.loc[qid, qid] = self.lengths[qid]
+
+            # Calculate Hadamard matrix
+            self.hadamard = self.identity * self.coverage
+        
+        # Populate remaining diagonals
+        np.fill_diagonal(self.identity.values, 1.0)
+        np.fill_diagonal(self.coverage.values, 1.0)
+        np.fill_diagonal(self.sim_errors.values, 0.0)
+        np.fill_diagonal(self.hadamard.values, 1.0)
+
+        # Add labels and indices
+        for matname in ['identity', 'coverage', 'aln_lengths',
+                        'sim_errors', 'hadamard']:
+            mat = getattr(self, matname)
+            mat.index = [self.labels[val] for val in mat.index]
+            mat.columns = [self.labels[val] for val in
+                           mat.columns]

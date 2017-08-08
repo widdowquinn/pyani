@@ -48,7 +48,7 @@ import pandas as pd
 
 def colour_rows(series, even="#DDECF5", odd="#6CB6E4"):
     """Colour rows in a dataframe."""
-    is_odd = [row % 2 for row in list(series.index)]
+    is_odd = [idx % 2 for idx, row in enumerate(series.index)]
     return ['background-color: %s' % odd if v
             else 'background-color: %s' % even for v in is_odd]
 
@@ -84,7 +84,7 @@ def colour_identity(series, threshold=0.95, colour="#FF2222"):
 
 def colour_coverage(series, threshold=0.95, colour="#FF2222"):
     """Highlight percent coverage over a threshold."""
-    if 'coverage' in series.name:
+    if 'coverage' in str(series.name):
         mask = series >= threshold
         return ['color: %s' % colour if v else '' for v in mask]
     else:
@@ -125,22 +125,23 @@ def write_styled_html(path, df, index=None):
 
 
 # Write a dataframe to STDOUT
-def write_to_stdout(stem, df, index=None, line_width=None):
+def write_to_stdout(stem, df, show_index=False, line_width=None):
     """Write dataframe in tab-separated form to STDOUT."""
     sys.stdout.write("TABLE: %s\n" % stem)
-    sys.stdout.write(df.to_string(index=index, line_width=line_width) + '\n\n')
+    sys.stdout.write(df.to_string(index=show_index, line_width=line_width) +
+                     '\n\n')
         
         
 # Write a table returned from the pyani database in the requested format
-def write_dbtable(data, headers, path=None, formats=('tab',), index=False):
+def write_dbtable(df, path=None, formats=('tab',), index=False,
+                  show_index=False):
     """Write database result table to output file in named format."""
-    df = pd.DataFrame(data)
-    df.columns = headers
     formatdict = {'tab': (df.to_csv, {'sep': '\t', 'index': False}, '.tab'),
-                  'excel': (df.to_excel, {'index': False}, '.xlsx'),
+                  'excel': (df.to_excel, {'index': show_index}, '.xlsx'),
                   'html': (write_styled_html, {'df': df, 'index': index},
                            '.html'),
-                  'stdout': (write_to_stdout, {'df': df, 'index': False}, '')
+                  'stdout': (write_to_stdout, {'df': df,
+                                               'show_index': show_index}, '')
     }
     for format in formats:
         func, args, ext = formatdict[format]
