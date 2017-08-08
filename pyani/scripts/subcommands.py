@@ -431,8 +431,12 @@ def subcmd_anim(args, logger):
                                                     args.maxmatch)
             outprefix = cmdline.split()[3]  # prefix for NUCmer output
             cmdlines.append(cmdline)
-            comparisons.append(Comparison(qid, sid, cmdline,
-                                          outprefix + '.filter'))
+            if args.nofilter:
+                comparisons.append(Comparison(qid, sid, cmdline,
+                                              outprefix + '.delta'))
+            else:
+                comparisons.append(Comparison(qid, sid, cmdline,
+                                              outprefix + '.filter'))
         logger.info("Commands to be scheduled:\n\t%s", '\n\t'.join(cmdlines))
 
         # Create joblist of NUCmer command-lines

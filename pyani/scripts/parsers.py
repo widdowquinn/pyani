@@ -272,7 +272,10 @@ def build_parser_anim(subps, parents=None):
                         help="path to delta-filter executable")
     parser.add_argument("--maxmatch", dest="maxmatch",
                         action="store_true", default=False,
-                        help="Override MUMmer to allow all NUCmer matches")
+                        help="override MUMmer to allow all NUCmer matches")
+    parser.add_argument("--nofilter", dest="nofilter",
+                        action="store_true", default=False,
+                        help="do not use delta-filter for 1:1 NUCmer matches")
     parser.set_defaults(func=subcommands.subcmd_anim)
 
 

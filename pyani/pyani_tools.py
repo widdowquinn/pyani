@@ -247,13 +247,19 @@ def add_dblabels(dbpath, run_id, labelspath):
     record for humans to audit, it's not needed for the database interaction;
     and <LABEL> is the label associated with that genome.
 
+    If the genome referred to in the label file is not present in the database,
+    that line is skipped.
+
     Returns a list of IDs for each label
     """
     label_ids = []
     with open(labelspath, 'r') as lfh:
         for line in lfh.readlines():
             hash, stem, label = line.strip().split('\t')
-            genome_id = pyani_db.get_genome(dbpath, hash)[0][0]
+            try:
+                genome_id = pyani_db.get_genome(dbpath, hash)[0][0]
+            except IndexError:
+                continue
             label_ids.append(pyani_db.add_genome_label(dbpath, genome_id,
                                                        run_id, label))
     return label_ids
@@ -273,13 +279,19 @@ def add_dbclasses(dbpath, run_id, classespath):
     record for humans to audit, it's not needed for the database interaction;
     and <CLASS> is the class associated with that genome.
 
+    If the genome referred to in the label file is not present in the database,
+    that line is skipped.
+
     Returns a list of IDs for each class
     """
     class_ids = []
     with open(classespath, 'r') as lfh:
         for line in lfh.readlines():
             hash, stem, gclass = line.strip().split('\t')
-            genome_id = pyani_db.get_genome(dbpath, hash)[0][0]
+            try:
+                genome_id = pyani_db.get_genome(dbpath, hash)[0][0]
+            except IndexError:
+                continue
             class_ids.append(pyani_db.add_genome_class(dbpath, genome_id,
                                                        run_id, gclass))
     return class_ids
