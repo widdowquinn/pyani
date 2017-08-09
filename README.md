@@ -255,7 +255,28 @@ B. endosymbiont of Camponotus (Colobopsis) obli...                            0.
 ```
 
 
-### 5. Classifying Genomes from Analysis Results
+
+### 5. Generating graphical output for ANI
+
+The output of a `pyani` run can also be represented graphically, using the `plot` subcommand. For example, the command:
+
+```bash
+pyani.py plot C_blochmannia_ANIm 1 -v --formats png,pdf
+```
+
+will place `.pdf` and `.png` format output in the `C_blochmannia_ANIm` output directory for the run wuth ID 1, generated above. Five heatmaps are generated:
+
+- percentage identity
+- percentage coverage (for both query and subject)
+- alignment length (total aligned length)
+- similarity errors (total number of mismatches, not including indels)
+- hadamard matrix (dot product of identity and coverage matrices)
+
+The heatmaps also include dendrograms, clustering the rows and columns by overall similarity.
+
+
+
+### 6. Classifying Genomes from Analysis Results
 
 
 
