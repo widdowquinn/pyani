@@ -54,9 +54,8 @@ import sqlite3
 from collections import namedtuple
 from itertools import combinations
 
-from .. import (download, anim, run_sge,
+from .. import (download, anim, run_sge, pyani_config, pyani_graphics,
                 pyani_tools, pyani_db, pyani_files, pyani_jobs, pyani_report)
-from ..pyani_config import ALIGNDIR
 from ..pyani_tools import last_exception
 from .. import run_multiprocessing as run_mp
 
@@ -363,7 +362,7 @@ def subcmd_anim(args, logger):
     # Generate commandlines for NUCmer analysis and output compression
     logger.info("Generating ANIm command-lines")
     deltadir = os.path.join(os.path.join(args.outdir,
-                                         ALIGNDIR['ANIm']))
+                                         pyani_config.ALIGNDIR['ANIm']))
     logger.info("NUCmer output will be written temporarily to %s", deltadir)
 
     # Create output directories
@@ -601,8 +600,51 @@ def subcmd_report(args, logger):
 
 # Generate plots of pyani outputs
 def subcmd_plot(args, logger):
-    """Generate plots for an analysis."""
-    raise NotImplementedError
+    """Produce graphical output for an analysis.
+
+    This is graphical output for representing the ANI analysis results, and
+    takes the form of a heatmap, or heatmap with dendrogram.
+    """
+    # Announce what's going on to the user
+    logger.info("Generating graphical output for analyses")
+    logger.info("Writing output to: %s", args.outdir)
+    logger.info("Rendering method: %s", args.method)
+
+    # Distribution dictionary of graphics methods
+    gmethod = {'mpl': pyani_graphics.heatmap_mpl,
+               'seaborn': pyani_graphics.heatmap_seaborn}
+    
+    # Work on each run:
+    run_ids = [int(run) for run in args.run_id.split(',')]
+    logger.info("Generating graphics for runs: %s", run_ids)
+    for run_id in run_ids:
+    
+        # Get results matrices for the run
+        logger.info("Acquiring results for run %d", run_id)
+        results = pyani_db.ANIResults(args.dbpath, run_id)
+    
+        # Parse output formats
+        outfmts = args.formats.split(',')
+        logger.info("Requested output formats: %s", outfmts)
+
+        # Generate filestems
+        for matname in ['identity', 'coverage', 'aln_lengths', 'sim_errors',
+                        'hadamard']:
+            df = getattr(results, matname)           # results matrix
+            cmap = pyani_config.get_colormap(df, matname)
+            for fmt in outfmts:
+                outfname = os.path.join(args.outdir,
+                                        "matrix_{0}_{1}.{2}".format(matname,
+                                                                    run_id,
+                                                                    fmt))
+                logger.info("Writing graphics to %s", outfname)
+                params = pyani_graphics.Params(cmap, results.labels,
+                                               results.classes)
+                # Draw figure
+                gmethod[args.method](df, outfname,
+                                     title="matrix_{0}_{1}".format(matname,
+                                                                   run_id),
+                                     params=params)
 
                 
 # Classify input genomes on basis of ANI coverage and identity output

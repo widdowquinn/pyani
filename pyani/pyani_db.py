@@ -703,6 +703,10 @@ class ANIResults(object):
             get_genome_label(self.dbpath, genome_id,
                              self.run_id), str(genome_id)]) for
                        genome_id in self.genome_ids}
+        self.classes = {genome_id: '_'.join([
+            get_genome_class(self.dbpath, genome_id,
+                             self.run_id), str(genome_id)]) for
+                       genome_id in self.genome_ids}
         self.lengths = {genome_id: get_genome_length(self.dbpath, genome_id)
                         for genome_id in self.genome_ids}
 
@@ -732,7 +736,6 @@ class ANIResults(object):
             self.aln_lengths.loc[qid, sid] = row['aligned length']
             if self.method == 'ANIm':
                 self.aln_lengths.loc[sid, qid] = row['aligned length']
-            self.aln_lengths.loc[qid, qid] = self.lengths[qid]
 
             # Calculate Hadamard matrix
             self.hadamard = self.identity * self.coverage
@@ -742,6 +745,8 @@ class ANIResults(object):
         np.fill_diagonal(self.coverage.values, 1.0)
         np.fill_diagonal(self.sim_errors.values, 0.0)
         np.fill_diagonal(self.hadamard.values, 1.0)
+        for idx, length in self.lengths.items():
+            self.aln_lengths.loc[idx, idx] = length
 
         # Add labels and indices
         for matname in ['identity', 'coverage', 'aln_lengths',

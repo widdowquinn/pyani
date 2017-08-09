@@ -212,7 +212,14 @@ def build_parser_plot(subps, parents=None):
     parser.add_argument(action='store',
                         dest='run_id', default=None,
                         help='run ID to plot')
-    # Label file, defaults to indir/labels.txt
+    # Other optional arguments
+    parser.add_argument("--dbpath", action='store',
+                        dest='dbpath', default='.pyani/pyanidb',
+                        help='path to pyani database')    
+    # Graphics methods and formats
+    parser.add_argument('--formats', dest='formats',
+                        action='store', default='png',
+                        help='graphics output format (seaborn/mpl)')
     parser.add_argument('--method', dest='method',
                         action='store', default='seaborn',
                         help='graphics method to use for plotting',
@@ -328,7 +335,7 @@ def build_parser_report(subps, parents=None):
     # Optional arguments
     parser.add_argument("--dbpath", action='store',
                         dest='dbpath', default='.pyani/pyanidb',
-                        help='path to pyani database')
+                        help='path to pyani database')    
     parser.add_argument("--runs", action="store_true",
                         dest="show_runs", default=False,
                         help="Report table of analysis runs in database")

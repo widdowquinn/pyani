@@ -137,7 +137,10 @@ CMAP_BURD = LinearSegmentedColormap("BuRd", cdict_BuRd)
 # Graphics parameters for each output file. Note that this should be
 # in sync with the output file stems above
 def params_mpl(df):
-    """Return dict of matplotlib parameters, dependent on dataframe."""
+    """Return dict of matplotlib parameters, dependent on dataframe.
+
+    DEPRECATED FROM v0.3 onwards
+    """
     return {'ANIb_alignment_lengths': ('afmhot', df.values.min(),
                                        df.values.max()),
             'ANIb_percentage_identity': ('spbnd_BuRd', 0, 1),
@@ -160,3 +163,18 @@ def params_mpl(df):
             'ANIblastall_hadamard': ('hadamard_BuRd', 0, 1),
             'ANIblastall_similarity_errors': ('afmhot', df.values.min(),
                                               df.values.max())}
+
+
+def get_colormap(dataframe, matname):
+    """Returns colormap parameters for a dataframe.
+
+    The colormap is dependent on the type of analysis that was done.
+    """
+    paramdict =  {'identity': ('spbnd_BuRd', 0, 1),
+                  'coverage': ('BuRd', 0, 1),
+                  'aln_lengths': ('afmhot', dataframe.values.min(),
+                                  dataframe.values.max()),
+                  'sim_errors': ('afmhot', dataframe.values.min(),
+                                 dataframe.values.max()),
+                  'hadamard': ('hadamard_BuRd', 0, 1)}
+    return paramdict[matname]
