@@ -443,6 +443,7 @@ def subcmd_anim(args, logger):
                                               nucmer_version,
                                               maxmatch=args.maxmatch) is None]
     logger.info("Comparisons still to be performed:\n\t%s", comparison_ids)
+    logger.info("Total comparisons to be conducted: %d", len(comparison_ids))
 
     if not len(comparison_ids):
         logger.info("All comparison results already present in database " +
