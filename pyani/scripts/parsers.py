@@ -240,6 +240,13 @@ def build_parser_index(subps, parents=None):
     parser.add_argument(action='store',
                         dest='indir', default=None,
                         help='input directory')
+    # Names for output files
+    parser.add_argument("--labels", dest="labelfname",
+                        action="store", default="labels.txt",
+                        help="Filename for labels file")
+    parser.add_argument("--classes", dest="classfname",
+                        action="store", default="classes.txt",
+                        help="Filename for classes file")
     parser.set_defaults(func=subcommands.subcmd_index)
 
 

@@ -54,6 +54,8 @@ import sqlite3
 from collections import namedtuple
 from itertools import combinations
 
+from Bio import SeqIO
+
 from .. import (download, anim, run_sge, pyani_config, pyani_graphics,
                 pyani_tools, pyani_db, pyani_files, pyani_jobs, pyani_report)
 from ..pyani_tools import last_exception
@@ -235,16 +237,47 @@ def subcmd_index(args, logger):
     logger.info('\n'.join(["Found FASTA files:"] +
                           ['\t' + fpath for fpath in fpaths]))
 
+    # Lists of class/label information
+    classes = []
+    labels = []
+    
     # Create MD5 hash for each file, if needed
     for fpath in fpaths:
+        fstem = os.path.splitext(os.path.split(fpath)[-1])[0]
         hashfname = os.path.splitext(fpath)[0] + '.md5'
         if os.path.isfile(hashfname):
             logger.info("%s already indexed (skipping)", fpath)
         else:
+            # Write an .md5 hash file
+            datahash = download.create_hash(fpath)
             logger.info("Writing hash to %s", hashfname)
             with open(hashfname, "w") as hfh:
-                hfh.write('\t'.join([download.create_hash(fpath),
-                                     fpath]) + '\n')
+                hfh.write('\t'.join([datahash, fpath]) + '\n')
+
+            # Parse the file and get the label/class information
+            with open(fpath, "r") as sfh:
+                label = list(SeqIO.parse(sfh, 'fasta'))[0].description
+            labels.append('\t'.join([datahash, fstem, label]))
+            classes.append('\t'.join([datahash, fstem, label]))
+
+    # Write class and label files
+    classfname = os.path.join(args.indir, args.classfname)
+    logger.info("Writing classes file to %s", classfname)
+    if os.path.exists(classfname):
+        logger.warning("Class file %s exists, not overwriting",
+                       classfname)
+    else:
+        with open(classfname, "w") as ofh:
+            ofh.write('\n'.join(classes) + '\n')
+            
+    labelfname = os.path.join(args.indir, args.labelfname)
+    logger.info("Writing labels file to %s", labelfname)
+    if os.path.exists(labelfname):
+        logger.warning("Labels file %s exists, not overwriting",
+                       labelfname)
+    else:
+        with open(labelfname, "w") as ofh:
+            ofh.write('\n'.join(labels) + '\n')
 
 
 def subcmd_createdb(args, logger):
