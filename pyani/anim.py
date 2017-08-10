@@ -32,6 +32,7 @@ from .pyani_tools import ANIResults
 # Generate list of Job objects, one per NUCmer run
 def generate_nucmer_jobs(filenames, outdir='.',
                          nucmer_exe=pyani_config.NUCMER_DEFAULT,
+                         filter_exe=pyani_config.FILTER_DEFAULT,
                          maxmatch=False,
                          jobprefix="ANINUCmer"):
     """Return a list of Jobs describing NUCmer command-lines for ANIm
@@ -45,7 +46,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
     for each pairwise comparison.
     """
     cmdlines = generate_nucmer_commands(filenames, outdir, nucmer_exe,
-                                        maxmatch)
+                                        filter_exe, maxmatch)
     joblist = []
     for idx, cmd in enumerate(cmdlines):
         joblist.append(pyani_jobs.Job("%s_%06d" % (jobprefix, idx), cmd))
@@ -56,6 +57,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
 # passed sequence filenames
 def generate_nucmer_commands(filenames, outdir='.',
                              nucmer_exe=pyani_config.NUCMER_DEFAULT,
+                             filter_exe=pyani_config.FILTER_DEFAULT,
                              maxmatch=False):
     """Return a list of NUCmer command-lines for ANIm
 
@@ -70,7 +72,8 @@ def generate_nucmer_commands(filenames, outdir='.',
     cmdlines = []
     for idx, fname1 in enumerate(filenames[:-1]):
         cmdlines.extend([construct_nucmer_cmdline(fname1, fname2, outdir,
-                                                  nucmer_exe, maxmatch) for
+                                                  nucmer_exe, filter_exe,
+                                                  maxmatch) for
                          fname2 in filenames[idx+1:]])
     return cmdlines
 
@@ -79,6 +82,7 @@ def generate_nucmer_commands(filenames, outdir='.',
 # input filenames
 def construct_nucmer_cmdline(fname1, fname2, outdir='.',
                              nucmer_exe=pyani_config.NUCMER_DEFAULT,
+                             filter_exe=pyani_config.FILTER_DEFAULT,
                              maxmatch=False):
     """Returns a single NUCmer pairwise comparison command.
 
@@ -96,11 +100,15 @@ def construct_nucmer_cmdline(fname1, fname2, outdir='.',
                              (os.path.splitext(os.path.split(fname1)[-1])[0],
                               os.path.splitext(os.path.split(fname2)[-1])[0]))
     if maxmatch:
-        mode = "-maxmatch"
+        mode = "--maxmatch"
     else:
-        mode = "-mum"
-    return "{0} {1} -p {2} {3} {4}".format(nucmer_exe, mode, outprefix,
-                                           fname1, fname2)
+        mode = "--mum"
+    nucmercmd = "{0} {1} -p {2} {3} {4}".format(nucmer_exe, mode, outprefix,
+                                                fname1, fname2)
+    filtercmd = "{0} -1 {1} > {2}".format(filter_exe,
+                                          outprefix + '.delta',
+                                          outprefix + '.filter')
+    return "{0}; {1}".format(nucmercmd, filtercmd)
 
 
 # Parse NUCmer delta file to get total alignment length and total sim_errors
@@ -142,8 +150,9 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     May throw a ZeroDivisionError if one or more NUCmer runs failed, or a
     very distant sequence was included in the analysis.
     """
-    # Process directory to identify input files
-    deltafiles = pyani_files.get_input_files(delta_dir, '.delta')
+    # Process directory to identify input files - as of v0.2.4 we use the
+    # .filter files that result from delta-filter (1:1 alignments)
+    deltafiles = pyani_files.get_input_files(delta_dir, '.filter')
 
     # Hold data in ANIResults object
     results = ANIResults(list(org_lengths.keys()), "ANIm")
