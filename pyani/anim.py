@@ -174,6 +174,7 @@ def construct_nucmer_cmdline(fname1, fname2, outdir='.',
                                           outprefix + '.filter')
     return "{0}; {1}".format(nucmercmd, filtercmd)
 
+
 # Parse NUCmer delta file to get total alignment length and total sim_errors
 def parse_delta(filename):
     """Return (alignment length, similarity errors) tuple from passed .delta.
@@ -215,8 +216,9 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     May throw a ZeroDivisionError if one or more NUCmer runs failed, or a
     very distant sequence was included in the analysis.
     """
-    # Process directory to identify input files
-    deltafiles = pyani_files.get_input_files(delta_dir, '.delta')
+    # Process directory to identify input files - as of v0.2.4 we use the
+    # .filter files that result from delta-filter (1:1 alignments)
+    deltafiles = pyani_files.get_input_files(delta_dir, '.filter')
 
     # Hold data in ANIResults object
     results = ANIResults(list(org_lengths.keys()), "ANIm")

@@ -227,6 +227,9 @@ def parse_cmdline():
     parser.add_argument("--nucmer_exe", dest="nucmer_exe",
                         action="store", default=pyani_config.NUCMER_DEFAULT,
                         help="Path to NUCmer executable")
+    parser.add_argument("--filter_exe", dest="filter_exe",
+                        action="store", default=pyani_config.FILTER_DEFAULT,
+                        help="Path to delta-filter executable")
     parser.add_argument("--blastn_exe", dest="blastn_exe",
                         action="store", default=pyani_config.BLASTN_DEFAULT,
                         help="Path to BLASTN+ executable")
@@ -356,6 +359,7 @@ def calculate_anim(infiles, org_lengths):
     if not args.skip_nucmer:
         joblist = anim.generate_nucmer_jobs(infiles, args.outdirname,
                                             nucmer_exe=args.nucmer_exe,
+                                            filter_exe=args.filter_exe,
                                             maxmatch=args.maxmatch,
                                             jobprefix=args.jobprefix)
         if args.scheduler == 'multiprocessing':

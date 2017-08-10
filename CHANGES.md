@@ -1,7 +1,10 @@
 # CHANGES.md
 
-## v0.2.3.dev
+## v0.2.4
 
+* `ANIm` now uses `delta-filter` to remove alignments of repeat regions (issue #91)
+* added `--filter_exe` option to specify location of `delta-filter` utility (issue #91)
+* fixed `--format` option so that GenBank downloads work again (issue #89)
 * add `--SGEargs` option to `average_nucleotide_identity.py` for custom qsub settings
 * `README.md` badges now clickable
 * `--version` switch added to `average_nucleotide_identity.py`
