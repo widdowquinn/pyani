@@ -1,6 +1,6 @@
 # CHANGES.md
 
-## v0.2.3.dev
+## v0.2.4
 
 * `ANIm` now uses `delta-filter` to remove alignments of repeat regions (issue #91)
 * added `--filter_exe` option to specify location of `delta-filter` utility (issue #91)
