@@ -93,26 +93,50 @@ def analyse_cliques(graph):
 
 
 # Generate a list of graphs from lowest to highest pairwise identity threshold
-def trimmed_graph_sequence(graph, attribute='identity'):
+def trimmed_graph_sequence(G, attribute='identity'):
     """Return graphs trimmed from lowest to highest attribute value
 
     A generator which, starting from the initial graph, yields in sequence a
     series of graphs from which the edge(s) with the lowest threshold value
-    attribute were removed.
+    attribute were removed. The generator returns a tuple of:
 
-    graph      - the initial graph to work from
+    (threshold, graph, analyse_cliques(graph))
+
+    G          - the initial graph to work from
     attribute  - string describing the attribute to work on
+
+    This will be slow with moderate-large graphs
     """
+    graph = G.copy()
     edgelist = sorted(graph.edges(data=attribute), key=lambda x: x[-1])
     while len(edgelist) > 1:
         threshold = edgelist[0][-1]
-        print(len(edgelist), threshold)
         yield (threshold, graph, analyse_cliques(graph))
         while edgelist[0][-1] <= threshold:
             edge = edgelist.pop(0)
             graph.remove_edge(edge[0], edge[1])
     # For last edge/graph
     threshold = edgelist[0][-1]
-    print(len(edgelist), threshold)
     yield (threshold, graph, analyse_cliques(graph))
     
+
+# Generate a list of graphs with no clique confusion
+def unconfused_graphs(G, attribute='identity'):
+    """Return graphs having no clique-confused nodes
+
+    A generator which, starting from the initial graph, yields in sequence
+    a series of graphs from lowest to highest threshold edge where no node
+    in the graph participates in more than one clique.
+
+    G         - the initial graph to start from
+    attribute  - the attribute to use for thresholds
+
+    This will be slow with moderate-large graphs
+    """
+    graph = G.copy()
+    for subgraph in trimmed_graph_sequence(graph, attribute):
+        if subgraph[-1].confused:
+            continue
+        yield subgraph
+
+

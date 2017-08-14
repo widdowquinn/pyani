@@ -705,5 +705,14 @@ def subcmd_classify(args, logger):
     logger.info("Initial graph clique information:\n\t%s",
                 pyani_classify.analyse_cliques(initgraph))
 
-    for graphdata in pyani_classify.trimmed_graph_sequence(initgraph):
-        print(graphdata)
+    # Report all subgraphs, thresholding by identity
+    logger.info("Summarising cliques at all identity thresholds:\n\t%s",
+                '\n\t'.join(['\t'.join([str(gdata[0]), str(gdata[2])])
+                             for gdata in
+                             pyani_classify.trimmed_graph_sequence(initgraph)]))
+
+    # Report 'natural breaks' in the identity subgraphs
+    logger.info("Identifying 'natural breaks' with no clique-confusion:\n\t%s",
+                '\n\t'.join(['\t'.join([str(gdata[0]), str(gdata[2])])
+                             for gdata in
+                             pyani_classify.unconfused_graphs(initgraph)]))
