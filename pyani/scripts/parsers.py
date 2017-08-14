@@ -175,6 +175,10 @@ def build_parser_classify(subps, parents=None):
     parser.add_argument(action='store',
                         dest='run_id', default=None,
                         help='run ID to classify')
+    # Other optional arguments
+    parser.add_argument("--dbpath", action='store',
+                        dest='dbpath', default='.pyani/pyanidb',
+                        help='path to pyani database')    
     # Parameters for classification: minimum %coverage, %identity,
     # and the resolution of thresholds to test
     parser.add_argument('--cov_min', dest='cov_min',

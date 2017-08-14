@@ -56,8 +56,9 @@ from itertools import combinations
 
 from Bio import SeqIO
 
-from .. import (download, anim, run_sge, pyani_config, pyani_graphics,
-                pyani_tools, pyani_db, pyani_files, pyani_jobs, pyani_report)
+from .. import (download, anim, run_sge, pyani_config, pyani_classify,
+                pyani_graphics, pyani_tools, pyani_db, pyani_files,
+                pyani_jobs, pyani_report)
 from ..pyani_tools import last_exception
 from .. import run_multiprocessing as run_mp
 
@@ -690,3 +691,15 @@ def subcmd_classify(args, logger):
     logger.info("Coverage threshold: %s", args.cov_min)
     logger.info("Initial minimum identity threshold: %s", args.id_min)
     
+    # Get results data for the specified run
+    logger.info("Acquiring results for run: %s", args.run_id)
+    results = pyani_db.ANIResults(args.dbpath, args.run_id)
+    
+    # Generate initial graph on basis of results
+    logger.info("Constructing graph from results.")
+    initgraph = pyani_classify.build_graph_from_results(results,
+                                                        args.cov_min,
+                                                        args.id_min)
+    logger.info("Returned graph has %d nodes", len(initgraph))
+
+    # 
