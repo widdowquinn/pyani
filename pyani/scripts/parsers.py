@@ -375,9 +375,17 @@ def parse_cmdline():
 
     The script offers a single main parser, with subcommands for the actions:
 
-    download - download all available NCBI assemblies below the passed
-               taxonomy ID
-    classify - produce a graph-based classification of each input genome
+    download    - download all available NCBI assemblies below the passed
+                  taxonomy ID
+    index       - index genome sequence files in a subdirectory, for analysis
+    createdb    - generate SQLite database for data and analysis results
+    anim        - conduct ANIm analysis
+    anib        - conduct ANIb analysis
+    aniblastall - conduct ANIblastall analysis
+    report      - generate output describing analyses, genomes, and results
+    plot        - generate graphical output describing results
+    classify    - produce graph-based classification of genomes on the basis
+                  of ANI analysis
     """
     # Main parent parser
     parser_main = ArgumentParser(prog="pyani.py",
