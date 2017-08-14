@@ -566,7 +566,10 @@ def get_genome_label(dbpath, genome_id, run_id):
         cur = conn.cursor()
         cur.execute(SQL_GETGENOMELABEL, (genome_id, run_id))
         result = cur.fetchone()
-    return result[2]
+    if result is not None:
+        return result[2]
+    else:
+        return "run {0}, genome {1}".format(run_id, genome_id)
 
 
 # Add a genome class to the database
@@ -587,7 +590,10 @@ def get_genome_class(dbpath, genome_id, run_id):
         cur = conn.cursor()
         cur.execute(SQL_GETGENOMECLASS, (genome_id, run_id))
         result = cur.fetchone()
-    return result[2]  
+    if result is not None:
+        return result[2]
+    else:
+        return "run {0}, genome {1}".format(run_id, genome_id)
 
 
 # RESULTS AS DATAFRAMES

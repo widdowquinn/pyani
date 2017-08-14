@@ -125,7 +125,7 @@ Subsequent `pyani` commands will assume this location for the database, but you 
 In this walkthrough, we'll run ANIm on the downloaded genomes, using the command:
 
 ```bash
-pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log --name "C. blochmannia run 1"
+pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log --name "C. blochmannia run 1" --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
 ```
 
 All four analysis commands operate in a similar way. The first two arguments are paths to directories: the first path is to a directory containing input genomes, and the second is the path to an output directory for storing intermediate results. The `-v` and `-l` arguments work as above, specifying verbose output and logging output to a file. 
@@ -139,7 +139,7 @@ One reason for using a database backend for analysis results is so that, for ver
 You can test this for yourself by running the analysis command again, as below. You will see a number of messages indicating that genomes have been seen before, and that analyses performed before were skipped:
 
 ```bash
-$ pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log --name "C. blochmannia run 2"
+$ pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log --name "C. blochmannia run 2" --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
 INFO: command-line: pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log
 INFO: Running ANIm analysis
 INFO: Adding analysis information to database .pyani/pyanidb
@@ -172,7 +172,7 @@ Once an analysis is run, the results are placed in a local `SQLite` database, wh
 The report tables are written to a named directory (compulsory argument), and are written by default `.tab` plain-text format, but HTML and Excel format can alos be requested with the `--formats` argument:
 
 ```bash
-$ pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel
+$ pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel,stdout
 INFO: Processed arguments: Namespace(cmdline='./pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel', dbpath='.pyani/pyanidb', formats='html,excel', func=<function subcmd_report at 0x10c674a60>, logfile=None, outdir='C_blochmannia_ANIm/', run_results=False, show_genomes=False, show_genomes_runs=False, show_runs=True, show_runs_genomes=False, verbose=True)
 INFO: command-line: ./pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel
 INFO: Creating output in formats: ['excel', 'tab', 'html']
@@ -190,7 +190,7 @@ C_blochmannia_ANIm/
 To see all the pairwise results for an individual run, the run ID must be provided. It is possible to get results for more than one run ID by providing a comma-separated list of run IDs (though each run's results will be provided in a separate file):
 
 ```bash
-$ ./pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
+$ pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
 INFO: Processed arguments: Namespace(cmdline='./pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4', dbpath='.pyani/pyanidb', formats='html,excel', func=<function subcmd_report at 0x108616a60>, logfile=None, outdir='C_blochmannia_ANIm/', run_results='1,2,3,4', show_genomes=False, show_genomes_runs=False, show_runs=True, show_runs_genomes=False, verbose=True)
 INFO: command-line: ./pyani.py report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
 INFO: Creating output in formats: ['tab', 'excel', 'html']
@@ -207,7 +207,7 @@ INFO: Completed. Time taken: 1.285
 You can see a run's results in the terminal by specifying the `stdout` format. For example, to see the identity, coverage, and other output matrices, you would specify `--run_matrices <RUN>` and `--formats=stdout` as below:
 
 ```bash
-$ ./pyani.py report C_blochmannia_ANIm --formats=stdout --run_matrices 1
+$ pyani.py report C_blochmannia_ANIm --formats=stdout --run_matrices 1
 TABLE: C_blochmannia_ANIm/matrix_identity_1
                                                     C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
 C. Blochmannia pennsylvanicus BPEN                                            1.000000                   0.834866                   0.836903                        0.980244                                           0.843700                                                0.829509      
