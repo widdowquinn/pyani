@@ -40,8 +40,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from collections import namedtuple
+
 import networkx as nx
 import pandas as pd
+
+# Holds summary information about a graph's cliques
+Cliquesinfo = namedtuple('Cliquesinfo', 'n_nodes n_subgraphs n_cliques ' +
+                         'n_cliquenodes confused')
 
 
 # Build an undirected graph from an ANIResults object
@@ -74,3 +80,39 @@ def build_graph_from_results(results, cov_min, id_min):
     G = nx.from_pandas_dataframe(node_data, 'from', 'to',
                                  ['coverage', 'identity'])
     return G
+
+
+# Report clique info for a graph
+def analyse_cliques(graph):
+    """Return Cliquesinfo namedtuple describing clique data for a graph."""
+    cliques = list(nx.find_cliques(graph))
+    tot_clique_members = sum([len(c) for c in cliques])
+    subgraphs = list(nx.connected_component_subgraphs(graph))
+    return Cliquesinfo(len(graph), len(subgraphs), len(cliques),
+                       tot_clique_members, tot_clique_members - len(graph))
+
+
+# Generate a list of graphs from lowest to highest pairwise identity threshold
+def trimmed_graph_sequence(graph, attribute='identity'):
+    """Return graphs trimmed from lowest to highest attribute value
+
+    A generator which, starting from the initial graph, yields in sequence a
+    series of graphs from which the edge(s) with the lowest threshold value
+    attribute were removed.
+
+    graph      - the initial graph to work from
+    attribute  - string describing the attribute to work on
+    """
+    edgelist = sorted(graph.edges(data=attribute), key=lambda x: x[-1])
+    while len(edgelist) > 1:
+        threshold = edgelist[0][-1]
+        print(len(edgelist), threshold)
+        yield (threshold, graph, analyse_cliques(graph))
+        while edgelist[0][-1] <= threshold:
+            edge = edgelist.pop(0)
+            graph.remove_edge(edge[0], edge[1])
+    # For last edge/graph
+    threshold = edgelist[0][-1]
+    print(len(edgelist), threshold)
+    yield (threshold, graph, analyse_cliques(graph))
+    

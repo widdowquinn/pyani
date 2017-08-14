@@ -700,6 +700,10 @@ def subcmd_classify(args, logger):
     initgraph = pyani_classify.build_graph_from_results(results,
                                                         args.cov_min,
                                                         args.id_min)
-    logger.info("Returned graph has %d nodes", len(initgraph))
+    logger.info("Returned graph has %d nodes:\n\t%s",
+                len(initgraph), '\n\t'.join([n for n in initgraph]))
+    logger.info("Initial graph clique information:\n\t%s",
+                pyani_classify.analyse_cliques(initgraph))
 
-    # 
+    for graphdata in pyani_classify.trimmed_graph_sequence(initgraph):
+        print(graphdata)
