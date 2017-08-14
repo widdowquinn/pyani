@@ -684,4 +684,9 @@ def subcmd_plot(args, logger):
 # Classify input genomes on basis of ANI coverage and identity output
 def subcmd_classify(args, logger):
     """Generate classifications for an analysis."""
-    raise NotImplementedError
+    # Tell the user what's going on
+    logger.info("Generating classification for ANI run: %s", args.run_id)
+    logger.info("Writing output to: %s", args.outdir)
+    logger.info("Coverage threshold: %s", args.cov_min)
+    logger.info("Initial minimum identity threshold: %s", args.id_min)
+    

@@ -162,26 +162,19 @@ def build_parser_classify(subps, parents=None):
 
     The classify subcommand takes specific arguments:
 
-    -o, --outdir    (directory to write classification output)
-    --labels        (path to input file labels)
     --cov_min       (minimum coverage threshold for an edge)
     --id_min        (minimum identity threshold for an edge)
     --resolution    (number of identity thresholds to test)
     """
     parser = subps.add_parser('classify', parents=parents,
                               formatter_class=ArgumentDefaultsHelpFormatter)
-    # Required positional argument: input directory
+    # Required positional arguments: output directory and run ID
     parser.add_argument(action='store',
-                        dest='indir', default=None,
-                        help='input directory')
-    # Output directory, defaults to input directory indir
-    parser.add_argument('-o', '--outdir', action='store',
                         dest='outdir', default=None,
                         help='output directory')
-    # Label file, defaults to indir/labels.txt
-    parser.add_argument('--labels', dest='labelfile',
-                        action='store', default=None,
-                        help='file with labels for input genomes')
+    parser.add_argument(action='store',
+                        dest='run_id', default=None,
+                        help='run ID to classify')
     # Parameters for classification: minimum %coverage, %identity,
     # and the resolution of thresholds to test
     parser.add_argument('--cov_min', dest='cov_min',
