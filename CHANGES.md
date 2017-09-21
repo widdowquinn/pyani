@@ -1,5 +1,8 @@
 # CHANGES.md
 
+## v0.2.5
+* Version bump to fix `PyPI` wheel/script shebangs
+
 ## v0.2.4
 
 * `ANIm` now uses `delta-filter` to remove alignments of repeat regions (issue #91)
