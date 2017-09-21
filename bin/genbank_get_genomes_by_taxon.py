@@ -65,7 +65,7 @@ def parse_cmdline():
                         action="store", default=None,
                         help="Logfile location")
     parser.add_argument("--format", dest="format",
-                        action="store", default="gbk,fasta",
+                        action="store", default="fasta",
                         help="Output file format [gbk|fasta]")
     parser.add_argument("--email", dest="email", required=True,
                         action="store", default=None,

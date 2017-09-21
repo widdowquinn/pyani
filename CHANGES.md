@@ -1,5 +1,8 @@
 # CHANGES.md
 
+## v0.2.5.dev
+* Add Dockerfiles for making Docker images
+
 ## v0.2.5
 * Version bump to fix `PyPI` wheel/script shebangs
 
