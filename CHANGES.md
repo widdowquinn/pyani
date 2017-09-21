@@ -1,6 +1,6 @@
 # CHANGES.md
 
-## v0.2.5.dev
+## v0.2.6
 * Add Dockerfiles for making Docker images
 
 ## v0.2.5
