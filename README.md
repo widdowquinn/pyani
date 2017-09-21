@@ -9,7 +9,7 @@
 ## Overview
 `pyani` is a Python3 module that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
 
-`pyani` also installs two scripts:
+`pyani` installs two scripts into the `$PATH`:
 
 * `average_nucleotide_identity.py` that enables command-line ANI analysis.
 * `genbank_get_genomes_by_taxon.py` that downloads publicly-available genomes from NCBI.
@@ -27,6 +27,23 @@ From version 0.1.3.2 onwards, this should also install all the required Python p
 ```
 pip3 install -r requirements.txt
 ```
+
+## Docker images
+
+`pyani`'s scripts are also provided as [Docker](https://www.docker.com/) images, that can be run locally as containers. To use these images, first install Docker, then to run the corresponding scripts issue either:
+
+```
+docker run -v ${PWD}:/host_dir leightonpritchard/average_nucleotide_identity
+```
+
+or
+
+```
+docker run -v ${PWD}:/host_dir leightonpritchard/genbank_get_genomes_by_taxon
+```
+
+The `-v ${PWD}:/host_dir` argument enables the Docker container to see the current directory. Without this argument, the container will not be able to see your input files, or write output data.
+
 
 ## Testing `pyani`
 
@@ -47,7 +64,7 @@ The `average_nucleotide_identity.py` script - installed as part of this package 
 You can get a summary of available command-line options with `average_nucleotide_identity.py -h`
 
 ```
-$ ./average_nucleotide_identity.py -h
+$ average_nucleotide_identity.py -h
 usage: average_nucleotide_identity.py [-h] [-o OUTDIRNAME] [-i INDIRNAME] [-v]
                                       [-f] [-s FRAGSIZE] [-l LOGFILE]
                                       [--skip_nucmer] [--skip_blastn]
@@ -72,16 +89,16 @@ usage: average_nucleotide_identity.py [-h] [-o OUTDIRNAME] [-i INDIRNAME] [-v]
 Example data and output can be found in the directory `test_ani_data`. The data are chromosomes of four isolates of *Caulobacter*. Basic analyses can be performed with the command lines:
 
 ```
-$ ./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIm_output -m ANIm -g
-$ ./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIb_output -m ANIb -g
-$ ./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIblastall_output -m ANIblastall -g
-$ ./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_TETRA_output -m TETRA -g
+$ average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIm_output -m ANIm -g
+$ average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIb_output -m ANIb -g
+$ average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIblastall_output -m ANIblastall -g
+$ average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_TETRA_output -m TETRA -g
 ```
 
 The graphical output below, supporting assignment of `NC_002696` and `NC_011916` to the same species (*C.crescentus*), and the other two isolates to distinct species (`NC_014100`:*C.segnis*; `NC_010338`:*C.* sp K31), was generated with the command-line:
 
 ```
-./average_nucleotide_identity.py -v -i tests/test_ani_data/ \
+average_nucleotide_identity.py -v -i tests/test_ani_data/ \
     -o tests/test_ANIm_output/ -g --gformat png,pdf,eps \
     --classes tests/test_ani_data/classes.tab \
     --labels tests/test_ani_data/labels.tab
