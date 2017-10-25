@@ -1,5 +1,8 @@
 # CHANGES.md
 
+## v0.2.7
+* Fix issue #97 where valid input arguments were not recognised in the download script
+
 ## v0.2.6
 * Add Dockerfiles for making Docker images
 
