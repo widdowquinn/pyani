@@ -38,6 +38,7 @@ from Bio import Entrez, SeqIO
 
 class NCBIDownloadException(Exception):
     """General exception for failed NCBI download."""
+
     def __init__(self):
         Exception.__init__(self, "Error downloading file from NCBI")
 
@@ -72,12 +73,15 @@ def parse_cmdline():
                         help="Email associated with NCBI queries (required)")
     parser.add_argument("--retries", dest="retries",
                         action="store", default=20,
+                        type=int,
                         help="Number of Entrez retry attempts per request.")
     parser.add_argument("--batchsize", dest="batchsize",
                         action="store", default=10000,
+                        type=int,
                         help="Entrez record return batch size")
     parser.add_argument("--timeout", dest="timeout",
                         action="store", default=10,
+                        type=int,
                         help="Timeout for URL connection (s)")
     return parser.parse_args()
 
@@ -90,6 +94,8 @@ def last_exception():
                                               exc_traceback))
 
 # Set contact email for NCBI
+
+
 def set_ncbi_email():
     """Set contact email for NCBI."""
     Entrez.email = args.email
@@ -135,6 +141,8 @@ def make_outdir():
             sys.exit(1)
 
 # Retry Entrez requests (or any other function)
+
+
 def entrez_retry(func, *fnargs, **fnkwargs):
     """Retries the passed function up to the number of times specified
     by args.retries
@@ -147,7 +155,7 @@ def entrez_retry(func, *fnargs, **fnkwargs):
         except (HTTPError, URLError):
             tries += 1
             logger.warning("Entrez query %s(%s, %s) failed (%d/%d)",
-                           func, fnargs, fnkwargs, tries+1, args.retries)
+                           func, fnargs, fnkwargs, tries + 1, args.retries)
             logger.warning(last_exception())
     if not success:
         logger.error("Too many Entrez failures (exiting)")
@@ -323,15 +331,15 @@ def retrieve_asm_contigs(filestem,
     # Define format suffix
     logger.info("%s format requested", fmt)
     if fmt == 'fasta':
-        suffix="genomic.fna.gz"
+        suffix = "genomic.fna.gz"
     elif fmt == 'gbk':
         suffix = 'genomic.gbff.gz'
-    
+
     # Compile URL
     gc, aa, an = tuple(filestem.split('_', 2))
     aaval = aa.split('.')[0]
-    subdirs = '/'.join([aa[i:i+3] for i in range(0, len(aaval), 3)])
-               
+    subdirs = '/'.join([aa[i:i + 3] for i in range(0, len(aaval), 3)])
+
     url = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gc, subdirs,
                                            filestem, suffix)
     logger.info("Using URL: %s", url)
@@ -393,9 +401,9 @@ def retrieve_asm_contigs(filestem,
     # <assembly UID>.fna
     #regex = ".{3}_[0-9]{9}.[0-9]"
     #outparts = os.path.split(outfname)
-    #print(outparts[0])
+    # print(outparts[0])
     #print(re.match(regex, outparts[-1]).group())
-    #ename = os.path.join(outparts[0],
+    # ename = os.path.join(outparts[0],
     #                     re.match(regex, outparts[-1]).group() + '.fna')
     if os.path.exists(ename):
         logger.warning("Output file %s exists, not extracting", ename)
@@ -432,17 +440,15 @@ def write_contigs(asm_uid, contig_uids, batchsize=10000):
     asm_record = Entrez.read(entrez_retry(Entrez.esummary, db='assembly',
                                           id=asm_uid, rettype='text'),
                              validate=False)
-    asm_organism = asm_record['DocumentSummarySet']['DocumentSummary']\
-                   [0]['SpeciesName']
+    asm_organism = asm_record['DocumentSummarySet']['DocumentSummary'][0]['SpeciesName']
     try:
-        asm_strain = asm_record['DocumentSummarySet']['DocumentSummary']\
-                     [0]['Biosource']['InfraspeciesList'][0]['Sub_value']
+        asm_strain = asm_record['DocumentSummarySet']['DocumentSummary'][0]['Biosource']['InfraspeciesList'][0]['Sub_value']
     except KeyError:
         asm_strain = ""
     # Assembly UID (long form) for the output filename
     outfilename = "%s.fasta" % os.path.join(args.outdirname,
-                                            asm_record['DocumentSummarySet']\
-                                            ['DocumentSummary']\
+                                            asm_record['DocumentSummarySet']
+                                            ['DocumentSummary']
                                             [0]['AssemblyAccession'])
 
     # Create label and class strings
@@ -461,7 +467,7 @@ def write_contigs(asm_uid, contig_uids, batchsize=10000):
         query_uids = ','.join(contig_uids)
         try:
             for start in range(0, len(contig_uids), batchsize):
-                logger.info("Batch: %d-%d", start, start+batchsize)
+                logger.info("Batch: %d-%d", start, start + batchsize)
                 records.extend(list(SeqIO.parse(entrez_retry(Entrez.efetch,
                                                              db='nucleotide',
                                                              id=query_uids,
@@ -509,6 +515,7 @@ def logreport_downloaded(accession, skippedlist, accessiondict, uidaccdict):
             status = "DOWNLOADED"
         logger.warning("\t\t%s: %s - %s",
                        vid, uidaccdict[vid], status)
+
 
 # Run as script
 if __name__ == '__main__':
