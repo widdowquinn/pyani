@@ -52,7 +52,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
         njob = pyani_jobs.Job("%s_%06d-n" % (jobprefix, idx), ncmd)
         fjob = pyani_jobs.Job("%s_%06d-f" % (jobprefix, idx), fcmds[idx])
         fjob.add_dependency(njob)
-        joblist.append(njob)
+        #joblist.append(njob)  # not required: dependency in fjob
         joblist.append(fjob)
     return joblist
 
