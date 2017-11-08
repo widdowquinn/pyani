@@ -45,11 +45,15 @@ def generate_nucmer_jobs(filenames, outdir='.',
     Loop over all FASTA files, generating Jobs describing NUCmer command lines
     for each pairwise comparison.
     """
-    cmdlines = generate_nucmer_commands(filenames, outdir, nucmer_exe,
-                                        filter_exe, maxmatch)
+    ncmds, fcmds = generate_nucmer_commands(filenames, outdir, nucmer_exe,
+                                            filter_exe, maxmatch)
     joblist = []
-    for idx, cmd in enumerate(cmdlines):
-        joblist.append(pyani_jobs.Job("%s_%06d" % (jobprefix, idx), cmd))
+    for idx, ncmd in enumerate(ncmds):
+        njob = pyani_jobs.Job("%s_%06d-n" % (jobprefix, idx), ncmd)
+        fjob = pyani_jobs.Job("%s_%06d-f" % (jobprefix, idx), fcmds[idx])
+        fjob.add_dependency(njob)
+        joblist.append(njob)
+        joblist.append(fjob)
     return joblist
 
 
@@ -59,7 +63,12 @@ def generate_nucmer_commands(filenames, outdir='.',
                              nucmer_exe=pyani_config.NUCMER_DEFAULT,
                              filter_exe=pyani_config.FILTER_DEFAULT,
                              maxmatch=False):
-    """Return a list of NUCmer command-lines for ANIm
+    """Return a tuple of lists of NUCmer command-lines for ANIm
+
+    The first element is a list of NUCmer commands, the second a list
+    of delta_filter_wrapper.py commands. These are ordered such that
+    commands are paired. The NUCmer commands should be run before
+    the delta-filter commands.
 
     - filenames - a list of paths to input FASTA files
     - outdir - path to output directory
@@ -69,13 +78,15 @@ def generate_nucmer_commands(filenames, outdir='.',
     Loop over all FASTA files generating NUCmer command lines for each
     pairwise comparison.
     """
-    cmdlines = []
+    nucmer_cmdlines, delta_filter_cmdlines = [], []
     for idx, fname1 in enumerate(filenames[:-1]):
-        cmdlines.extend([construct_nucmer_cmdline(fname1, fname2, outdir,
+        for fname2 in filenames[idx+1:]:
+            ncmd, dcmd = construct_nucmer_cmdline(fname1, fname2, outdir,
                                                   nucmer_exe, filter_exe,
-                                                  maxmatch) for
-                         fname2 in filenames[idx+1:]])
-    return cmdlines
+                                                  maxmatch)
+            nucmer_cmdlines.append(ncmd)
+            delta_filter_cmdlines.append(dcmd)
+    return (nucmer_cmdlines, delta_filter_cmdlines)
 
 
 # Generate single NUCmer pairwise comparison command line from pair of
@@ -84,7 +95,11 @@ def construct_nucmer_cmdline(fname1, fname2, outdir='.',
                              nucmer_exe=pyani_config.NUCMER_DEFAULT,
                              filter_exe=pyani_config.FILTER_DEFAULT,
                              maxmatch=False):
-    """Returns a single NUCmer pairwise comparison command.
+    """Returns a tuple of NUCmer and delta-filter commands
+
+    The split into a tuple was made necessary by changes to SGE/OGE. The
+    delta-filter command must now be run as a dependency of the NUCmer
+    command, and be wrapped in a Python script to capture STDOUT.
 
     NOTE: This command-line writes output data to a subdirectory of the passed
     outdir, called "nucmer_output".
@@ -105,10 +120,12 @@ def construct_nucmer_cmdline(fname1, fname2, outdir='.',
         mode = "--mum"
     nucmercmd = "{0} {1} -p {2} {3} {4}".format(nucmer_exe, mode, outprefix,
                                                 fname1, fname2)
-    filtercmd = "{0} -1 {1} > {2}".format(filter_exe,
-                                          outprefix + '.delta',
-                                          outprefix + '.filter')
-    return "{0}; {1}".format(nucmercmd, filtercmd)
+    filtercmd = "delta_filter_wrapper.py " + \
+    "{0} -1 {1} {2}".format(filter_exe,
+                            outprefix + '.delta',
+                            outprefix + '.filter')
+    return(nucmercmd, filtercmd)
+    #return "{0}; {1}".format(nucmercmd, filtercmd)
 
 
 # Parse NUCmer delta file to get total alignment length and total sim_errors
