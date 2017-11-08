@@ -1,4 +1,4 @@
-# Copyright 2013-2016, The James Hutton Insitute
+# Copyright 2013-2017, The James Hutton Insitute
 # Author: Leighton Pritchard
 #
 # This code is part of the pyani package, and is governed by its licence.
