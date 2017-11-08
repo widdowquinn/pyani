@@ -165,5 +165,5 @@ class TestNUCmerCmdline(unittest.TestCase):
         seqfiles = pyani_files.get_fasta_files(self.seqdir)
         orglengths = pyani_files.get_sequence_lengths(seqfiles)
         result = anim.process_deltadir(self.deltadir, orglengths)
-        assert_frame_equal(result.percentage_identity,
-                           self.df_pid.sort_index())
+        assert_frame_equal(result.percentage_identity.sort_index(1).sort_index(),
+                           self.df_pid.sort_index(1).sort_index())
