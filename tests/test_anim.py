@@ -102,19 +102,8 @@ class TestNUCmerCmdline(unittest.TestCase):
                          ' '.join(['delta_filter_wrapper.py delta-filter -1',
                                    './nucmer_output/file3_vs_file4.delta',
                                    './nucmer_output/file3_vs_file4.filter'])]
-        self.seqdir = os.path.join('tests', 'test_input', 'sequences')
         self.outdir = os.path.join('tests', 'test_output', 'anim')
         self.indir = os.path.join('tests', 'test_input', 'anim')
-        self.deltafile = os.path.join(self.indir, 'test.delta')
-        self.deltadir = os.path.join(self.indir, 'deltadir')
-        self.df_pid = pd.DataFrame([[1.000000, 0.850994, 0.999974, 0.867940],
-                                    [0.850994, 1.000000, 0.851074, 0.852842],
-                                    [0.999974, 0.851074, 1.000000, 0.867991],
-                                    [0.867940, 0.852842, 0.867991, 1.000000]],
-                                   columns=['NC_002696',  'NC_010338',
-                                            'NC_011916',  'NC_014100'],
-                                   index=['NC_002696',  'NC_010338',
-                                          'NC_011916',  'NC_014100'])
 
     def test_single_cmd_generation(self):
         """generate single abstract NUCmer/delta-filter command-line.
@@ -154,6 +143,26 @@ class TestNUCmerCmdline(unittest.TestCase):
             assert_equal(len(job.dependencies), 1)       # has NUCmer job
             assert_equal(job.dependencies[0].name,
                          "test_%06d-n" % idx)            # NUCmer job name
+
+
+class TestDeltafileProcessing(unittest.TestCase):
+
+    """Class defining tests for .delta/.filter file parsing"""
+
+    def setUp(self):
+        """Set parameters for tests."""
+        self.indir = os.path.join('tests', 'test_input', 'anim')
+        self.seqdir = os.path.join('tests', 'test_input', 'sequences')
+        self.deltafile = os.path.join(self.indir, 'test.delta')
+        self.deltadir = os.path.join(self.indir, 'deltadir')
+        self.df_pid = pd.DataFrame([[1.000000, 0.850994, 0.999974, 0.867940],
+                                    [0.850994, 1.000000, 0.851074, 0.852842],
+                                    [0.999974, 0.851074, 1.000000, 0.867991],
+                                    [0.867940, 0.852842, 0.867991, 1.000000]],
+                                   columns=['NC_002696',  'NC_010338',
+                                            'NC_011916',  'NC_014100'],
+                                   index=['NC_002696',  'NC_010338',
+                                          'NC_011916',  'NC_014100'])
 
     def test_deltafile_import(self):
         """parses NUCmer .delta/.filter file."""
