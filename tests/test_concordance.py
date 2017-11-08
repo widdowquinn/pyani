@@ -111,10 +111,14 @@ def test_anim_concordance():
 
     # Test ANIm concordance:
     # Run pairwise NUCmer
-    cmdlist = anim.generate_nucmer_commands(infiles, outdirname,
+    ncmds, fcmds = anim.generate_nucmer_commands(infiles, outdirname,
                                             pyani_config.NUCMER_DEFAULT)
-    print('\n'.join(cmdlist))
-    multiprocessing_run(cmdlist)
+    print('\n'.join(ncmds))
+    print('\n'.join(fcmds))
+    # We run the NUCmer commands first, as the delta-filter commands depend on
+    # their output.
+    multiprocessing_run(ncmds)
+    multiprocessing_run(fcmds)
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
     anim_pid = \
