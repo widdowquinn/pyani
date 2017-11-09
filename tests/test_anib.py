@@ -184,7 +184,6 @@ class TestBLASTCmdline(unittest.TestCase):
         cmd = anib.construct_blastall_cmdline(self.blastdbfnames[0],
                                               self.blastdbfnames[1],
                                               self.outdir)
-        print(cmd)
         assert_equal(cmd, self.blastallcmd)
 
     def test_blastn_commands(self):
@@ -197,3 +196,32 @@ class TestBLASTCmdline(unittest.TestCase):
                                              mode="ANIblastall")
         assert_equal(cmds, self.blastalltgt)
 
+
+class TestFragments(unittest.TestCase):
+
+    """Class defining tests of ANIb FASTA fragmentation"""
+
+    def setUp(self):
+        """Initialise parameters for tests."""
+        self.outdir = os.path.join('tests', 'test_output', 'anib')
+        self.seqdir = os.path.join('tests', 'test_input', 'sequences')
+        self.infnames = [os.path.join(self.seqdir, fname) for fname in
+                         ('NC_002696.fna', 'NC_010338.fna',
+                          'NC_011916.fna', 'NC_014100.fna')]
+        self.outfnames = [os.path.join(self.outdir, fname) for fname in
+                          ('NC_002696-fragments.fna', 'NC_010338-fragments.fna',
+                           'NC_011916-fragments.fna', 'NC_014100-fragments.fna')]
+        self.fraglen = 1000
+        os.makedirs(self.outdir, exist_ok=True)
+
+    def test_fragment_files(self):
+        """fragment files for ANIb/ANIblastall."""
+        result = anib.fragment_fasta_files(self.infnames, self.outdir,
+                                           self.fraglen)
+        # Are files created
+        for outfname in self.outfnames:
+            assert os.path.isfile(outfname)
+        # Test fragment lengths
+        for accession, fragdict in result[-1].items():
+            for fragname, fraglen in fragdict.items():
+                assert fraglen <= self.fraglen
