@@ -53,9 +53,12 @@ THE SOFTWARE.
 import os
 import unittest
 
-from nose.tools import (assert_equal,)
+import pandas as pd
 
-from pyani import (anib,)
+from nose.tools import (assert_equal,)
+from pandas.util.testing import (assert_frame_equal,)
+
+from pyani import (anib, pyani_files)
 
 class TestBLASTCmdline(unittest.TestCase):
 
@@ -187,7 +190,7 @@ class TestBLASTCmdline(unittest.TestCase):
         assert_equal(cmd, self.blastallcmd)
 
     def test_blastn_commands(self):
-        """Generate both BLASTN+ and legacy BLASTN commands."""
+        """generate both BLASTN+ and legacy BLASTN commands."""
         # BLAST+
         cmds = anib.generate_blastn_commands(self.blastdbfnames, self.outdir,
                                              mode="ANIb")
@@ -233,6 +236,10 @@ class TestParsing(unittest.TestCase):
 
     def setUp(self):
         self.indir = os.path.join('tests', 'test_input', 'anib')
+        self.seqdir = os.path.join('tests', 'test_input', 'sequences')
+        self.fragdir = os.path.join('tests', 'test_input', 'anib', 'fragfiles')
+        self.anibdir = os.path.join('tests', 'test_input', 'anib', 'blastn')
+        self.aniblastalldir = os.path.join('tests', 'test_input', 'anib', 'blastall')
         self.fname_legacy = os.path.join(self.indir,
                                          "NC_002696_vs_NC_010338.blast_tab")
         self.fname = os.path.join(self.indir,
@@ -240,6 +247,28 @@ class TestParsing(unittest.TestCase):
         self.fragfname = os.path.join(self.indir,
                                       "NC_002696-fragments.fna")
         self.fraglens = 1000
+        self.infnames = [os.path.join(self.seqdir, fname) for fname in
+                         ('NC_002696.fna', 'NC_010338.fna',
+                          'NC_011916.fna', 'NC_014100.fna')]
+        self.fragfiles = [os.path.join(self.fragdir, fname) for fname in
+                          ('NC_002696-fragments.fna', 'NC_010338-fragments.fna',
+                           'NC_011916-fragments.fna', 'NC_014100-fragments.fna')]
+        self.anibtgt = pd.DataFrame([[1.000000, 0.796974, 0.999977, 0.837285],
+                                     [0.795958, 1.000000, 0.795917, 0.798250],
+                                     [0.999922, 0.795392, 1.000000, 0.837633],
+                                     [0.836780, 0.798704, 0.836823, 1.000000]],
+                                    columns=['NC_002696', 'NC_010338',
+                                             'NC_011916', 'NC_014100'],
+                                    index=['NC_002696', 'NC_010338', 'NC_011916',
+                                           'NC_014100'])
+        self.aniblastalltgt = pd.DataFrame([[1.000000, 0.785790, 0.999977, 0.830641],
+                                            [0.781319, 1.000000, 0.781281, 0.782723],
+                                            [0.999937, 0.782968, 1.000000, 0.830431],
+                                            [0.828919, 0.784533, 0.828853, 1.000000]],
+                                           columns=['NC_002696', 'NC_010338',
+                                                    'NC_011916', 'NC_014100'],
+                                           index=['NC_002696', 'NC_010338', 'NC_011916',
+                                                  'NC_014100'])
 
     def test_parse_blasttab(self):
         """parses ANIblastall .blast_tab output."""
@@ -251,3 +280,18 @@ class TestParsing(unittest.TestCase):
         result = anib.parse_blast_tab(self.fname_legacy, fragdata,
                                       mode="ANIblastall")
         assert_equal(result, (1966922, 406104, 78.578978313253018))
+
+    def test_blastdir_processing(self):
+        """parses directory of .blast_tab output."""
+        orglengths = pyani_files.get_sequence_lengths(self.infnames)
+        fraglengths = anib.get_fraglength_dict(self.fragfiles)
+        # ANIb
+        result = anib.process_blast(self.anibdir, orglengths,
+                                    fraglengths, mode="ANIb")
+        assert_frame_equal(result.percentage_identity.sort_index(1).sort_index(),
+                           self.anibtgt.sort_index(1).sort_index())        
+        # ANIblastall
+        result = anib.process_blast(self.aniblastalldir, orglengths,
+                                    fraglengths, mode="ANIblastall")
+        assert_frame_equal(result.percentage_identity.sort_index(1).sort_index(),
+                           self.aniblastalltgt.sort_index(1).sort_index())        
