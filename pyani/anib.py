@@ -265,9 +265,7 @@ def construct_formatdb_cmd(filename, outdir,
 
 
 # Generate list of BLASTN command lines from passed filenames
-def generate_blastn_commands(filenames, outdir,
-                             blast_exe=pyani_config.BLASTN_DEFAULT,
-                             mode="ANIb"):
+def generate_blastn_commands(filenames, outdir, blast_exe=None, mode="ANIb"):
     """Return a list of blastn command-lines for ANIm
 
     - filenames - a list of paths to fragmented input FASTA files
@@ -288,10 +286,16 @@ def generate_blastn_commands(filenames, outdir,
         dbname1 = fname1.replace('-fragments', '')
         for fname2 in filenames[idx+1:]:
             dbname2 = fname2.replace('-fragments', '')
-            cmdlines.append(construct_blast_cmdline(fname1, dbname2,
-                                                    outdir, blast_exe))
-            cmdlines.append(construct_blast_cmdline(fname2, dbname1,
-                                                    outdir, blast_exe))
+            if blast_exe is None:
+                cmdlines.append(construct_blast_cmdline(fname1, dbname2,
+                                                        outdir))
+                cmdlines.append(construct_blast_cmdline(fname2, dbname1,
+                                                        outdir))
+            else:
+                cmdlines.append(construct_blast_cmdline(fname1, dbname2,
+                                                        outdir, blast_exe))
+                cmdlines.append(construct_blast_cmdline(fname2, dbname1,
+                                                        outdir, blast_exe))
     return cmdlines
 
 

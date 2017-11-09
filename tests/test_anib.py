@@ -97,6 +97,51 @@ class TestBLASTCmdline(unittest.TestCase):
                                             'tests/test_output/anib/NC_010338.fna',
                                             '-t NC_010338']),
                                   'tests/test_output/anib/NC_010338.fna')]
+        self.blastncmd = ' '.join(["blastn -out",
+                                   os.path.join("tests", "test_output", "anib",
+                                                "NC_002696_vs_NC_010338.blast_tab"),
+                                   "-query tests/test_input/sequences/NC_002696.fna",
+                                   "-db tests/test_input/sequences/NC_010338.fna",
+                                   "-xdrop_gap_final 150 -dust no -evalue 1e-15",
+                                   "-max_target_seqs 1 -outfmt '6 qseqid sseqid",
+                                   "length mismatch pident nident qlen slen qstart",
+                                   "qend sstart send positive ppos gaps' -task blastn"])
+        self.blastallcmd = ' '.join(['blastall -p blastn -o',
+                                     os.path.join('tests', 'test_output', 'anib',
+                                                  'NC_002696_vs_NC_010338.blast_tab'),
+                                     '-i tests/test_input/sequences/NC_002696.fna',
+                                     '-d tests/test_input/sequences/NC_010338.fna',
+                                     '-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8'])
+        self.blastntgt = [' '.join(["blastn -out",
+                                    os.path.join("tests", "test_output", "anib",
+                                                 "NC_002696_vs_NC_010338.blast_tab"),
+                                    "-query tests/test_input/sequences/NC_002696.fna",
+                                    "-db tests/test_input/sequences/NC_010338.fna",
+                                    "-xdrop_gap_final 150 -dust no -evalue 1e-15",
+                                    "-max_target_seqs 1 -outfmt '6 qseqid sseqid",
+                                    "length mismatch pident nident qlen slen qstart",
+                                    "qend sstart send positive ppos gaps' -task blastn"]),
+                          ' '.join(["blastn -out",
+                                    os.path.join("tests", "test_output", "anib",
+                                                 "NC_010338_vs_NC_002696.blast_tab"),
+                                    "-query tests/test_input/sequences/NC_010338.fna",
+                                    "-db tests/test_input/sequences/NC_002696.fna",
+                                    "-xdrop_gap_final 150 -dust no -evalue 1e-15",
+                                    "-max_target_seqs 1 -outfmt '6 qseqid sseqid length",
+                                    "mismatch pident nident qlen slen qstart qend",
+                                    "sstart send positive ppos gaps' -task blastn"])]
+        self.blastalltgt = [' '.join(['blastall -p blastn -o',
+                                      os.path.join('tests', 'test_output', 'anib',
+                                                   'NC_002696_vs_NC_010338.blast_tab'),
+                                      '-i tests/test_input/sequences/NC_002696.fna',
+                                      '-d tests/test_input/sequences/NC_010338.fna',
+                                      '-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8']),
+                            ' '.join(['blastall -p blastn -o',
+                                      os.path.join('tests', 'test_output', 'anib',
+                                                   'NC_010338_vs_NC_002696.blast_tab'),
+                                      '-i tests/test_input/sequences/NC_010338.fna',
+                                      '-d tests/test_input/sequences/NC_002696.fna',
+                                      '-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8'])]
         os.makedirs(self.outdir, exist_ok=True)
         os.makedirs(self.fmtdboutdir, exist_ok=True)
         os.makedirs(self.makeblastdbdir, exist_ok=True)
@@ -126,3 +171,29 @@ class TestBLASTCmdline(unittest.TestCase):
         cmds = anib.generate_blastdb_commands(self.blastdbfnames, self.outdir,
                                               mode="ANIblastall")
         assert_equal(cmds, self.blastdbtgtlegacy)
+
+    def test_blastn_generation(self):
+        """generate BLASTN+ command-line."""
+        cmd = anib.construct_blastn_cmdline(self.blastdbfnames[0],
+                                            self.blastdbfnames[1],
+                                            self.outdir)
+        assert_equal(cmd, self.blastncmd)
+
+    def test_blastall_generation(self):
+        """generate legacy BLASTN command-line."""
+        cmd = anib.construct_blastall_cmdline(self.blastdbfnames[0],
+                                              self.blastdbfnames[1],
+                                              self.outdir)
+        print(cmd)
+        assert_equal(cmd, self.blastallcmd)
+
+    def test_blastn_commands(self):
+        """Generate both BLASTN+ and legacy BLASTN commands."""
+        # BLAST+
+        cmds = anib.generate_blastn_commands(self.blastdbfnames, self.outdir,
+                                             mode="ANIb")
+        assert_equal(cmds, self.blastntgt)
+        cmds = anib.generate_blastn_commands(self.blastdbfnames, self.outdir,
+                                             mode="ANIblastall")
+        assert_equal(cmds, self.blastalltgt)
+
