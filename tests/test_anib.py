@@ -225,3 +225,29 @@ class TestFragments(unittest.TestCase):
         for accession, fragdict in result[-1].items():
             for fragname, fraglen in fragdict.items():
                 assert fraglen <= self.fraglen
+
+
+class TestParsing(unittest.TestCase):
+
+    """Class defining tests of BLAST output parsing."""
+
+    def setUp(self):
+        self.indir = os.path.join('tests', 'test_input', 'anib')
+        self.fname_legacy = os.path.join(self.indir,
+                                         "NC_002696_vs_NC_010338.blast_tab")
+        self.fname = os.path.join(self.indir,
+                                  "NC_002696_vs_NC_011916.blast_tab")
+        self.fragfname = os.path.join(self.indir,
+                                      "NC_002696-fragments.fna")
+        self.fraglens = 1000
+
+    def test_parse_blasttab(self):
+        """parses ANIblastall .blast_tab output."""
+        fragdata = anib.get_fraglength_dict([self.fragfname])
+        # ANIb output
+        result = anib.parse_blast_tab(self.fname, fragdata, mode="ANIb")
+        assert_equal(result, (4016551, 93, 99.997693577050029))
+        # ANIblastall output
+        result = anib.parse_blast_tab(self.fname_legacy, fragdata,
+                                      mode="ANIblastall")
+        assert_equal(result, (1966922, 406104, 78.578978313253018))

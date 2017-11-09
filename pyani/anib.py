@@ -435,7 +435,7 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     # To get past this, we create an empty dataframe with the appropriate
     # columns.
     try:
-        data = pd.DataFrame.from_csv(filename, header=None, sep='\t')
+        data = pd.read_csv(filename, header=None, sep='\t', index_col=0)
         data.columns = columns
     except pd.io.common.EmptyDataError:
         data = pd.DataFrame(columns=columns)
