@@ -211,8 +211,7 @@ def make_job_graph(infiles, fragfiles, blastcmds):
 
 
 # Generate list of makeblastdb command lines from passed filenames
-def generate_blastdb_commands(filenames, outdir,
-                              blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT,
+def generate_blastdb_commands(filenames, outdir, blastdb_exe=None,
                               mode="ANIb"):
     """Return a list of makeblastdb command-lines for ANIb/ANIblastall
 
@@ -224,8 +223,12 @@ def generate_blastdb_commands(filenames, outdir,
         construct_db_cmdline = construct_makeblastdb_cmd
     else:
         construct_db_cmdline = construct_formatdb_cmd
-    cmdlines = [construct_db_cmdline(fname, outdir, blastdb_exe) for
-                fname in filenames]
+    if blastdb_exe is None:
+        cmdlines = [construct_db_cmdline(fname, outdir) for
+                    fname in filenames]
+    else:
+        cmdlines = [construct_db_cmdline(fname, outdir, blastdb_exe) for
+                    fname in filenames]        
     return cmdlines
 
 

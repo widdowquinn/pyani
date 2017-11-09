@@ -74,7 +74,29 @@ class TestBLASTCmdline(unittest.TestCase):
         self.makeblastdbcmd = ' '.join(["makeblastdb -dbtype nucl -in",
                                         "tests/test_input/sequences/NC_002696.fna",
                                         "-title NC_002696 -out",
-                                        "tests/test_output/anib/makeblastdb/NC_002696.fna"])
+                                        os.path.join('tests', 'test_output',
+                                                     'anib', 'makeblastdb',
+                                                     'NC_002696.fna')])
+        self.blastdbfnames = [os.path.join(self.seqdir, fname) for fname in
+                              ('NC_002696.fna', 'NC_010338.fna')]
+        self.blastdbtgt = [(' '.join(['makeblastdb -dbtype nucl -in',
+                                      'tests/test_input/sequences/NC_002696.fna',
+                                      '-title NC_002696 -out',
+                                      'tests/test_output/anib/NC_002696.fna']),
+                            'tests/test_output/anib/NC_002696.fna'),
+                           (' '.join(['makeblastdb -dbtype nucl -in',
+                                      'tests/test_input/sequences/NC_010338.fna',
+                                      '-title NC_010338 -out',
+                                      'tests/test_output/anib/NC_010338.fna']),
+                            'tests/test_output/anib/NC_010338.fna')]
+        self.blastdbtgtlegacy = [(' '.join(['formatdb -p F -i',
+                                            'tests/test_output/anib/NC_002696.fna',
+                                            '-t NC_002696']),
+                                  'tests/test_output/anib/NC_002696.fna'),
+                                 (' '.join(['formatdb -p F -i',
+                                            'tests/test_output/anib/NC_010338.fna',
+                                            '-t NC_010338']),
+                                  'tests/test_output/anib/NC_010338.fna')]
         os.makedirs(self.outdir, exist_ok=True)
         os.makedirs(self.fmtdboutdir, exist_ok=True)
         os.makedirs(self.makeblastdbdir, exist_ok=True)
@@ -93,4 +115,14 @@ class TestBLASTCmdline(unittest.TestCase):
                                                           "NC_002696.fna"),
                                              self.makeblastdbdir)
         assert_equal(cmd[0], self.makeblastdbcmd)  # correct command
-        assert(os.path.isfile(cmd[1]))             # creates new file
+
+    def test_blastdb_commands(self):
+        """generate both BLAST+ and legacy BLAST db commands."""
+        # BLAST+
+        cmds = anib.generate_blastdb_commands(self.blastdbfnames, self.outdir,
+                                              mode="ANIb")
+        assert_equal(cmds, self.blastdbtgt)
+        # legacy
+        cmds = anib.generate_blastdb_commands(self.blastdbfnames, self.outdir,
+                                              mode="ANIblastall")
+        assert_equal(cmds, self.blastdbtgtlegacy)
