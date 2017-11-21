@@ -193,10 +193,8 @@ def subcmd_download(args, logger):
                 seqdata = list(SeqIO.parse(ename, 'fasta'))
                 logger.info("Modifying %s", ename)
                 for seq in seqdata:
-                    logger.info("Original SeqID: %s", seq.id)
                     seq.id = '|'.join([seq.id, 'kraken:taxid',
                                        esummary['SpeciesTaxid']])
-                    logger.info("Modified SeqID: %s", seq.id)
                 SeqIO.write(seqdata, ename, 'fasta')
 
             # Create MD5 hash for the downloaded contigs
