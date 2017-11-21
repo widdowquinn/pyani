@@ -24,6 +24,6 @@ DELTAFILE = os.path.join(curdir, 'test_ani_data',
 def test_anim_delta():
     """Test parsing of NUCmer delta file."""
     aln, sim = anim.parse_delta(DELTAFILE)
-    assert_equal(aln, 4073917)
+    assert_equal(aln, 4074001)
     assert_equal(sim, 2191)
     print("Alignment length: {0}\nSimilarity Errors: {1}".format(aln, sim))
