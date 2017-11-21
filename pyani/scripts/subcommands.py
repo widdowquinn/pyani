@@ -74,7 +74,10 @@ Comparison = namedtuple("Comparison",
 def subcmd_download(args, logger):
     """Download assembled genomes in subtree of passed NCBI taxon ID."""
     # Create output directory, respecting force/noclobber
-    tools.make_outdir(args.outdir, args.force, args.noclobber, logger)
+    if not args.dryrun:
+        tools.make_outdir(args.outdir, args.force, args.noclobber, logger)
+    else:
+        logger.warning("Dry run only: will not overwrite or download")
 
     # Set Entrez email
     download.set_ncbi_email(args.email)
@@ -114,7 +117,8 @@ def subcmd_download(args, logger):
             uid_class = download.get_ncbi_classification(esummary)
 
             # Report summary
-            outstr = '\n\t'.join(["Taxid: %s" % esummary['SpeciesTaxid'],
+            outstr = '\n\t'.join(["Species Taxid: %s" % esummary['SpeciesTaxid'],
+                                  "TaxID: %s" % esummary['Taxid'],
                                   "Accession: %s" %
                                   esummary['AssemblyAccession'],
                                   "Name: %s" % esummary['AssemblyName'],
@@ -123,6 +127,10 @@ def subcmd_download(args, logger):
                                   "Species: %s" % uid_class.species,
                                   "Strain: %s" % uid_class.strain])
             logger.info("eSummary information:\n\t%s", outstr)
+            if args.dryrun:
+                logger.warning("(dry-run) skipping download of %s",
+                               esummary['AssemblyAccession'])
+                continue
 
             # Obtain URLs, trying the RefSeq filestem first, then GenBank if
             # there's a failure
@@ -178,6 +186,18 @@ def subcmd_download(args, logger):
                 logger.info("Extracting archive %s to %s",
                             dlstatus.outfname, ename)
                 download.extract_contigs(dlstatus.outfname, ename)
+
+            # Modify sequence ID header if Kraken option active
+            if args.kraken:
+                logger.warning("Modifying downloaded sequence for Kraken compatibility")
+                seqdata = list(SeqIO.parse(ename, 'fasta'))
+                logger.info("Modifying %s", ename)
+                for seq in seqdata:
+                    logger.info("Original SeqID: %s", seq.id)
+                    seq.id = '|'.join([seq.id, 'kraken:taxid',
+                                       esummary['SpeciesTaxid']])
+                    logger.info("Modified SeqID: %s", seq.id)
+                SeqIO.write(seqdata, ename, 'fasta')
 
             # Create MD5 hash for the downloaded contigs
             logger.info("Creating local MD5 hash for %s" % ename)
