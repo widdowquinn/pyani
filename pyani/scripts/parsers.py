@@ -154,6 +154,14 @@ def build_parser_download(subps, parents=None):
     parser.add_argument("--classes", dest="classfname",
                         action="store", default="classes.txt",
                         help="Filename for classes file")
+    # Output for Kraken
+    parser.add_argument("--kraken", dest="kraken",
+                        action="store_true", default=False,
+                        help="Modify downloaded sequence ID for Kraken")
+    # Dry-run: do everything except download
+    parser.add_argument("--dry-run", dest="dryrun",
+                        action="store_true", default=False,
+                        help="Dry run only, do not download or overwrite.")
     parser.set_defaults(func=subcommands.subcmd_download)
 
 
