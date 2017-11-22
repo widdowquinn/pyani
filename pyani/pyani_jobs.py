@@ -138,8 +138,8 @@ class JobGroup:
             total *= len(values)
         self.script += "\n"
 
-        # now, build the decoding logic in the script
-        for key in self.arguments.keys():
+        # now, build the decoding logic in the script; force ordering
+        for key in sorted(self.arguments.keys()):
             count = len(self.arguments[key])
             self.script += """let "%s_INDEX=$TASK_ID %% %d"\n""" % (key, count)
             self.script += """%s=${%s_ARRAY[$%s_INDEX]}\n""" % (key, key, key)

@@ -118,11 +118,11 @@ class TestJobGroup(unittest.TestCase):
         self.p2script = "".join(['let "TASK_ID=$SGE_TASK_ID - 1"\n',
                                  '--format_ARRAY=( fmtA fmtB  )\n',
                                  '-f_ARRAY=( file1 file2  )\n\n',
-                                 'let "-f_INDEX=$TASK_ID % 2"\n',
-                                 '-f=${-f_ARRAY[$-f_INDEX]}\n',
-                                 'let "TASK_ID=$TASK_ID / 2"\n',
                                  'let "--format_INDEX=$TASK_ID % 2"\n',
                                  '--format=${--format_ARRAY[$--format_INDEX]}\n',
+                                 'let "TASK_ID=$TASK_ID / 2"\n',
+                                 'let "-f_INDEX=$TASK_ID % 2"\n',
+                                 '-f=${-f_ARRAY[$-f_INDEX]}\n',
                                  'let "TASK_ID=$TASK_ID / 2"\n\n',
                                  'myprog\n'])
 
