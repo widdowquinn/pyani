@@ -98,9 +98,10 @@ def test_anim_concordance():
     """Test concordance of ANIm method with JSpecies output."""
     # Make/check output directory
     mode = "ANIm"
-    outdirname = delete_and_remake_outdir(mode)
-    nucmername = os.path.join(outdirname, 'nucmer_output') 
-    os.makedirs(nucmername, exist_ok=True)
+    #outdirname = delete_and_remake_outdir(mode)
+    outdirname = os.path.join('tests', 'test_concordance_ANIm')
+    nucmername = os.path.join(outdirname, 'nucmer_output')
+    #os.makedirs(nucmername, exist_ok=True)
 
     # Get dataframes of JSpecies output
     anim_jspecies = parse_table(JSPECIES_OUTFILE, 'ANIm')
@@ -113,6 +114,7 @@ def test_anim_concordance():
     # Run pairwise NUCmer
     ncmds, fcmds = anim.generate_nucmer_commands(infiles, outdirname,
                                             pyani_config.NUCMER_DEFAULT)
+
     print('\n'.join(ncmds))
     print('\n'.join(fcmds))
     # We run the NUCmer commands first, as the delta-filter commands depend on
@@ -121,6 +123,7 @@ def test_anim_concordance():
     multiprocessing_run(fcmds)
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
+    #print(results.__dict__)
     anim_pid = \
         results.percentage_identity.sort_index(axis=0).sort_index(axis=1) * 100.
 
