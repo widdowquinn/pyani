@@ -125,6 +125,7 @@ def test_anim_concordance():
     
     print(os.listdir(nucmername))
     print(os.environ['PATH'])
+    print(shutil.which('delta-filter'))
     
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
