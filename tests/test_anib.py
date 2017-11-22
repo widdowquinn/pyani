@@ -221,9 +221,10 @@ class TestFragments(unittest.TestCase):
         """fragment files for ANIb/ANIblastall."""
         result = anib.fragment_fasta_files(self.infnames, self.outdir,
                                            self.fraglen)
-        # Are files created
+        # Are files created?
         for outfname in self.outfnames:
             assert os.path.isfile(outfname)
+            
         # Test fragment lengths
         for accession, fragdict in result[-1].items():
             for fragname, fraglen in fragdict.items():
