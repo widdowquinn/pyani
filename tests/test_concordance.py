@@ -101,13 +101,14 @@ def test_anim_concordance():
     #outdirname = delete_and_remake_outdir(mode)
     outdirname = os.path.join('tests', 'test_concordance_ANIm')
     nucmername = os.path.join(outdirname, 'nucmer_output')
-    #os.makedirs(nucmername, exist_ok=True)
+    os.makedirs(nucmername, exist_ok=True)
 
     # Get dataframes of JSpecies output
     anim_jspecies = parse_table(JSPECIES_OUTFILE, 'ANIm')
 
     # Identify our input files, and the total lengths of each organism seq
     infiles = pyani_files.get_fasta_files(INDIRNAME)
+    print(infiles)
     org_lengths = pyani_files.get_sequence_lengths(infiles)
 
     # Test ANIm concordance:
@@ -121,6 +122,7 @@ def test_anim_concordance():
     # their output.
     multiprocessing_run(ncmds)
     multiprocessing_run(fcmds)
+    sys.exit(0)
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
     #print(results.__dict__)
