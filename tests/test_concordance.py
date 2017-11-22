@@ -111,16 +111,35 @@ def test_anim_concordance():
     org_lengths = pyani_files.get_sequence_lengths(infiles)
 
     # Test ANIm concordance:
-    # Run pairwise NUCmer
-    joblist = anim.generate_nucmer_jobs(infiles, outdirname,
-                                        jobprefix='test')
-    print(joblist)
-    print(joblist[0].__dict__)
-    print(joblist[0].dependencies[0].__dict__)
-    run_dependency_graph(joblist)
+    # Run pairwise NUCmer; we're separating nucmer/delta-filter command
+    # generation because changes necessary for our SGE/OGE installation
+    # don't play well with Travis-CI. This could maybe be avoided with a
+    # scheduler flag passed to jobgroup generation in the anim.py
+    # module - that's a TODO.
+    ncmds, fcmds = anim.generate_nucmer_commands(infiles, outdirname,
+                                                 pyani_config.NUCMER_DEFAULT)
 
-    dfexe = shutil.which('delta_filter_wrapper.py')
-    subprocess.run([dfexe,])
+    print('\n'.join(ncmds))
+    print('\n'.join(fcmds))
+    # We run the NUCmer commands first, as the delta-filter commands depend on
+    # their output.
+    multiprocessing_run(ncmds)
+
+    # Check we've created the right files
+    print(os.listdir(nucmername))
+
+    # The delta-filter commands need to be treated specially, for Travis-CI.
+    # They need to be wrapped for SGE/OGE, as our cluster won't take commands
+    # with semicolon separation or redirection. But the wrapper in this
+    # package is not part of the application whitelist, and is not in the
+    # $PATH. So we try deconstructing the delta-filter commands
+    dfcmds = [' > '.join([' '.join(fcmd.split()[1:-1]),
+                          fcmd.split()[-1]]) for fcmd in fcmds]
+    print('\n'.join(dfcmds))
+    multiprocessing_run(dfcmds)
+
+    # Check we've created the right files
+    print(os.listdir(nucmername))
 
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
@@ -134,9 +153,11 @@ def test_anim_concordance():
     anim_diff = pd.DataFrame(diffmat, index=index, columns=columns)
 
     # Write dataframes to file, for reference
-    anim_pid.to_csv(os.path.join(outdirname, 'ANIm_pid.tab'),
-                    sep='\t')
-    anim_jspecies.to_csv(os.path.join(outdirname, 'ANIm_jspecies.tab'),
+    anim_pid.to_csv(os.path.join(outdirname,
+                                'ANIm_pid.tab'),
+                   sep='\t')
+    anim_jspecies.to_csv(os.path.join(outdirname,
+                                      'ANIm_jspecies.tab'),
                          sep='\t')
     anim_diff.to_csv(os.path.join(outdirname,
                                   'ANIm_diff.tab'),
