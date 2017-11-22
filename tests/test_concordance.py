@@ -113,19 +113,26 @@ def test_anim_concordance():
 
     # Test ANIm concordance:
     # Run pairwise NUCmer
-    ncmds, fcmds = anim.generate_nucmer_commands(infiles, outdirname,
-                                            pyani_config.NUCMER_DEFAULT)
+    joblist = anim.generate_nucmer_jobs(infiles, outdirname,
+                                        jobprefix='test')
+    run_dependency_graph(joblist)
+    
+    #ncmds, fcmds = anim.generate_nucmer_commands(infiles, outdirname,
+    #                                        pyani_config.NUCMER_DEFAULT)
 
-    print('\n'.join(ncmds))
-    print('\n'.join(fcmds))
+    #print('\n'.join(ncmds))
+    #print('\n'.join(fcmds))
     # We run the NUCmer commands first, as the delta-filter commands depend on
     # their output.
-    multiprocessing_run(ncmds)
-    multiprocessing_run(fcmds)
+    #multiprocessing_run(ncmds)
+    #print(os.listdir(nucmername))
+    #multiprocessing_run(fcmds)
     
     print(os.listdir(nucmername))
-    print(os.environ['PATH'])
-    print(shutil.which('delta-filter'))
+    #print(os.environ['PATH'])
+    #dfexe = shutil.which('delta-filter')
+    #print(dfexe)
+    #subprocess.run([dfexe, '-h'])
     
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
