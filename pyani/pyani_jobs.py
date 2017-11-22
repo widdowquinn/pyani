@@ -126,8 +126,8 @@ class JobGroup:
         # for now, SGE_TASK_ID becomes TASK_ID, but we base it at zero
         self.script += """let "TASK_ID=$SGE_TASK_ID - 1"\n"""
 
-        # build the array definitions
-        for key in self.arguments.keys():
+        # build the array definitions; force ordering for Python3.5 tests
+        for key in sorted(self.arguments.keys()):
             values = self.arguments[key]
             line = ("%s_ARRAY=( " % (key))
             for value in values:
@@ -138,8 +138,8 @@ class JobGroup:
             total *= len(values)
         self.script += "\n"
 
-        # now, build the decoding logic in the script
-        for key in self.arguments.keys():
+        # now, build the decoding logic in the script; force ordering
+        for key in sorted(self.arguments.keys()):
             count = len(self.arguments[key])
             self.script += """let "%s_INDEX=$TASK_ID %% %d"\n""" % (key, count)
             self.script += """%s=${%s_ARRAY[$%s_INDEX]}\n""" % (key, key, key)

@@ -114,7 +114,7 @@ def tetra_clean(string):
 
 
 # Calculate Pearson's correlation coefficient from the Z-scores for each
-# tetranucleotide. If we're forcing rpy2, might as well use that, though...
+# tetranucleotide.
 def calculate_correlations(tetra_z):
     """Returns dataframe of Pearson correlation coefficients.
 

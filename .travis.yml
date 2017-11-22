@@ -9,12 +9,12 @@ python:
 # command to install dependencies
 install:
   - "pip install -r requirements.txt"
-  - "pip install codecov"
+  - "pip install -r test-requirements.txt"
 
 # command to run tests
 # Use --nocapture with nosetests to get extra verbose output for debugging on Travis
 script:
-  - nosetests -v --with-coverage --cover-package=pyani -I concordance
+  - nosetests -v --with-coverage --cover-package=pyani
 
 # application dependencies: BLAST+, legacy BLAST, MUMMER
 before_install:

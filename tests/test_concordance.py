@@ -99,7 +99,7 @@ def test_anim_concordance():
     # Make/check output directory
     mode = "ANIm"
     outdirname = delete_and_remake_outdir(mode)
-    nucmername = os.path.join(outdirname, 'nucmer_output') 
+    nucmername = os.path.join(outdirname, 'nucmer_output')
     os.makedirs(nucmername, exist_ok=True)
 
     # Get dataframes of JSpecies output
@@ -107,18 +107,40 @@ def test_anim_concordance():
 
     # Identify our input files, and the total lengths of each organism seq
     infiles = pyani_files.get_fasta_files(INDIRNAME)
+    print(infiles)
     org_lengths = pyani_files.get_sequence_lengths(infiles)
 
     # Test ANIm concordance:
-    # Run pairwise NUCmer
+    # Run pairwise NUCmer; we're separating nucmer/delta-filter command
+    # generation because changes necessary for our SGE/OGE installation
+    # don't play well with Travis-CI. This could maybe be avoided with a
+    # scheduler flag passed to jobgroup generation in the anim.py
+    # module - that's a TODO.
     ncmds, fcmds = anim.generate_nucmer_commands(infiles, outdirname,
-                                            pyani_config.NUCMER_DEFAULT)
+                                                 pyani_config.NUCMER_DEFAULT)
+
     print('\n'.join(ncmds))
     print('\n'.join(fcmds))
     # We run the NUCmer commands first, as the delta-filter commands depend on
     # their output.
     multiprocessing_run(ncmds)
-    multiprocessing_run(fcmds)
+
+    # Check we've created the right files
+    print(os.listdir(nucmername))
+
+    # The delta-filter commands need to be treated specially, for Travis-CI.
+    # They need to be wrapped for SGE/OGE, as our cluster won't take commands
+    # with semicolon separation or redirection. But the wrapper in this
+    # package is not part of the application whitelist, and is not in the
+    # $PATH. So we try deconstructing the delta-filter commands
+    dfcmds = [' > '.join([' '.join(fcmd.split()[1:-1]),
+                          fcmd.split()[-1]]) for fcmd in fcmds]
+    print('\n'.join(dfcmds))
+    multiprocessing_run(dfcmds)
+
+    # Check we've created the right files
+    print(os.listdir(nucmername))
+
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
     anim_pid = \
