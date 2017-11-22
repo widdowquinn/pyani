@@ -69,6 +69,9 @@ class TestBLASTCmdline(unittest.TestCase):
         self.indir = os.path.join('tests', 'test_input', 'anib')
         self.outdir = os.path.join('tests', 'test_output', 'anib')
         self.seqdir = os.path.join('tests', 'test_input', 'sequences')
+        self.infiles = [os.path.join(self.seqdir, fname) for fname in
+                        os.listdir(self.seqdir)]
+        self.fraglen = 1000
         self.fmtdboutdir = os.path.join(self.outdir, 'formatdb')
         self.fmtdbcmd = ' '.join(["formatdb -p F -i",
                                   "tests/test_output/anib/formatdb/NC_002696.fna",
@@ -145,6 +148,35 @@ class TestBLASTCmdline(unittest.TestCase):
                                       '-i tests/test_input/sequences/NC_010338.fna',
                                       '-d tests/test_input/sequences/NC_002696.fna',
                                       '-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8'])]
+        self.blastnjobdict = [('tests/test_output/anib/NC_002696.fna',
+                               'makeblastdb -dbtype nucl ' +
+                               '-in tests/test_input/sequences/NC_002696.fna ' +
+                               '-title NC_002696 -out tests/test_output/anib/NC_002696.fna'),
+                              ('tests/test_output/anib/NC_010338.fna',
+                               'makeblastdb -dbtype nucl ' +
+                               '-in tests/test_input/sequences/NC_010338.fna ' +
+                               '-title NC_010338 -out tests/test_output/anib/NC_010338.fna'),
+                              ('tests/test_output/anib/NC_011916.fna',
+                               'makeblastdb -dbtype nucl ' +
+                               '-in tests/test_input/sequences/NC_011916.fna ' +
+                               '-title NC_011916 -out tests/test_output/anib/NC_011916.fna'),
+                              ('tests/test_output/anib/NC_014100.fna',
+                               'makeblastdb -dbtype nucl ' +
+                               '-in tests/test_input/sequences/NC_014100.fna ' +
+                               '-title NC_014100 -out tests/test_output/anib/NC_014100.fna')]
+        self.blastalljobdict =  [('tests/test_output/anib/NC_002696.fna',
+                                  'formatdb -p F -i tests/test_output/anib/NC_002696.fna ' +
+                                  '-t NC_002696'),
+                                 ('tests/test_output/anib/NC_010338.fna',
+                                  'formatdb -p F -i tests/test_output/anib/NC_010338.fna ' +
+                                  '-t NC_010338'),
+                                 ('tests/test_output/anib/NC_011916.fna',
+                                  'formatdb -p F -i tests/test_output/anib/NC_011916.fna ' +
+                                  '-t NC_011916'),
+                                 ('tests/test_output/anib/NC_014100.fna',
+                                  'formatdb -p F -i tests/test_output/anib/NC_014100.fna ' +
+                                  '-t NC_014100')]
+        self.blastngraphtgt = []
         os.makedirs(self.outdir, exist_ok=True)
         os.makedirs(self.fmtdboutdir, exist_ok=True)
         os.makedirs(self.makeblastdbdir, exist_ok=True)
@@ -198,6 +230,52 @@ class TestBLASTCmdline(unittest.TestCase):
         cmds = anib.generate_blastn_commands(self.blastdbfnames, self.outdir,
                                              mode="ANIblastall")
         assert_equal(cmds, self.blastalltgt)
+
+    def test_blastall_dbjobdict(self):
+        """generate dictionary of legacy BLASTN database jobs."""
+        infiles = [os.path.join(self.seqdir, fname) for fname in
+                   os.listdir(self.seqdir)]
+        blastcmds = anib.make_blastcmd_builder("ANIblastall", self.outdir)
+        jobdict = anib.build_db_jobs(self.infiles, blastcmds)
+        assert_equal([(k, v.script) for (k, v) in jobdict.items()],
+                     self.blastalljobdict)
+
+    def test_blastn_dbjobdict(self):
+        """generate dictionary of BLASTN+ database jobs."""
+        blastcmds = anib.make_blastcmd_builder("ANIb", self.outdir)
+        jobdict = anib.build_db_jobs(self.infiles, blastcmds)
+        assert_equal([(k, v.script) for (k, v) in jobdict.items()],
+                     self.blastnjobdict)
+
+    def test_blastn_graph(self):
+        """create jobgraph for BLASTN jobs."""
+        fragresult = anib.fragment_fasta_files(self.infiles, self.outdir,
+                                               self.fraglen)
+        blastcmds = anib.make_blastcmd_builder("ANIb", self.outdir)
+        jobgraph = anib.make_job_graph(self.infiles, fragresult[0],
+                                       blastcmds)
+        # We check that the main script job is a blastn job, and that there
+        # is a single dependency, which is a makeblastdb job
+        for job in jobgraph:
+            assert(job.script.startswith('blastn'))
+            assert_equal(1, len(job.dependencies))
+            dep = job.dependencies[0]
+            assert(dep.script.startswith('makeblastdb'))
+
+    def test_blastall_graph(self):
+        """create jobgraph for legacy BLASTN jobs."""
+        fragresult = anib.fragment_fasta_files(self.infiles, self.outdir,
+                                               self.fraglen)
+        blastcmds = anib.make_blastcmd_builder("ANIblastall", self.outdir)
+        jobgraph = anib.make_job_graph(self.infiles, fragresult[0],
+                                       blastcmds)
+        # We check that the main script job is a blastn job, and that there
+        # is a single dependency, which is a makeblastdb job
+        for job in jobgraph:
+            assert(job.script.startswith('blastall -p blastn'))
+            assert_equal(1, len(job.dependencies))
+            dep = job.dependencies[0]
+            assert(dep.script.startswith('formatdb'))
 
 
 class TestFragments(unittest.TestCase):
