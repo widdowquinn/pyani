@@ -235,8 +235,6 @@ class TestBLASTCmdline(unittest.TestCase):
 
     def test_blastall_dbjobdict(self):
         """generate dictionary of legacy BLASTN database jobs."""
-        infiles = [os.path.join(self.seqdir, fname) for fname in
-                   os.listdir(self.seqdir)]
         blastcmds = anib.make_blastcmd_builder("ANIblastall", self.outdir)
         jobdict = anib.build_db_jobs(self.infiles, blastcmds)
         assert_equal(sorted([(k, v.script) for (k, v) in jobdict.items()]),
@@ -304,7 +302,7 @@ class TestFragments(unittest.TestCase):
         # Are files created?
         for outfname in self.outfnames:
             assert os.path.isfile(outfname)
-            
+
         # Test fragment lengths
         for accession, fragdict in result[-1].items():
             for fragname, fraglen in fragdict.items():
@@ -370,9 +368,9 @@ class TestParsing(unittest.TestCase):
         result = anib.process_blast(self.anibdir, orglengths,
                                     fraglengths, mode="ANIb")
         assert_frame_equal(result.percentage_identity.sort_index(1).sort_index(),
-                           self.anibtgt.sort_index(1).sort_index())        
+                           self.anibtgt.sort_index(1).sort_index())
         # ANIblastall
         result = anib.process_blast(self.aniblastalldir, orglengths,
                                     fraglengths, mode="ANIblastall")
         assert_frame_equal(result.percentage_identity.sort_index(1).sort_index(),
-                           self.aniblastalltgt.sort_index(1).sort_index())        
+                           self.aniblastalltgt.sort_index(1).sort_index())
