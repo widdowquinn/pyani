@@ -98,8 +98,7 @@ def test_anim_concordance():
     """Test concordance of ANIm method with JSpecies output."""
     # Make/check output directory
     mode = "ANIm"
-    #outdirname = delete_and_remake_outdir(mode)
-    outdirname = os.path.join('tests', 'test_concordance_ANIm')
+    outdirname = delete_and_remake_outdir(mode)
     nucmername = os.path.join(outdirname, 'nucmer_output')
     os.makedirs(nucmername, exist_ok=True)
 
@@ -116,24 +115,10 @@ def test_anim_concordance():
     joblist = anim.generate_nucmer_jobs(infiles, outdirname,
                                         jobprefix='test')
     run_dependency_graph(joblist)
-    
-    #ncmds, fcmds = anim.generate_nucmer_commands(infiles, outdirname,
-    #                                        pyani_config.NUCMER_DEFAULT)
 
-    #print('\n'.join(ncmds))
-    #print('\n'.join(fcmds))
-    # We run the NUCmer commands first, as the delta-filter commands depend on
-    # their output.
-    #multiprocessing_run(ncmds)
-    #print(os.listdir(nucmername))
-    #multiprocessing_run(fcmds)
-    
-    print(os.listdir(nucmername))
-    #print(os.environ['PATH'])
-    #dfexe = shutil.which('delta-filter')
-    #print(dfexe)
-    #subprocess.run([dfexe, '-h'])
-    
+    dfexe = shutil.which('delta-filter')
+    subprocess.run(dfexe, '-h')
+
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
     anim_pid = \
@@ -146,11 +131,9 @@ def test_anim_concordance():
     anim_diff = pd.DataFrame(diffmat, index=index, columns=columns)
 
     # Write dataframes to file, for reference
-    anim_pid.to_csv(os.path.join(outdirname,
-                                'ANIm_pid.tab'),
-                   sep='\t')
-    anim_jspecies.to_csv(os.path.join(outdirname,
-                                      'ANIm_jspecies.tab'),
+    anim_pid.to_csv(os.path.join(outdirname, 'ANIm_pid.tab'),
+                    sep='\t')
+    anim_jspecies.to_csv(os.path.join(outdirname, 'ANIm_jspecies.tab'),
                          sep='\t')
     anim_diff.to_csv(os.path.join(outdirname,
                                   'ANIm_diff.tab'),
