@@ -65,7 +65,6 @@ class TestJob(unittest.TestCase):
     def setUp(self):
         """Define parameters and values for tests."""
         self.cmds = ['ls -ltrh', 'echo ${PWD}']
-        pass
 
     def test_create_job(self):
         """create a dummy job."""
