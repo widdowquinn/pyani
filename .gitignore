@@ -15,11 +15,19 @@ dist/
 pyani.egg-info/
 distribute*
 
+# Unrequired test input (generated in-test)
+tests/test_input/anib/*.dataframe
+tests/test_input/anib/blastn/*.dataframe
+tests/test_input/anib/blastall/*.dataframe
+
 # Test output
 *.log
 tests/test_*_out/
 tests/test_*_output/
 tests/test_concordance_*/
+
+# Test/local results databases
+.pyani
 
 # SGE output
 stderr/
