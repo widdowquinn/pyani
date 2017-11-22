@@ -13,6 +13,7 @@
 
 * `average_nucleotide_identity.py` that enables command-line ANI analysis.
 * `genbank_get_genomes_by_taxon.py` that downloads publicly-available genomes from NCBI.
+* `delta_filter_wrapper.py` is a helper script required to run delta-filter on SGE/OGE systems.
 
 ## Installation
 
