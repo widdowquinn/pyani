@@ -122,6 +122,7 @@ def test_anim_concordance():
     # their output.
     multiprocessing_run(ncmds)
     multiprocessing_run(fcmds)
+    print(os.listdir(nucmername))
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
     anim_pid = \
