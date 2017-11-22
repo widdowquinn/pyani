@@ -122,10 +122,8 @@ def test_anim_concordance():
     # their output.
     multiprocessing_run(ncmds)
     multiprocessing_run(fcmds)
-    sys.exit(0)
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
-    #print(results.__dict__)
     anim_pid = \
         results.percentage_identity.sort_index(axis=0).sort_index(axis=1) * 100.
 
