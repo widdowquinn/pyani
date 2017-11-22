@@ -60,6 +60,7 @@ from pandas.util.testing import (assert_frame_equal,)
 
 from pyani import (anib, pyani_files)
 
+
 class TestBLASTCmdline(unittest.TestCase):
 
     """Class defining tests of BLAST command-line generation."""
