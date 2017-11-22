@@ -114,10 +114,13 @@ def test_anim_concordance():
     # Run pairwise NUCmer
     joblist = anim.generate_nucmer_jobs(infiles, outdirname,
                                         jobprefix='test')
+    print(joblist)
+    print(joblist[0].__dict__)
+    print(joblist[0].dependencies[0].__dict__)
     run_dependency_graph(joblist)
 
     dfexe = shutil.which('delta-filter')
-    subprocess.run(dfexe, '-h')
+    subprocess.run([dfexe, '-h'])
 
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
