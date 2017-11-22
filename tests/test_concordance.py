@@ -119,8 +119,8 @@ def test_anim_concordance():
     print(joblist[0].dependencies[0].__dict__)
     run_dependency_graph(joblist)
 
-    dfexe = shutil.which('delta-filter')
-    subprocess.run([dfexe, '-h'])
+    dfexe = shutil.which('delta_filter_wrapper.py')
+    subprocess.run([dfexe,])
 
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
