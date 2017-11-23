@@ -370,7 +370,7 @@ def construct_blastall_cmdline(fname1, fname2, outdir,
 
 # Process pairwise BLASTN output
 def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
-                  logger=None):
+                  identity=0.3, coverage=0.7, logger=None):
     """Returns a tuple of ANIb results for .blast_tab files in the output dir.
 
     - blast_dir - path to the directory containing .blast_tab files
@@ -418,7 +418,8 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
                 logger.warning("Subject name %s not in input " % sname +
                                "sequence list, skipping %s" % blastfile)
             continue
-        resultvals = parse_blast_tab(blastfile, fraglengths, mode)
+        resultvals = parse_blast_tab(blastfile, fraglengths,
+                                     identity, coverage, mode)
         query_cover = float(resultvals[0]) / org_lengths[qname]
 
         # Populate dataframes: when assigning data, we need to note that
@@ -432,7 +433,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
 
 
 # Parse BLASTALL output to get total alignment length and mismatches
-def parse_blast_tab(filename, fraglengths, mode="ANIb"):
+def parse_blast_tab(filename, fraglengths, identity, coverage, mode="ANIb"):
     """Returns (alignment length, similarity errors, mean_pid) tuple
     from .blast_tab
 
@@ -482,7 +483,7 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     data['ani_coverage'] = data['ani_alnlen'] / data['qlen']
     data['ani_pid'] = data['ani_alnids'] / data['qlen']
     # Filter rows on 'ani_coverage' > 0.7, 'ani_pid' > 0.3
-    filtered = data[(data['ani_coverage'] > 0.7) & (data['ani_pid'] > 0.3)]
+    filtered = data[(data['ani_coverage'] > coverage) & (data['ani_pid'] > identity)]
     # Dedupe query hits, so we only take the best hit
     filtered = filtered.groupby(filtered.index).first()
     # Replace NaNs with zero

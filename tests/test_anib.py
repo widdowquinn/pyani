@@ -353,11 +353,12 @@ class TestParsing(unittest.TestCase):
         """parses ANIblastall .blast_tab output."""
         fragdata = anib.get_fraglength_dict([self.fragfname])
         # ANIb output
-        result = anib.parse_blast_tab(self.fname, fragdata, mode="ANIb")
+        result = anib.parse_blast_tab(self.fname, fragdata, 0.3, 0.7,
+                                      mode="ANIb")
         assert_equal(result, (4016551, 93, 99.997693577050029))
         # ANIblastall output
         result = anib.parse_blast_tab(self.fname_legacy, fragdata,
-                                      mode="ANIblastall")
+                                      0.3, 0.7, mode="ANIblastall")
         assert_equal(result, (1966922, 406104, 78.578978313253018))
 
     def test_blastdir_processing(self):
