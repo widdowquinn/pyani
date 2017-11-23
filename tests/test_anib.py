@@ -357,7 +357,7 @@ class TestParsing(unittest.TestCase):
         assert_equal(result, (4016551, 93, 99.997693577050029))
         # ANIblastall output
         result = anib.parse_blast_tab(self.fname_legacy, fragdata,
-                                      mode="ANIblastall")
+                                      0.3, 0.7, mode="ANIblastall")
         assert_equal(result, (1966922, 406104, 78.578978313253018))
 
     def test_blastdir_processing(self):

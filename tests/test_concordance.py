@@ -127,9 +127,24 @@ class TestConcordance(unittest.TestCase):
     def test_anim_concordance(self):
         """ANIm results concordant with JSpecies."""
         # Perform ANIm on the input directory contents
-        joblist = anim.generate_nucmer_jobs(self.infiles, self.outdir,
-                                            jobprefix='anim_concordance')
-        assert_equal(0, run_mp.run_dependency_graph(joblist))
+        # We have to separate nucmer/delta-filter command generation
+        # because Travis-CI doesn't play nicely with changes we made
+        # for local SGE/OGE integration.
+        # This might be avoidable with a scheduler flag passed to
+        # jobgroup generation in the anim.py module. That's a TODO.
+        ncmds, fcmds = anim.generate_nucmer_commands(self.infiles,
+                                                     self.outdir)
+        run_mp.multiprocessing_run(ncmds)
+
+        # delta-filter commands need to be treated with care for
+        # Travis-CI. Our cluster won't take redirection or semicolon
+        # separation in individual commands, but the wrapper we wrote
+        # for this (delta_filter_wrapper.py) can't be called under
+        # Travis-CI. So we must deconstruct the commands below
+        dfcmds = [' > '.join([' '.join(fcmd.split()[1:-1]),
+                              fcmd.split()[-1]]) for fcmd in fcmds]
+        run_mp.multiprocessing_run(dfcmds)
+
         results = anim.process_deltadir(self.deltadir, self.orglengths)
         result_pid = results.percentage_identity
         result_pid.to_csv(os.path.join(self.outdir, 'pyani_anim.tab'),
