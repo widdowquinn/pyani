@@ -1,4 +1,4 @@
-# Copyright 2013-2015, The James Hutton Insitute
+# Copyright 2013-2017, The James Hutton Insitute
 # Author: Leighton Pritchard
 #
 # This code is part of the pyani package, and is governed by its licence.
@@ -13,13 +13,11 @@ from Bio import SeqIO
 
 
 # Get a list of FASTA files from the input directory
-def get_fasta_files(dirname=None):
+def get_fasta_files(dirname):
     """Returns a list of FASTA files in the passed directory
 
     - dirname - path to input directory
     """
-    if dirname is None:
-        dirname = '.'
     infiles = get_input_files(dirname, '.fasta', '.fas', '.fa', '.fna',
                               '.fsa_nt')
     return infiles
