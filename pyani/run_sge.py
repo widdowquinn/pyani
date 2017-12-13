@@ -121,7 +121,8 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
             if len(job.dependencies):
                 dep_count += len(job.dependencies)
                 for dep in job.dependencies:
-                    logger.info("\t[^ depends on: %s]" % dep.name)
+                    logger.info("\t[^ depends on: %s (%s)]",
+                                dep.name, dep.command)
                     jobs_deps.append(dep)
     logger.info("There are %d job dependencies" % dep_count)
     # Clear dependencies in main group
