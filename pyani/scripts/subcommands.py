@@ -468,32 +468,33 @@ def subcmd_anim(args, logger):
         logger.info("All comparison results already present in database " +
                     "(skipping comparisons)")
     else:
-        # Create list of NUCmer command-lines for each comparison still to be
+        # Create list of NUCmer jobs for each comparison still to be
         # performed
-        logger.info("Creating NUCmer commands for ANIm")
-        cmdlines = []
-        comparisons = []
-        for (qid, sid) in comparison_ids:
+        logger.info("Creating NUCmer jobs for ANIm")
+        joblist, comparisons = [], []
+        jobprefix = "ANINUCmer"
+        for idx, (qid, sid) in enumerate(comparison_ids):
             qpath = pyani_db.get_genome_path(args.dbpath, qid)
             spath = pyani_db.get_genome_path(args.dbpath, sid)
-            cmdline = anim.construct_nucmer_cmdline(qpath, spath,
-                                                    args.outdir,
-                                                    args.nucmer_exe,
-                                                    args.filter_exe,
-                                                    args.maxmatch)
-            outprefix = cmdline.split()[3]  # prefix for NUCmer output
-            cmdlines.append(cmdline)
+            ncmd, dcmd = anim.construct_nucmer_cmdline(qpath, spath,
+                                                       args.outdir,
+                                                       args.nucmer_exe,
+                                                       args.filter_exe,
+                                                       args.maxmatch)
+            outprefix = ncmd.split()[3]  # prefix for NUCmer output 
             if args.nofilter:
                 comparisons.append(Comparison(qid, sid, cmdline,
                                               outprefix + '.delta'))
             else:
                 comparisons.append(Comparison(qid, sid, cmdline,
                                               outprefix + '.filter'))
+            # Build jobs
+            njob = pyani_jobs.Job("%s_%06d-n" % (jobprefix, idx), ncmd)
+            fjob = pyani_jobs.Job("%s_%06d-f" % (jobprefix, idx), dcmd)
+            fjob.add_dependency(njob)
+            joblist.append(fjob)
         logger.info("Commands to be scheduled:\n\t%s", '\n\t'.join(cmdlines))
 
-        # Create joblist of NUCmer command-lines
-        joblist = [pyani_jobs.Job("%s_%06d" % (args.jobprefix, idx), cmd) for
-                   idx, cmd in enumerate(cmdlines)]
 
         # Pass commands to the appropriate scheduler
         if args.scheduler == 'multiprocessing':

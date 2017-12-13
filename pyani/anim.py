@@ -111,7 +111,7 @@ def generate_nucmer_jobs(filenames, outdir='.',
     for each pairwise comparison.
     """
     ncmds, fcmds = generate_nucmer_commands(filenames, outdir, nucmer_exe,
-                                        filter_exe, maxmatch)
+                                            filter_exe, maxmatch)
     joblist = []
     for idx, cmd in enumerate(cmdlines):
         njob = pyani_jobs.Job("%s_%06d-n" % (jobprefix, idx), ncmd)
