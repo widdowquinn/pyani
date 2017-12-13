@@ -89,6 +89,7 @@ class Job:
         self.scriptPath = None           # Will hold path to the script file
         self.dependencies = []           # List of jobs to be completed first
         self.submitted = False           # Flag: is job submitted?
+        self.finished = False
 
     def add_dependency(self, job):
         """Add passed job to the dependency list for this Job.
@@ -108,11 +109,10 @@ class Job:
 
     def wait(self, interval=SGE_WAIT):
         """Wait until the job finishes, and poll SGE on its status."""
-        finished = False
-        while not finished:
+        while not self.finished:
             time.sleep(interval)
             interval = min(2 * interval, 60)
-            finished = os.system("qstat -j %s > /dev/null" % (self.name))
+            self.finished = os.system("qstat -j %s > /dev/null" % (self.name))
 
 
 class JobGroup:
@@ -143,7 +143,8 @@ class JobGroup:
         self.queue = queue             # Set SGE queue to request
         self.command = command         # Set command string
         self.dependencies = []         # Create empty list for dependencies
-        self.submitted = True          # Set submitted Boolean
+        self.submitted = False          # Set submitted Boolean
+        self.finished = False
         if arguments is not None:
             self.arguments = arguments  # Dictionary of arguments for command
         else:
@@ -204,8 +205,7 @@ class JobGroup:
 
     def wait(self, interval=SGE_WAIT):
         """Wait for a defined period, then poll SGE for job status."""
-        finished = False
-        while not finished:
+        while not self.finished:
             time.sleep(interval)
             interval = min(2 * interval, 60)
-            finished = os.system("qstat -j %s > /dev/null" % (self.name))
+            self.finished = os.system("qstat -j %s > /dev/null" % (self.name))

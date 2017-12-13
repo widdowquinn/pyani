@@ -42,6 +42,7 @@ setup(
     url="http://widdowquinn.github.io/pyani/",  # project home page
     download_url="https://github.com/widdowquinn/pyani/releases",
     scripts=[os.path.join('bin', 'average_nucleotide_identity.py'),
+             os.path.join('bin', 'delta_filter_wrapper.py'),
              os.path.join('bin', 'genbank_get_genomes_by_taxon.py'),
              os.path.join('bin', 'pyani')],
     packages=['pyani'],

@@ -111,35 +111,47 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
     the name of the Job on which it depends.
     """
     joblist = build_joblist(jobgraph)
-
+    jobs_main = []    # Can be run first, before deps
+    jobs_deps = []    # Depend on the main jobs
+    
     # Try to be informative by telling the user what jobs will run
     dep_count = 0  # how many dependencies are there
     if logger:
         logger.info("Jobs to run with scheduler")
         for job in joblist:
             logger.info("{0}: {1}".format(job.name, job.command))
+            jobs_main.append(job)
             if len(job.dependencies):
                 dep_count += len(job.dependencies)
                 for dep in job.dependencies:
                     logger.info("\t[^ depends on: %s]" % dep.name)
+                    jobs_deps.append(dep)
     logger.info("There are %d job dependencies" % dep_count)
 
-    # If there are no job dependencies, we can use an array (or series of
-    # arrays) to schedule our jobs. This cuts down on problems with long
-    # job lists choking up the queue.
+    # We can use an array (or series of arrays) to schedule our jobs. This
+    # cuts down on problems with long job lists choking up the queue. If
+    # there are no dependencies, we can pass the joblist in the order we
+    # made it. Otherwise, we need to split the jobs and make jobgroup
+    # dependencies
     if dep_count == 0:
         logger.info("Compiling jobs into JobGroups")
-        joblist = compile_jobgroups_from_joblist(joblist, jgprefix,
-                                                 sgegroupsize)
+        jobgroups = compile_jobgroups_from_joblist(joblist, jgprefix,
+                                                   sgegroupsize)
+    else:
+        logger.info("Compiling dependent jobs into JobGroups")
+        maingroups = compile_jobgroups_from_joblist(jobs_main, jgprefix + "_main",
+                                                    sgegroupsize)
+        depgroups = compile_jobgroups_from_joblist(jobs_deps, jgprefix + "_deps",
+                                                    sgegroupsize)
 
     # Send jobs to scheduler
     logger.info("Running jobs with scheduler...")
     logger.info("Jobs passed to scheduler in order:")
-    for job in joblist:
+    for job in jobgroups:
         logger.info("\t%s" % job.name)
-    build_and_submit_jobs(os.curdir, joblist, sgeargs)
+    build_and_submit_jobs(os.curdir, jobgroups, sgeargs)
     logger.info("Waiting for SGE-submitted jobs to finish (polling)")
-    for job in joblist:
+    for job in jobgroups:
         job.wait()
 
 
@@ -205,7 +217,7 @@ def extract_submittable_jobs(waiting):
     # list.  If there are any, and all of these have been submitted, then
     # append the job to the list of submittable jobs.
     for job in waiting:
-        unsatisfied = sum([(subjob.submitted is False) for subjob in
+        unsatisfied = sum([(subjob.finished is False) for subjob in
                            job.dependencies])
         if unsatisfied == 0:
             submittable.add(job)
