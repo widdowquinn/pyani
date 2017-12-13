@@ -483,17 +483,16 @@ def subcmd_anim(args, logger):
                                                        args.maxmatch)
             outprefix = ncmd.split()[3]  # prefix for NUCmer output 
             if args.nofilter:
-                comparisons.append(Comparison(qid, sid, cmdline,
+                comparisons.append(Comparison(qid, sid, dcmd,
                                               outprefix + '.delta'))
             else:
-                comparisons.append(Comparison(qid, sid, cmdline,
+                comparisons.append(Comparison(qid, sid, dcmd,
                                               outprefix + '.filter'))
             # Build jobs
             njob = pyani_jobs.Job("%s_%06d-n" % (jobprefix, idx), ncmd)
             fjob = pyani_jobs.Job("%s_%06d-f" % (jobprefix, idx), dcmd)
             fjob.add_dependency(njob)
             joblist.append(fjob)
-        logger.info("Commands to be scheduled:\n\t%s", '\n\t'.join(cmdlines))
 
 
         # Pass commands to the appropriate scheduler
