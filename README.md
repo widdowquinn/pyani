@@ -141,7 +141,9 @@ One reason for using a database backend for analysis results is so that, for ver
 You can test this for yourself by running the analysis command again, as below. You will see a number of messages indicating that genomes have been seen before, and that analyses performed before were skipped:
 
 ```bash
-$ pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log --name "C. blochmannia run 2" --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
+$ pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log \
+    --name "C. blochmannia run 2" \
+    --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
 INFO: command-line: pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log
 INFO: Running ANIm analysis
 INFO: Adding analysis information to database .pyani/pyanidb
