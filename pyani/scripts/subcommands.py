@@ -481,6 +481,7 @@ def subcmd_anim(args, logger):
                                                        args.nucmer_exe,
                                                        args.filter_exe,
                                                        args.maxmatch)
+            logger.info("Commands to run:\n\t%s\n\t%s", (ncmd, dcmd))
             outprefix = ncmd.split()[3]  # prefix for NUCmer output 
             if args.nofilter:
                 comparisons.append(Comparison(qid, sid, dcmd,
@@ -493,6 +494,7 @@ def subcmd_anim(args, logger):
             fjob = pyani_jobs.Job("%s_%06d-f" % (jobprefix, idx), dcmd)
             fjob.add_dependency(njob)
             joblist.append(fjob)
+        sys.exit(1)
 
 
         # Pass commands to the appropriate scheduler
