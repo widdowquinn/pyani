@@ -125,7 +125,9 @@ Subsequent `pyani` commands will assume this location for the database, but you 
 In this walkthrough, we'll run ANIm on the downloaded genomes, using the command:
 
 ```bash
-pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log --name "C. blochmannia run 1" --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
+pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log \
+    --name "C. blochmannia run 1" \
+    --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
 ```
 
 All four analysis commands operate in a similar way. The first two arguments are paths to directories: the first path is to a directory containing input genomes, and the second is the path to an output directory for storing intermediate results. The `-v` and `-l` arguments work as above, specifying verbose output and logging output to a file. 
