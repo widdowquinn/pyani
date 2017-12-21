@@ -5,6 +5,8 @@
 [![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=master)](https://travis-ci.org/widdowquinn/pyani/branches)
 [![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)](https://codecov.io/github/widdowquinn/pyani)
 [![Code Health](https://landscape.io/github/widdowquinn/pyani/master/landscape.svg?style=flat)](https://landscape.io/github/widdowquinn/pyani/master) 
+[![GitHub Issues](https://img.shields.io/github/issues-closed/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/stargazers)
 
 ## Overview
 `pyani` is a Python3 module and script that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
