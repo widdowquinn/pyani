@@ -289,6 +289,9 @@ def build_parser_run_common():
     parser.add_argument("--labels", dest="labels",
                         action="store", default=None,
                         help="Path to genome labels for the run")
+    parser.add_argument("--recovery", dest="recovery",
+                        action="store_true", default=False,
+                        help="Recover comparison results for this run")
     return parser
 
 
