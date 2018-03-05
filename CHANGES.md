@@ -1,5 +1,25 @@
 # CHANGES.md
 
+
+## v0.2.7.dev
+
+* update legacy BLAST download location in TravisCI
+* update concordance tests (issue #105)
+* extend test suites (issue #104)
+* modify ANIm concordance test to accommodate new command structure
+* add `delta-filter` wrapper for compatibility with SGE/OGE schedulers
+
+## v0.2.7
+
+* Fix for issue #97 where numeric arguments to the GenBank download script were not recognised
+* GenBank download script now insists on integer input for `--batchsize`, `--retries`, and `--timeout`
+* Added `setup.cfg` that points to README.md
+* Fix issue #97 where valid input arguments were not recognised in the download script
+
+## v0.2.6
+
+* Add Dockerfiles for making Docker images
+
 ## v0.2.4
 
 * `ANIm` now uses `delta-filter` to remove alignments of repeat regions (issue #91)
@@ -18,6 +38,7 @@
 
 
 ## v0.2.3
+
 * fixes a bug in the installed scripts where the shebang (`#!`) in wheel and egg packages pointed to a development Python
 
 ## v0.2.2
