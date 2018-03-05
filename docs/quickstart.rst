@@ -67,9 +67,9 @@ To see options available for the ``pyani`` program, use the ``-h``
 
 An example ``pyani`` analysis is provided as a walkthrough in the stages below:
 
-1. Download genomes
+1. Download genomes for the analysis
 2. Create a database to hold genome data and analysis results
-3. Perform ANI analysis
+3. Perform ANIm analysis
 4. Report and visualise analysis results
 5. Generate species hypotheses (classify genomes) using the analysis results
 
@@ -77,7 +77,7 @@ An example ``pyani`` analysis is provided as a walkthrough in the stages below:
 1. Download genomes
 ^^^^^^^^^^^^^^^^^^^
 
-``pyani`` can be used with an existing local set of genomes, but for this walkthrough we will download a new set of genomes with the ``pyani download`` command.
+``pyani`` can be used with an existing local set of genomes. For this walkthrough a new set of genomes will be downloaded with the ``pyani download`` command.
 
 .. TIP::
     ``pyani`` requires an *indexed* set of genomes, and the visualisation and classification steps benefit from having ``classes.txt`` and ``labels.txt`` files. These are generated automatically when downloading genomes, but you must create these in other ways when applying ``pyani`` to a set of local files.
@@ -91,9 +91,9 @@ Use the pyani.py download subcommand to download all available genomes for Candi
 
 .. code-block:: bash
 
-    pyani.py download C_blochmannia --email my.email@my.domain -t 203804
+    pyani download C_blochmannia --email my.email@my.domain -t 203804
 
-This produces a new subdirectory (C_blochmannia) with the following contents:
+This produces a new ``directory`` (``C_blochmannia``) with the following contents:
 
 .. code-block:: bash
 
@@ -106,6 +106,55 @@ This produces a new subdirectory (C_blochmannia) with the following contents:
     ├── GCF_000973545.1_ASM97354v1_hashes.txt
     ├── classes.txt
     └── labels.txt
+
+
+^^^^^^^^^^^^^^^^^^
+2. Create database
+^^^^^^^^^^^^^^^^^^
+
+``pyani`` uses a database to store genome data and analysis results. Create a new, clean, database with the command:
+
+.. code-block:: bash
+
+    pyani createdb
+
+.. TIP::
+    This creates a new database in the default location (``.pyani/pyanidb``), but the name and location of this database can be controlled with the ``pyani createdb`` command, and specified in each of the subsequent commands.
+
+^^^^^^^^^^^^^^^^^^^^^^^^
+3. Conduct ANIm analysis
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Run ANIm on the downloaded genomes, using the command:
+
+.. code-block:: bash
+
+    pyani anim C_blochmannia C_blochmannia_ANIm \
+        --name "C. blochmannia run 1" \
+        --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
+
+This will run an ANIm analysis on the genomes in the ``C_blochmannia`` directory. The analysis results will be stored in the database you created, but the comparison files will be written to the ``C_blochmannia_ANIm`` directory.
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+4. Reporting Analyses and Analysis Results
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Show all the runs contained in the (default) database with the command:
+
+.. code-block:: bash
+
+    pyani report --runs C_blochmannia_ANIm/ --formats html,excel,stdout
+
+This will report the relevant information to new files the ``pyani report`` command creates in the ``C_blocahmannia_ANIm`` directory.
+
+.. code-block:: bash
+    $ tree -L 1 C_blochmannia_ANIm/
+    C_blochmannia_ANIm/
+    ├── nucmer_output
+    ├── runs.html
+    ├── runs.tab
+    └── runs.xlsx
 
 
 .. _NCBI Taxonomy database: https://www.ncbi.nlm.nih.gov/taxonomy
