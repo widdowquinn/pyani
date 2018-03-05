@@ -239,7 +239,8 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     deltafiles = pyani_files.get_input_files(delta_dir, '.filter')
 
     # Tracking down a bug
-    print(deltafiles)
+    print("delta_dir: %s" % delta_dir)
+    print("deltafiles: %s" % deltafiles)
 
     # Hold data in ANIResults object
     results = ANIResults(list(org_lengths.keys()), "ANIm")
