@@ -87,4 +87,5 @@ Indices and tables
 
 
 .. _GitHub issues page: https://github.com/widdowquinn/pyani/issues
-.. _SGE or OGE compatible: http://gridscheduler.sourceforge.net/
+.. _SGE or OGE-compatible: http://gridscheduler.sourceforge.net/
+.. _SQLite: https://www.sqlite.org/index.html

@@ -1,8 +1,8 @@
 .. _pyani-contributing:
 
-============
-Contributing
-============
+=========================
+Contributing to ``pyani``
+=========================
 
 -------------------------
 Reporting bugs and errors
