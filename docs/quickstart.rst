@@ -8,9 +8,11 @@ QuickStart Guide
 Installation
 ------------
 
-^^^^^^^^^^^^^^^
-Using ``conda``
-^^^^^^^^^^^^^^^
+To use ``pyani`` you will need to install it. Installation is possible *via* two popular Python package managers:
+
+^^^^^^^^^^^^
+1. ``conda``
+^^^^^^^^^^^^
 
 ``pyani`` is available through the ``bioconda`` channel of Anaconda:
 
@@ -19,9 +21,9 @@ Using ``conda``
     conda install -c bioconda pyani 
 
 
-^^^^^^^^^^^^^^
-Using ``PyPI``
-^^^^^^^^^^^^^^
+^^^^^^^^^^^
+2. ``PyPI``
+^^^^^^^^^^^
 
 ``pyani`` is available *via* the `PyPI`_ package manager for Python:
 
@@ -29,34 +31,22 @@ Using ``PyPI``
 
     pip install pyani 
 
+.. TIP::
+    ``pyani`` can be installed from source. Installation instructions can be found on the :ref:`pyani-installation` page.
 
-^^^^^^^^^^^
-From source
-^^^^^^^^^^^
-
-At the command-line, use ``git`` to clone the current version of the ``pyani`` repository:
-
-.. code-block:: bash
-
-    git clone git@github.com:widdowquinn/pyani.git
-
-Change to the newly-created ``pyani`` subdirectory:
-
-.. code-block:: bash
-
-    cd pyani
-
-Install the package and program, using the ``setup.py`` file:
-
-.. code-block:: bash
-
-    python setup.py install
-
-(other installation methods can be found on the :ref:`pyani-installation` page)
 
 -----------------
 ``pyani`` Example
 -----------------
+
+An example ANIm analysis using ``pyani`` is provided as a walkthrough in the stages below:
+
+1. Download genomes for the analysis
+2. Create a database to hold genome data and analysis results
+3. Perform ANIm analysis
+4. Report and visualise analysis results
+5. Generate species hypotheses (classify genomes) using the analysis results
+
 
 To see options available for the ``pyani`` program, use the ``-h``
 (help) option:
@@ -65,27 +55,19 @@ To see options available for the ``pyani`` program, use the ``-h``
 
     pyani -h
 
-An example ``pyani`` analysis is provided as a walkthrough in the stages below:
-
-1. Download genomes for the analysis
-2. Create a database to hold genome data and analysis results
-3. Perform ANIm analysis
-4. Report and visualise analysis results
-5. Generate species hypotheses (classify genomes) using the analysis results
-
 ^^^^^^^^^^^^^^^^^^^
 1. Download genomes
 ^^^^^^^^^^^^^^^^^^^
 
-``pyani`` can be used with an existing local set of genomes. For this walkthrough a new set of genomes will be downloaded with the ``pyani download`` command.
+``pyani`` can be used with an existing local set of genomes. For this walkthrough a new set of genomes will be obtained from GenBank, using the ``pyani download`` command.
 
 .. TIP::
-    ``pyani`` requires an *indexed* set of genomes, and the visualisation and classification steps benefit from having ``classes.txt`` and ``labels.txt`` files. These are generated automatically when downloading genomes, but you must create these in other ways when applying ``pyani`` to a set of local files.
+    ``pyani`` requires an *indexed* set of genomes, and the visualisation and classification steps benefit from having ``classes.txt`` and ``labels.txt`` files. These are generated automatically when downloading genomes, but you must create them in other ways when applying ``pyani`` to a set of local files.
 
 .. ATTENTION::
     To use their online resources programmatically, NCBI require that you provide your email address for contact purposes if jobs go wrong, and for their own usage statistics. This is specified with the ``--email <EMAIL ADDRESS>`` argument of ``pyani download``.
 
-Use the pyani.py download subcommand to download all available genomes for Candidatus Blochmannia from NCBI. The taxon ID for this grouping is ``203804``.
+Use the pyani.py download subcommand to download all available genomes for *Candidatus Blochmannia* from NCBI. The taxon ID for this grouping is ``203804``.
 
 * `NCBI Taxonomy database`_
 
@@ -133,7 +115,7 @@ Run ANIm on the downloaded genomes, using the command:
         --name "C. blochmannia run 1" \
         --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
 
-This will run an ANIm analysis on the genomes in the ``C_blochmannia`` directory. The analysis results will be stored in the database you created, but the comparison files will be written to the ``C_blochmannia_ANIm`` directory.
+This will run an ANIm analysis on the genomes in the ``C_blochmannia`` directory. The analysis results will be stored in the database you created, identified with the name ``C. blochmannia run 1``, but the comparison files will be written to the ``C_blochmannia_ANIm`` directory.
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
