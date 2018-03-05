@@ -146,7 +146,7 @@ def generate_nucmer_commands(filenames, outdir='.',
     """
     nucmer_cmdlines, delta_filter_cmdlines = [], []
     for idx, fname1 in enumerate(filenames[:-1]):
-        for fname2 in filenames[idx+1:]:
+        for fname2 in filenames[idx + 1:]:
             ncmd, dcmd = construct_nucmer_cmdline(fname1, fname2, outdir,
                                                   nucmer_exe, filter_exe,
                                                   maxmatch)
@@ -238,6 +238,9 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     # .filter files that result from delta-filter (1:1 alignments)
     deltafiles = pyani_files.get_input_files(delta_dir, '.filter')
 
+    # Tracking down a bug
+    print(deltafiles)
+
     # Hold data in ANIResults object
     results = ANIResults(list(org_lengths.keys()), "ANIm")
 
@@ -270,6 +273,10 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
                                "%s is zero!" % deltafile)
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
+
+        # Tracking down a bug
+        print(tot_length)
+        print(tot_sim_error)
 
         # Calculate percentage ID of aligned length. This may fail if
         # total length is zero.
