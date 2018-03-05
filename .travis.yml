@@ -11,6 +11,9 @@ install:
   - "pip install -r requirements.txt"
   - "pip install codecov"
 
+# we need the delta filter command, so must install in-place
+  - "pip install -e ."
+
 # command to run tests
 # Use --nocapture with nosetests to get extra verbose output for debugging on Travis
 script:
