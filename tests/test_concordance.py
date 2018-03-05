@@ -28,7 +28,7 @@ curdir = os.path.dirname(os.path.abspath(__file__))
 # the test data with your own data, you will need to replace this file,
 # or change the file path.
 JSPECIES_OUTFILE = os.path.relpath(os.path.join(curdir, 'test_JSpecies',
-                                                'jspecies_results.tab'))
+                                                'jspecies_results_3.tab'))
 
 # Path to test input data
 INDIRNAME = os.path.relpath(os.path.join(curdir, 'test_ani_data'))
