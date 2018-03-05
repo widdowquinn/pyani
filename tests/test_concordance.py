@@ -28,7 +28,7 @@ curdir = os.path.dirname(os.path.abspath(__file__))
 # the test data with your own data, you will need to replace this file,
 # or change the file path.
 JSPECIES_OUTFILE = os.path.relpath(os.path.join(curdir, 'test_JSpecies',
-                                               'jspecies_results.tab'))
+                                                'jspecies_results.tab'))
 
 # Path to test input data
 INDIRNAME = os.path.relpath(os.path.join(curdir, 'test_ani_data'))
@@ -43,6 +43,8 @@ ANIBLASTALL_THRESHOLD = 0.1
 ANIM_THRESHOLD = 0.1
 
 # Helper function to parse tables from JSpecies output
+
+
 def parse_table(filename, title):
     """Parse method output from JSpecies tabular output, returns dataframe.
 
@@ -99,7 +101,7 @@ def test_anim_concordance():
     # Make/check output directory
     mode = "ANIm"
     outdirname = delete_and_remake_outdir(mode)
-    nucmername = os.path.join(outdirname, 'nucmer_output') 
+    nucmername = os.path.join(outdirname, 'nucmer_output')
     os.makedirs(nucmername, exist_ok=True)
 
     # Get dataframes of JSpecies output
@@ -111,14 +113,17 @@ def test_anim_concordance():
 
     # Test ANIm concordance:
     # Run pairwise NUCmer
-    cmdlist = anim.generate_nucmer_commands(infiles, outdirname,
-                                            pyani_config.NUCMER_DEFAULT)
-    print('\n'.join(cmdlist))
-    multiprocessing_run(cmdlist)
+    cmds_nucmer, cmds_filter = anim.generate_nucmer_commands(infiles, outdirname,
+                                                             pyani_config.NUCMER_DEFAULT)
+    print('\n'.join(cmds_nucmer))
+    print('\n'.join(cmds_filter))
+    multiprocessing_run(cmds_nucmer)
+    multiprocessing_run(cmds_filter)
     # Process .delta files
     results = anim.process_deltadir(nucmername, org_lengths)
     anim_pid = \
-        results.percentage_identity.sort_index(axis=0).sort_index(axis=1) * 100.
+        results.percentage_identity.sort_index(
+            axis=0).sort_index(axis=1) * 100.
 
     print("ANIm data\n", results)
 
@@ -128,8 +133,8 @@ def test_anim_concordance():
 
     # Write dataframes to file, for reference
     anim_pid.to_csv(os.path.join(outdirname,
-                                'ANIm_pid.tab'),
-                   sep='\t')
+                                 'ANIm_pid.tab'),
+                    sep='\t')
     anim_jspecies.to_csv(os.path.join(outdirname,
                                       'ANIm_jspecies.tab'),
                          sep='\t')
@@ -169,7 +174,6 @@ def test_anib_concordance():
     fragfiles, fraglengths = anib.fragment_fasta_files(infiles, outdirname,
                                                        pyani_config.FRAGSIZE)
 
-    
     # Build jobgraph
     jobgraph = anib.make_job_graph(infiles, fragfiles,
                                    anib.make_blastcmd_builder("ANIb",
@@ -191,8 +195,8 @@ def test_anib_concordance():
 
     # Write dataframes to file, for reference
     anib_pid.to_csv(os.path.join(outdirname,
-                                'ANIb_pid.tab'),
-                   sep='\t')
+                                 'ANIb_pid.tab'),
+                    sep='\t')
     anib_jspecies.to_csv(os.path.join(outdirname,
                                       'ANIb_jspecies.tab'),
                          sep='\t')
@@ -260,8 +264,8 @@ def test_aniblastall_concordance():
                                              'ANIblastall_jspecies.tab'),
                                 sep='\t')
     aniblastall_diff.to_csv(os.path.join(outdirname,
-                                  'ANIblastall_diff.tab'),
-                     sep='\t')
+                                         'ANIblastall_diff.tab'),
+                            sep='\t')
     print("ANIblastall concordance test output placed in %s" % outdirname)
     print("ANIblastall PID:\n", aniblastall_pid)
     print("ANIblastall JSpecies:\n", aniblastall_jspecies)
@@ -294,7 +298,7 @@ def test_tetra_concordance():
         tetra_zscores[org] = tetra.calculate_tetra_zscore(filename)
     tetra_correlations = tetra.calculate_correlations(tetra_zscores)
     index, columns = tetra_correlations.index, tetra_correlations.columns
-    tetra_diff = pd.DataFrame(tetra_correlations.as_matrix() -\
+    tetra_diff = pd.DataFrame(tetra_correlations.as_matrix() -
                               tetra_jspecies.as_matrix(),
                               index=index, columns=columns)
 
@@ -317,4 +321,3 @@ def test_tetra_concordance():
     max_diff = tetra_diff.abs().values.max()
     print("Maximum difference for TETRA: %e" % max_diff)
     assert_less(max_diff, TETRA_THRESHOLD)
-    
