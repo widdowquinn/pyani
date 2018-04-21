@@ -645,7 +645,7 @@ def get_df_genomes(dbpath):
     df = pd.DataFrame(data)
     df.columns = headers
     return df
-    
+
 
 # Get all runs in the database
 def get_df_runs(dbpath):
@@ -655,14 +655,20 @@ def get_df_runs(dbpath):
     df = pd.DataFrame(data)
     df.columns = headers
     return df
-    
 
+
+# Relabel genomes in the database
+def relabel_genomes_from_file(dbpath, relabelfname):
+    """Relabel genomes in the database using names in the passed file."""
+    raise NotImplementedError
 
 
 # RESULTS CLASS
 # =============
 
 # Class to produce/hold ANI results from a named run
+
+
 class ANIResults(object):
     """Interfaces with the pyani database to extract and hold run output.
 
@@ -696,9 +702,9 @@ class ANIResults(object):
         self.coverage = pd.DataFrame(index=self.genome_ids,
                                      columns=self.genome_ids, dtype=float)
         self.aln_lengths = pd.DataFrame(index=self.genome_ids,
-                                     columns=self.genome_ids, dtype=float)
+                                        columns=self.genome_ids, dtype=float)
         self.sim_errors = pd.DataFrame(index=self.genome_ids,
-                                     columns=self.genome_ids, dtype=float)
+                                       columns=self.genome_ids, dtype=float)
         self.hadamard = pd.DataFrame(index=self.genome_ids,
                                      columns=self.genome_ids, dtype=float)
 
@@ -712,7 +718,7 @@ class ANIResults(object):
         self.classes = {genome_id: '_'.join([
             get_genome_class(self.dbpath, genome_id,
                              self.run_id), str(genome_id)]) for
-                       genome_id in self.genome_ids}
+                        genome_id in self.genome_ids}
         self.lengths = {genome_id: get_genome_length(self.dbpath, genome_id)
                         for genome_id in self.genome_ids}
 
@@ -721,7 +727,7 @@ class ANIResults(object):
         comparisons = get_df_comparisons(self.dbpath, self.run_id)
         for idx, row in comparisons.iterrows():
             qid, sid = row['query ID'], row['subject ID']
-            
+
             # Add percentage identity values; ANIm is symmetrical
             self.identity.loc[qid, sid] = row['percentage identity']
             if self.method == 'ANIm':
@@ -745,7 +751,7 @@ class ANIResults(object):
 
             # Calculate Hadamard matrix
             self.hadamard = self.identity * self.coverage
-        
+
         # Populate remaining diagonals
         np.fill_diagonal(self.identity.values, 1.0)
         np.fill_diagonal(self.coverage.values, 1.0)

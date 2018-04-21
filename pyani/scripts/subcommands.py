@@ -190,7 +190,8 @@ def subcmd_download(args, logger):
 
             # Modify sequence ID header if Kraken option active
             if args.kraken:
-                logger.warning("Modifying downloaded sequence for Kraken compatibility")
+                logger.warning(
+                    "Modifying downloaded sequence for Kraken compatibility")
                 seqdata = list(SeqIO.parse(ename, 'fasta'))
                 logger.info("Modifying %s", ename)
                 for seq in seqdata:
@@ -212,7 +213,7 @@ def subcmd_download(args, logger):
             labels.append(labeltxt)
             logger.info("Label and class file entries\n" +
                         "\tLabel: %s\n\tClass: %s", labeltxt, classtxt)
-                
+
     # Write class and label files
     classfname = os.path.join(args.outdir, args.classfname)
     logger.info("Writing classes file to %s", classfname)
@@ -260,7 +261,7 @@ def subcmd_index(args, logger):
     # Lists of class/label information
     classes = []
     labels = []
-    
+
     # Create MD5 hash for each file, if needed
     for fpath in fpaths:
         fstem = os.path.splitext(os.path.split(fpath)[-1])[0]
@@ -289,7 +290,7 @@ def subcmd_index(args, logger):
     else:
         with open(classfname, "w") as ofh:
             ofh.write('\n'.join(classes) + '\n')
-            
+
     labelfname = os.path.join(args.indir, args.labelfname)
     logger.info("Writing labels file to %s", labelfname)
     if os.path.exists(labelfname):
@@ -316,6 +317,21 @@ def subcmd_createdb(args, logger):
     # Create the empty database
     logger.info("Creating pyani database at %s", args.dbpath)
     pyani_db.create_db(args.dbpath)
+
+
+def subcmd_db(args, logger):
+    """Perform operations on an existing database."""
+    # If the database exists, raise an error rather than overwrite
+    if not os.path.isfile(args.dbpath):
+        logger.error("Database %s does not exist (exiting)", args.dbpath)
+        raise SystemError(1)
+
+    logger.info("Working with pyani database at %s", args.dbpath)
+
+    # If requested, carry out relabelling of genomes
+    if args.relabelfname is not None:
+        logger.info("Relabelling genomes from file %s", args.relabelfname)
+        pyani_db.relabel_genomes_from_file(args.dbpath, args.relabelfname)
 
 
 def subcmd_anim(args, logger):
@@ -389,8 +405,10 @@ def subcmd_anim(args, logger):
             genome_db = pyani_db.get_genome(args.dbpath, inhash, abspath)
             if len(genome_db) > 1:  # This shouldn't happen
                 logger.error("More than one genome with same hash and path")
-                logger.error("This should only happen if the database is corrupt")
-                logger.error("Please investigate the database tables (exiting)")
+                logger.error(
+                    "This should only happen if the database is corrupt")
+                logger.error(
+                    "Please investigate the database tables (exiting)")
                 raise SystemError(1)
             logger.warning("Using existing genome from database, row %s",
                            genome_db[0][0])
@@ -435,7 +453,8 @@ def subcmd_anim(args, logger):
                  run_id, genome_ids)
 
     # Generate all pair combinations of genome IDs
-    logger.info("Compiling pairwise comparisons (this can take time for large datasets)")
+    logger.info(
+        "Compiling pairwise comparisons (this can take time for large datasets)")
     comparison_ids = list(combinations(tqdm(genome_ids), 2))
     logger.debug("Complete pairwise comparison list:\n\t%s", comparison_ids)
 
@@ -474,7 +493,7 @@ def subcmd_anim(args, logger):
         else:
             suffix = ".filter"
         existingfiles = [fname for fname in os.listdir(deltadir) if
-                    os.path.splitext(fname)[-1] == suffix]
+                         os.path.splitext(fname)[-1] == suffix]
         logger.info("Identified %d existing output files", len(existingfiles))
 
     # New comparisons to be run for this analysis
@@ -613,7 +632,7 @@ def subcmd_report(args, logger):
     formats = ['tab']
     if args.formats:
         formats += [fmt.strip() for fmt in args.formats.split(',')]
-    formats = list(set(formats)) # remove duplicates
+    formats = list(set(formats))  # remove duplicates
     logger.info("Creating output in formats: %s", formats)
 
     # Declare which database is being used
@@ -642,7 +661,7 @@ def subcmd_report(args, logger):
                     "to %s.*", outfname)
         data = pyani_db.get_df_run_genomes(args.dbpath)
         pyani_report.write_dbtable(data, outfname, formats)
-        
+
     # Report table of all runs in which a genome is involved
     if args.show_genomes_runs:
         outfname = os.path.join(args.outdir, "genomes_runs")
@@ -686,7 +705,7 @@ def subcmd_report(args, logger):
                 pyani_report.write_dbtable(getattr(results, matname),
                                            outfname, formats, show_index=True,
                                            **args)
-            
+
 
 # Generate plots of pyani outputs
 def subcmd_plot(args, logger):
@@ -703,16 +722,16 @@ def subcmd_plot(args, logger):
     # Distribution dictionary of graphics methods
     gmethod = {'mpl': pyani_graphics.heatmap_mpl,
                'seaborn': pyani_graphics.heatmap_seaborn}
-    
+
     # Work on each run:
     run_ids = [int(run) for run in args.run_id.split(',')]
     logger.info("Generating graphics for runs: %s", run_ids)
     for run_id in run_ids:
-    
+
         # Get results matrices for the run
         logger.info("Acquiring results for run %d", run_id)
         results = pyani_db.ANIResults(args.dbpath, run_id)
-    
+
         # Parse output formats
         outfmts = args.formats.split(',')
         logger.info("Requested output formats: %s", outfmts)
@@ -736,7 +755,7 @@ def subcmd_plot(args, logger):
                                                                    run_id),
                                      params=params)
 
-                
+
 # Classify input genomes on basis of ANI coverage and identity output
 def subcmd_classify(args, logger):
     """Generate classifications for an analysis."""
@@ -745,11 +764,11 @@ def subcmd_classify(args, logger):
     logger.info("Writing output to: %s", args.outdir)
     logger.info("Coverage threshold: %s", args.cov_min)
     logger.info("Initial minimum identity threshold: %s", args.id_min)
-    
+
     # Get results data for the specified run
     logger.info("Acquiring results for run: %s", args.run_id)
     results = pyani_db.ANIResults(args.dbpath, args.run_id)
-    
+
     # Generate initial graph on basis of results
     logger.info("Constructing graph from results.")
     initgraph = pyani_classify.build_graph_from_results(results,

@@ -186,7 +186,7 @@ def build_parser_classify(subps, parents=None):
     # Other optional arguments
     parser.add_argument("--dbpath", action='store',
                         dest='dbpath', default='.pyani/pyanidb',
-                        help='path to pyani database')    
+                        help='path to pyani database')
     # Parameters for classification: minimum %coverage, %identity,
     # and the resolution of thresholds to test
     parser.add_argument('--cov_min', dest='cov_min',
@@ -220,7 +220,7 @@ def build_parser_plot(subps, parents=None):
     # Other optional arguments
     parser.add_argument("--dbpath", action='store',
                         dest='dbpath', default='.pyani/pyanidb',
-                        help='path to pyani database')    
+                        help='path to pyani database')
     # Graphics methods and formats
     parser.add_argument('--formats', dest='formats',
                         action='store', default='png',
@@ -230,7 +230,7 @@ def build_parser_plot(subps, parents=None):
                         help='graphics method to use for plotting',
                         choices=['seaborn', 'mpl', 'plotly'])
     parser.set_defaults(func=subcommands.subcmd_plot)
-    
+
 
 def build_parser_index(subps, parents=None):
     """Return a command-line parser for the index subcommand.
@@ -267,6 +267,20 @@ def build_parser_createdb(subps, parents=None):
                         dest='force', default=False,
                         help='force creation of new empty database')
     parser.set_defaults(func=subcommands.subcmd_createdb)
+
+
+def build_parser_db(subps, parents=None):
+    """Return a command-line parser for the db subcommand."""
+    parser = subps.add_parser('db', parents=parents,
+                              formatter_class=ArgumentDefaultsHelpFormatter)
+    # Path to database (default: .pyani/pyanidb)
+    parser.add_argument("--dbpath", action='store',
+                        dest='dbpath', default='.pyani/pyanidb',
+                        help='path to pyani database')
+    parser.add_argument("--relabel", action='store',
+                        dest='relabelfname', default=None,
+                        help='relabel genomes with identifiers in passed file')
+    parser.set_defaults(func=subcommands.subcmd_db)
 
 
 # Common parser for all subcommands
@@ -350,7 +364,7 @@ def build_parser_report(subps, parents=None):
     # Optional arguments
     parser.add_argument("--dbpath", action='store',
                         dest='dbpath', default='.pyani/pyanidb',
-                        help='path to pyani database')    
+                        help='path to pyani database')
     parser.add_argument("--runs", action="store_true",
                         dest="show_runs", default=False,
                         help="Report table of analysis runs in database")
@@ -360,22 +374,22 @@ def build_parser_report(subps, parents=None):
     parser.add_argument("--runs_genomes", action="store_true",
                         dest="show_runs_genomes", default=False,
                         help="Report table of all genomes for each run in " +
-                        "database") 
+                        "database")
     parser.add_argument("--genomes_runs", action="store_true",
                         dest="show_genomes_runs", default=False,
                         help="Report table of all runs in which each genome " +
-                        "in the database participates") 
+                        "in the database participates")
     parser.add_argument("--run_results", action="store",
                         dest="run_results", default=False,
-                        help="Report table of results for a pyani run") 
+                        help="Report table of results for a pyani run")
     parser.add_argument("--run_matrices", action="store",
                         dest="run_matrices", default=False,
-                        help="Report matrices of results for a pyani run") 
+                        help="Report matrices of results for a pyani run")
     parser.add_argument("--formats", dest="formats",
                         action="store", default=None,
                         help="Output formats (in addition to .tab)")
     parser.set_defaults(func=subcommands.subcmd_report)
-    
+
 
 # Process command-line
 def parse_cmdline():
@@ -411,6 +425,7 @@ def parse_cmdline():
     build_parser_download(subparsers, parents=[parser_common])
     build_parser_index(subparsers, parents=[parser_common])
     build_parser_createdb(subparsers, parents=[parser_common])
+    build_parser_db(subparsers, parents=[parser_common])
     build_parser_anim(subparsers, parents=[parser_common,
                                            parser_scheduler,
                                            parser_run_common])
