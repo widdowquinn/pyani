@@ -568,7 +568,20 @@ def add_genome_label(dbpath, genome_id, run_id, label):
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_ADDGENOMELABEL, (genome_id, run_id, label))
+        cur.execute(SQL_ADDGENOMELABEL,
+                    (int(genome_id), int(run_id), str(label)))
+    return cur.lastrowid
+
+
+# Relabel genome by genome ID and run ID
+def update_genome_label(dbpath, genome_id, run_id, label):
+    """Relabels a single genome in a given run."""
+
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_UPDATEGENOMELABEL,
+                    (str(label), int(genome_id), int(run_id)))
     return cur.lastrowid
 
 
@@ -592,7 +605,19 @@ def add_genome_class(dbpath, genome_id, run_id, gclass):
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_ADDGENOMECLASS, (genome_id, run_id, gclass))
+        cur.execute(SQL_ADDGENOMECLASS,
+                    (int(genome_id), int(run_id), str(gclass)))
+    return cur.lastrowid
+
+
+# Reclass genome by genome ID and run ID
+def update_genome_class(dbpath, genome_id, run_id, label):
+    """Reclass a single genome in a given run."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_UPDATEGENOMECLASS,
+                    (str(label), int(genome_id), int(run_id)))
     return cur.lastrowid
 
 
@@ -672,15 +697,19 @@ def get_df_runs(dbpath):
 
 
 # Relabel genomes in the database
-def relabel_genomes_from_file(dbpath, relabelfname, run_id):
+def relabel_genomes_from_file(dbpath, relabelfname, run_id, force=False):
     """Relabel genomes in the database using names in the passed file."""
     newlabels = parse_labelfile(relabelfname)
     genomes = get_df_genomes(dbpath)
     genomes.set_index("MD5 hash", inplace=True)
     for hash in newlabels:
         genome_id = genomes.loc[hash]['genome ID']
-        lastrow = update_genome_label(
-            dbpath, genome_id, run_id, str(newlabels[hash]))
+        if force:
+            lastrow = add_genome_label(
+                dbpath, genome_id, run_id, str(newlabels[hash]))
+        else:
+            lastrow = update_genome_label(
+                dbpath, genome_id, run_id, str(newlabels[hash]))
 
 
 # Change classes of genomes in the database
@@ -691,31 +720,12 @@ def reclass_genomes_from_file(dbpath, reclassfname, run_id):
     genomes.set_index("MD5 hash", inplace=True)
     for hash in newclasses:
         genome_id = genomes.loc[hash]['genome ID']
-        lastrow = update_genome_class(
-            dbpath, genome_id, run_id, str(newclasses[hash]))
-
-
-# Relabel genome by genome ID and run ID
-def update_genome_label(dbpath, genome_id, run_id, label):
-    """Relabels a single genome in a given run."""
-
-    conn = sqlite3.connect(dbpath)
-    with conn:
-        cur = conn.cursor()
-        cur.execute(SQL_UPDATEGENOMELABEL,
-                    (str(label), int(genome_id), int(run_id)))
-    return cur.lastrowid
-
-
-# Reclass genome by genome ID and run ID
-def update_genome_class(dbpath, genome_id, run_id, label):
-    """Reclass a single genome in a given run."""
-    conn = sqlite3.connect(dbpath)
-    with conn:
-        cur = conn.cursor()
-        cur.execute(SQL_UPDATEGENOMECLASS,
-                    (str(label), int(genome_id), int(run_id)))
-    return cur.lastrowid
+        if force:
+            lastrow = add_genome_class(
+                dbpath, genome_id, run_id, str(newlabels[hash]))
+        else:
+            lastrow = update_genome_class(
+                dbpath, genome_id, run_id, str(newlabels[hash]))
 
 
 # Parse labelfile for genomes in database

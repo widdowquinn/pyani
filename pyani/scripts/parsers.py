@@ -286,6 +286,9 @@ def build_parser_db(subps, parents=None):
     parser.add_argument("--reclass", action='store',
                         dest='reclassfname', default=None,
                         help='reclass genomes with hashes in passed file')
+    parser.add_argument("-f", "--force", action='store_true',
+                        dest='force', default=False,
+                        help='force database operation')
     parser.set_defaults(func=subcommands.subcmd_db)
 
 
