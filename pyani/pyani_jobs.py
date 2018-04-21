@@ -160,7 +160,8 @@ class JobGroup:
         self.script += """let "TASK_ID=$SGE_TASK_ID - 1"\n"""
 
         # build the array definitions
-        for key in self.arguments.keys():
+        for key in sorted(self.arguments.keys()):
+            # The keys are sorted for py3.5 compatibility with tests
             values = self.arguments[key]
             line = ("%s_ARRAY=( " % (key))
             for value in values:
@@ -172,7 +173,8 @@ class JobGroup:
         self.script += "\n"
 
         # now, build the decoding logic in the script
-        for key in self.arguments.keys():
+        for key in sorted(self.arguments.keys()):
+            # The keys are sorted for py3.5 compatibility with tests
             count = len(self.arguments[key])
             self.script += """let "%s_INDEX=$TASK_ID %% %d"\n""" % (key, count)
             self.script += """%s=${%s_ARRAY[$%s_INDEX]}\n""" % (key, key, key)
