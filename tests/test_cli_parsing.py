@@ -46,3 +46,44 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
+
+import logging
+import os
+import unittest
+
+from nose.tools import(raises,)
+
+from pyani.scripts import (pyani_script,)
+
+
+class TestCLIParsing(unittest.TestCase):
+    """Class defining tests of pyani CLI parsing."""
+
+    def setUp(self):
+        """Set attributes for tests."""
+        self.indir = os.path.join('tests', 'test_input', 'sequences')
+        self.outdir = os.path.join('tests', 'test_output', 'parsertests')
+        self.downloadpath = os.path.join(self.outdir, 'downloads')
+
+        self.email = "pyani@pyani.org"
+        self.testdbpath = os.path.join(
+            'tests', 'test_output', 'parsertests', 'testdb')
+
+        # Lists of command-line arguments for each tests
+        self.argsdict = {'createdb': ['createdb', '--dbpath', self.testdbpath,
+                                      '--force'],
+                         'download': ['download', '-t', '218491',
+                                      '--email', self.email,
+                                      self.downloadpath, '--force']}
+
+        # Null logger for testing
+        self.logger = logging.getLogger("TestCLIParsing logger")
+        self.logger.addHandler(logging.NullHandler())
+
+    def test_createdb(self):
+        """Create empty test database."""
+        pyani_script.run_main(self.argsdict['createdb'], logger=self.logger)
+
+    def test_download(self):
+        """Download a single genome."""
+        pyani_script.run_main(self.argsdict['download'], logger=self.logger)

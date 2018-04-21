@@ -43,6 +43,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import sys
+
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 from . import subcommands
@@ -401,7 +403,7 @@ def build_parser_report(subps, parents=None):
 
 
 # Process command-line
-def parse_cmdline():
+def parse_cmdline(argv=None):
     """Parse command-line arguments for script.
 
     The script offers a single main parser, with subcommands for the actions:
@@ -449,4 +451,6 @@ def parse_cmdline():
     build_parser_classify(subparsers, parents=[parser_common])
 
     # Parse arguments
-    return parser_main.parse_args()
+    if argv is None:
+        argv = sys.argv[1:]
+    return parser_main.parse_args(argv)
