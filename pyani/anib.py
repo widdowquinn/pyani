@@ -243,21 +243,24 @@ def make_job_graph(infiles, fragfiles, blastcmds):
 
 
 # Generate list of makeblastdb command lines from passed filenames
-def generate_blastdb_commands(filenames, outdir,
-                              blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT,
-                              mode="ANIb"):
+def generate_blastdb_commands(filenames, outdir, blastdb_exe=None, mode="ANIb"):
     """Return list of makeblastdb command-lines for ANIb/ANIblastall.
 
     - filenames - a list of paths to input FASTA files
     - outdir - path to output directory
     - blastdb_exe - path to the makeblastdb executable
     """
+    print(mode)
     if mode == "ANIb":
         construct_db_cmdline = construct_makeblastdb_cmd
     else:
         construct_db_cmdline = construct_formatdb_cmd
-    cmdlines = [construct_db_cmdline(fname, outdir, blastdb_exe) for
-                fname in filenames]
+    if blastdb_exe is None:
+        cmdlines = [construct_db_cmdline(fname, outdir) for
+                    fname in filenames]
+    else:
+        cmdlines = [construct_db_cmdline(fname, outdir, blastdb_exe) for
+                    fname in filenames]
     return cmdlines
 
 
@@ -294,9 +297,7 @@ def construct_formatdb_cmd(filename, outdir,
 
 
 # Generate list of BLASTN command lines from passed filenames
-def generate_blastn_commands(filenames, outdir,
-                             blast_exe=pyani_config.BLASTN_DEFAULT,
-                             mode="ANIb"):
+def generate_blastn_commands(filenames, outdir, blast_exe=None, mode="ANIb"):
     """Return a list of blastn command-lines for ANIm.
 
     - filenames - a list of paths to fragmented input FASTA files
@@ -317,10 +318,16 @@ def generate_blastn_commands(filenames, outdir,
         dbname1 = fname1.replace('-fragments', '')
         for fname2 in filenames[idx + 1:]:
             dbname2 = fname2.replace('-fragments', '')
-            cmdlines.append(construct_blast_cmdline(fname1, dbname2,
-                                                    outdir, blast_exe))
-            cmdlines.append(construct_blast_cmdline(fname2, dbname1,
-                                                    outdir, blast_exe))
+            if blast_exe is None:
+                cmdlines.append(construct_blast_cmdline(fname1, dbname2,
+                                                        outdir))
+                cmdlines.append(construct_blast_cmdline(fname2, dbname1,
+                                                        outdir))
+            else:
+                cmdlines.append(construct_blast_cmdline(fname1, dbname2,
+                                                        outdir, blast_exe))
+                cmdlines.append(construct_blast_cmdline(fname2, dbname1,
+                                                        outdir, blast_exe))
     return cmdlines
 
 
