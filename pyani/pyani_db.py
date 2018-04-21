@@ -326,6 +326,13 @@ SQL_GETGENOMECLASS = """
      ORDER BY genomes.genome_id
 """
 
+# Relabel a genome in a given run
+SQL_UPDATEGENOMELABEL = """
+   UPDATE labels
+     SET label = ?
+     WHERE genome_id = ? AND run_id = ?
+"""
+
 
 # DATABASE INTERACTIONS
 # =====================
@@ -658,9 +665,44 @@ def get_df_runs(dbpath):
 
 
 # Relabel genomes in the database
-def relabel_genomes_from_file(dbpath, relabelfname):
+def relabel_genomes_from_file(dbpath, relabelfname, run_id):
     """Relabel genomes in the database using names in the passed file."""
-    raise NotImplementedError
+    newlabels = parse_labelfile(relabelfname)
+    genomes = get_df_genomes(dbpath)
+    genomes.set_index("MD5 hash", inplace=True)
+    for hash in newlabels:
+        genome_id = genomes.loc[hash]['genome ID']
+        lastrow = update_genome_label(
+            dbpath, genome_id, run_id, str(newlabels[hash]))
+
+
+# Relabel genome by genome ID and run ID
+def update_genome_label(dbpath, genome_id, run_id, label):
+    """Relabels a single genome in a given run."""
+    print(dbpath, genome_id, run_id, label)
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_UPDATEGENOMELABEL,
+                    (str(label), int(genome_id), int(run_id)))
+    return cur.lastrowid
+
+
+# Parse labelfile for genomes in database
+def parse_labelfile(fname):
+    """Parse relabelling information for genomes in the database.
+
+    The file should have tab-separated entries in the format
+    <hash>\t<label>.
+
+    Returns a dictionary keyed by genome hash, with value being the new label.
+    """
+    newlabels = {}
+    with open(fname, 'r') as infh:
+        for line in infh:
+            cleanline = line.strip().split('\t')
+            newlabels[cleanline[0]] = cleanline[1]
+    return newlabels
 
 
 # RESULTS CLASS

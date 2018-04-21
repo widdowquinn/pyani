@@ -327,11 +327,13 @@ def subcmd_db(args, logger):
         raise SystemError(1)
 
     logger.info("Working with pyani database at %s", args.dbpath)
+    logger.info("Working with run ID %d", args.run_id)
 
     # If requested, carry out relabelling of genomes
     if args.relabelfname is not None:
         logger.info("Relabelling genomes from file %s", args.relabelfname)
-        pyani_db.relabel_genomes_from_file(args.dbpath, args.relabelfname)
+        pyani_db.relabel_genomes_from_file(args.dbpath,
+                                           args.relabelfname, args.run_id)
 
 
 def subcmd_anim(args, logger):

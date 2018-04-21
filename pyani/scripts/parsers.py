@@ -273,6 +273,9 @@ def build_parser_db(subps, parents=None):
     """Return a command-line parser for the db subcommand."""
     parser = subps.add_parser('db', parents=parents,
                               formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument(action='store', type=int,
+                        dest='run_id', default=None,
+                        help='work with this runID')
     # Path to database (default: .pyani/pyanidb)
     parser.add_argument("--dbpath", action='store',
                         dest='dbpath', default='.pyani/pyanidb',
