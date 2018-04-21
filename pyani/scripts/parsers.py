@@ -282,7 +282,10 @@ def build_parser_db(subps, parents=None):
                         help='path to pyani database')
     parser.add_argument("--relabel", action='store',
                         dest='relabelfname', default=None,
-                        help='relabel genomes with identifiers in passed file')
+                        help='relabel genomes with hashes in passed file')
+    parser.add_argument("--reclass", action='store',
+                        dest='reclassfname', default=None,
+                        help='reclass genomes with hashes in passed file')
     parser.set_defaults(func=subcommands.subcmd_db)
 
 

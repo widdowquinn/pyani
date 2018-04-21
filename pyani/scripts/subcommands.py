@@ -335,6 +335,13 @@ def subcmd_db(args, logger):
         pyani_db.relabel_genomes_from_file(args.dbpath,
                                            args.relabelfname, args.run_id)
 
+    # If requested, change classes of genomes
+    if args.reclassfname is not None:
+        logger.info("Changing classes of genomes from file %s",
+                    args.reclassfname)
+        pyani_db.reclass_genomes_from_file(args.dbpath,
+                                           args.reclassfname, args.run_id)
+
 
 def subcmd_anim(args, logger):
     """Perform ANIm on all genome files in an input directory.

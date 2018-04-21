@@ -333,6 +333,13 @@ SQL_UPDATEGENOMELABEL = """
      WHERE genome_id = ? AND run_id = ?
 """
 
+# Relabel a genome in a given run
+SQL_UPDATEGENOMECLASS = """
+   UPDATE classes
+     SET class = ?
+     WHERE genome_id = ? AND run_id = ?
+"""
+
 
 # DATABASE INTERACTIONS
 # =====================
@@ -676,14 +683,37 @@ def relabel_genomes_from_file(dbpath, relabelfname, run_id):
             dbpath, genome_id, run_id, str(newlabels[hash]))
 
 
+# Change classes of genomes in the database
+def reclass_genomes_from_file(dbpath, reclassfname, run_id):
+    """Reclass genomes in the database using names in the passed file."""
+    newclasses = parse_labelfile(reclassfname)
+    genomes = get_df_genomes(dbpath)
+    genomes.set_index("MD5 hash", inplace=True)
+    for hash in newclasses:
+        genome_id = genomes.loc[hash]['genome ID']
+        lastrow = update_genome_class(
+            dbpath, genome_id, run_id, str(newclasses[hash]))
+
+
 # Relabel genome by genome ID and run ID
 def update_genome_label(dbpath, genome_id, run_id, label):
     """Relabels a single genome in a given run."""
-    print(dbpath, genome_id, run_id, label)
+
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
         cur.execute(SQL_UPDATEGENOMELABEL,
+                    (str(label), int(genome_id), int(run_id)))
+    return cur.lastrowid
+
+
+# Reclass genome by genome ID and run ID
+def update_genome_class(dbpath, genome_id, run_id, label):
+    """Reclass a single genome in a given run."""
+    conn = sqlite3.connect(dbpath)
+    with conn:
+        cur = conn.cursor()
+        cur.execute(SQL_UPDATEGENOMECLASS,
                     (str(label), int(genome_id), int(run_id)))
     return cur.lastrowid
 
