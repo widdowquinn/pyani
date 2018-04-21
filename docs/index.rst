@@ -67,11 +67,12 @@ found at the :ref:`pyani-contributing` documentation page.
    :maxdepth: 2
    :caption: Contents:
 
+   citations
    about
    quickstart
    requirements
    installation
-   basic use
+   basic_use
    examples
    testing
    contributing

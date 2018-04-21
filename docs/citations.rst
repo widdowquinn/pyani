@@ -1,0 +1,5 @@
+.. pyani-citations:
+
+================
+Citing ``pyani``
+================

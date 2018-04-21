@@ -1,0 +1,5 @@
+.. pyani-examples:
+
+========
+Examples
+========
