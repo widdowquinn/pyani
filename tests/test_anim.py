@@ -12,7 +12,7 @@ nosetests -v
 print() statements will be caught by nosetests unless there is an
 error. They can also be recovered with the -s option.
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -30,7 +30,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -156,10 +156,10 @@ class TestDeltafileProcessing(unittest.TestCase):
         self.seqdir = os.path.join('tests', 'test_input', 'sequences')
         self.deltafile = os.path.join(self.indir, 'test.delta')
         self.deltadir = os.path.join(self.indir, 'deltadir')
-        self.df_pid = pd.DataFrame([[1.000000, 0.850994, 0.999974, 0.867940],
-                                    [0.850994, 1.000000, 0.851074, 0.852842],
-                                    [0.999974, 0.851074, 1.000000, 0.867991],
-                                    [0.867940, 0.852842, 0.867991, 1.000000]],
+        self.df_pid = pd.DataFrame([[1.000000, 0.851120, 0.999974, 0.868010],
+                                    [0.851120, 1.000000, 0.851200, 0.852965],
+                                    [0.999974, 0.851200, 1.000000, 0.868061],
+                                    [0.868010, 0.852965, 0.868061, 1.000000]],
                                    columns=['NC_002696',  'NC_010338',
                                             'NC_011916',  'NC_014100'],
                                    index=['NC_002696',  'NC_010338',
@@ -168,7 +168,7 @@ class TestDeltafileProcessing(unittest.TestCase):
     def test_deltafile_import(self):
         """parses NUCmer .delta/.filter file."""
         result = anim.parse_delta(self.deltafile)
-        assert_equal(result, (4073917, 2191))
+        assert_equal(result, (4074001, 2191))
 
     def test_process_deltadir(self):
         """processes directory of .delta files into ANIResults."""

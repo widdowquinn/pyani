@@ -202,6 +202,15 @@ def parse_delta(filename):
     Extracts the aligned length and number of similarity errors for each
     aligned uniquely-matched region, and returns the cumulative total for
     each as a tuple.
+
+    Delta file format has seven numbers in the lines of interest:
+    - start on query
+    - end on query
+    - start on target
+    - end on target
+    - error count (non-identical, plus indels)
+    - similarity errors (non-positive match scores)
+    - stop codons (always zero for nucmer)
     """
     aln_length, sim_errors = 0, 0
     for line in [l.strip().split() for l in open(filename, 'rU').readlines()]:
