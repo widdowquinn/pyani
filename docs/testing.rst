@@ -22,6 +22,8 @@ All tests, supporting input and target data, are to be found in the ``tests/`` s
 .. TIP::
     If you wish to write new tests for ``pyani``, we ask that your test data and operations conform to this structure
 
+The ``tests/test_failing_data`` directory contains data that is known to cause problems for ``pyani`` in that at least two of the input genomes have no appreciable sequence identity.
+
 
 -------------
 Running tests
