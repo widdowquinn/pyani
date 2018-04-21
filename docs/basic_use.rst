@@ -1,4 +1,4 @@
-.. pyani-basic_use:
+.. _pyani-basic_use:
 
 =========
 Basic Use

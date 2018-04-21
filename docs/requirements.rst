@@ -1,4 +1,4 @@
-.. pyani-requirements:
+.. _pyani-requirements:
 
 ============
 Requirements

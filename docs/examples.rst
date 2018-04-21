@@ -1,4 +1,4 @@
-.. pyani-examples:
+.. _pyani-examples:
 
 ========
 Examples

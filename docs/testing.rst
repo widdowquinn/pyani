@@ -1,4 +1,4 @@
-.. pyani-testing:
+.. _pyani-testing:
 
 =======
 Testing

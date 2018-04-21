@@ -7,6 +7,10 @@
 Welcome to ``pyani``'s documentation!
 =====================================
 
+-----------------
+Build information
+-----------------
+
 .. image:: https://img.shields.io/travis/widdowquinn/pyani.svg?style=flat-square
    :target: https://travis-ci.org/widdowquinn/pyani
 .. image:: https://img.shields.io/codecov/c/github/widdowquinn/pyani.svg?style=flat-square
@@ -14,22 +18,23 @@ Welcome to ``pyani``'s documentation!
 .. image:: https://readthedocs.org/projects/pyani/badge/?version=latest
    :target: https://pyani.readthedocs.io/en/latest/?badge=latest
 
-|
+------------------------------
+``PyPI`` version and Licensing
+------------------------------
 
 .. image:: https://img.shields.io/pypi/v/pyani.svg?style=flat-square
    :target: https://pypi.python.org/pypi/pyani
 .. image:: https://img.shields.io/pypi/l/pyani.svg?style=flat-square
    :target: https://pypi.python.org/pypi/pyani
 
-| 
+-----------------
+``conda`` version
+-----------------
 
 .. image:: https://anaconda.org/bioconda/pyani/badges/version.svg
    :target: https://anaconda.org/bioconda/pyani
 .. image:: https://anaconda.org/bioconda/pyani/badges/latest_release_date.svg
    :target: https://anaconda.org/bioconda/pyani
-
-|
-
 .. image:: https://anaconda.org/bioconda/pyani/badges/installer/conda.svg
    :target: https://conda.anaconda.org/bioconda
 .. image:: https://anaconda.org/bioconda/pyani/badges/downloads.svg
@@ -43,9 +48,9 @@ If you're feeling impatient, please head over to the :ref:`QuickStart Guide <pya
 Description
 -----------
 
-``pyani`` is a program and Python package that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and for rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with `SGE or OGE-compatible`_ job schedulers to manage the computationally-heavy sequence comparisons.
+``pyani`` is a program and Python package that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and for rendering relevant graphical and tabular summary output. Where available, it natively takes advantage of multicore systems, and can integrate with `SGE or OGE-compatible`_ job schedulers to manage the computationally-heavy sequence comparisons.
 
-``pyani`` also installs the program ``pyani``, which enables command-line based analysis of genomes. Results are stored in a `SQLite`_ database to enable incremental addition of genomes to an analysis without the need to recalculate all comparisons, and to enable additional downstream analysis and visualisation.
+Intalling the ``pyani`` package also installs the program ``pyani``, which enables command-line based analysis of genomes. Results are stored in a private `SQLite`_ database local to the machine to enable incremental addition of genomes to an analysis without the need to recalculate all previously-performed comparisons, and to enable additional downstream analysis and visualisation.
 
 
 ----------------------------------------------

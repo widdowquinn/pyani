@@ -1,4 +1,4 @@
-.. pyani-about:
+.. _pyani-about:
 
 ===============
 About ``pyani``

@@ -1,4 +1,4 @@
-.. pyani-citations:
+.. _pyani-citations:
 
 ================
 Citing ``pyani``

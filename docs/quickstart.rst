@@ -131,6 +131,7 @@ Show all the runs contained in the (default) database with the command:
 This will report the relevant information to new files the ``pyani report`` command creates in the ``C_blocahmannia_ANIm`` directory.
 
 .. code-block:: bash
+
     $ tree -L 1 C_blochmannia_ANIm/
     C_blochmannia_ANIm/
     ├── nucmer_output
