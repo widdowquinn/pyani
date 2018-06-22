@@ -697,7 +697,7 @@ def get_df_runs(dbpath):
 
 
 # Relabel genomes in the database
-def relabel_genomes_from_file(dbpath, relabelfname, run_id, force=False):
+def relabel_genomes_from_file(dbpath, relabelfname, run_id):
     """Relabel genomes in the database using names in the passed file."""
     newlabels = parse_labelfile(relabelfname)
     genomes = get_df_genomes(dbpath)
