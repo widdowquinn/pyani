@@ -62,7 +62,7 @@ def build_logger(name, args):
     if args.logfile is not None:
         logdir = os.path.split(args.logfile)[:-1]
         try:
-            if len(logdir):
+            if logdir[0] != '':
                 os.makedirs(os.path.join(*os.path.split(args.logfile)[:-1]),
                             exist_ok=True)
             logstream = open(args.logfile, 'w')
