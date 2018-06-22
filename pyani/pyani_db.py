@@ -722,10 +722,10 @@ def reclass_genomes_from_file(dbpath, reclassfname, run_id, force=False):
         genome_id = genomes.loc[hash]['genome ID']
         if force:
             lastrow = add_genome_class(
-                dbpath, genome_id, run_id, str(newlabels[hash]))
+                dbpath, genome_id, run_id, str(newclasses[hash]))
         else:
             lastrow = update_genome_class(
-                dbpath, genome_id, run_id, str(newlabels[hash]))
+                dbpath, genome_id, run_id, str(newclasses[hash]))
 
 
 # Parse labelfile for genomes in database
