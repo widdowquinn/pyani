@@ -95,6 +95,19 @@ Seven genomes have been downloaded, and each is represented by four files:
 
 There are two additional plain text files: `classes.txt` and `labels.txt`, which provide alternative labels for use in the analysis. These files are generated during the download.
 
+
+#### Using arbitrary sequences
+Suppose you already have some sequences of interest (in .fasta formate) in a directory called `mygenomes`.  To prepare these for use with `pyani`, you will need to generate md5 checksums for each of these files.  This can be done from the command line as follows:
+
+```
+for genome in ./mygenomes/*fasta
+do
+  name=${genome%.fasta}
+  md5sum $genome > ${name}.md5
+done  
+```
+Now, this directory contains the checksum files along with the sequence files, and can be used by `pyani` to create an analysis database.
+
 ### 2. Create an analysis database
 
 `pyani` uses a database to store genome data and analysis results. This is convenient for data sharing and developing custom analyses, but also makes it easier to extend an existing ANI analysis with new genomes, without having to repeat calculations that were already performed. 
