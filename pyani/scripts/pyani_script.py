@@ -57,7 +57,7 @@ def run_main(argv=None, logger=None):
     else:
         args = parse_cmdline(argv)
 
-    print(args)
+    sys.stderr.write(str(args) + "\n")
 
     # Catch execution with no arguments
     if len(sys.argv) == 1:
