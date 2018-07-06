@@ -254,6 +254,9 @@ def build_parser_index(subps, parents=None):
     parser.add_argument("--classes", dest="classfname",
                         action="store", default="classes.txt",
                         help="Filename for classes file")
+    parser.add_argument("-f", "--force", action='store_true',
+                        dest='force', default=False,
+                        help='force creation of new class and index files')
     parser.set_defaults(func=subcommands.subcmd_index)
 
 

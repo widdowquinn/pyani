@@ -285,8 +285,14 @@ def subcmd_index(args, logger):
     classfname = os.path.join(args.indir, args.classfname)
     logger.info("Writing classes file to %s", classfname)
     if os.path.exists(classfname):
-        logger.warning("Class file %s exists, not overwriting",
-                       classfname)
+        if not args.force:
+            logger.warning("Class file %s exists, not overwriting",
+                           classfname)
+        else:
+            logger.warning("Class file %s exists, but forcing overwrite",
+                           classfname)
+            with open(classfname, "w") as ofh:
+                ofh.write('\n'.join(classes) + '\n')
     else:
         with open(classfname, "w") as ofh:
             ofh.write('\n'.join(classes) + '\n')
@@ -294,8 +300,14 @@ def subcmd_index(args, logger):
     labelfname = os.path.join(args.indir, args.labelfname)
     logger.info("Writing labels file to %s", labelfname)
     if os.path.exists(labelfname):
-        logger.warning("Labels file %s exists, not overwriting",
-                       labelfname)
+        if not args.force:
+            logger.warning("Labels file %s exists, not overwriting",
+                           labelfname)
+        else:
+            logger.warning("Labels file %s exists, but foring overwrite",
+                           labelfname)
+            with open(classfname, "w") as ofh:
+                ofh.write('\n'.join(classes) + '\n')            
     else:
         with open(labelfname, "w") as ofh:
             ofh.write('\n'.join(labels) + '\n')
