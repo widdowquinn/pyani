@@ -268,6 +268,13 @@ def subcmd_index(args, logger):
         hashfname = os.path.splitext(fpath)[0] + '.md5'
         if os.path.isfile(hashfname):
             logger.info("%s already indexed (skipping)", fpath)
+            if args.force:
+                # Parse the file and get the label/class information
+                with open(fpath, "r") as sfh:
+                    label = list(SeqIO.parse(sfh, 'fasta'))[0].description
+                datahash = download.create_hash(fpath)
+                labels.append('\t'.join([datahash, fstem, label]))
+                classes.append('\t'.join([datahash, fstem, label]))
         else:
             # Write an .md5 hash file
             datahash = download.create_hash(fpath)
@@ -304,10 +311,10 @@ def subcmd_index(args, logger):
             logger.warning("Labels file %s exists, not overwriting",
                            labelfname)
         else:
-            logger.warning("Labels file %s exists, but foring overwrite",
+            logger.warning("Labels file %s exists, but forcing overwrite",
                            labelfname)
-            with open(classfname, "w") as ofh:
-                ofh.write('\n'.join(classes) + '\n')            
+            with open(labelfname, "w") as ofh:
+                ofh.write('\n'.join(labels) + '\n')            
     else:
         with open(labelfname, "w") as ofh:
             ofh.write('\n'.join(labels) + '\n')
