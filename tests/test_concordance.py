@@ -62,7 +62,7 @@ import pandas as pd
 from nose.tools import assert_equal, assert_less, nottest
 
 from pyani import run_multiprocessing as run_mp
-from pyani import (anib, anim, tetra, pyani_files, pyani_config)
+from pyani import anib, anim, tetra, pyani_files, pyani_config
 
 
 def parse_jspecies(infile):
@@ -76,14 +76,14 @@ def parse_jspecies(infile):
     This is an ugly function!
     """
     dfs = dict()
-    methods = ('ANIm', 'ANIb', 'Tetra')
-    with open(infile, 'r') as ifh:
+    methods = ("ANIm", "ANIb", "Tetra")
+    with open(infile, "r") as ifh:
         header, in_table = False, False
-        for line in [l.strip() for l in ifh.readlines() + ['\n']]:
+        for line in [l.strip() for l in ifh.readlines() + ["\n"]]:
             if line in methods and not in_table:
                 method, header = line, True
             elif header:
-                columns = line.split('\t')
+                columns = line.split("\t")
                 data = pd.DataFrame(index=columns, columns=columns)
                 in_table, header = True, False
             elif in_table:
@@ -91,15 +91,15 @@ def parse_jspecies(infile):
                     dfs[method] = data.sort_index(axis=0).sort_index(axis=1)
                     in_table = False
                 else:
-                    ldata = line.split('\t')
+                    ldata = line.split("\t")
                     row = ldata[0]
                     for idx, val in enumerate(ldata[1:]):
-                        if val != '---':
+                        if val != "---":
                             data[columns[idx]][row] = float(val)
-                        elif method.startswith('ANI'):
-                            data[columns[idx]][row] = 100.
+                        elif method.startswith("ANI"):
+                            data[columns[idx]][row] = 100.0
                         else:
-                            data[columns[idx]][row] = 1.
+                            data[columns[idx]][row] = 1.0
             else:
                 pass
     return dfs
@@ -111,15 +111,20 @@ class TestConcordance(unittest.TestCase):
 
     def setUp(self):
         """Set values and parameters for tests."""
-        self.indir = os.path.join('tests', 'test_input', 'concordance')
-        self.outdir = os.path.join('tests', 'test_output', 'concordance')
-        self.tgtdir = os.path.join('tests', 'test_targets', 'concordance')
-        self.deltadir = os.path.join(self.outdir, 'nucmer_output')
+        self.indir = os.path.join("tests", "test_input", "concordance")
+        self.outdir = os.path.join("tests", "test_output", "concordance")
+        self.tgtdir = os.path.join("tests", "test_targets", "concordance")
+        self.deltadir = os.path.join(self.outdir, "nucmer_output")
         self.infiles = pyani_files.get_fasta_files(self.indir)
         self.orglengths = pyani_files.get_sequence_lengths(self.infiles)
-        self.target = parse_jspecies(os.path.join(self.tgtdir, 'jspecies_output.tab'))
-        self.tolerance = {'ANIm': 0.1, 'ANIb_lo': 5, 'ANIb_hi': 0.1,
-                          'ANIblastall': 0.1, 'TETRA': 0.1}
+        self.target = parse_jspecies(os.path.join(self.tgtdir, "jspecies_output.tab"))
+        self.tolerance = {
+            "ANIm": 0.1,
+            "ANIb_lo": 5,
+            "ANIb_hi": 0.1,
+            "ANIblastall": 0.1,
+            "TETRA": 0.1,
+        }
         self.fragsize = 1020
         os.makedirs(self.outdir, exist_ok=True)
         os.makedirs(self.deltadir, exist_ok=True)
@@ -132,8 +137,7 @@ class TestConcordance(unittest.TestCase):
         # for local SGE/OGE integration.
         # This might be avoidable with a scheduler flag passed to
         # jobgroup generation in the anim.py module. That's a TODO.
-        ncmds, fcmds = anim.generate_nucmer_commands(self.infiles,
-                                                     self.outdir)
+        ncmds, fcmds = anim.generate_nucmer_commands(self.infiles, self.outdir)
         run_mp.multiprocessing_run(ncmds)
 
         # delta-filter commands need to be treated with care for
@@ -141,23 +145,24 @@ class TestConcordance(unittest.TestCase):
         # separation in individual commands, but the wrapper we wrote
         # for this (delta_filter_wrapper.py) can't be called under
         # Travis-CI. So we must deconstruct the commands below
-        dfcmds = [' > '.join([' '.join(fcmd.split()[1:-1]),
-                              fcmd.split()[-1]]) for fcmd in fcmds]
+        dfcmds = [
+            " > ".join([" ".join(fcmd.split()[1:-1]), fcmd.split()[-1]])
+            for fcmd in fcmds
+        ]
         run_mp.multiprocessing_run(dfcmds)
 
         results = anim.process_deltadir(self.deltadir, self.orglengths)
         result_pid = results.percentage_identity
-        result_pid.to_csv(os.path.join(self.outdir, 'pyani_anim.tab'),
-                          sep="\t")
+        result_pid.to_csv(os.path.join(self.outdir, "pyani_anim.tab"), sep="\t")
 
         # Compare JSpecies output to results
-        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.
-        diffmat = result_pid.as_matrix() - self.target['ANIm'].as_matrix()
-        anim_diff = pd.DataFrame(diffmat, index=result_pid.index,
-                                 columns=result_pid.columns)
-        anim_diff.to_csv(os.path.join(self.outdir, 'pyani_anim_diff.tab'),
-                         sep="\t")
-        assert_less(anim_diff.abs().values.max(), self.tolerance['ANIm'])
+        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
+        diffmat = result_pid.as_matrix() - self.target["ANIm"].as_matrix()
+        anim_diff = pd.DataFrame(
+            diffmat, index=result_pid.index, columns=result_pid.columns
+        )
+        anim_diff.to_csv(os.path.join(self.outdir, "pyani_anim_diff.tab"), sep="\t")
+        assert_less(anim_diff.abs().values.max(), self.tolerance["ANIm"])
 
     def test_anib_concordance(self):
         """ANIb results concordant with JSpecies.
@@ -166,71 +171,73 @@ class TestConcordance(unittest.TestCase):
         algorithm changed substantially between BLAST and BLAST+
         """
         # Perform ANIb on the input directory contents
-        outdir = os.path.join(self.outdir, 'blastn')
+        outdir = os.path.join(self.outdir, "blastn")
         os.makedirs(outdir, exist_ok=True)
-        fragfiles, fraglengths = anib.fragment_fasta_files(self.infiles,
-                                                           outdir,
-                                                           self.fragsize)
-        jobgraph = anib.make_job_graph(self.infiles, fragfiles,
-                                       anib.make_blastcmd_builder('ANIb',
-                                                                  outdir))
+        fragfiles, fraglengths = anib.fragment_fasta_files(
+            self.infiles, outdir, self.fragsize
+        )
+        jobgraph = anib.make_job_graph(
+            self.infiles, fragfiles, anib.make_blastcmd_builder("ANIb", outdir)
+        )
         assert_equal(0, run_mp.run_dependency_graph(jobgraph))
-        results = anib.process_blast(outdir, self.orglengths, fraglengths,
-                                     mode="ANIb")
+        results = anib.process_blast(outdir, self.orglengths, fraglengths, mode="ANIb")
         result_pid = results.percentage_identity
-        result_pid.to_csv(os.path.join(self.outdir, 'pyani_anib.tab'),
-                          sep="\t")
+        result_pid.to_csv(os.path.join(self.outdir, "pyani_anib.tab"), sep="\t")
 
         # Compare JSpecies output to results. We do this in two blocks,
         # masked according to whether the expected result is greater than
         # 90% identity, or less than that threshold.
         # The complete difference matrix is written to output, though
-        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.
+        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
         lo_result = result_pid.mask(result_pid >= 90).fillna(0)
         hi_result = result_pid.mask(result_pid < 90).fillna(0)
-        lo_target = self.target['ANIb'].mask(self.target['ANIb'] >= 90).fillna(0)
-        hi_target = self.target['ANIb'].mask(self.target['ANIb'] < 90).fillna(0)
+        lo_target = self.target["ANIb"].mask(self.target["ANIb"] >= 90).fillna(0)
+        hi_target = self.target["ANIb"].mask(self.target["ANIb"] < 90).fillna(0)
         lo_diffmat = lo_result.as_matrix() - lo_target.as_matrix()
         hi_diffmat = hi_result.as_matrix() - hi_target.as_matrix()
-        diffmat = result_pid.as_matrix() - self.target['ANIb'].as_matrix()
-        lo_diff = pd.DataFrame(lo_diffmat, index=result_pid.index,
-                               columns=result_pid.columns)
-        hi_diff = pd.DataFrame(hi_diffmat, index=result_pid.index,
-                               columns=result_pid.columns)
-        anib_diff = pd.DataFrame(diffmat, index=result_pid.index,
-                                 columns=result_pid.columns)
-        anib_diff.to_csv(os.path.join(self.outdir, 'pyani_anib_diff.tab'),
-                         sep="\t")
-        assert_less(lo_diff.abs().values.max(), self.tolerance['ANIb_lo'])
-        assert_less(hi_diff.abs().values.max(), self.tolerance['ANIb_hi'])
+        diffmat = result_pid.as_matrix() - self.target["ANIb"].as_matrix()
+        lo_diff = pd.DataFrame(
+            lo_diffmat, index=result_pid.index, columns=result_pid.columns
+        )
+        hi_diff = pd.DataFrame(
+            hi_diffmat, index=result_pid.index, columns=result_pid.columns
+        )
+        anib_diff = pd.DataFrame(
+            diffmat, index=result_pid.index, columns=result_pid.columns
+        )
+        anib_diff.to_csv(os.path.join(self.outdir, "pyani_anib_diff.tab"), sep="\t")
+        assert_less(lo_diff.abs().values.max(), self.tolerance["ANIb_lo"])
+        assert_less(hi_diff.abs().values.max(), self.tolerance["ANIb_hi"])
 
+    @nottest  # legacy BLAST is deprecated
     def test_aniblastall_concordance(self):
         """ANIblastall results concordant with JSpecies."""
         # Perform ANIblastall on the input directory contents
-        outdir = os.path.join(self.outdir, 'blastall')
+        outdir = os.path.join(self.outdir, "blastall")
         os.makedirs(outdir, exist_ok=True)
-        fragfiles, fraglengths = anib.fragment_fasta_files(self.infiles,
-                                                           outdir,
-                                                           self.fragsize)
-        jobgraph = anib.make_job_graph(self.infiles, fragfiles,
-                                       anib.make_blastcmd_builder('ANIblastall',
-                                                                  outdir))
+        fragfiles, fraglengths = anib.fragment_fasta_files(
+            self.infiles, outdir, self.fragsize
+        )
+        jobgraph = anib.make_job_graph(
+            self.infiles, fragfiles, anib.make_blastcmd_builder("ANIblastall", outdir)
+        )
         assert_equal(0, run_mp.run_dependency_graph(jobgraph))
-        results = anib.process_blast(outdir, self.orglengths, fraglengths,
-                                     mode="ANIblastall")
+        results = anib.process_blast(
+            outdir, self.orglengths, fraglengths, mode="ANIblastall"
+        )
         result_pid = results.percentage_identity
-        result_pid.to_csv(os.path.join(self.outdir, 'pyani_aniblastall.tab'),
-                          sep="\t")
+        result_pid.to_csv(os.path.join(self.outdir, "pyani_aniblastall.tab"), sep="\t")
 
         # Compare JSpecies output to results
-        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.
-        diffmat = result_pid.as_matrix() - self.target['ANIb'].as_matrix()
-        aniblastall_diff = pd.DataFrame(diffmat, index=result_pid.index,
-                                        columns=result_pid.columns)
-        aniblastall_diff.to_csv(os.path.join(self.outdir, 'pyani_aniblastall_diff.tab'),
-                                sep="\t")
-        assert_less(aniblastall_diff.abs().values.max(),
-                    self.tolerance['ANIblastall'])
+        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
+        diffmat = result_pid.as_matrix() - self.target["ANIb"].as_matrix()
+        aniblastall_diff = pd.DataFrame(
+            diffmat, index=result_pid.index, columns=result_pid.columns
+        )
+        aniblastall_diff.to_csv(
+            os.path.join(self.outdir, "pyani_aniblastall_diff.tab"), sep="\t"
+        )
+        assert_less(aniblastall_diff.abs().values.max(), self.tolerance["ANIblastall"])
 
     def test_tetra_concordance(self):
         """TETRA results concordant with JSpecies."""
@@ -240,13 +247,10 @@ class TestConcordance(unittest.TestCase):
             org = os.path.splitext(os.path.split(filename)[-1])[0]
             zscores[org] = tetra.calculate_tetra_zscore(filename)
         results = tetra.calculate_correlations(zscores)
-        results.to_csv(os.path.join(self.outdir, 'pyani_tetra.tab'), sep="\t")
+        results.to_csv(os.path.join(self.outdir, "pyani_tetra.tab"), sep="\t")
 
         # Compare JSpecies output
-        diffmat = results.as_matrix() - self.target['Tetra'].as_matrix()
-        tetra_diff = pd.DataFrame(diffmat, index=results.index,
-                                  columns=results.columns)
-        tetra_diff.to_csv(os.path.join(self.outdir, 'pyani_tetra_diff.tab'),
-                          sep="\t")
-        assert_less(tetra_diff.abs().values.max(),
-                    self.tolerance['TETRA'])
+        diffmat = results.as_matrix() - self.target["Tetra"].as_matrix()
+        tetra_diff = pd.DataFrame(diffmat, index=results.index, columns=results.columns)
+        tetra_diff.to_csv(os.path.join(self.outdir, "pyani_tetra_diff.tab"), sep="\t")
+        assert_less(tetra_diff.abs().values.max(), self.tolerance["TETRA"])

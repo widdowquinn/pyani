@@ -1,10 +1,18 @@
 language: python
+sudo: required
+dist: xenial
 python:
   - "3.5"
-  - "3.5-dev" # 3.5 development branch
+  - "3.5-dev"
   - "3.6"
-  - "3.6-dev" # 3.6 development branch
-#  - "nightly" # currently points to 3.7-dev
+  - "3.6-dev"
+  
+# Enable 3.7 without globally enabling sudo and dist: xenial for other build jobs
+matrix:
+  include:
+    - python: 3.7
+      dist: xenial
+      sudo: true
 
 # command to install dependencies
 install:
@@ -19,9 +27,6 @@ script:
 # application dependencies: BLAST+, legacy BLAST, MUMMER
 before_install:
   - cd $HOME
-  - wget http://mirrors.vbi.vt.edu/mirrors/ftp.ncbi.nih.gov/blast/executables/blast+/2.2.26/blast-2.2.26-x64-linux.tar.gz
-  - tar -zxvf blast-2.2.26-x64-linux.tar.gz
-  - export PATH=$HOME/blast-2.2.26/bin:$PATH
   - cd $TRAVIS_BUILD_DIR
 
 sudo: false

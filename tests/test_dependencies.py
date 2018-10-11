@@ -11,7 +11,8 @@ These tests are intended to be run using the nose package
 import subprocess
 import sys
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, nottest
+
 
 def test_import_biopython():
     """Test Biopython import."""
@@ -41,31 +42,41 @@ def test_import_scipy():
 def test_run_blast():
     """Test that BLAST+ is runnable."""
     cmd = "blastn -version"
-    result = subprocess.run(cmd, shell=sys.platform != "win32",
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            check=True)
+    result = subprocess.run(
+        cmd,
+        shell=sys.platform != "win32",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+    )
     print(result.stdout)
-    assert_equal(result.stdout[:6], b'blastn')
+    assert_equal(result.stdout[:6], b"blastn")
 
 
+@nottest
 def test_run_blastall():
     """Test that legacy BLAST is runnable."""
     cmd = "blastall"
     # Can't use check=True, as blastall without arguments returns 1!
-    result = subprocess.run(cmd, shell=sys.platform != "win32",
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+    result = subprocess.run(
+        cmd,
+        shell=sys.platform != "win32",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
     print(result.stdout)
-    assert_equal(result.stdout[1:9], b'blastall')
+    assert_equal(result.stdout[1:9], b"blastall")
 
 
 def test_run_nucmer():
     """Test that NUCmer is runnable."""
     cmd = "nucmer --version"
-    result = subprocess.run(cmd, shell=sys.platform != "win32",
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            check=True)
+    result = subprocess.run(
+        cmd,
+        shell=sys.platform != "win32",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+    )
     print(result.stderr)  # NUCmer puts output to STDERR!
-    assert_equal(result.stderr[:6], b'nucmer')
+    assert_equal(result.stderr[:6], b"nucmer")
