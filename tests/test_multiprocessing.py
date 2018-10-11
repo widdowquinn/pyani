@@ -54,9 +54,9 @@ THE SOFTWARE.
 import os
 import unittest
 
-from nose.tools import (assert_equal, )
+from nose.tools import assert_equal, nottest
 
-from pyani import (run_multiprocessing, pyani_jobs, anib)
+from pyani import run_multiprocessing, pyani_jobs, anib
 
 
 class TestMultiprocessing(unittest.TestCase):
@@ -65,14 +65,17 @@ class TestMultiprocessing(unittest.TestCase):
 
     def setUp(self):
         """Define parameters and arguments for tests."""
-        self.cmdlist = ['for i in %s; do echo "Thread %d: value ${i}"; done' %
-                        (' '.join([str(e) for e in range(v)]), v) for
-                        v in range(5)]
-        self.cmds = ['ls -ltrh', 'echo ${PWD}']
-        self.seqdir = os.path.join('tests', 'test_input', 'sequences')
-        self.outdir = os.path.join('tests', 'test_output', 'multiprocessing')
-        self.infiles = [os.path.join(self.seqdir, fname) for fname in
-                        os.listdir(self.seqdir)][:2]
+        self.cmdlist = [
+            'for i in %s; do echo "Thread %d: value ${i}"; done'
+            % (" ".join([str(e) for e in range(v)]), v)
+            for v in range(5)
+        ]
+        self.cmds = ["ls -ltrh", "echo ${PWD}"]
+        self.seqdir = os.path.join("tests", "test_input", "sequences")
+        self.outdir = os.path.join("tests", "test_output", "multiprocessing")
+        self.infiles = [
+            os.path.join(self.seqdir, fname) for fname in os.listdir(self.seqdir)
+        ][:2]
         self.fraglen = 1000
         os.makedirs(self.outdir, exist_ok=True)
 
@@ -83,8 +86,8 @@ class TestMultiprocessing(unittest.TestCase):
 
     def test_cmdsets(self):
         """module builds command sets."""
-        job1 = pyani_jobs.Job('dummy_with_dependency', self.cmds[0])
-        job2 = pyani_jobs.Job('dummy_dependency', self.cmds[1])
+        job1 = pyani_jobs.Job("dummy_with_dependency", self.cmds[0])
+        job2 = pyani_jobs.Job("dummy_dependency", self.cmds[1])
         job1.add_dependency(job2)
         cmdsets = run_multiprocessing.populate_cmdsets(job1, list(), depth=1)
         target = [{cmd} for cmd in self.cmds]
@@ -92,10 +95,8 @@ class TestMultiprocessing(unittest.TestCase):
 
     def test_dependency_graph_run(self):
         """module runs dependency graph."""
-        fragresult = anib.fragment_fasta_files(self.infiles, self.outdir,
-                                               self.fraglen)
-        blastcmds = anib.make_blastcmd_builder("ANIblastall", self.outdir)
-        jobgraph = anib.make_job_graph(self.infiles, fragresult[0],
-                                       blastcmds)
+        fragresult = anib.fragment_fasta_files(self.infiles, self.outdir, self.fraglen)
+        blastcmds = anib.make_blastcmd_builder("ANIb", self.outdir)
+        jobgraph = anib.make_job_graph(self.infiles, fragresult[0], blastcmds)
         result = run_multiprocessing.run_dependency_graph(jobgraph)
         assert_equal(0, result)
