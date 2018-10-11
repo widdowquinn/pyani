@@ -6,3 +6,4 @@ pandas
 seaborn
 tqdm
 namedlist
+pre-commit
