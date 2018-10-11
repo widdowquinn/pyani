@@ -267,7 +267,9 @@ def subcmd_index(args, logger):
         fstem = os.path.splitext(os.path.split(fpath)[-1])[0]
         hashfname = os.path.splitext(fpath)[0] + '.md5'
         if os.path.isfile(hashfname):
-            logger.info("%s already indexed (skipping)", fpath)
+            logger.info("%s already indexed (using existing hash)", fpath)
+            with open(hashfname, 'r') as ifh:
+                datahash = ifh.readline().split()[0]
         else:
             # Write an .md5 hash file
             datahash = download.create_hash(fpath)
@@ -275,11 +277,11 @@ def subcmd_index(args, logger):
             with open(hashfname, "w") as hfh:
                 hfh.write('\t'.join([datahash, fpath]) + '\n')
 
-            # Parse the file and get the label/class information
-            with open(fpath, "r") as sfh:
-                label = list(SeqIO.parse(sfh, 'fasta'))[0].description
-            labels.append('\t'.join([datahash, fstem, label]))
-            classes.append('\t'.join([datahash, fstem, label]))
+        # Parse the file and get the label/class information
+        with open(fpath, "r") as sfh:
+            label = list(SeqIO.parse(sfh, 'fasta'))[0].description.split(' ', 1)[-1]
+        labels.append('\t'.join([datahash, fstem, label]))
+        classes.append('\t'.join([datahash, fstem, label]))
 
     # Write class and label files
     classfname = os.path.join(args.indir, args.classfname)
