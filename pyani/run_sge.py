@@ -110,7 +110,7 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
     """
     jobs_main = []    # Can be run first, before deps
     jobs_deps = []    # Depend on the main jobs
-    
+
     # Try to be informative by telling the user what jobs will run
     dep_count = 0  # how many dependencies are there
     if logger:
