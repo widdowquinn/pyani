@@ -248,6 +248,12 @@ The source code for `pyani` is expected to conform to `flake8` linting, and `bla
 
 The `black` and `flake8` hooks are defined in `.pre-commit-config.yaml`. Custom settings for `flake8` are held in `.flake8`.
 
+To enable pre-commit checks in the codebase on your local machine, execute the following command in the root directory of this repository:
+
+```bash
+pre-commit install
+```
+
 ## Licensing
 
 Unless otherwise indicated, all code is subject to the following agreement:
