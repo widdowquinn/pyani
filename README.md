@@ -1,10 +1,10 @@
 # README.md (pyani)
 
 [![pyani PyPi version](https://img.shields.io/pypi/v/pyani.svg "PyPi version")](https://pypi.python.org/pypi/pyani)
-[![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/master/LICENSE)
-[![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=master)](https://travis-ci.org/widdowquinn/pyani/branches)
-[![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)](https://codecov.io/github/widdowquinn/pyani)
-[![Code Health](https://landscape.io/github/widdowquinn/pyani/master/landscape.svg?style=flat)](https://landscape.io/github/widdowquinn/pyani/master) 
+[![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/development/LICENSE)
+[![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=development)](https://travis-ci.org/widdowquinn/pyani/branches)
+[![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/development.svg)](https://codecov.io/github/widdowquinn/pyani)
+ 
 [![GitHub Issues](https://img.shields.io/github/issues-closed/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/stargazers)
 
@@ -456,13 +456,30 @@ Output is written to a named directory. The output files differ depending on the
 
 If graphical output is chosen, the output directory will also contain PDF, PNG and EPS files representing the various output measures as a heatmap with row and column dendrograms. Other output formats (e.g. SVG) can be specified with the `--gformat` argument.
 
+## Developer notes
 
+The `pyani` package is presented at `GitHub` under two main branches:
+
+- `release` is the source code underpinning the most recent/current release of `pyani`. It will (almost) always be in sync with the latest release found at https://github.com/widdowquinn/pyani/releases. The only time this code should not be in sync with the release is when there are modifications to documentation, or immediately preceding a release.
+- `development` is the current bleeding-edge version of pyani. It should (almost) always be in a working and usable condition, but may not be complete and/or some features may be missing or still under development.
+
+### Code Style and Pre-Commit Hooks
+
+The source code for pyani is expected to conform to `flake8` linting, and `black` code styling. These are enforced as pre-commit hooks using the pre-commit package (included in `requirements.txt`).
+
+The `black` and `flake8` hooks are defined in `.pre-commit-config.yaml`. Custom settings for `flake8` are held in `.flake8`.
+
+To enable pre-commit checks in the codebase on your local machine, execute the following command in the root directory of this repository:
+
+```bash
+pre-commit install
+```
 
 ## Licensing
 
 Unless otherwise indicated, all code is subject to the following agreement:
 
-    (c) The James Hutton Institute 2014, 2015
+    (c) The James Hutton Institute 2014-2018
     Author: Leighton Pritchard
 
     Contact: leighton.pritchard@hutton.ac.uk
@@ -480,7 +497,7 @@ Unless otherwise indicated, all code is subject to the following agreement:
 
 The MIT License
 
-Copyright (c) 2014-2015 The James Hutton Institute
+Copyright (c) 2014-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
