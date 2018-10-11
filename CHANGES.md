@@ -2,7 +2,7 @@
 
 ## v0.2.7.dev
 
-* update legacy BLAST download location in TravisCI
+* deprecate legacy BLAST testing: `ANIblastall` commands still work, but are no longer supported
 * update concordance tests (issue #105)
 * extend test suites (issue #104)
 * modify ANIm concordance test to accommodate new command structure
