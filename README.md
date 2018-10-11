@@ -2,14 +2,33 @@
 
 [![pyani PyPi version](https://img.shields.io/pypi/v/pyani.svg "PyPi version")](https://pypi.python.org/pypi/pyani)
 [![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/master/LICENSE)
-[![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=master)](https://travis-ci.org/widdowquinn/pyani/branches)
-[![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)](https://codecov.io/github/widdowquinn/pyani)
-[![Code Health](https://landscape.io/github/widdowquinn/pyani/master/landscape.svg?style=flat)](https://landscape.io/github/widdowquinn/pyani/master) 
+[![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=release)](https://travis-ci.org/widdowquinn/pyani/branches)
+[![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/release.svg)](https://codecov.io/github/widdowquinn/pyani)
+
+<!-- TOC -->
+
+- [Overview](#overview)
+- [Installation](#installation)
+- [Docker images](#docker-images)
+- [Testing `pyani`](#testing-pyani)
+- [Running `pyani`](#running-pyani)
+    - [Script: <a name="average_nucleotide_identity.py">`average_nucleotide_identity.py`</a>](#script-a-nameaverage_nucleotide_identitypyaverage_nucleotide_identitypya)
+    - [Script: <a name="genbank_get_genomes_by_taxon.py">`genbank_get_genomes_by_taxon.py`</a>](#script-a-namegenbank_get_genomes_by_taxonpygenbank_get_genomes_by_taxonpya)
+- [DEPENDENCIES](#dependencies)
+    - [For ANI analysis](#for-ani-analysis)
+    - [For graphical output](#for-graphical-output)
+- [Method and Output Description](#method-and-output-description)
+    - [Average Nucleotide Identity (ANI)](#average-nucleotide-identity-ani)
+- [Developer notes](#developer-notes)
+    - [Code Style and Pre-Commit Hooks](#code-style-and-pre-commit-hooks)
+- [Licensing](#licensing)
+
+<!-- /TOC -->
 
 ## Overview
 `pyani` is a Python3 module that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
 
-`pyani` installs two scripts into the `$PATH`:
+`pyani` installs the following scripts into the `$PATH`:
 
 * `average_nucleotide_identity.py` that enables command-line ANI analysis.
 * `genbank_get_genomes_by_taxon.py` that downloads publicly-available genomes from NCBI.
@@ -19,13 +38,13 @@
 
 The easiest way to install `pyani` is to use `pip3`:
 
-```
+```bash
 pip3 install pyani
 ```
 
 From version 0.1.3.2 onwards, this should also install all the required Python package dependencies. Prior to this version (i.e. 0.1.3.1 and earlier), you can acquire these dependencies with `pip -r`, and pointing at `requirements.txt` from this repository:
 
-```
+```bash
 pip3 install -r requirements.txt
 ```
 
@@ -33,13 +52,13 @@ pip3 install -r requirements.txt
 
 `pyani`'s scripts are also provided as [Docker](https://www.docker.com/) images, that can be run locally as containers. To use these images, first install Docker, then to run the corresponding scripts issue either:
 
-```
+```bash
 docker run -v ${PWD}:/host_dir leightonpritchard/average_nucleotide_identity
 ```
 
 or
 
-```
+```bash
 docker run -v ${PWD}:/host_dir leightonpritchard/genbank_get_genomes_by_taxon
 ```
 
@@ -50,7 +69,7 @@ The `-v ${PWD}:/host_dir` argument enables the Docker container to see the curre
 
 `pyani` includes tests that can be run with `nosetest` (including coverage measurement using `coverage.py`) with the following command, executed from the repository root directory:
 
-```
+```bash
 nosetests --cover-erase --cover-package=pyani --cover-html --with-coverage
 ```
 
@@ -64,7 +83,7 @@ The `average_nucleotide_identity.py` script - installed as part of this package 
 
 You can get a summary of available command-line options with `average_nucleotide_identity.py -h`
 
-```
+```bash
 $ average_nucleotide_identity.py -h
 usage: average_nucleotide_identity.py [-h] [-o OUTDIRNAME] [-i INDIRNAME] [-v]
                                       [-f] [-s FRAGSIZE] [-l LOGFILE]
@@ -89,7 +108,7 @@ usage: average_nucleotide_identity.py [-h] [-o OUTDIRNAME] [-i INDIRNAME] [-v]
 
 Example data and output can be found in the directory `test_ani_data`. The data are chromosomes of four isolates of *Caulobacter*. Basic analyses can be performed with the command lines:
 
-```
+```bash
 $ average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIm_output -m ANIm -g
 $ average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIb_output -m ANIb -g
 $ average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIblastall_output -m ANIblastall -g
@@ -98,7 +117,7 @@ $ average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_TETRA_out
 
 The graphical output below, supporting assignment of `NC_002696` and `NC_011916` to the same species (*C.crescentus*), and the other two isolates to distinct species (`NC_014100`:*C.segnis*; `NC_010338`:*C.* sp K31), was generated with the command-line:
 
-```
+```bash
 average_nucleotide_identity.py -v -i tests/test_ani_data/ \
     -o tests/test_ANIm_output/ -g --gformat png,pdf,eps \
     --classes tests/test_ani_data/classes.tab \
@@ -117,7 +136,7 @@ The script `genbank_get_genomes_by_taxon.py`, installed by this package, enables
 
 Command-line options can be viewed using:
 
-```
+```bash
 $ genbank_get_genomes_by_taxon.py -h
 usage: genbacnk_get_genomes_by_taxon.py [-h] [-o OUTDIRNAME] [-t TAXON] [-v]
                                         [-f] [--noclobber] [-l LOGFILE]
@@ -129,7 +148,7 @@ usage: genbacnk_get_genomes_by_taxon.py [-h] [-o OUTDIRNAME] [-t TAXON] [-v]
 
 For example, the NCBI taxonomy ID for *Caulobacter* is 75, so all publicly-available *Caulobacter* sequences can be obtained using the command-line:
 
-```
+```bash
 $ genbank_get_genomes_by_taxon.py -o Caulobacter_downloads -v -t 75 -l Caulobacter_downloads.log --email me@my.email.domain
 INFO: genbank_get_genomes_by_taxon.py: Mon Apr 18 17:22:54 2016
 INFO: command-line: /Users/lpritc/Virtualenvs/pyani3/bin/genbank_get_genomes_by_taxon.py -o Caulobacter_downloads -v -t 75 -l Caulobacter_downloads.log --email me@my.email.domain
@@ -216,13 +235,24 @@ Output is written to a named directory. The output files differ depending on the
 
 If graphical output is chosen, the output directory will also contain PDF, PNG and EPS files representing the various output measures as a heatmap with row and column dendrograms. Other output formats (e.g. SVG) can be specified with the `--gformat` argument.
 
+## Developer notes
 
+The `pyani` package is presented at [`GitHub`](https://github.com/widdowquinn/pyani) under two main branches:
+
+- `release` is the source code underpinning the most recent/current release of `pyani`. It will (almost) always be in sync with the latest release found at [https://github.com/widdowquinn/pyani/releases](https://github.com/widdowquinn/pyani/releases). The only time this code should not be in sync with the release is when there are modifications to documentation, or immediately preceding a release.
+- `development` is the current bleeding-edge version of `pyani`. It should (almost) always be in a working and usable condition, but may not be complete and/or some features may be missing or still under development.
+
+### Code Style and Pre-Commit Hooks
+
+The source code for `pyani` is expected to conform to `flake8` linting, and `black` code styling. These are enforced as pre-commit hooks using the `pre-commit` package (included in `requirements.txt`).
+
+The `black` and `flake8` hooks are defined in `.pre-commit-config.yaml`. Custom settings for `flake8` are held in `.flake8`.
 
 ## Licensing
 
 Unless otherwise indicated, all code is subject to the following agreement:
 
-    (c) The James Hutton Institute 2014, 2015
+    (c) The James Hutton Institute 2014-2018
     Author: Leighton Pritchard
 
     Contact: leighton.pritchard@hutton.ac.uk
@@ -240,7 +270,7 @@ Unless otherwise indicated, all code is subject to the following agreement:
 
 The MIT License
 
-Copyright (c) 2014-2015 The James Hutton Institute
+Copyright (c) 2014-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

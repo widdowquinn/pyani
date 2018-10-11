@@ -4,3 +4,4 @@ matplotlib
 biopython
 pandas
 seaborn
+pre-commit
