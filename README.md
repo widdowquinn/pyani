@@ -8,6 +8,36 @@
 [![GitHub Issues](https://img.shields.io/github/issues-closed/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/stargazers)
 
+<!-- TOC -->
+
+- [README.md (pyani)](#readmemd-pyani)
+    - [Overview](#overview)
+    - [Installation](#installation)
+    - [Documentation](#documentation)
+    - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
+    - [Contributing](#contributing)
+    - [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
+        - [1. Download genome data](#1-download-genome-data)
+        - [2. Create an analysis database](#2-create-an-analysis-database)
+        - [3. Conduct ANI analysis](#3-conduct-ani-analysis)
+            - [Rerunning the same analysis](#rerunning-the-same-analysis)
+        - [4. Reporting Analyses and Analysis Results](#4-reporting-analyses-and-analysis-results)
+        - [5. Generating graphical output for ANI](#5-generating-graphical-output-for-ani)
+        - [6. Classifying Genomes from Analysis Results](#6-classifying-genomes-from-analysis-results)
+    - [Testing `pyani`](#testing-pyani)
+    - [Running `pyani`](#running-pyani)
+        - [Script: <a name="average_nucleotide_identity.py">`average_nucleotide_identity.py`</a>](#script-a-nameaverage_nucleotide_identitypyaverage_nucleotide_identitypya)
+        - [Script: <a name="genbank_get_genomes_by_taxon.py">`genbank_get_genomes_by_taxon.py`</a>](#script-a-namegenbank_get_genomes_by_taxonpygenbank_get_genomes_by_taxonpya)
+    - [DEPENDENCIES](#dependencies)
+        - [For ANI analysis](#for-ani-analysis)
+            - [Alignment tools](#alignment-tools)
+        - [For graphical output](#for-graphical-output)
+    - [Method and Output Description](#method-and-output-description)
+        - [Average Nucleotide Identity (ANI)](#average-nucleotide-identity-ani)
+    - [Licensing](#licensing)
+
+<!-- /TOC -->
+
 ## Overview
 `pyani` is a Python3 module and script that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
 
@@ -26,6 +56,22 @@ From version 0.1.3.2 onwards, this should also install all the required Python p
 ```
 pip3 install -r requirements.txt
 ```
+
+## Documentation
+
+This `README.md` file provides a quick overview and walkthrough for `pyani`, but full documentation can be found at the link below:
+
+- [`pyani` Documentation](https://readthedocs.org/projects/pyani/)
+
+## Bugs, issues, problems and questions
+
+If wou would like to report a bug or problem with `pyani`, or ask a question of the developer(s), please raise an issue at the link below:
+
+- [`pyani` Issues page](https://github.com/widdowquinn/pyani/issues)
+
+## Contributing
+
+If you would like to contribute code to the `pyani` project (as a bug fix or new feature), please refer to the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide for more details.
 
 ## Walkthrough: A First Analysis
 
@@ -455,25 +501,6 @@ Output is written to a named directory. The output files differ depending on the
 * **TETRA**: Tab-separated plain text files describing the Pearson correlations between Z-score distributions for each tetranucleotide in each input sequence (TETRA).
 
 If graphical output is chosen, the output directory will also contain PDF, PNG and EPS files representing the various output measures as a heatmap with row and column dendrograms. Other output formats (e.g. SVG) can be specified with the `--gformat` argument.
-
-## Developer notes
-
-The `pyani` package is presented at `GitHub` under two main branches:
-
-- `release` is the source code underpinning the most recent/current release of `pyani`. It will (almost) always be in sync with the latest release found at https://github.com/widdowquinn/pyani/releases. The only time this code should not be in sync with the release is when there are modifications to documentation, or immediately preceding a release.
-- `development` is the current bleeding-edge version of pyani. It should (almost) always be in a working and usable condition, but may not be complete and/or some features may be missing or still under development.
-
-### Code Style and Pre-Commit Hooks
-
-The source code for pyani is expected to conform to `flake8` linting, and `black` code styling. These are enforced as pre-commit hooks using the pre-commit package (included in `requirements.txt`).
-
-The `black` and `flake8` hooks are defined in `.pre-commit-config.yaml`. Custom settings for `flake8` are held in `.flake8`.
-
-To enable pre-commit checks in the codebase on your local machine, execute the following command in the root directory of this repository:
-
-```bash
-pre-commit install
-```
 
 ## Licensing
 
