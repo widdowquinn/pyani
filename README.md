@@ -13,6 +13,7 @@
 - [README.md (pyani)](#readmemd-pyani)
     - [Overview](#overview)
     - [Installation](#installation)
+    - [Citing `pyani`](#citing-pyani)
     - [Documentation](#documentation)
     - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
     - [Contributing](#contributing)
@@ -56,6 +57,10 @@ From version 0.1.3.2 onwards, this should also install all the required Python p
 ```
 pip3 install -r requirements.txt
 ```
+
+## Citing `pyani`
+
+A guide to citing `pyani` is included in the file [`CITATIONS`](CITATIONS)
 
 ## Documentation
 
