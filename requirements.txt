@@ -3,6 +3,8 @@ scipy
 matplotlib
 biopython
 pandas
+Jinja2
+openpyxl
 seaborn
 networkx
 tqdm
