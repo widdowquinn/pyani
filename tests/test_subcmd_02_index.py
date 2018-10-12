@@ -81,7 +81,8 @@ class TestIndexSubcommand(unittest.TestCase):
         self.outdir = os.path.join("tests", "test_output", "subcmd_index")
         self.tgtdir = os.path.join("tests", "test_targets", "subcmd_index")
         # Remove output directory before copying input data across
-        shutil.rmtree(self.outdir)
+        if os.path.exists(self.outdir):
+            shutil.rmtree(self.outdir)
         shutil.copytree(self.indir, self.outdir)
 
         # Null logger instance
