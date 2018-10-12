@@ -72,8 +72,8 @@ from nose.tools import assert_equal
 from pyani.scripts import subcommands
 
 
-class TestIndexSubcommand(unittest.TestCase):
-    """Class defining tests of the pyani index subcommand."""
+class TestCreatedbSubcommand(unittest.TestCase):
+    """Class defining tests of the pyani createdb subcommand."""
 
     def setUp(self):
         """Configure parameters for tests."""
