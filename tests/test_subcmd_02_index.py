@@ -108,7 +108,9 @@ class TestIndexSubcommand(unittest.TestCase):
             with open(os.path.join(self.outdir, fname)) as ofh:
                 with open(os.path.join(self.tgtdir, fname)) as tfh:
                     assert_equal(
-                        ofh.read(), tfh.read(), msg="{} files differ".format(fname)
+                        sorted(ofh.readlines()),
+                        sorted(tfh.readlines()),
+                        msg="{} files differ".format(fname),
                     )
 
         #  Check hashes
