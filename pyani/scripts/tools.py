@@ -78,16 +78,21 @@ def make_outdir(outdir, force, noclobber, logger):
     if os.path.isdir(outdir):
         logger.warning("Output directory %s exists", outdir)
         if not force:
-            raise PyaniScriptException("Will not modify existing directory " +
-                                       "%s" % outdir)
+            raise PyaniScriptException(
+                "Will not modify existing directory " + "%s" % outdir
+            )
         elif force and not noclobber:
             # Delete old directory and start again
-            logger.warning("Overwrite forced. Removing %s and everything " +
-                           "below it (--force)", outdir)
+            logger.warning(
+                "Overwrite forced. Removing %s and everything " + "below it (--force)",
+                outdir,
+            )
             shutil.rmtree(outdir)
         else:
-            logger.warning("Keeping existing directory, skipping existing " +
-                           "files (--force --noclobber).")
+            logger.warning(
+                "Keeping existing directory, skipping existing "
+                + "files (--force --noclobber)."
+            )
     os.makedirs(outdir, exist_ok=True)
 
 
@@ -104,8 +109,16 @@ def make_asm_dict(taxon_ids, retries):
 
 
 # Download the RefSeq genome and MD5 hash from NCBI
-def download_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout,
-                             logger, dltype="RefSeq"):
+def download_genome_and_hash(
+    filestem,
+    suffix,
+    ftpstem,
+    outdir,
+    timeout,
+    logger,
+    dltype="RefSeq",
+    disable_tqdm=False,
+):
     """Download genome and accompanying MD5 hash from NCBI.
 
     This function tries the (assumed to be passed) RefSeq FTP URL first and,
@@ -114,12 +127,12 @@ def download_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout,
     We attempt to gracefully skip genomes with download errors.
     """
     if dltype == "GenBank":
-        filestem = re.sub('^GCF_', 'GCA_', filestem)
-    dlstatus = download.retrieve_genome_and_hash(filestem, suffix,
-                                                 ftpstem, outdir, timeout)
+        filestem = re.sub("^GCF_", "GCA_", filestem)
+    dlstatus = download.retrieve_genome_and_hash(
+        filestem, suffix, ftpstem, outdir, timeout, disable_tqdm
+    )
     if dlstatus.error is not None:  # Something went awry
-        logger.warning("%s download failed: skipping!\n%s",
-                       dltype, dlstatus.error)
+        logger.warning("%s download failed: skipping!\n%s", dltype, dlstatus.error)
         dlstatus.skipped = True
 
     return dlstatus

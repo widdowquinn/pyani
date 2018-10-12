@@ -136,6 +136,7 @@ def subcmd_download(args, logger):
                 args.timeout,
                 logger,
                 dltype="RefSeq",
+                disable_tqdm=args.disable_tqdm,
             )
             if dlstatus.skipped:  # RefSeq failed, try GenBank
                 skippedlist.append(
@@ -160,6 +161,7 @@ def subcmd_download(args, logger):
                     args.timeout,
                     logger,
                     dltype="GenBank",
+                    disable_tqdm=args.disable_tqdm,
                 )
                 if dlstatus.skipped:
                     skippedlist.append(

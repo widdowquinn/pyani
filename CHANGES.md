@@ -2,6 +2,7 @@
 
 ## v0.3.0-alpha
 
+- legacy BLAST tests are deprecated as executables are no longer available from NCBI
 - major changes to the command-line API
   - the new API now uses a subcommand system: `pyani <cmd> <arguments>`
 - major changes to result storage

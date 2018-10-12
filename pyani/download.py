@@ -56,7 +56,7 @@ from tqdm import tqdm
 from namedlist import namedlist
 
 
-taxonregex = re.compile('([0-9]\,?){1,}')
+taxonregex = re.compile("([0-9]\,?){1,}")
 
 
 # Custom exceptions
@@ -79,8 +79,7 @@ class FileExistsException(Exception):
 def last_exception():
     """Return last exception as a string."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
-    return ''.join(traceback.format_exception(exc_type, exc_value,
-                                              exc_traceback))
+    return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
 
 def set_ncbi_email(email):
@@ -90,8 +89,7 @@ def set_ncbi_email(email):
 
 
 # Get results from NCBI web history, in batches
-def entrez_batch_webhistory(record, expected, batchsize, retries,
-                            *fnargs, **fnkwargs):
+def entrez_batch_webhistory(record, expected, batchsize, retries, *fnargs, **fnkwargs):
     """Recover the Entrez data from a prior NCBI webhistory search.
 
     Recovers results in batches of defined size, using Efetch.
@@ -105,11 +103,16 @@ def entrez_batch_webhistory(record, expected, batchsize, retries,
     """
     results = []
     for start in range(0, expected, batchsize):
-        batch_handle = entrez_retry(Entrez.efetch, retries,
-                                    retstart=start, retmax=batchsize,
-                                    webenv=record["WebEnv"],
-                                    query_key=record["QueryKey"],
-                                    *fnargs, **fnkwargs)
+        batch_handle = entrez_retry(
+            Entrez.efetch,
+            retries,
+            retstart=start,
+            retmax=batchsize,
+            webenv=record["WebEnv"],
+            query_key=record["QueryKey"],
+            *fnargs,
+            **fnkwargs
+        )
         batch_record = Entrez.read(batch_handle, validate=False)
         results.extend(batch_record)
     return results
@@ -141,7 +144,7 @@ def split_taxa(taxa):
     match = taxonregex.match(taxa)
     if match is None or len(match.group()) != len(taxa):
         raise ValueError("invalid taxon string: {0}".format(taxa))
-    return [taxon for taxon in taxa.split(',') if len(taxon)]
+    return [taxon for taxon in taxa.split(",") if len(taxon)]
 
 
 # Get assembly UIDs for the subtree rooted at the passed taxon
@@ -156,14 +159,16 @@ def get_asm_uids(taxon_uid, retries):
 
     # Perform initial search for assembly UIDs with taxon ID as query.
     # Use NCBI history for the search.
-    handle = entrez_retry(Entrez.esearch, retries, db="assembly",
-                          term=query, format="xml", usehistory="y")
+    handle = entrez_retry(
+        Entrez.esearch, retries, db="assembly", term=query, format="xml", usehistory="y"
+    )
     record = Entrez.read(handle, validate=False)
-    result_count = int(record['Count'])
+    result_count = int(record["Count"])
 
     # Recover assembly UIDs from the web history
-    asm_ids = entrez_batch_webhistory(record, result_count, 250, retries,
-                                      db="assembly", retmode="xml")
+    asm_ids = entrez_batch_webhistory(
+        record, result_count, 250, retries, db="assembly", retmode="xml"
+    )
 
     return Results(query, result_count, asm_ids)
 
@@ -180,40 +185,41 @@ def extract_filestem(esummary):
     characters with underscores: white space, slash, comma, hash, brackets.
     """
     escapes = re.compile(r"[\s/,#\(\)]")
-    escname = re.sub(escapes, '_', esummary['AssemblyName'])
-    return '_'.join([esummary['AssemblyAccession'], escname])
+    escname = re.sub(escapes, "_", esummary["AssemblyName"])
+    return "_".join([esummary["AssemblyAccession"], escname])
 
 
 # Get eSummary data for a single assembly UID
 def get_ncbi_esummary(asm_uid, retries):
     """Obtain full eSummary info for the passed assembly UID."""
     # Obtain full eSummary data for the assembly
-    summary = Entrez.read(entrez_retry(Entrez.esummary, retries,
-                                       db="assembly",
-                                       id=asm_uid, report="full"),
-                          validate=False)
+    summary = Entrez.read(
+        entrez_retry(
+            Entrez.esummary, retries, db="assembly", id=asm_uid, report="full"
+        ),
+        validate=False,
+    )
 
     # Extract filestem from assembly data
-    data = summary['DocumentSummarySet']['DocumentSummary'][0]
+    data = summary["DocumentSummarySet"]["DocumentSummary"][0]
     filestem = extract_filestem(data)
 
-    return(data, filestem)
+    return (data, filestem)
 
 
 # Get the taxonomic classification strings for eSummary data
 def get_ncbi_classification(esummary):
     """Return organism, genus, species, strain info from eSummary data."""
-    Classification = namedtuple("Classsification",
-                                "organism genus species strain")
+    Classification = namedtuple("Classsification", "organism genus species strain")
 
     # Extract species/strain info
-    organism = esummary['SpeciesName']
+    organism = esummary["SpeciesName"]
     try:
-        strain = esummary['Biosource']['InfraspeciesList'][0]['Sub_value']
+        strain = esummary["Biosource"]["InfraspeciesList"][0]["Sub_value"]
     except (KeyError, IndexError):
         # we consider this an error/incompleteness in the NCBI metadata
         strain = ""
-    genus, species = organism.split(' ', 1)
+    genus, species = organism.split(" ", 1)
 
     return Classification(organism, genus, species, strain)
 
@@ -243,19 +249,19 @@ def compile_url(filestem, suffix, ftpstem):
     rm.run
     wgsmaster.gbff.gz
     """
-    gc, aa, an = tuple(filestem.split('_', 2))
-    aaval = aa.split('.')[0]
-    subdirs = '/'.join([aa[i:i + 3] for i in range(0, len(aaval), 3)])
+    gc, aa, an = tuple(filestem.split("_", 2))
+    aaval = aa.split(".")[0]
+    subdirs = "/".join([aa[i : i + 3] for i in range(0, len(aaval), 3)])
 
-    url = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gc, subdirs,
-                                           filestem, suffix)
-    hashurl = "{0}/{1}/{2}/{3}/{4}".format(ftpstem, gc, subdirs,
-                                           filestem, "md5checksums.txt")
+    url = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gc, subdirs, filestem, suffix)
+    hashurl = "{0}/{1}/{2}/{3}/{4}".format(
+        ftpstem, gc, subdirs, filestem, "md5checksums.txt"
+    )
     return (url, hashurl)
 
 
 # Download a remote file to the specified directory
-def download_url(url, outfname, timeout):
+def download_url(url, outfname, timeout, disable_tqdm=False):
     """Download remote URL to a local directory.
 
     This function downloads the contents of the passed URL to the passed
@@ -267,11 +273,11 @@ def download_url(url, outfname, timeout):
 
     # Define buffer sizes
     bsize = 1048576  # buffer size
-    fsize_dl = 0     # bytes downloaded
+    fsize_dl = 0  # bytes downloaded
 
     # Download file
     with open(outfname, "wb") as ofh:
-        with tqdm(total=fsize) as pbar:
+        with tqdm(total=fsize, disable=disable_tqdm) as pbar:
             while True:
                 buffer = response.read(bsize)
                 if not buffer:
@@ -284,18 +290,19 @@ def download_url(url, outfname, timeout):
 # Construct filepaths for downloaded files and their hashes
 def construct_output_paths(filestem, suffix, outdir):
     """Construct paths to output files for genome and hash."""
-    outfname = os.path.join(outdir, '_'.join([filestem, suffix]))
-    outfhash = os.path.join(outdir, '_'.join([filestem, "hashes.txt"]))
+    outfname = os.path.join(outdir, "_".join([filestem, suffix]))
+    outfhash = os.path.join(outdir, "_".join([filestem, "hashes.txt"]))
     return (outfname, outfhash)
 
 
 # Download a remote genome from NCBI and its MD5 hash
-def retrieve_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout):
+def retrieve_genome_and_hash(
+    filestem, suffix, ftpstem, outdir, timeout, disable_tqdm=False
+):
     """Download genome contigs and MD5 hash data from NCBI."""
-    DLStatus = namedlist("DLStatus",
-                         "url hashurl outfname outfhash skipped error")
+    DLStatus = namedlist("DLStatus", "url hashurl outfname outfhash skipped error")
     skipped = False  # Flag - set True if we skip download for existing file
-    error = None     # Text of last-raised error
+    error = None  # Text of last-raised error
 
     # Construct remote URLs and output filenames
     url, hashurl = compile_url(filestem, suffix, ftpstem)
@@ -303,8 +310,8 @@ def retrieve_genome_and_hash(filestem, suffix, ftpstem, outdir, timeout):
 
     # Download the genome sequence and corresponding hash file
     try:
-        download_url(url, outfname, timeout)
-        download_url(hashurl, outfhash, timeout)
+        download_url(url, outfname, timeout, disable_tqdm)
+        download_url(hashurl, outfhash, timeout, disable_tqdm)
     except IOError:
         error = last_exception()
 
@@ -316,7 +323,7 @@ def check_hash(fname, hashfile):
     """Check MD5 of passed file against downloaded NCBI hash file."""
     Hashstatus = namedtuple("Hashstatus", "passed localhash filehash")
     filehash = ""
-    passed = False   # Flag - set to True if the hash matches
+    passed = False  # Flag - set to True if the hash matches
 
     # Generate MD5 hash
     localhash = create_hash(fname)
@@ -335,9 +342,8 @@ def check_hash(fname, hashfile):
 # Extract contigs from a compressed file, using gunzip
 def extract_contigs(fname, ename):
     """Extract contents of fname to ename using gunzip."""
-    with open(ename, 'w') as efh:
-        subprocess.run(['gunzip', '-c', fname],
-                       stdout=efh)  # can be subprocess.run
+    with open(ename, "w") as efh:
+        subprocess.run(["gunzip", "-c", fname], stdout=efh)  # can be subprocess.run
 
 
 # Using a genomes UID, create class and label text files
@@ -359,11 +365,14 @@ def create_labels(classification, filestem, hash):
     The hash is used to help uniquely identify the genome in the database
     (label/class is unique by a combination of hash and run ID).
     """
-    class_data = (filestem, classification.genus[0] + '.',
-                  classification.species, classification.strain)
+    class_data = (
+        filestem,
+        classification.genus[0] + ".",
+        classification.species,
+        classification.strain,
+    )
     labeltxt = "{0}\t{1}_genomic\t{2} {3} {4}".format(hash, *class_data)
-    classtxt = "{0}\t{1}_genomic\t{2}".format(hash, filestem,
-                                              classification.organism)
+    classtxt = "{0}\t{1}_genomic\t{2}".format(hash, filestem, classification.organism)
 
     return (labeltxt, classtxt)
 
