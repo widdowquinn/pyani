@@ -115,6 +115,7 @@ def subcmd_anim(args, logger):
     # Identify input files for comparison, and populate the database
     logger.info("Adding input genome/hash files to database:")
     add_db_input_files(run_id, args, logger)
+    logger.info("Input genome/hash files added to database")
 
     # Add classes metadata to the database, if provided
     if args.classes is not None:
@@ -205,6 +206,8 @@ def subcmd_anim(args, logger):
             if os.path.splitext(fname)[-1] == suffix
         ]
         logger.info("Identified %d existing output files", len(existingfiles))
+    else:
+        existingfiles = None
 
     # New comparisons to be run for this analysis
     # TODO: Can we parallelise this as a function called with multiprocessing?
@@ -229,46 +232,10 @@ def subcmd_anim(args, logger):
         # Create list of NUCmer jobs for each comparison still to be
         # performed
         logger.info("Creating NUCmer jobs for ANIm")
-        joblist, comparisons = [], []
-        jobprefix = "ANINUCmer"
-        for idx, (qid, sid) in enumerate(
-            tqdm(comparison_ids, disable=args.disable_tqdm)
-        ):
-            qpath = pyani_db.get_genome_path(args.dbpath, qid)
-            spath = pyani_db.get_genome_path(args.dbpath, sid)
-            ncmd, dcmd = anim.construct_nucmer_cmdline(
-                qpath,
-                spath,
-                args.outdir,
-                args.nucmer_exe,
-                args.filter_exe,
-                args.maxmatch,
-            )
-            logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
-            outprefix = ncmd.split()[3]  # prefix for NUCmer output
-            if args.nofilter:
-                outfname = outprefix + ".delta"
-            else:
-                outfname = outprefix + ".filter"
-            logger.debug("Expected output file for db: %s", outfname)
-
-            # If we're in recovery mode, we don't want to repeat a computational
-            # comparison that already exists, so we check whether the ultimate
-            # output is in the set of existing files and, if not, we add the jobs
-            # TODO: something faster than a list search (dict or set?)
-            # The comparisons collections always gets updated, so that results are
-            # added to the database whether they come from recovery mode or are run
-            # in this call of the script.
-            comparisons.append(Comparison(qid, sid, dcmd, outfname))
-            if args.recovery and os.path.split(outfname)[-1] in existingfiles:
-                logger.debug("Recovering output from %s, not building job", outfname)
-            else:
-                logger.debug("Building job")
-                # Build jobs
-                njob = pyani_jobs.Job("%s_%06d-n" % (jobprefix, idx), ncmd)
-                fjob = pyani_jobs.Job("%s_%06d-f" % (jobprefix, idx), dcmd)
-                fjob.add_dependency(njob)
-                joblist.append(fjob)
+        joblist, comparisons = generate_joblist(
+            comparison_ids, existingfiles, args, logger
+        )
+        logger.info("Generated %s jobs, %d comparisons", len(joblist), len(comparisons))
 
         # Pass commands to the appropriate scheduler
         logger.info("Passing %d jobs to scheduler", len(joblist))
@@ -387,3 +354,40 @@ def add_db_input_files(run_id, args, logger):
         # Populate the linker table associating each run with the genome IDs
         # for that run
         pyani_db.add_genome_to_run(args.dbpath, run_id, genome_id)
+
+
+def generate_joblist(comparison_ids, existingfiles, args, logger):
+    """Returns tuple of ANIm jobs, and comparisons."""
+    joblist, comparisons = [], []
+    for idx, (qid, sid) in enumerate(tqdm(comparison_ids, disable=args.disable_tqdm)):
+        qpath = pyani_db.get_genome_path(args.dbpath, qid)
+        spath = pyani_db.get_genome_path(args.dbpath, sid)
+        ncmd, dcmd = anim.construct_nucmer_cmdline(
+            qpath, spath, args.outdir, args.nucmer_exe, args.filter_exe, args.maxmatch
+        )
+        logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
+        outprefix = ncmd.split()[3]  # prefix for NUCmer output
+        if args.nofilter:
+            outfname = outprefix + ".delta"
+        else:
+            outfname = outprefix + ".filter"
+        logger.debug("Expected output file for db: %s", outfname)
+
+        # If we're in recovery mode, we don't want to repeat a computational
+        # comparison that already exists, so we check whether the ultimate
+        # output is in the set of existing files and, if not, we add the jobs
+        # TODO: something faster than a list search (dict or set?)
+        # The comparisons collections always gets updated, so that results are
+        # added to the database whether they come from recovery mode or are run
+        # in this call of the script.
+        comparisons.append(Comparison(qid, sid, dcmd, outfname))
+        if args.recovery and os.path.split(outfname)[-1] in existingfiles:
+            logger.debug("Recovering output from %s, not building job", outfname)
+        else:
+            logger.debug("Building job")
+            # Build jobs
+            njob = pyani_jobs.Job("%s_%06d-n" % (args.jobprefix, idx), ncmd)
+            fjob = pyani_jobs.Job("%s_%06d-f" % (args.jobprefix, idx), dcmd)
+            fjob.add_dependency(njob)
+            joblist.append(fjob)
+    return (joblist, comparisons)

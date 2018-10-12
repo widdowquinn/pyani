@@ -110,6 +110,7 @@ class TestANImSubcommand(unittest.TestCase):
                 scheduler=self.scheduler,
                 workers=None,
                 disable_tqdm=True,
+                jobprefix="ANImTest",
             )
         }
 
