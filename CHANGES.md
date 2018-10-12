@@ -14,7 +14,6 @@
 - new documentation
   - documentation is now available at [ReadTheDocs](https://pyani.readthedocs.io/en/classify/ )
 
-
 ## v0.2.7.dev
 
 - update legacy BLAST download location in TravisCI
@@ -50,7 +49,6 @@
 - Changes to `--noclobber` log behaviour (issue #79)
 - fixed `--rerender` code (issue #85)
 
-
 ## v0.2.3
 
 - fixes a bug in the installed scripts where the shebang (`#!`) in wheel and egg packages pointed to a development Python
@@ -64,7 +62,6 @@
 - add several tests and support for `codecov.io`, `landscape.io` and `Travis-CI`
 - removed requirement for `rpy2`
 - moved scripts to `bin/` subdirectory
-
 
 ## v0.2.1
 
