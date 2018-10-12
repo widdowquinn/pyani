@@ -113,48 +113,8 @@ def subcmd_anim(args, logger):
     logger.info("Current analysis has ID %s in this database", run_id)
 
     # Identify input files for comparison, and populate the database
-    logger.info("Identifying input genome/hash files:")
-    infiles = pyani_files.get_fasta_and_hash_paths(args.indir)
-    # Get hash string and sequence description for each FASTA/hash pair,
-    # and add info to the current database
-    for fastafile, hashfile in infiles:
-        # Get genome data
-        inhash, filecheck = pyani_files.read_hash_string(hashfile)
-        indesc = pyani_files.read_fasta_description(fastafile)
-        abspath = os.path.abspath(fastafile)
-        genome_len = pyani_tools.get_genome_length(abspath)
-        outstr = [
-            "FASTA file:\t%s" % abspath,
-            "description:\t%s" % indesc,
-            "hash file:\t%s" % hashfile,
-            "MD5 hash:\t%s" % inhash,
-            "Total length:\t%d" % genome_len,
-        ]
-        logger.info("\t" + "\n\t".join(outstr))
-
-        # Attempt to add current genome/path combination to database
-        logger.info("Adding genome data to database...")
-        try:
-            genome_id = pyani_db.add_genome(
-                args.dbpath, inhash, abspath, genome_len, indesc
-            )
-        except sqlite3.IntegrityError:  # genome data already in database
-            logger.warning("Genome already in database with this " + "hash and path!")
-            genome_db = pyani_db.get_genome(args.dbpath, inhash, abspath)
-            if len(genome_db) > 1:  # This shouldn't happen
-                logger.error("More than one genome with same hash and path")
-                logger.error("This should only happen if the database is corrupt")
-                logger.error("Please investigate the database tables (exiting)")
-                raise SystemError(1)
-            logger.warning(
-                "Using existing genome from database, row %s", genome_db[0][0]
-            )
-            genome_id = genome_db[0][0]
-        logger.debug("Genome row ID: %s", genome_id)
-
-        # Populate the linker table associating each run with the genome IDs
-        # for that run
-        pyani_db.add_genome_to_run(args.dbpath, run_id, genome_id)
+    logger.info("Adding input genome/hash files to database:")
+    add_db_input_files(run_id, args, logger)
 
     # Add classes metadata to the database, if provided
     if args.classes is not None:
@@ -191,7 +151,7 @@ def subcmd_anim(args, logger):
     logger.info(
         "Compiling pairwise comparisons (this can take time for large datasets)"
     )
-    comparison_ids = list(combinations(tqdm(genome_ids), 2))
+    comparison_ids = list(combinations(tqdm(genome_ids, disable=args.disable_tqdm), 2))
     logger.debug("Complete pairwise comparison list:\n\t%s", comparison_ids)
 
     # Check for existing comparisons; if one has been done (for the same
@@ -214,7 +174,7 @@ def subcmd_anim(args, logger):
         "Existing comparisons to be associated with new run:\n\t%s", new_link_ids
     )
     if len(new_link_ids) > 0:
-        for (qid, sid) in tqdm(new_link_ids):
+        for (qid, sid) in tqdm(new_link_ids, disable=args.disable_tqdm):
             pyani_db.add_comparison_link(
                 args.dbpath,
                 run_id,
@@ -271,7 +231,9 @@ def subcmd_anim(args, logger):
         logger.info("Creating NUCmer jobs for ANIm")
         joblist, comparisons = [], []
         jobprefix = "ANINUCmer"
-        for idx, (qid, sid) in enumerate(tqdm(comparison_ids)):
+        for idx, (qid, sid) in enumerate(
+            tqdm(comparison_ids, disable=args.disable_tqdm)
+        ):
             qpath = pyani_db.get_genome_path(args.dbpath, qid)
             spath = pyani_db.get_genome_path(args.dbpath, sid)
             ncmd, dcmd = anim.construct_nucmer_cmdline(
@@ -344,7 +306,7 @@ def subcmd_anim(args, logger):
         # We have to drop out of threading/multiprocessing to do this: Python's
         # SQLite3 interface doesn't allow sharing connections and cursors
         logger.info("Adding comparison results to database")
-        for comp in tqdm(comparisons):
+        for comp in tqdm(comparisons, disable=args.disable_tqdm):
             aln_length, sim_errs = anim.parse_delta(comp.outfile)
             qlen = pyani_db.get_genome_length(args.dbpath, comp.query_id)
             slen = pyani_db.get_genome_length(args.dbpath, comp.subject_id)
@@ -380,3 +342,48 @@ def subcmd_anim(args, logger):
                 comp_id,
                 link_id,
             )
+
+
+def add_db_input_files(run_id, args, logger):
+    """Add input sequence files for the analysis to database"""
+    infiles = pyani_files.get_fasta_and_hash_paths(args.indir)
+    # Get hash string and sequence description for each FASTA/hash pair,
+    # and add info to the current database
+    for fastafile, hashfile in infiles:
+        # Get genome data
+        inhash, filecheck = pyani_files.read_hash_string(hashfile)
+        indesc = pyani_files.read_fasta_description(fastafile)
+        abspath = os.path.abspath(fastafile)
+        genome_len = pyani_tools.get_genome_length(abspath)
+        outstr = [
+            "FASTA file:\t%s" % abspath,
+            "description:\t%s" % indesc,
+            "hash file:\t%s" % hashfile,
+            "MD5 hash:\t%s" % inhash,
+            "Total length:\t%d" % genome_len,
+        ]
+        logger.info("\t" + "\n\t".join(outstr))
+
+        # Attempt to add current genome/path combination to database
+        logger.info("Adding genome data to database...")
+        try:
+            genome_id = pyani_db.add_genome(
+                args.dbpath, inhash, abspath, genome_len, indesc
+            )
+        except sqlite3.IntegrityError:  # genome data already in database
+            logger.warning("Genome already in database with this " + "hash and path!")
+            genome_db = pyani_db.get_genome(args.dbpath, inhash, abspath)
+            if len(genome_db) > 1:  # This shouldn't happen
+                logger.error("More than one genome with same hash and path")
+                logger.error("This should only happen if the database is corrupt")
+                logger.error("Please investigate the database tables (exiting)")
+                raise SystemError(1)
+            logger.warning(
+                "Using existing genome from database, row %s", genome_db[0][0]
+            )
+            genome_id = genome_db[0][0]
+        logger.debug("Genome row ID: %s", genome_id)
+
+        # Populate the linker table associating each run with the genome IDs
+        # for that run
+        pyani_db.add_genome_to_run(args.dbpath, run_id, genome_id)
