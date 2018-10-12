@@ -4,6 +4,7 @@ matplotlib
 biopython
 pandas
 seaborn
+networkx
 tqdm
 namedlist
 pre-commit

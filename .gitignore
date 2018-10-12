@@ -6,6 +6,10 @@
 *#
 .#
 
+# Configs for other tools
+.Rhistory
+.vscode
+
 # Compiled Python modules
 *.pyc
 
