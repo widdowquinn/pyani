@@ -8,6 +8,8 @@
 [![GitHub Issues](https://img.shields.io/github/issues-closed/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/stargazers)
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f3e56b2bf118471aabf09514a3e6af75)](https://www.codacy.com/app/widdowquinn/pyani?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/pyani&amp;utm_campaign=Badge_Grade)
+
 <!-- TOC -->
 
 - [Overview](#overview)

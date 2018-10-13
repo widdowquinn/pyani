@@ -17,7 +17,9 @@ Build information
    :target: https://codecov.org/widdowquinn/pyani
 .. image:: https://readthedocs.org/projects/pyani/badge/?version=latest
    :target: https://pyani.readthedocs.io/en/latest/?badge=latest
-
+.. image:: https://api.codacy.com/project/badge/Grade/f3e56b2bf118471aabf09514a3e6af75
+    :target: https://www.codacy.com/app/widdowquinn/pyani?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/pyani&amp;utm_campaign=Badge_Grade
+    
 ------------------------------
 ``PyPI`` version and Licensing
 ------------------------------
