@@ -1,3 +1,6 @@
+# Scratch directory for local testing
+scratch/
+
 # Mac-related dreck
 .DS_Store
 
@@ -19,12 +22,22 @@ dist/
 pyani.egg-info/
 distribute*
 
+# RTD documentation building
+docs/_build/
+docs/make.bat
+
 # Test output
 *.log
 tests/test_*_out/
 tests/test_*_output/
 tests/test_concordance_*/
-
+tests/test_output
+tests/test_JSpecies/C1/
+tests/test_JSpecies/C2/
+tests/test_JSpecies/C3/
+tests/test_JSpecies/Corynebacterium/
+tests/test_JSpecies/pyani_3_species/
+	
 # SGE output
 stderr/
 stdout/
@@ -40,6 +53,7 @@ cover/
 
 # Development virtualenvs
 venv-*
+.python-version
 
 # Don't include the development local config dir
 .pyani
