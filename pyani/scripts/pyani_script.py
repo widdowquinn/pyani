@@ -57,8 +57,6 @@ def run_main(argv=None, logger=None):
     else:
         args = parse_cmdline(argv)
 
-    print(args)
-
     # Catch execution with no arguments
     if len(sys.argv) == 1:
         sys.stderr.write("pyani version: {0}\n".format(__version__))
@@ -67,9 +65,9 @@ def run_main(argv=None, logger=None):
     # Set up logging
     time0 = time.time()
     if logger is None:
-        logger = build_logger('pyani', args)
+        logger = build_logger("pyani", args)
 
     # Run the subcommand
     returnval = args.func(args, logger)
-    logger.info('Completed. Time taken: %.3f', (time.time() - time0))
+    logger.info("Completed. Time taken: %.3f", (time.time() - time0))
     return returnval

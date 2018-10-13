@@ -277,7 +277,9 @@ def download_url(url, outfname, timeout, disable_tqdm=False):
 
     # Download file
     with open(outfname, "wb") as ofh:
-        with tqdm(total=fsize, disable=disable_tqdm) as pbar:
+        with tqdm(
+            total=fsize, disable=disable_tqdm, desc=os.path.split(outfname)[-1]
+        ) as pbar:
             while True:
                 buffer = response.read(bsize)
                 if not buffer:
