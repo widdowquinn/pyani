@@ -4,42 +4,40 @@
 [![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/development/LICENSE)
 [![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=development)](https://travis-ci.org/widdowquinn/pyani/branches)
 [![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/development.svg)](https://codecov.io/github/widdowquinn/pyani)
- 
+
 [![GitHub Issues](https://img.shields.io/github/issues-closed/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/stargazers)
 
 <!-- TOC -->
 
-- [README.md (pyani)](#readmemd-pyani)
-    - [Overview](#overview)
-    - [Installation](#installation)
-    - [Citing `pyani`](#citing-pyani)
-    - [Documentation](#documentation)
-    - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
-    - [Contributing](#contributing)
-    - [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
-        - [1. Download genome data](#1-download-genome-data)
-        - [2. Create an analysis database](#2-create-an-analysis-database)
-        - [3. Conduct ANI analysis](#3-conduct-ani-analysis)
-            - [Rerunning the same analysis](#rerunning-the-same-analysis)
-        - [4. Reporting Analyses and Analysis Results](#4-reporting-analyses-and-analysis-results)
-        - [5. Generating graphical output for ANI](#5-generating-graphical-output-for-ani)
-        - [6. Classifying Genomes from Analysis Results](#6-classifying-genomes-from-analysis-results)
-    - [Testing `pyani`](#testing-pyani)
-    - [Running `pyani`](#running-pyani)
-        - [Script: <a name="average_nucleotide_identity.py">`average_nucleotide_identity.py`</a>](#script-a-nameaverage_nucleotide_identitypyaverage_nucleotide_identitypya)
-        - [Script: <a name="genbank_get_genomes_by_taxon.py">`genbank_get_genomes_by_taxon.py`</a>](#script-a-namegenbank_get_genomes_by_taxonpygenbank_get_genomes_by_taxonpya)
-    - [DEPENDENCIES](#dependencies)
-        - [For ANI analysis](#for-ani-analysis)
-            - [Alignment tools](#alignment-tools)
-        - [For graphical output](#for-graphical-output)
-    - [Method and Output Description](#method-and-output-description)
-        - [Average Nucleotide Identity (ANI)](#average-nucleotide-identity-ani)
-    - [Licensing](#licensing)
+- [Overview](#overview)
+- [Installation](#installation)
+- [Citing `pyani`](#citing-pyani)
+- [Documentation](#documentation)
+- [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
+- [Contributing](#contributing)
+- [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
+    - [1. Download genome data](#1-download-genome-data)
+    - [2. Create an analysis database](#2-create-an-analysis-database)
+    - [3. Conduct ANI analysis](#3-conduct-ani-analysis)
+    - [4. Reporting Analyses and Analysis Results](#4-reporting-analyses-and-analysis-results)
+    - [5. Generating graphical output for ANI](#5-generating-graphical-output-for-ani)
+    - [6. Classifying Genomes from Analysis Results](#6-classifying-genomes-from-analysis-results)
+- [Testing `pyani`](#testing-pyani)
+- [Running `pyani`](#running-pyani)
+    - [Script: `average_nucleotide_identity.py`](#script-average_nucleotide_identitypy)
+    - [Script: `genbank_get_genomes_by_taxon.py`](#script-genbank_get_genomes_by_taxonpy)
+- [DEPENDENCIES](#dependencies)
+    - [For ANI analysis](#for-ani-analysis)
+    - [For graphical output](#for-graphical-output)
+- [Method and Output Description](#method-and-output-description)
+    - [Average Nucleotide Identity (ANI)](#average-nucleotide-identity-ani)
+- [Licensing](#licensing)
 
 <!-- /TOC -->
 
 ## Overview
+
 `pyani` is a Python3 module and script that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
 
 `pyani` also installs the script `pyani.py`, which enables command-line based analysis of genomes.
@@ -48,13 +46,13 @@
 
 The easiest way to install `pyani` is to use `pip3`:
 
-```
+```bash
 pip3 install pyani
 ```
 
 From version 0.1.3.2 onwards, this should also install all the required Python package dependencies. Prior to this version (i.e. 0.1.3.1 and earlier), you can acquire these dependencies with `pip -r`, and pointing at `requirements.txt` from this repository:
 
-```
+```bash
 pip3 install -r requirements.txt
 ```
 
@@ -97,12 +95,12 @@ The first step is to obtain genome data for analysis. `pyani` expects to find ea
 We'll use the `pyani.py download` subcommand to download all available genomes for *Candidatus Blochmannia* from NCBI. The taxon ID for this grouping is [203804](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=203804&lvl=3&lin=f&keep=1&srchmode=1&unlock).
 
 ```bash
-pyani.py download C_blochmannia --email my.email@my.domain -t 203804 -v -l C_blochmannia_dl.log 
+pyani.py download C_blochmannia --email my.email@my.domain -t 203804 -v -l C_blochmannia_dl.log
 ```
 
 The first argument is the output directory into which the downloaded genomes will be written (`C_blochmannia`). To download anything from NCBI we must provide an email address (`--email my.email@my.domain`), and to specify which taxon subtree we want to download we provide the taxon ID (`-t 203804`).
 
-Here we have also requested verbose output (`-v`), and write a log file for reproducible research/diagnosing bugs and errors (`-l C_blochmannia_dl.log`). 
+Here we have also requested verbose output (`-v`), and write a log file for reproducible research/diagnosing bugs and errors (`-l C_blochmannia_dl.log`).
 
 This produces a new subdirectory (`C_blochmannia`) with the following contents:
 
@@ -148,7 +146,7 @@ There are two additional plain text files: `classes.txt` and `labels.txt`, which
 
 ### 2. Create an analysis database
 
-`pyani` uses a database to store genome data and analysis results. This is convenient for data sharing and developing custom analyses, but also makes it easier to extend an existing ANI analysis with new genomes, without having to repeat calculations that were already performed. 
+`pyani` uses a database to store genome data and analysis results. This is convenient for data sharing and developing custom analyses, but also makes it easier to extend an existing ANI analysis with new genomes, without having to repeat calculations that were already performed.
 
 To create a new, clean, database in the default location (`.pyani/pyanidb`) issue the command:
 
@@ -183,7 +181,7 @@ pyani.py anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log \
     --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
 ```
 
-All four analysis commands operate in a similar way. The first two arguments are paths to directories: the first path is to a directory containing input genomes, and the second is the path to an output directory for storing intermediate results. The `-v` and `-l` arguments work as above, specifying verbose output and logging output to a file. 
+All four analysis commands operate in a similar way. The first two arguments are paths to directories: the first path is to a directory containing input genomes, and the second is the path to an output directory for storing intermediate results. The `-v` and `-l` arguments work as above, specifying verbose output and logging output to a file.
 
 You will probably notice that the verbose output is very verbose, to enable informative identification of any problems. In particular, the verbose output (which is also written to the log file) writes out the command-lines used for the pairwise comparisons so, if something goes wrong, you can test whether a specific comparison can be run at the command-line *at all*, to aid diagnosis of any problems.
 
@@ -220,11 +218,11 @@ INFO: Completed. Time taken: 0.211
 
 Once an analysis is run, the results are placed in a local `SQLite` database, which can be queried for information about the analyses that have been run. You can request information about:
 
-* `--runs`: show all analysis runs with results stored in the database
-* `--runs_genomes`: show all the analysis runs with results in the database, and all the genomes analysed in each run
-* `--genomes`: show all the genomes used for any analysis in the database
-* `--genomes_runs`: for each genome in the database, also list the analysis results it participates in
-* `--run_results`: show all the pairwise comparison results for a named run (run IDs can be obtained with the `--runs` argument
+- `--runs`: show all analysis runs with results stored in the database
+- `--runs_genomes`: show all the analysis runs with results in the database, and all the genomes analysed in each run
+- `--genomes`: show all the genomes used for any analysis in the database
+- `--genomes_runs`: for each genome in the database, also list the analysis results it participates in
+- `--run_results`: show all the pairwise comparison results for a named run (run IDs can be obtained with the `--runs` argument
 
 The report tables are written to a named directory (compulsory argument), and are written by default `.tab` plain-text format, but HTML and Excel format can alos be requested with the `--formats` argument:
 
@@ -267,51 +265,49 @@ You can see a run's results in the terminal by specifying the `stdout` format. F
 $ pyani.py report C_blochmannia_ANIm --formats=stdout --run_matrices 1
 TABLE: C_blochmannia_ANIm/matrix_identity_1
                                                     C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
-C. Blochmannia pennsylvanicus BPEN                                            1.000000                   0.834866                   0.836903                        0.980244                                           0.843700                                                0.829509      
-C. Blochmannia floridanus                                                     0.834866                   1.000000                   0.828733                        0.834916                                           0.847060                                                0.857859      
-C. Blochmannia vafer BVAF                                                     0.836903                   0.828733                   1.000000                        0.837811                                           0.866015                                                0.844438      
-C. Blochmannia chromaiodes 640                                                0.980244                   0.834916                   0.837811                        1.000000                                           0.849834                                                0.834769      
-B. endosymbiont of Polyrhachis (Hedomyrma) turn...                            0.843700                   0.847060                   0.866015                        0.849834                                           1.000000                                                0.844228      
-B. endosymbiont of Camponotus (Colobopsis) obli...                            0.829509                   0.857859                   0.844438                        0.834769                                           0.844228                                                1.000000      
+C. Blochmannia pennsylvanicus BPEN                                            1.000000                   0.834866                   0.836903                        0.980244                                           0.843700                                                0.829509
+C. Blochmannia floridanus                                                     0.834866                   1.000000                   0.828733                        0.834916                                           0.847060                                                0.857859
+C. Blochmannia vafer BVAF                                                     0.836903                   0.828733                   1.000000                        0.837811                                           0.866015                                                0.844438
+C. Blochmannia chromaiodes 640                                                0.980244                   0.834916                   0.837811                        1.000000                                           0.849834                                                0.834769
+B. endosymbiont of Polyrhachis (Hedomyrma) turn...                            0.843700                   0.847060                   0.866015                        0.849834                                           1.000000                                                0.844228
+B. endosymbiont of Camponotus (Colobopsis) obli...                            0.829509                   0.857859                   0.844438                        0.834769                                           0.844228                                                1.000000
 
 TABLE: C_blochmannia_ANIm/matrix_coverage_1
                                                     C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
-C. Blochmannia pennsylvanicus BPEN                                            1.000000                   0.045736                   0.041404                        1.000306                                           0.017263                                                0.021027      
-C. Blochmannia floridanus                                                     0.051317                   1.000000                   0.152609                        0.054930                                           0.016366                                                0.010749      
-C. Blochmannia vafer BVAF                                                     0.045362                   0.149012                   1.000000                        0.046520                                           0.008356                                                0.014706      
-C. Blochmannia chromaiodes 640                                                1.000856                   0.048983                   0.042485                        1.000000                                           0.014056                                                0.016140      
-B. endosymbiont of Polyrhachis (Hedomyrma) turn...                            0.018238                   0.015410                   0.008058                        0.014841                                           1.000000                                                0.020416      
-B. endosymbiont of Camponotus (Colobopsis) obli...                            0.021508                   0.009799                   0.013730                        0.016500                                           0.019766                                                1.000000      
+C. Blochmannia pennsylvanicus BPEN                                            1.000000                   0.045736                   0.041404                        1.000306                                           0.017263                                                0.021027
+C. Blochmannia floridanus                                                     0.051317                   1.000000                   0.152609                        0.054930                                           0.016366                                                0.010749
+C. Blochmannia vafer BVAF                                                     0.045362                   0.149012                   1.000000                        0.046520                                           0.008356                                                0.014706
+C. Blochmannia chromaiodes 640                                                1.000856                   0.048983                   0.042485                        1.000000                                           0.014056                                                0.016140
+B. endosymbiont of Polyrhachis (Hedomyrma) turn...                            0.018238                   0.015410                   0.008058                        0.014841                                           1.000000                                                0.020416
+B. endosymbiont of Camponotus (Colobopsis) obli...                            0.021508                   0.009799                   0.013730                        0.016500                                           0.019766                                                1.000000
 
 TABLE: C_blochmannia_ANIm/matrix_aln_lengths_1
                                                     C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
-C. Blochmannia pennsylvanicus BPEN                                            791654.0                    36207.0                    32778.0                        791896.0                                            13666.0                                                 16646.0      
-C. Blochmannia floridanus                                                      36207.0                   705557.0                   107674.0                         38756.0                                            11547.0                                                  7584.0      
-C. Blochmannia vafer BVAF                                                      32778.0                   107674.0                   722585.0                         33615.0                                             6038.0                                                 10626.0      
-C. Blochmannia chromaiodes 640                                                791896.0                    38756.0                    33615.0                        791219.0                                            11121.0                                                 12770.0      
-B. endosymbiont of Polyrhachis (Hedomyrma) turn...                             13666.0                    11547.0                     6038.0                         11121.0                                           749321.0                                                 15298.0      
-B. endosymbiont of Camponotus (Colobopsis) obli...                             16646.0                     7584.0                    10626.0                         12770.0                                            15298.0                                                     NaN      
+C. Blochmannia pennsylvanicus BPEN                                            791654.0                    36207.0                    32778.0                        791896.0                                            13666.0                                                 16646.0
+C. Blochmannia floridanus                                                      36207.0                   705557.0                   107674.0                         38756.0                                            11547.0                                                  7584.0
+C. Blochmannia vafer BVAF                                                      32778.0                   107674.0                   722585.0                         33615.0                                             6038.0                                                 10626.0
+C. Blochmannia chromaiodes 640                                                791896.0                    38756.0                    33615.0                        791219.0                                            11121.0                                                 12770.0
+B. endosymbiont of Polyrhachis (Hedomyrma) turn...                             13666.0                    11547.0                     6038.0                         11121.0                                           749321.0                                                 15298.0
+B. endosymbiont of Camponotus (Colobopsis) obli...                             16646.0                     7584.0                    10626.0                         12770.0                                            15298.0                                                     NaN
 
 TABLE: C_blochmannia_ANIm/matrix_sim_errors_1
                                                     C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
-C. Blochmannia pennsylvanicus BPEN                                                 0.0                     5979.0                     5346.0                         15645.0                                             2136.0                                                  2838.0      
-C. Blochmannia floridanus                                                       5979.0                        0.0                    18441.0                          6398.0                                             1766.0                                                  1078.0      
-C. Blochmannia vafer BVAF                                                       5346.0                    18441.0                        0.0                          5452.0                                              809.0                                                  1653.0      
-C. Blochmannia chromaiodes 640                                                 15645.0                     6398.0                     5452.0                             0.0                                             1670.0                                                  2110.0      
-B. endosymbiont of Polyrhachis (Hedomyrma) turn...                              2136.0                     1766.0                      809.0                          1670.0                                                0.0                                                  2383.0      
-B. endosymbiont of Camponotus (Colobopsis) obli...                              2838.0                     1078.0                     1653.0                          2110.0                                             2383.0                                                     0.0      
+C. Blochmannia pennsylvanicus BPEN                                                 0.0                     5979.0                     5346.0                         15645.0                                             2136.0                                                  2838.0
+C. Blochmannia floridanus                                                       5979.0                        0.0                    18441.0                          6398.0                                             1766.0                                                  1078.0
+C. Blochmannia vafer BVAF                                                       5346.0                    18441.0                        0.0                          5452.0                                              809.0                                                  1653.0
+C. Blochmannia chromaiodes 640                                                 15645.0                     6398.0                     5452.0                             0.0                                             1670.0                                                  2110.0
+B. endosymbiont of Polyrhachis (Hedomyrma) turn...                              2136.0                     1766.0                      809.0                          1670.0                                                0.0                                                  2383.0
+B. endosymbiont of Camponotus (Colobopsis) obli...                              2838.0                     1078.0                     1653.0                          2110.0                                             2383.0                                                     0.0
 
 TABLE: C_blochmannia_ANIm/matrix_hadamard_1
                                                     C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
-C. Blochmannia pennsylvanicus BPEN                                            1.000000                   0.038183                   0.034652                        0.980543                                           0.014564                                                0.017442      
-C. Blochmannia floridanus                                                     0.042843                   1.000000                   0.126472                        0.045862                                           0.013863                                                0.009221      
-C. Blochmannia vafer BVAF                                                     0.037964                   0.123491                   1.000000                        0.038975                                           0.007237                                                0.012418      
-C. Blochmannia chromaiodes 640                                                0.981082                   0.040896                   0.035594                        1.000000                                           0.011945                                                0.013473      
-B. endosymbiont of Polyrhachis (Hedomyrma) turn...                            0.015387                   0.013053                   0.006978                        0.012613                                           1.000000                                                0.017236      
-B. endosymbiont of Camponotus (Colobopsis) obli...                            0.017841                   0.008406                   0.011594                        0.013774                                           0.016687                                                1.000000   
+C. Blochmannia pennsylvanicus BPEN                                            1.000000                   0.038183                   0.034652                        0.980543                                           0.014564                                                0.017442
+C. Blochmannia floridanus                                                     0.042843                   1.000000                   0.126472                        0.045862                                           0.013863                                                0.009221
+C. Blochmannia vafer BVAF                                                     0.037964                   0.123491                   1.000000                        0.038975                                           0.007237                                                0.012418
+C. Blochmannia chromaiodes 640                                                0.981082                   0.040896                   0.035594                        1.000000                                           0.011945                                                0.013473
+B. endosymbiont of Polyrhachis (Hedomyrma) turn...                            0.015387                   0.013053                   0.006978                        0.012613                                           1.000000                                                0.017236
+B. endosymbiont of Camponotus (Colobopsis) obli...                            0.017841                   0.008406                   0.011594                        0.013774                                           0.016687                                                1.000000
 ```
-
-
 
 ### 5. Generating graphical output for ANI
 
@@ -331,17 +327,13 @@ will place `.pdf` and `.png` format output in the `C_blochmannia_ANIm` output di
 
 The heatmaps also include dendrograms, clustering the rows and columns by overall similarity.
 
-
-
 ### 6. Classifying Genomes from Analysis Results
-
-
 
 ## Testing `pyani`
 
 `pyani` includes tests that can be run with `nosetest` (including coverage measurement using `coverage.py`) with the following command, executed from the repository root directory:
 
-```
+```bash
 nosetests --cover-erase --cover-package=pyani --cover-html --with-coverage
 ```
 
@@ -349,13 +341,13 @@ Coverage output will be placed (by default) in the `cover` subdirectory, and can
 
 ## Running `pyani`
 
-### Script: <a name="average_nucleotide_identity.py">`average_nucleotide_identity.py`</a>
+### Script: `average_nucleotide_identity.py`
 
 The `average_nucleotide_identity.py` script - installed as part of this package - enables straightforward ANI analysis at the command-line, and uses the `pyani` module behind the scenes.
 
 You can get a summary of available command-line options with `average_nucleotide_identity.py -h`
 
-```
+```bash
 $ ./average_nucleotide_identity.py -h
 usage: average_nucleotide_identity.py [-h] [-o OUTDIRNAME] [-i INDIRNAME] [-v]
                                       [-f] [-s FRAGSIZE] [-l LOGFILE]
@@ -380,35 +372,34 @@ usage: average_nucleotide_identity.py [-h] [-o OUTDIRNAME] [-i INDIRNAME] [-v]
 
 Example data and output can be found in the directory `test_ani_data`. The data are chromosomes of four isolates of *Caulobacter*. Basic analyses can be performed with the command lines:
 
-```
-$ ./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIm_output -m ANIm -g
-$ ./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIb_output -m ANIb -g
-$ ./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIblastall_output -m ANIblastall -g
-$ ./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_TETRA_output -m TETRA -g
+```bash
+./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIm_output -m ANIm -g
+./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIb_output -m ANIb -g
+./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_ANIblastall_output -m ANIblastall -g
+./average_nucleotide_identity.py -i tests/test_ani_data/ -o tests/test_TETRA_output -m TETRA -g
 ```
 
 The graphical output below, supporting assignment of `NC_002696` and `NC_011916` to the same species (*C.crescentus*), and the other two isolates to distinct species (`NC_014100`:*C.segnis*; `NC_010338`:*C.* sp K31), was generated with the command-line:
 
-```
+```bash
 ./average_nucleotide_identity.py -v -i tests/test_ani_data/ \
     -o tests/test_ANIm_output/ -g --gformat png,pdf,eps \
     --classes tests/test_ani_data/classes.tab \
     --labels tests/test_ani_data/labels.tab
 ```
 
-
 ![ANIm percentage identity for *Caulobacter* test data](tests/test_ani_data/ANIm_percentage_identity.png "ANIm percentage identity")
 ![ANIm alignment coverage for *Caulobacter* test data](tests/test_ani_data/ANIm_alignment_coverage.png "ANIm alignment coverage")
 ![ANIm alignment length for *Caulobacter* test data](tests/test_ani_data/ANIm_alignment_lengths.png "ANIm alignment length")
 ![ANIm alignment similarity errors for *Caulobacter* test data](tests/test_ani_data/ANIm_similarity_errors.png "ANIm alignment similarity")
 
-### Script: <a name="genbank_get_genomes_by_taxon.py">`genbank_get_genomes_by_taxon.py`</a>
+### Script: `genbank_get_genomes_by_taxon.py`
 
 The script `genbank_get_genomes_by_taxon.py`, installed by this package, enables download of genomes from NCBI, specified by taxon ID. The script will download all available assemblies for taxa at or below the specified node in the NCBI taxonomy tree.
 
 Command-line options can be viewed using:
 
-```
+```bash
 $ genbank_get_genomes_by_taxon.py -h
 usage: genbacnk_get_genomes_by_taxon.py [-h] [-o OUTDIRNAME] [-t TAXON] [-v]
                                         [-f] [--noclobber] [-l LOGFILE]
@@ -420,7 +411,7 @@ usage: genbacnk_get_genomes_by_taxon.py [-h] [-o OUTDIRNAME] [-t TAXON] [-v]
 
 For example, the NCBI taxonomy ID for *Caulobacter* is 75, so all publicly-available *Caulobacter* sequences can be obtained using the command-line:
 
-```
+```bash
 $ genbank_get_genomes_by_taxon.py -o Caulobacter_downloads -v -t 75 -l Caulobacter_downloads.log --email me@my.email.domain
 INFO: genbank_get_genomes_by_taxon.py: Mon Apr 18 17:22:54 2016
 INFO: command-line: /Users/lpritc/Virtualenvs/pyani3/bin/genbank_get_genomes_by_taxon.py -o Caulobacter_downloads -v -t 75 -l Caulobacter_downloads.log --email me@my.email.domain
@@ -445,7 +436,6 @@ INFO: Done.
 
 The number of attempted retries for each download, and the size of a batch download can be modified. By default, the script will attempt 20 download retries, and obtain sequences in batches of 10000.
 
-
 ## DEPENDENCIES
 
 Note that Python package dependencies should automatically be installed if you are using version 0.1.3.2 or greater, and installing with `pip install pyani`.
@@ -454,21 +444,21 @@ For earlier versions, you can satisfy dependencies by using `pip install -r requ
 
 ### For ANI analysis
 
-* **Biopython** <http://www.biopython.org>
-* **NumPy** <http://www.numpy.org/>
-* **pandas** <http://pandas.pydata.org/>
-* **SciPy** <http://www.scipy.org/>
+- **Biopython** <http://www.biopython.org>
+- **NumPy** <http://www.numpy.org/>
+- **pandas** <http://pandas.pydata.org/>
+- **SciPy** <http://www.scipy.org/>
 
 #### Alignment tools
 
-* **BLAST+** executable in the `$PATH`, or available on the command line (required for **ANIb** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/>
-* **legacy BLAST** executable in the `$PATH` or available on the command line (required for **ANIblastall** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/>
-* **MUMmer** executables in the $PATH, or available on the command line (required for **ANIm** analysis) <http://mummer.sourceforge.net/>
+- **BLAST+** executable in the `$PATH`, or available on the command line (required for **ANIb** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/>
+- **legacy BLAST** executable in the `$PATH` or available on the command line (required for **ANIblastall** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/>
+- **MUMmer** executables in the $PATH, or available on the command line (required for **ANIm** analysis) <http://mummer.sourceforge.net/>
 
 ### For graphical output
 
-* **matplotlib** <http://matplotlib.org/>
-* **seaborn** <https://github.com/mwaskom/seaborn>
+- **matplotlib** <http://matplotlib.org/>
+- **seaborn** <https://github.com/mwaskom/seaborn>
 
 ## Method and Output Description
 
@@ -476,13 +466,10 @@ For earlier versions, you can satisfy dependencies by using `pip install -r requ
 
 This module calculates Average Nucleotide Identity (ANI) according to one of a number of alternative methods described in, e.g.
 
-* Richter M, Rossello-Mora R (2009) Shifting the genomic gold standard for the prokaryotic species definition. Proc Natl Acad Sci USA 106: 19126-19131. doi:10.1073/pnas.0906412106. (ANI1020, ANIm, ANIb)
-* Goris J, Konstantinidis KT, Klappenbach JA, Coenye T, Vandamme P, et al. (2007) DNA-DNA hybridization values and their relationship to whole-genome sequence similarities. Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0.
+- Richter M, Rossello-Mora R (2009) Shifting the genomic gold standard for the prokaryotic species definition. Proc Natl Acad Sci USA 106: 19126-19131. doi:10.1073/pnas.0906412106. (ANI1020, ANIm, ANIb)
+- Goris J, Konstantinidis KT, Klappenbach JA, Coenye T, Vandamme P, et al. (2007) DNA-DNA hybridization values and their relationship to whole-genome sequence similarities. Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0.
 
-ANI is proposed to be the appropriate *in silico* substitute for DNA-DNA 
-hybridisation (DDH), and so useful for delineating species boundaries. A 
-typical percentage threshold for species boundary in the literature is 95% 
-ANI (e.g. Richter et al. 2009).
+ANI is proposed to be the appropriate *in silico* substitute for DNA-DNA hybridisation (DDH), and so useful for delineating species boundaries. A typical percentage threshold for species boundary in the literature is 95% ANI (e.g. Richter et al. 2009).
 
 All ANI methods follow the basic algorithm:
 
@@ -491,19 +478,18 @@ All ANI methods follow the basic algorithm:
 
 Methods differ on: (1) what alignment algorithm is used, and the choice of parameters (this affects the aligned region boundaries); (2) what the input is for alignment (typically either fragments of fixed size, or the most complete assembly available).
 
-* **ANIm**: uses MUMmer (NUCmer) to align the input sequences.
-* **ANIb**: uses BLASTN+ to align 1020nt fragments of the input sequences
-* **ANIblastall**: uses legacy BLASTN to align 1020nt fragments of the input sequences
-* **TETRA**: calculates tetranucleotide frequencies of each input sequence
+- **ANIm**: uses MUMmer (NUCmer) to align the input sequences.
+- **ANIb**: uses BLASTN+ to align 1020nt fragments of the input sequences
+- **ANIblastall**: uses legacy BLASTN to align 1020nt fragments of the input sequences
+- **TETRA**: calculates tetranucleotide frequencies of each input sequence
 
-The algorithms takes as input correctly-formatted FASTA multiple sequence files. All sequences for a single organism should be contained in only one sequence file. Although it is possible to provide new labels for each input genome, for rendering graphical output, the names of these files are used for identification so it is best to name 
-them sensibly.
+The algorithms takes as input correctly-formatted FASTA multiple sequence files. All sequences for a single organism should be contained in only one sequence file. Although it is possible to provide new labels for each input genome, for rendering graphical output, the names of these files are used for identification so it is best to name them sensibly.
 
 Output is written to a named directory. The output files differ depending on the chosen ANI method.
 
-* **ANIm**: MUMmer/NUCmer .delta files, describing each pairwise sequence alignment. Output as tab-separated plain text format tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIm).
-* **ANIb** and **ANIblastall**: FASTA sequences describing 1020nt fragments of each input sequence; BLAST nucleotide databases - one for each set of fragments; and BLASTN output files (tab-separated tabular format plain text) - one for each pairwise comparison of input sequences. Output as tab-separated plain text tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIb or ANIblastall).
-* **TETRA**: Tab-separated plain text files describing the Pearson correlations between Z-score distributions for each tetranucleotide in each input sequence (TETRA).
+- **ANIm**: MUMmer/NUCmer .delta files, describing each pairwise sequence alignment. Output as tab-separated plain text format tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIm).
+- **ANIb** and **ANIblastall**: FASTA sequences describing 1020nt fragments of each input sequence; BLAST nucleotide databases - one for each set of fragments; and BLASTN output files (tab-separated tabular format plain text) - one for each pairwise comparison of input sequences. Output as tab-separated plain text tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIb or ANIblastall).
+- **TETRA**: Tab-separated plain text files describing the Pearson correlations between Z-score distributions for each tetranucleotide in each input sequence (TETRA).
 
 If graphical output is chosen, the output directory will also contain PDF, PNG and EPS files representing the various output measures as a heatmap with row and column dendrograms. Other output formats (e.g. SVG) can be specified with the `--gformat` argument.
 
@@ -516,7 +502,7 @@ Unless otherwise indicated, all code is subject to the following agreement:
 
     Contact: leighton.pritchard@hutton.ac.uk
 
-    Address: 
+    Address:
     Leighton Pritchard,
     Information and Computational Sciences,
     James Hutton Institute,

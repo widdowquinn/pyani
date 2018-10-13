@@ -4,24 +4,24 @@ Contributions for bugfixes and addition of new features are welcomed!
 
 The `pyani` package is presented at GitHub under two main branches:
 
-- `release` is the source code underpinning the most recent/current release of pyani. It will (almost) always be in sync with the latest release found at https://github.com/widdowquinn/pyani/releases. The only time this code should not be in sync with the release is when there are modifications to documentation, or immediately preceding a release.
+- `master` is the source code underpinning the most recent/current release of pyani. It will (almost) always be in sync with the latest release found at [https://github.com/widdowquinn/pyani/releases](https://github.com/widdowquinn/pyani/releases). The only time this code should not be in sync with the release is when there are modifications to documentation, or immediately preceding a release.
 - `development` is the current bleeding-edge version of `pyani`. It should (almost) always be in a working and usable condition, but may not be complete and/or some features may be missing or still under development.
 
 Additional branches may also be available, with bug fixes and or new features in varying stages of completeness.
 
 ## Table of Contents
+
 <!-- TOC -->
 
-- [Contributing to `pyani`](#contributing-to-pyani)
-    - [Table of Contents](#table-of-contents)
-    - [Licensing](#licensing)
-    - [Git Usage](#git-usage)
-    - [Coding Conventions](#coding-conventions)
-        - [Code Style Checks](#code-style-checks)
-        - [Pre-commit Checks](#pre-commit-checks)
-    - [Testing](#testing)
-        - [Local Testing](#local-testing)
-        - [Continuous Integration](#continuous-integration)
+- [Table of Contents](#table-of-contents)
+- [Licensing](#licensing)
+- [Git Usage](#git-usage)
+- [Coding Conventions](#coding-conventions)
+    - [Code Style Checks](#code-style-checks)
+    - [Pre-commit Checks](#pre-commit-checks)
+- [Testing](#testing)
+    - [Local Testing](#local-testing)
+    - [Continuous Integration](#continuous-integration)
 
 <!-- /TOC -->
 
@@ -83,7 +83,6 @@ To enable pre-commit checks in the codebase on your local machine (once `pre-com
 pre-commit install
 ```
 
-
 ## Testing
 
 New features or functions will not be accepted without tests. Bug fixes should ideally include an additional test to establish that the bug has been squashed. We expect that you will have run tests locally before any pull request is made. Tests will also be run as part of continuous integration, and changes will not be accepted until continuous integration tests have been passed.
@@ -108,4 +107,4 @@ nosetests --cover-erase --cover-package=pyani --cover-html --with-coverage -v
 
 When you submit a pull request on GitHub, automated tests will be run, and results reported on the pull request. **All tests must pass before a pull request will be merged.**
 
-We use [TravisCI](https://travis-ci.org/widdowquinn/pyani) to run tests.
+We use [TravisCI](https://travis-ci.org/widdowquinn/pyani) to run tests. The configuration file is kept in the repository as `.travis.yml`
