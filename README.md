@@ -2,8 +2,8 @@
 
 [![pyani PyPi version](https://img.shields.io/pypi/v/pyani.svg "PyPi version")](https://pypi.python.org/pypi/pyani)
 [![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/master/LICENSE)
-[![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=release)](https://travis-ci.org/widdowquinn/pyani/branches)
-[![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/release.svg)](https://codecov.io/github/widdowquinn/pyani)
+[![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=master)](https://travis-ci.org/widdowquinn/pyani/branches)
+[![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)](https://codecov.io/github/widdowquinn/pyani)
 
 <!-- TOC -->
 
@@ -239,7 +239,7 @@ If graphical output is chosen, the output directory will also contain PDF, PNG a
 
 The `pyani` package is presented at [`GitHub`](https://github.com/widdowquinn/pyani) under two main branches:
 
-- `release` is the source code underpinning the most recent/current release of `pyani`. It will (almost) always be in sync with the latest release found at [https://github.com/widdowquinn/pyani/releases](https://github.com/widdowquinn/pyani/releases). The only time this code should not be in sync with the release is when there are modifications to documentation, or immediately preceding a release.
+- `master` is the source code underpinning the most recent/current release of `pyani`. It will (almost) always be in sync with the latest release found at [https://github.com/widdowquinn/pyani/releases](https://github.com/widdowquinn/pyani/releases). The only time this code should not be in sync with the release is when there are modifications to documentation, or immediately preceding a release.
 - `development` is the current bleeding-edge version of `pyani`. It should (almost) always be in a working and usable condition, but may not be complete and/or some features may be missing or still under development.
 
 ### Code Style and Pre-Commit Hooks

@@ -25,7 +25,12 @@ tests/test_input/anib/blastall/*.dataframe
 tests/test_*_out/
 tests/test_*_output/
 tests/test_concordance_*/
-
+tests/test_JSpecies/C1/
+tests/test_JSpecies/C2/
+tests/test_JSpecies/C3/
+tests/test_JSpecies/Corynebacterium/
+tests/test_JSpecies/pyani_3_species/
+	
 # Test/local results databases
 .pyani
 
@@ -39,8 +44,16 @@ output/
 cover/
 .coverage
 
-# iPython/Jupyter
+# iPython/Jupyter/R
 .ipynb_checkpoints
+.Rhistory
+
+# Scratchpad for experimentation
+scratch/
+
+# RTD docs for next version
+docs/
 
 # Development virtualenvs
 venv-*
+.python-version
