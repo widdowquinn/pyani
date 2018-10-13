@@ -61,8 +61,8 @@ pip install flake8 flake8-docstrings flake8-blind-except
 `flake8` can then be run directly on the codebase with
 
 ```bash
-$ flake8 bin/
-$ flake8 pyani/
+flake8 bin/
+flake8 pyani/
 ```
 
 We use the `black` tool for code style checking, which can be installed with:

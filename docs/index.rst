@@ -31,15 +31,15 @@ Build information
 ``conda`` version
 -----------------
 
-.. image:: https://anaconda.org/bioconda/pyani/badges/version.svg
+.. image:: https://anaconda.org/bioconda/pyani/badges/version.svg?style=flat-square
    :target: https://anaconda.org/bioconda/pyani
-.. image:: https://anaconda.org/bioconda/pyani/badges/latest_release_date.svg
+.. image:: https://anaconda.org/bioconda/pyani/badges/latest_release_date.svg?style=flat-square
    :target: https://anaconda.org/bioconda/pyani
-.. image:: https://anaconda.org/bioconda/pyani/badges/installer/conda.svg
+.. image:: https://anaconda.org/bioconda/pyani/badges/installer/conda.svg?style=flat-square
    :target: https://conda.anaconda.org/bioconda
-.. image:: https://anaconda.org/bioconda/pyani/badges/downloads.svg
+.. image:: https://anaconda.org/bioconda/pyani/badges/downloads.svg?style=flat-square
    :target: https://anaconda.org/bioconda/pyani
-.. image:: https://anaconda.org/bioconda/pyani/badges/platforms.svg
+.. image:: https://anaconda.org/bioconda/pyani/badges/platforms.svg?style=flat-square
    :target: https://anaconda.org/bioconda/pyani
 
 If you're feeling impatient, please head over to the :ref:`QuickStart Guide <pyani-quickstart>`
@@ -50,7 +50,7 @@ Description
 
 ``pyani`` is a program and Python package that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and for rendering relevant graphical and tabular summary output. Where available, it natively takes advantage of multicore systems, and can integrate with `SGE or OGE-compatible`_ job schedulers to manage the computationally-heavy sequence comparisons.
 
-Intalling the ``pyani`` package also installs the program ``pyani``, which enables command-line based analysis of genomes. Results are stored in a private `SQLite`_ database local to the machine to enable incremental addition of genomes to an analysis without the need to recalculate all previously-performed comparisons, and to enable additional downstream analysis and visualisation.
+Installing the ``pyani`` package also installs the program ``pyani``, which enables command-line based analysis of genomes. Results are stored in a private `SQLite3`_ database local to the machine, which permits incremental addition of genomes to an analysis without the need to recalculate all previously-performed comparisons, facilitating additional downstream analysis and visualisation.
 
 
 ----------------------------------------------
@@ -94,4 +94,4 @@ Indices and tables
 
 .. _GitHub issues page: https://github.com/widdowquinn/pyani/issues
 .. _SGE or OGE-compatible: http://gridscheduler.sourceforge.net/
-.. _SQLite: https://www.sqlite.org/index.html
+.. _SQLite3: https://www.sqlite.org/index.html
