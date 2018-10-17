@@ -3,3 +3,12 @@
 =========
 Basic Use
 =========
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Contents:
+
+    download
+    indexing
+    createdb
+

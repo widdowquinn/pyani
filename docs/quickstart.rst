@@ -8,13 +8,13 @@ QuickStart Guide
 Installation
 ------------
 
-To use ``pyani`` you will need to install it. Installation is easiest using one of the two most popular Python package managers:
+To use ``pyani`` you will need to install it on a local machine (your laptop, desktop, server or cluster). Installation is easiest using one of the two most popular Python package managers:
 
 ^^^^^^^^^^^^
 1. ``conda``
 ^^^^^^^^^^^^
 
-``pyani`` is available through the ``bioconda`` channel of Anaconda:
+``pyani`` is available through the ``bioconda`` channel of `Anaconda`_:
 
 .. code-block:: bash
 
@@ -32,7 +32,7 @@ To use ``pyani`` you will need to install it. Installation is easiest using one 
     pip install pyani 
 
 .. TIP::
-    ``pyani`` can also be installed directly from source. Installation instructions can be found on the :ref:`pyani-installation` page.
+    ``pyani`` can also be installed directly from source. More detailed installation instructions can be found on the :ref:`pyani-installation` page.
 
 
 ---------------------
@@ -41,11 +41,11 @@ To use ``pyani`` you will need to install it. Installation is easiest using one 
 
 An example ANIm analysis using ``pyani`` is provided as a walkthrough below. The general procedure for any ``pyani`` analysis is:
 
-1. Download genomes for the analysis
+1. Collect genomes for analysis
 2. Create a database to hold genome data and analysis results
 3. Perform ANIm analysis
 4. Report and visualise analysis results
-5. Generate species hypotheses (classify genomes) using the analysis results
+5. Generate species hypotheses (classify the input genomes) using the analysis results
 
 
 To see options available for the ``pyani`` program, use the ``-h``
@@ -55,26 +55,23 @@ To see options available for the ``pyani`` program, use the ``-h``
 
     pyani -h
 
-^^^^^^^^^^^^^^^^^^^
-1. Download genomes
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
+1. Collect genomes
+^^^^^^^^^^^^^^^^^^
 
-For this walkthrough a new set of genomes will be obtained from GenBank, using the ``pyani download`` command.
+It is possible to use genomes you already have with `pyani`, but for this walkthrough a new set of genomes will be obtained from GenBank, using the ``pyani download`` command. 
 
 .. TIP::
-    ``pyani`` requires an *indexed* set of genomes, and the visualisation and classification steps benefit from having ``classes.txt`` and ``labels.txt`` files. These are generated automatically when downloading genomes, but you must create them in other ways when applying ``pyani`` to a set of local files.
+    To read more about using local files, please see the :ref:`pyani-indexing` documentation. To read more about downloading genomes from NCBI, please see the :ref:`pyani-download` documentation.
 
 .. ATTENTION::
-    To use their online resources programmatically, NCBI require that you provide your email address for contact purposes if jobs go wrong, and for their own usage statistics. This is specified with the ``--email <EMAIL ADDRESS>`` argument of ``pyani download``.
+    To use their online resources programmatically, NCBI require that you provide your email address for contact purposes if jobs go wrong, and for their own usage statistics. This can be specified with the ``--email <EMAIL ADDRESS>`` argument of ``pyani download``.
 
-.. ATTENTION::
-    ``pyani`` can also be used with an existing local set of genomes. This is discussed elsewhere in the documentation.
-
-Using the ``pyani download`` subcommand, we download all available genomes for *Candidatus Blochmannia* from NCBI. The taxon ID for this grouping is ``203804``.
+Using the ``pyani download`` subcommand, we download all available genomes for *Candidatus Blochmannia* from NCBI. The taxon ID for this grouping is ``203804``, so that ID is passed as the ``-t`` argument. The final (compulsory) argument is a path to the directory into which the genome data will be downloaded.
 
 .. code-block:: bash
 
-    pyani download C_blochmannia --email my.email@my.domain -t 203804
+    pyani download --email my.email@my.domain -t 203804 C_blochmannia
 
 This creates a new directory (``C_blochmannia``) with the following contents:
 
@@ -90,7 +87,7 @@ This creates a new directory (``C_blochmannia``) with the following contents:
     ├── classes.txt
     └── labels.txt
 
-Each downloaded genome is represented by four files: the genome sequence (expanded: ``.fna``, compressed: ``.fna.gz``), an NCBI hashes file (``_hashes.txt``) and an MD5 hash of the genome sequence file (``.md5``).
+Each downloaded genome is represented by four files: the genome sequence (expanded: ``*.fna``, compressed: ``*.fna.gz``), an NCBI hashes file (``*_hashes.txt``) and an MD5 hash of the genome sequence file (``*.md5``).
 
 Two additional files are created: 
 
@@ -101,20 +98,22 @@ Two additional files are created:
 2. Create database
 ^^^^^^^^^^^^^^^^^^
 
-``pyani`` uses a database to store genome data and analysis results. For this walkthrough, we create a new, empty database by executing the command:
+``pyani`` uses a local `SQLite3`_ database to store genome data and analysis results. For this walkthrough, we create a new, empty database by executing the command:
 
 .. code-block:: bash
 
     pyani createdb
 
 .. TIP::
-    This creates a new database in the default location (``.pyani/pyanidb``), but the name and location of this database can be controlled with the ``pyani createdb`` command, and specified in each of the subsequent commands.
+    This creates the new database in a default location (``.pyani/pyanidb``), but the name and location of this database can be controlled with the ``pyani createdb`` command (see the :ref:`pyani-createdb` documentation), and a particular database can be specified in each of the subsequent commands.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^
 3. Conduct ANIm analysis
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-We run ANIm on the downloaded genomes, by issuing the command:
+We can run ANIm on the downloaded genomes, by specifying first the directory containing the genome data (here, ``C_blochmannia``)then the path to a directory which will contain the analysis results (``C_blochmannia_ANIm`` for this walkthrough.
+
+We also provide a name for the analysis (``--name``, for later human-readable reference), with optional files defining labels for each genome to be used when plotting output (``--labels``) and a set of classes to which each genome belongs (``--classes``) for downstream analysis.:
 
 .. code-block:: bash
 
@@ -122,7 +121,7 @@ We run ANIm on the downloaded genomes, by issuing the command:
         --name "C. blochmannia run 1" \
         --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
 
-This will run an ANIm analysis on the genomes in the ``C_blochmannia`` directory. The analysis results will be stored in the database we created earlier, identified by the name ``C. blochmannia run 1``. The comparison files will be written to the ``C_blochmannia_ANIm`` directory.
+This will run an ANIm analysis on the genomes in the ``C_blochmannia`` directory. Analysis results will be stored in the database we created earlier (``.pyani/pyanidb``), where they will be identified by the name ``C. blochmannia run 1``. The comparison result files will be written to the ``C_blochmannia_ANIm`` directory.
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -203,6 +202,7 @@ and each generates five plots corresponding to the matrices that ``pyani report`
 Several graphics output formats are available, including ``.png``, ``.pdf`` and ``.svg``.
 
 
-
+.. _Anaconda: https://www.anaconda.com/what-is-anaconda/
 .. _NCBI Taxonomy database: https://www.ncbi.nlm.nih.gov/taxonomy
 .. _PyPI: https://pypi.python.org/pypi
+.. _SQLite3: https://www.sqlite.org/index.html

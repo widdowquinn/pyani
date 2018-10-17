@@ -52,20 +52,16 @@ Description
 
 ``pyani`` is a program and Python package that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and for rendering relevant graphical and tabular summary output. Where available, it natively takes advantage of multicore systems, and can integrate with `SGE or OGE-compatible`_ job schedulers to manage the computationally-heavy sequence comparisons.
 
-Installing the ``pyani`` package also installs the program ``pyani``, which enables command-line based analysis of genomes. Results are stored in a private `SQLite3`_ database local to the machine, which permits incremental addition of genomes to an analysis without the need to recalculate all previously-performed comparisons, facilitating additional downstream analysis and visualisation.
+Installing the ``pyani`` package also installs the program ``pyani``, which enables command-line based analysis of genomes. Results are stored in a private `SQLite3`_ database local to the machine, which permits addition of genomes to a previous analysis without the need to recalculate all previously-performed comparisons, facilitating additional downstream analysis and visualisation, and incremental maintenance of results for a taxonomic group as new genome sequences become available.
 
 
 ----------------------------------------------
 Reporting problems and requesting improvements
 ----------------------------------------------
 
-If you encounter bugs or errors, or would like to suggest ways in which
-``pyani`` can be improved, please raise a new issue at the ``pyani``
-`GitHub issues page`_.
+If you encounter bugs or errors, or would like to suggest ways in which ``pyani`` can be improved, please raise a new issue at the ``pyani`` `GitHub issues page`_.
 
-If you'd like to fix a bug or make an improvement yourself,
-contributions are welcomed, and guidelines on how to do this can be
-found at the :ref:`pyani-contributing` documentation page.
+If you'd like to fix a bug or make an improvement yourself, contributions are welcomed, and guidelines on how to do this can be found at the :ref:`pyani-contributing` documentation page.
 
 
 
