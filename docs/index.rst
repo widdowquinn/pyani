@@ -77,6 +77,7 @@ If you'd like to fix a bug or make an improvement yourself, contributions are we
    installation
    basic_use
    examples
+   subcommands
    testing
    contributing
    licensing
