@@ -2,6 +2,8 @@
 
 ## v0.2.7.dev
 
+* distance matrices are converted from square to condensed form for linkage analysis
+* `matplotlib` calls use new API ('false', 'off' -> False; 'true', 'on' -> True)
 * deprecate legacy BLAST testing: `ANIblastall` commands still work, but are no longer supported
 * update concordance tests (issue #105)
 * extend test suites (issue #104)
