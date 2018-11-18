@@ -55,7 +55,7 @@ setuptools.setup(
         os.path.join("bin", "genbank_get_genomes_by_taxon.py"),
     ],
     entry_points={"console_scripts": ["pyani = pyani.scripts.pyani_script:run_main"]},
-    packages=["pyani"],
+    packages=setuptools.find_packages(),
     package_data={"pyani": ["tests/test_JSpecies/*.tab"]},
     include_package_date=True,
     install_requires=[
