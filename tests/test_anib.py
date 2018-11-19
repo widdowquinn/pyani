@@ -1,17 +1,14 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """test_anib.py
 
 Test anib.py module.
 
 These tests are intended to be run from the repository root using:
 
-nosetests -v
+pytest -v
 
-print() statements will be caught by nosetests unless there is an
-error. They can also be recovered with the -s option.
-
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -29,7 +26,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -54,8 +51,8 @@ import os
 import unittest
 
 import pandas as pd
+import pytest
 
-from nose.tools import assert_equal, nottest
 from pandas.util.testing import assert_frame_equal
 
 from pyani import anib, pyani_files
@@ -290,13 +287,13 @@ class TestBLASTCmdline(unittest.TestCase):
         os.makedirs(self.fmtdboutdir, exist_ok=True)
         os.makedirs(self.makeblastdbdir, exist_ok=True)
 
-    @nottest  # Deprecating legacy BLAST
+    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_formatdb_generation(self):
         """generate formatdb command-line."""
         cmd = anib.construct_formatdb_cmd(
             os.path.join(self.seqdir, "NC_002696.fna"), self.fmtdboutdir
         )
-        assert_equal(cmd[0], self.fmtdbcmd)  # correct command
+        self.assertEqual(cmd[0], self.fmtdbcmd)  # correct command
         assert os.path.isfile(cmd[1])  # creates new file
 
     def test_makeblastdb_generation(self):
@@ -304,7 +301,7 @@ class TestBLASTCmdline(unittest.TestCase):
         cmd = anib.construct_makeblastdb_cmd(
             os.path.join(self.seqdir, "NC_002696.fna"), self.makeblastdbdir
         )
-        assert_equal(cmd[0], self.makeblastdbcmd)  # correct command
+        self.assertEqual(cmd[0], self.makeblastdbcmd)  # correct command
 
     def test_blastdb_commands(self):
         """generate BLAST+ db commands."""
@@ -312,30 +309,30 @@ class TestBLASTCmdline(unittest.TestCase):
         cmds = anib.generate_blastdb_commands(
             self.blastdbfnames, self.outdir, mode="ANIb"
         )
-        assert_equal(cmds, self.blastdbtgt)
+        self.assertEqual(cmds, self.blastdbtgt)
 
-    @nottest  # Deprecating legacy BLAST
+    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_legacy_blastdb_commands(self):
         """generate legacy BLAST db creation commands"""
         cmds = anib.generate_blastdb_commands(
             self.blastdbfnames, self.outdir, mode="ANIblastall"
         )
-        assert_equal(cmds, self.blastdbtgtlegacy)
+        self.assertEqual(cmds, self.blastdbtgtlegacy)
 
     def test_blastn_generation(self):
         """generate BLASTN+ command-line."""
         cmd = anib.construct_blastn_cmdline(
             self.blastdbfnames[0], self.blastdbfnames[1], self.outdir
         )
-        assert_equal(cmd, self.blastncmd)
+        self.assertEqual(cmd, self.blastncmd)
 
-    @nottest  # Deprecating legacy BLAST
+    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_blastall_generation(self):
         """generate legacy BLASTN command-line."""
         cmd = anib.construct_blastall_cmdline(
             self.blastdbfnames[0], self.blastdbfnames[1], self.outdir
         )
-        assert_equal(cmd, self.blastallcmd)
+        self.assertEqual(cmd, self.blastallcmd)
 
     def test_blastn_commands(self):
         """generate BLASTN+ commands."""
@@ -343,22 +340,22 @@ class TestBLASTCmdline(unittest.TestCase):
         cmds = anib.generate_blastn_commands(
             self.blastdbfnames, self.outdir, mode="ANIb"
         )
-        assert_equal(cmds, self.blastntgt)
+        self.assertEqual(cmds, self.blastntgt)
 
-    @nottest  # Deprecating legacy BLAST
+    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_legacy_blastn_commands(self):
         """generate legacy BLASTN commands"""
         cmds = anib.generate_blastn_commands(
             self.blastdbfnames, self.outdir, mode="ANIblastall"
         )
-        assert_equal(cmds, self.blastalltgt)
+        self.assertEqual(cmds, self.blastalltgt)
 
-    @nottest  # Deprecating legacy BLAST
+    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_blastall_dbjobdict(self):
         """generate dictionary of legacy BLASTN database jobs."""
         blastcmds = anib.make_blastcmd_builder("ANIblastall", self.outdir)
         jobdict = anib.build_db_jobs(self.infiles, blastcmds)
-        assert_equal(
+        self.assertEqual(
             sorted([(k, v.script) for (k, v) in jobdict.items()]), self.blastalljobdict
         )
 
@@ -366,7 +363,7 @@ class TestBLASTCmdline(unittest.TestCase):
         """generate dictionary of BLASTN+ database jobs."""
         blastcmds = anib.make_blastcmd_builder("ANIb", self.outdir)
         jobdict = anib.build_db_jobs(self.infiles, blastcmds)
-        assert_equal(
+        self.assertEqual(
             sorted([(k, v.script) for (k, v) in jobdict.items()]), self.blastnjobdict
         )
 
@@ -379,11 +376,11 @@ class TestBLASTCmdline(unittest.TestCase):
         # is a single dependency, which is a makeblastdb job
         for job in jobgraph:
             assert job.script.startswith("blastn")
-            assert_equal(1, len(job.dependencies))
+            self.assertEqual(1, len(job.dependencies))
             dep = job.dependencies[0]
             assert dep.script.startswith("makeblastdb")
 
-    @nottest  # Deprecating legacy BLAST
+    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_blastall_graph(self):
         """create jobgraph for legacy BLASTN jobs."""
         fragresult = anib.fragment_fasta_files(self.infiles, self.outdir, self.fraglen)
@@ -393,7 +390,7 @@ class TestBLASTCmdline(unittest.TestCase):
         # is a single dependency, which is a makeblastdb job
         for job in jobgraph:
             assert job.script.startswith("blastall -p blastn")
-            assert_equal(1, len(job.dependencies))
+            self.assertEqual(1, len(job.dependencies))
             dep = job.dependencies[0]
             assert dep.script.startswith("formatdb")
 
@@ -497,15 +494,15 @@ class TestParsing(unittest.TestCase):
         """parses ANIb .blast_tab output."""
         fragdata = anib.get_fraglength_dict([self.fragfname])
         result = anib.parse_blast_tab(self.fname, fragdata, mode="ANIb")
-        assert_equal(result, (4016551, 93, 99.997693577050029))
+        self.assertEqual(result, (4016551, 93, 99.997693577050029))
 
-    @nottest  # Deprecating legacy BLAST
+    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_parse_legacy_blasttab(self):
         """parses legacy .blast_tab output"""
         # ANIblastall output
         fragdata = anib.get_fraglength_dict([self.fragfname])
         result = anib.parse_blast_tab(self.fname_legacy, fragdata, mode="ANIblastall")
-        assert_equal(result, (1966922, 406104, 78.578978313253018))
+        self.assertEqual(result, (1966922, 406104, 78.578978313253018))
 
     def test_blastdir_processing(self):
         """parses directory of .blast_tab output."""
@@ -518,7 +515,7 @@ class TestParsing(unittest.TestCase):
             self.anibtgt.sort_index(1).sort_index(),
         )
 
-    @nottest  # Deprecating legacy BLAST
+    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_legacy_blastdir_processing(self):
         """parses directory of legacy .blast_tab output"""
         orglengths = pyani_files.get_sequence_lengths(self.infnames)
@@ -530,4 +527,3 @@ class TestParsing(unittest.TestCase):
             result.percentage_identity.sort_index(1).sort_index(),
             self.aniblastalltgt.sort_index(1).sort_index(),
         )
-
