@@ -10,8 +10,9 @@ These tests are intended to be run using the nose package
 
 import subprocess
 import sys
+import unittest
 
-from nose.tools import assert_equal, nottest
+import pytest
 
 
 def test_import_biopython():
@@ -39,44 +40,46 @@ def test_import_scipy():
     import scipy
 
 
-def test_run_blast():
-    """Test that BLAST+ is runnable."""
-    cmd = "blastn -version"
-    result = subprocess.run(
-        cmd,
-        shell=sys.platform != "win32",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=True,
-    )
-    print(result.stdout)
-    assert_equal(result.stdout[:6], b"blastn")
+class TestDependencyExecutables(unittest.TestCase):
 
+    """Class defining tests of third-party executables"""
 
-@nottest  # deprecate legacy BLAST
-def test_run_blastall():
-    """Test that legacy BLAST is runnable."""
-    cmd = "blastall"
-    # Can't use check=True, as blastall without arguments returns 1!
-    result = subprocess.run(
-        cmd,
-        shell=sys.platform != "win32",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    print(result.stdout)
-    assert_equal(result.stdout[1:9], b"blastall")
+    def test_run_blast(self):
+        """Test that BLAST+ is runnable."""
+        cmd = "blastn -version"
+        result = subprocess.run(
+            cmd,
+            shell=sys.platform != "win32",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+        print(result.stdout)
+        self.assertEqual(result.stdout[:6], b"blastn")
 
+    @pytest.mark.skip(reason="Deprecate legacy BLAST")
+    def test_run_blastall(self):
+        """Test that legacy BLAST is runnable."""
+        cmd = "blastall"
+        # Can't use check=True, as blastall without arguments returns 1!
+        result = subprocess.run(
+            cmd,
+            shell=sys.platform != "win32",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print(result.stdout)
+        self.assertEqual(result.stdout[1:9], b"blastall")
 
-def test_run_nucmer():
-    """Test that NUCmer is runnable."""
-    cmd = "nucmer --version"
-    result = subprocess.run(
-        cmd,
-        shell=sys.platform != "win32",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=True,
-    )
-    print(result.stderr)  # NUCmer puts output to STDERR!
-    assert_equal(result.stderr[:6], b"nucmer")
+    def test_run_nucmer(self):
+        """Test that NUCmer is runnable."""
+        cmd = "nucmer --version"
+        result = subprocess.run(
+            cmd,
+            shell=sys.platform != "win32",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+        print(result.stderr)  # NUCmer puts output to STDERR!
+        self.assertEqual(result.stderr[:6], b"nucmer")
