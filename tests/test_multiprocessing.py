@@ -6,7 +6,7 @@ Test run_multiprocessing.py module.
 
 These tests are intended to be run from the repository root using:
 
-nosetests -v
+pytest -v
 
 print() statements will be caught by nosetests unless there is an
 error. They can also be recovered with the -s option.
