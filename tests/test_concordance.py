@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """test_concordance.py
 
 Test for concordance of pyani package output with JSpecies
 
 These tests are intended to be run from the repository root using:
 
-nosetests -v
+pytest -v
 
 print() statements will be caught by nosetests unless there is an
 error. They can also be recovered with the -s option.
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -30,7 +29,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -58,8 +57,7 @@ import sys
 import unittest
 
 import pandas as pd
-
-from nose.tools import assert_equal, assert_less, nottest
+import pytest
 
 from pyani import run_multiprocessing as run_mp
 from pyani import anib, anim, tetra, pyani_files, pyani_config
@@ -97,9 +95,9 @@ def parse_jspecies(infile):
                         if val != "---":
                             data[columns[idx]][row] = float(val)
                         elif method.startswith("ANI"):
-                            data[columns[idx]][row] = 100.
+                            data[columns[idx]][row] = 100.0
                         else:
-                            data[columns[idx]][row] = 1.
+                            data[columns[idx]][row] = 1.0
             else:
                 pass
     return dfs
@@ -156,13 +154,13 @@ class TestConcordance(unittest.TestCase):
         result_pid.to_csv(os.path.join(self.outdir, "pyani_anim.tab"), sep="\t")
 
         # Compare JSpecies output to results
-        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.
-        diffmat = result_pid.as_matrix() - self.target["ANIm"].as_matrix()
+        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
+        diffmat = result_pid.values - self.target["ANIm"].values
         anim_diff = pd.DataFrame(
             diffmat, index=result_pid.index, columns=result_pid.columns
         )
         anim_diff.to_csv(os.path.join(self.outdir, "pyani_anim_diff.tab"), sep="\t")
-        assert_less(anim_diff.abs().values.max(), self.tolerance["ANIm"])
+        self.assertLess(anim_diff.abs().values.max(), self.tolerance["ANIm"])
 
     def test_anib_concordance(self):
         """ANIb results concordant with JSpecies.
@@ -179,7 +177,7 @@ class TestConcordance(unittest.TestCase):
         jobgraph = anib.make_job_graph(
             self.infiles, fragfiles, anib.make_blastcmd_builder("ANIb", outdir)
         )
-        assert_equal(0, run_mp.run_dependency_graph(jobgraph))
+        self.assertEqual(0, run_mp.run_dependency_graph(jobgraph))
         results = anib.process_blast(outdir, self.orglengths, fraglengths, mode="ANIb")
         result_pid = results.percentage_identity
         result_pid.to_csv(os.path.join(self.outdir, "pyani_anib.tab"), sep="\t")
@@ -188,14 +186,14 @@ class TestConcordance(unittest.TestCase):
         # masked according to whether the expected result is greater than
         # 90% identity, or less than that threshold.
         # The complete difference matrix is written to output, though
-        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.
+        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
         lo_result = result_pid.mask(result_pid >= 90).fillna(0)
         hi_result = result_pid.mask(result_pid < 90).fillna(0)
         lo_target = self.target["ANIb"].mask(self.target["ANIb"] >= 90).fillna(0)
         hi_target = self.target["ANIb"].mask(self.target["ANIb"] < 90).fillna(0)
-        lo_diffmat = lo_result.as_matrix() - lo_target.as_matrix()
-        hi_diffmat = hi_result.as_matrix() - hi_target.as_matrix()
-        diffmat = result_pid.as_matrix() - self.target["ANIb"].as_matrix()
+        lo_diffmat = lo_result.values - lo_target.values
+        hi_diffmat = hi_result.values - hi_target.values
+        diffmat = result_pid.values - self.target["ANIb"].values
         lo_diff = pd.DataFrame(
             lo_diffmat, index=result_pid.index, columns=result_pid.columns
         )
@@ -206,10 +204,10 @@ class TestConcordance(unittest.TestCase):
             diffmat, index=result_pid.index, columns=result_pid.columns
         )
         anib_diff.to_csv(os.path.join(self.outdir, "pyani_anib_diff.tab"), sep="\t")
-        assert_less(lo_diff.abs().values.max(), self.tolerance["ANIb_lo"])
-        assert_less(hi_diff.abs().values.max(), self.tolerance["ANIb_hi"])
+        self.assertLess(lo_diff.abs().values.max(), self.tolerance["ANIb_lo"])
+        self.assertLess(hi_diff.abs().values.max(), self.tolerance["ANIb_hi"])
 
-    @nottest  # deprecate legacy BLAST
+    @pytest.mark.skip(reason="Deprecate legacy BLAST")
     def test_aniblastall_concordance(self):
         """ANIblastall results concordant with JSpecies."""
         # Perform ANIblastall on the input directory contents
@@ -221,7 +219,7 @@ class TestConcordance(unittest.TestCase):
         jobgraph = anib.make_job_graph(
             self.infiles, fragfiles, anib.make_blastcmd_builder("ANIblastall", outdir)
         )
-        assert_equal(0, run_mp.run_dependency_graph(jobgraph))
+        self.assertEqual(0, run_mp.run_dependency_graph(jobgraph))
         results = anib.process_blast(
             outdir, self.orglengths, fraglengths, mode="ANIblastall"
         )
@@ -229,15 +227,17 @@ class TestConcordance(unittest.TestCase):
         result_pid.to_csv(os.path.join(self.outdir, "pyani_aniblastall.tab"), sep="\t")
 
         # Compare JSpecies output to results
-        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.
-        diffmat = result_pid.as_matrix() - self.target["ANIb"].as_matrix()
+        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
+        diffmat = result_pid.values - self.target["ANIb"].values
         aniblastall_diff = pd.DataFrame(
             diffmat, index=result_pid.index, columns=result_pid.columns
         )
         aniblastall_diff.to_csv(
             os.path.join(self.outdir, "pyani_aniblastall_diff.tab"), sep="\t"
         )
-        assert_less(aniblastall_diff.abs().values.max(), self.tolerance["ANIblastall"])
+        self.assertLess(
+            aniblastall_diff.abs().values.max(), self.tolerance["ANIblastall"]
+        )
 
     def test_tetra_concordance(self):
         """TETRA results concordant with JSpecies."""
@@ -250,8 +250,7 @@ class TestConcordance(unittest.TestCase):
         results.to_csv(os.path.join(self.outdir, "pyani_tetra.tab"), sep="\t")
 
         # Compare JSpecies output
-        diffmat = results.as_matrix() - self.target["Tetra"].as_matrix()
+        diffmat = results.values - self.target["Tetra"].values
         tetra_diff = pd.DataFrame(diffmat, index=results.index, columns=results.columns)
         tetra_diff.to_csv(os.path.join(self.outdir, "pyani_tetra_diff.tab"), sep="\t")
-        assert_less(tetra_diff.abs().values.max(), self.tolerance["TETRA"])
-
+        self.assertLess(tetra_diff.abs().values.max(), self.tolerance["TETRA"])
