@@ -10,3 +10,5 @@ networkx
 tqdm
 namedlist
 pre-commit
+pytest
+pytest-cov

@@ -14,16 +14,16 @@ matrix:
 
 # command to install dependencies
 install:
-  - "pip install -r requirements.txt"
-  - "pip install codecov"
+  - pip install -r requirements.txt
+  - pip install codecov
 
 # we need the delta filter command, so must install in-place
-  - "pip install -e ."
+  - pip install -e .
 
 # command to run tests
 # Use --nocapture with nosetests to get extra verbose output for debugging on Travis
 script:
-  - nosetests -v --with-coverage --cover-package=pyani
+  - pytest -v --cov=./
 
 # application dependencies: BLAST+, legacy BLAST, MUMMER
 before_install:
