@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Module providing functions to generate clusters/species hypotheses.
 
-(c) The James Hutton Institute 2016-2017
+(c) The James Hutton Institute 2016-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -19,7 +20,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2016-2017 The James Hutton Institute
+Copyright (c) 2016-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -46,8 +47,9 @@ import networkx as nx
 import pandas as pd
 
 # Holds summary information about a graph's cliques
-Cliquesinfo = namedtuple('Cliquesinfo', 'n_nodes n_subgraphs n_cliques ' +
-                         'n_cliquenodes confused')
+Cliquesinfo = namedtuple(
+    "Cliquesinfo", "n_nodes n_subgraphs n_cliques " + "n_cliquenodes confused"
+)
 
 
 # Build an undirected graph from an ANIResults object
@@ -66,19 +68,21 @@ def build_graph_from_results(results, cov_min, id_min):
     node_names = results.coverage.columns
     rows = []
     for idx, node_from in enumerate(node_names[:-1]):
-        for node_to in node_names[idx+1:]:
-            datadict = {'from': node_from,
-                        'to': node_to,
-                        'coverage': min(results.coverage[node_from][node_to],
-                                        results.coverage[node_to][node_from]),
-                        'identity': results.identity[node_from][node_to]}
+        for node_to in node_names[idx + 1 :]:
+            datadict = {
+                "from": node_from,
+                "to": node_to,
+                "coverage": min(
+                    results.coverage[node_from][node_to],
+                    results.coverage[node_to][node_from],
+                ),
+                "identity": results.identity[node_from][node_to],
+            }
             rows.append(datadict)
-    node_data = pd.DataFrame(rows,
-                             columns=['from', 'to', 'coverage', 'identity'])
+    node_data = pd.DataFrame(rows, columns=["from", "to", "coverage", "identity"])
 
     # Convert reordered data to undirected graph and return
-    G = nx.from_pandas_dataframe(node_data, 'from', 'to',
-                                 ['coverage', 'identity'])
+    G = nx.from_pandas_edgelist(node_data, "from", "to", ["coverage", "identity"])
     return G
 
 
@@ -88,12 +92,17 @@ def analyse_cliques(graph):
     cliques = list(nx.find_cliques(graph))
     tot_clique_members = sum([len(c) for c in cliques])
     subgraphs = list(nx.connected_component_subgraphs(graph))
-    return Cliquesinfo(len(graph), len(subgraphs), len(cliques),
-                       tot_clique_members, tot_clique_members - len(graph))
+    return Cliquesinfo(
+        len(graph),
+        len(subgraphs),
+        len(cliques),
+        tot_clique_members,
+        tot_clique_members - len(graph),
+    )
 
 
 # Generate a list of graphs from lowest to highest pairwise identity threshold
-def trimmed_graph_sequence(G, attribute='identity'):
+def trimmed_graph_sequence(G, attribute="identity"):
     """Return graphs trimmed from lowest to highest attribute value
 
     A generator which, starting from the initial graph, yields in sequence a
@@ -118,10 +127,10 @@ def trimmed_graph_sequence(G, attribute='identity'):
     # For last edge/graph
     threshold = edgelist[0][-1]
     yield (threshold, graph, analyse_cliques(graph))
-    
+
 
 # Generate a list of graphs with no clique confusion
-def unconfused_graphs(G, attribute='identity'):
+def unconfused_graphs(G, attribute="identity"):
     """Return graphs having no clique-confused nodes
 
     A generator which, starting from the initial graph, yields in sequence
@@ -138,5 +147,3 @@ def unconfused_graphs(G, attribute='identity'):
         if subgraph[-1].confused:
             continue
         yield subgraph
-
-
