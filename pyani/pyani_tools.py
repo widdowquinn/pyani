@@ -1,7 +1,8 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Code to support pyani.
 
-(c) The James Hutton Institute 2013-2017
+(c) The James Hutton Institute 2013-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -19,7 +20,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2013-2017 The James Hutton Institute
+Copyright (c) 2013-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -66,8 +67,7 @@ class PyaniException(Exception):
 def last_exception():
     """Return last exception as a string, or use in logging."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
-    return ''.join(traceback.format_exception(exc_type, exc_value,
-                                              exc_traceback))
+    return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
 
 # CLASSES
@@ -79,14 +79,16 @@ class ANIResults(object):
 
     def __init__(self, labels, mode):
         """Initialise with four empty, labelled dataframes."""
-        self.alignment_lengths = pd.DataFrame(index=labels, columns=labels,
-                                              dtype=float)
-        self.similarity_errors = pd.DataFrame(index=labels, columns=labels,
-                                              dtype=float).fillna(0)
-        self.percentage_identity = pd.DataFrame(index=labels, columns=labels,
-                                                dtype=float).fillna(1.0)
-        self.alignment_coverage = pd.DataFrame(index=labels, columns=labels,
-                                               dtype=float).fillna(1.0)
+        self.alignment_lengths = pd.DataFrame(index=labels, columns=labels, dtype=float)
+        self.similarity_errors = pd.DataFrame(
+            index=labels, columns=labels, dtype=float
+        ).fillna(0)
+        self.percentage_identity = pd.DataFrame(
+            index=labels, columns=labels, dtype=float
+        ).fillna(1.0)
+        self.alignment_coverage = pd.DataFrame(
+            index=labels, columns=labels, dtype=float
+        ).fillna(1.0)
         self.zero_error = False
         self.mode = mode
 
@@ -122,19 +124,28 @@ class ANIResults(object):
     @property
     def data(self):
         """Return list of (dataframe, filestem) tuples."""
-        stemdict = {"ANIm": pyani_config.ANIM_FILESTEMS,
-                    "ANIb": pyani_config.ANIB_FILESTEMS,
-                    "ANIblastall": pyani_config.ANIBLASTALL_FILESTEMS}
-        return zip((self.alignment_lengths, self.percentage_identity,
-                    self.alignment_coverage, self.similarity_errors,
-                    self.hadamard), stemdict[self.mode])
+        stemdict = {
+            "ANIm": pyani_config.ANIM_FILESTEMS,
+            "ANIb": pyani_config.ANIB_FILESTEMS,
+            "ANIblastall": pyani_config.ANIBLASTALL_FILESTEMS,
+        }
+        return zip(
+            (
+                self.alignment_lengths,
+                self.percentage_identity,
+                self.alignment_coverage,
+                self.similarity_errors,
+                self.hadamard,
+            ),
+            stemdict[self.mode],
+        )
         # return [(self.alignment_lengths, "ANIm_alignment_lengths"),
         #        (self.percentage_identity, "ANIm_percentage_identity"),
         #        (self.alignment_coverage, "ANIm_alignment_coverage"),
         #        (self.similarity_errors, "ANIm_similarity_errors"),
         #        (self.hadamard, "ANIm_hadamard")]
 
-        
+
 # Class to hold BLAST functions
 class BLASTfunctions(object):
     """Class to hold BLAST functions."""
@@ -168,18 +179,15 @@ class BLASTcmds(object):
 
     def build_db_cmd(self, fname):
         """Return database format/build command."""
-        return self.funcs.db_func(fname, self.outdir,
-                                  self.exes.format_exe)[0]
+        return self.funcs.db_func(fname, self.outdir, self.exes.format_exe)[0]
 
     def get_db_name(self, fname):
         """Return database filename."""
-        return self.funcs.db_func(fname, self.outdir,
-                                  self.exes.format_exe)[1]
+        return self.funcs.db_func(fname, self.outdir, self.exes.format_exe)[1]
 
     def build_blast_cmd(self, fname, dbname):
         """Return BLASTN command."""
-        return self.funcs.blastn_func(fname, dbname, self.outdir,
-                                      self.exes.blast_exe)
+        return self.funcs.blastn_func(fname, dbname, self.outdir, self.exes.blast_exe)
 
 
 # UTILITY FUNCTIONS
@@ -208,16 +216,15 @@ def get_labels(filename, logger=None):
     if filename is not None:
         if logger:
             logger.info("Reading labels from %s", filename)
-        with open(filename, 'rU') as ifh:
+        with open(filename, "r") as ifh:
             count = 0
             for line in ifh.readlines():
                 count += 1
                 try:
-                    key, label = line.strip().split('\t')
+                    key, label = line.strip().split("\t")
                 except ValueError:
                     if logger:
-                        logger.warning("Problem with class file: %s",
-                                       filename)
+                        logger.warning("Problem with class file: %s", filename)
                         logger.warning("%d: %s", (count, line.strip()))
                         logger.warning("(skipping line)")
                     continue
@@ -229,8 +236,8 @@ def get_labels(filename, logger=None):
 # Return the total length of sequences in a passed FASTA file
 def get_genome_length(filename):
     """Return total length of all sequences in a FASTA file."""
-    with open(filename, 'r') as ifh:
-        return sum([len(record) for record in SeqIO.parse(ifh, 'fasta')])
+    with open(filename, "r") as ifh:
+        return sum([len(record) for record in SeqIO.parse(ifh, "fasta")])
 
 
 # Add the contents of a labels file to the pyani database for a given run
@@ -253,15 +260,16 @@ def add_dblabels(dbpath, run_id, labelspath):
     Returns a list of IDs for each label
     """
     label_ids = []
-    with open(labelspath, 'r') as lfh:
+    with open(labelspath, "r") as lfh:
         for line in lfh.readlines():
-            hash, stem, label = line.strip().split('\t')
+            hash, stem, label = line.strip().split("\t")
             try:
                 genome_id = pyani_db.get_genome(dbpath, hash)[0][0]
             except IndexError:
                 continue
-            label_ids.append(pyani_db.add_genome_label(dbpath, genome_id,
-                                                       run_id, label))
+            label_ids.append(
+                pyani_db.add_genome_label(dbpath, genome_id, run_id, label)
+            )
     return label_ids
 
 
@@ -285,13 +293,14 @@ def add_dbclasses(dbpath, run_id, classespath):
     Returns a list of IDs for each class
     """
     class_ids = []
-    with open(classespath, 'r') as lfh:
+    with open(classespath, "r") as lfh:
         for line in lfh.readlines():
-            hash, stem, gclass = line.strip().split('\t')
+            hash, stem, gclass = line.strip().split("\t")
             try:
                 genome_id = pyani_db.get_genome(dbpath, hash)[0][0]
             except IndexError:
                 continue
-            class_ids.append(pyani_db.add_genome_class(dbpath, genome_id,
-                                                       run_id, gclass))
+            class_ids.append(
+                pyani_db.add_genome_class(dbpath, genome_id, run_id, gclass)
+            )
     return class_ids

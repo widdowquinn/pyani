@@ -1,11 +1,45 @@
-# Copyright 2013-2016, The James Hutton Insitute
-# Author: Leighton Pritchard
-#
-# This code is part of the pyani package, and is governed by its licence.
-# Please see the LICENSE file that should have been included as part of
-# this package.
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Code to implement graphics output for ANI analyses.
 
-"""Code to implement graphics output for ANI analyses."""
+(c) The James Hutton Institute 2017-2018
+Author: Leighton Pritchard
+
+Contact:
+leighton.pritchard@hutton.ac.uk
+
+Leighton Pritchard,
+Information and Computing Sciences,
+James Hutton Institute,
+Errol Road,
+Invergowrie,
+Dundee,
+DD2 5DA,
+Scotland,
+UK
+
+The MIT License
+
+Copyright (c) 2017-2018 The James Hutton Institute
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+"""
 
 # Force matplotlib NOT to use an Xwindows backend on *nix, so that
 # _tkinter.TclError is avoided when there is no $DISPLAY env: this can occur
@@ -22,14 +56,15 @@ import warnings
 # Specify matplotlib backend. This *must* be done before pyplot import, but
 # raises errors with flake8 etc. So we comment out the specific error
 import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt            # noqa: E402
-import matplotlib.gridspec as gridspec     # noqa: E402
-import numpy as np                         # noqa: E402
-import scipy.cluster.hierarchy as sch      # noqa: E402
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.gridspec as gridspec  # noqa: E402
+import numpy as np  # noqa: E402
+import scipy.cluster.hierarchy as sch  # noqa: E402
 import scipy.spatial.distance as distance  # noqa: E402
-import seaborn as sns                      # noqa: E402
-import pandas as pd                        # noqa: E402
+import seaborn as sns  # noqa: E402
+import pandas as pd  # noqa: E402
 
 
 # Register Matplotlib colourmaps
@@ -77,11 +112,15 @@ def get_seaborn_colorbar(dfr, classes):
     n    colour for class in col n
     """
     levels = sorted(list(set(classes.values())))
-    paldict = {lvl: pal for (lvl, pal) in
-               zip(levels, sns.cubehelix_palette(len(levels),
-                                                 light=.9, dark=.1,
-                                                 reverse=True,
-                                                 start=1, rot=-2))}
+    paldict = {
+        lvl: pal
+        for (lvl, pal) in zip(
+            levels,
+            sns.cubehelix_palette(
+                len(levels), light=0.9, dark=0.1, reverse=True, start=1, rot=-2
+            ),
+        )
+    }
     lvl_pal = {cls: paldict[lvl] for (cls, lvl) in list(classes.items())}
     col_cb = pd.Series(dfr.index).map(lvl_pal)
     # The col_cb Series index now has to match the dfr.index, but
@@ -102,27 +141,26 @@ def get_safe_seaborn_labels(dfr, labels):
 # Return a clustermap
 def get_seaborn_clustermap(dfr, params, title=None, annot=True):
     """Return a Seaborn clustermap."""
-    fig = sns.clustermap(dfr,
-                         cmap=params.cmap,
-                         vmin=params.vmin,
-                         vmax=params.vmax,
-                         col_colors=params.colorbar,
-                         row_colors=params.colorbar,
-                         figsize=(params.figsize,
-                                  params.figsize),
-                         linewidths=params.linewidths,
-                         xticklabels=params.labels,
-                         yticklabels=params.labels,
-                         annot=annot)
-    fig.cax.yaxis.set_label_position('left')
+    fig = sns.clustermap(
+        dfr,
+        cmap=params.cmap,
+        vmin=params.vmin,
+        vmax=params.vmax,
+        col_colors=params.colorbar,
+        row_colors=params.colorbar,
+        figsize=(params.figsize, params.figsize),
+        linewidths=params.linewidths,
+        xticklabels=params.labels,
+        yticklabels=params.labels,
+        annot=annot,
+    )
+    fig.cax.yaxis.set_label_position("left")
     if title:
         fig.cax.set_ylabel(title)
 
     # Rotate ticklabels
-    fig.ax_heatmap.set_xticklabels(fig.ax_heatmap.get_xticklabels(),
-                                   rotation=90)
-    fig.ax_heatmap.set_yticklabels(fig.ax_heatmap.get_yticklabels(),
-                                   rotation=0)
+    fig.ax_heatmap.set_xticklabels(fig.ax_heatmap.get_xticklabels(), rotation=90)
+    fig.ax_heatmap.set_yticklabels(fig.ax_heatmap.get_yticklabels(), rotation=0)
 
     # Return clustermap
     return fig
@@ -170,38 +208,43 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
 
 
 # Add dendrogram and axes to passed figure
-def add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation='col'):
+def add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation="col"):
     """Return a dendrogram and corresponding gridspec, attached to the fig.
 
     Modifies the fig in-place. Orientation is either 'row' or 'col' and
     determines location and orientation of the rendered dendrogram.
     """
     # Row or column axes?
-    if orientation == 'row':
-        dists = distance.squareform(distance.pdist(dfr))
+    if orientation == "row":
+        dists = distance.pdist(dfr)
         spec = heatmap_gs[1, 0]
-        orient = 'left'
+        orient = "left"
         nrows, ncols = 1, 2
-        height_ratios = [1, ]
+        height_ratios = [1]
     else:  # Column dendrogram
-        dists = distance.squareform(distance.pdist(dfr.T))
+        dists = distance.pdist(dfr.T)
         spec = heatmap_gs[0, 1]
-        orient = 'top'
+        orient = "top"
         nrows, ncols = 2, 1
         height_ratios = [1, 0.15]
 
     # Create row dendrogram axis
-    gspec = gridspec.GridSpecFromSubplotSpec(nrows, ncols,
-                                             subplot_spec=spec,
-                                             wspace=0.0, hspace=0.1,
-                                             height_ratios=height_ratios)
+    gspec = gridspec.GridSpecFromSubplotSpec(
+        nrows,
+        ncols,
+        subplot_spec=spec,
+        wspace=0.0,
+        hspace=0.1,
+        height_ratios=height_ratios,
+    )
     dend_axes = fig.add_subplot(gspec[0, 0])
-    dend = sch.dendrogram(sch.linkage(dists, method='complete'),
-                          color_threshold=np.inf,
-                          orientation=orient)
+    dend = sch.dendrogram(
+        sch.linkage(dists, method="complete"),
+        color_threshold=np.inf,
+        orientation=orient,
+    )
     clean_axis(dend_axes)
-    return {'dendrogram': dend,
-            'gridspec': gspec}
+    return {"dendrogram": dend, "gridspec": gspec}
 
 
 # Create heatmap axes for Matplotlib output
@@ -211,25 +254,24 @@ def get_mpl_heatmap_axes(dfr, fig, heatmap_gs):
     heatmap_axes = fig.add_subplot(heatmap_gs[1, 1])
     heatmap_axes.set_xticks(np.linspace(0, dfr.shape[0] - 1, dfr.shape[0]))
     heatmap_axes.set_yticks(np.linspace(0, dfr.shape[0] - 1, dfr.shape[0]))
-    heatmap_axes.grid('off')
+    heatmap_axes.grid(False)
     heatmap_axes.xaxis.tick_bottom()
     heatmap_axes.yaxis.tick_right()
     return heatmap_axes
 
 
-def add_mpl_colorbar(dfr, fig, dend, params, orientation='row'):
+def add_mpl_colorbar(dfr, fig, dend, params, orientation="row"):
     """Add class colorbars to Matplotlib heatmap."""
-    for name in dfr.index[dend['dendrogram']['leaves']]:
+    for name in dfr.index[dend["dendrogram"]["leaves"]]:
         if name not in params.classes:
             params.classes[name] = name
 
     # Assign a numerical value to each class, for mpl
-    classdict = {cls: idx for (idx, cls) in
-                 enumerate(params.classes.values())}
+    classdict = {cls: idx for (idx, cls) in enumerate(params.classes.values())}
 
     # colourbar
     cblist = []
-    for name in dfr.index[dend['dendrogram']['leaves']]:
+    for name in dfr.index[dend["dendrogram"]["leaves"]]:
         try:
             cblist.append(classdict[params.classes[name]])
         except KeyError:
@@ -237,18 +279,24 @@ def add_mpl_colorbar(dfr, fig, dend, params, orientation='row'):
     colbar = pd.Series(cblist)
 
     # Create colourbar axis - could capture if needed
-    if orientation == 'row':
-        cbaxes = fig.add_subplot(dend['gridspec'][0, 1])
-        cbaxes.imshow([[cbar] for cbar in colbar.values],
-                      cmap=plt.get_cmap(pyani_config.MPL_CBAR),
-                      interpolation='nearest', aspect='auto',
-                      origin='lower')
+    if orientation == "row":
+        cbaxes = fig.add_subplot(dend["gridspec"][0, 1])
+        cbaxes.imshow(
+            [[cbar] for cbar in colbar.values],
+            cmap=plt.get_cmap(pyani_config.MPL_CBAR),
+            interpolation="nearest",
+            aspect="auto",
+            origin="lower",
+        )
     else:
-        cbaxes = fig.add_subplot(dend['gridspec'][1, 0])
-        cbaxes.imshow([colbar],
-                      cmap=plt.get_cmap(pyani_config.MPL_CBAR),
-                      interpolation='nearest', aspect='auto',
-                      origin='lower')
+        cbaxes = fig.add_subplot(dend["gridspec"][1, 0])
+        cbaxes.imshow(
+            [colbar],
+            cmap=plt.get_cmap(pyani_config.MPL_CBAR),
+            interpolation="nearest",
+            aspect="auto",
+            origin="lower",
+        )
     clean_axis(cbaxes)
     return colbar
 
@@ -273,22 +321,20 @@ def add_mpl_labels(heatmap_axes, rowlabels, collabels, params):
 def add_mpl_colorscale(fig, heatmap_gs, ax_map, params, title=None):
     """Add colour scale to heatmap."""
     # Set tick intervals
-    cbticks = [params.vmin + e * params.vdiff for e in
-               (0, 0.25, 0.5, 0.75, 1)]
+    cbticks = [params.vmin + e * params.vdiff for e in (0, 0.25, 0.5, 0.75, 1)]
     if params.vmax > 10:
         exponent = int(floor(log10(params.vmax))) - 1
         cbticks = [int(round(e, -exponent)) for e in cbticks]
 
-    scale_subplot =\
-        gridspec.GridSpecFromSubplotSpec(1, 3,
-                                         subplot_spec=heatmap_gs[0, 0],
-                                         wspace=0.0, hspace=0.0)
+    scale_subplot = gridspec.GridSpecFromSubplotSpec(
+        1, 3, subplot_spec=heatmap_gs[0, 0], wspace=0.0, hspace=0.0
+    )
     scale_ax = fig.add_subplot(scale_subplot[0, 1])
     cbar = fig.colorbar(ax_map, scale_ax, ticks=cbticks)
     if title:
         cbar.set_label(title, fontsize=6)
-    cbar.ax.yaxis.set_ticks_position('left')
-    cbar.ax.yaxis.set_label_position('left')
+    cbar.ax.yaxis.set_ticks_position("left")
+    cbar.ax.yaxis.set_label_position("left")
     cbar.ax.tick_params(labelsize=6)
     cbar.outline.set_linewidth(0)
     return cbar
@@ -312,37 +358,38 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
     fig = plt.figure(figsize=(figsize, figsize))
     # if title:
     #     fig.suptitle(title)
-    heatmap_gs = gridspec.GridSpec(2, 2, wspace=0.0, hspace=0.0,
-                                   width_ratios=[0.3, 1],
-                                   height_ratios=[0.3, 1])
+    heatmap_gs = gridspec.GridSpec(
+        2, 2, wspace=0.0, hspace=0.0, width_ratios=[0.3, 1], height_ratios=[0.3, 1]
+    )
 
     # Add column and row dendrograms/axes to figure
-    coldend = add_mpl_dendrogram(dfr, fig, heatmap_gs,
-                                 orientation='col')
-    rowdend = add_mpl_dendrogram(dfr, fig, heatmap_gs,
-                                 orientation='row')
+    coldend = add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation="col")
+    rowdend = add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation="row")
 
     # Add heatmap axes to figure, with rows/columns as in the dendrograms
     heatmap_axes = get_mpl_heatmap_axes(dfr, fig, heatmap_gs)
-    ax_map = heatmap_axes.imshow(dfr.ix[rowdend['dendrogram']['leaves'],
-                                        coldend['dendrogram']['leaves']],
-                                 interpolation='nearest',
-                                 cmap=params.cmap, origin='lower',
-                                 vmin=params.vmin, vmax=params.vmax,
-                                 aspect='auto')
+    ax_map = heatmap_axes.imshow(
+        dfr.iloc[rowdend["dendrogram"]["leaves"], coldend["dendrogram"]["leaves"]],
+        interpolation="nearest",
+        cmap=params.cmap,
+        origin="lower",
+        vmin=params.vmin,
+        vmax=params.vmax,
+        aspect="auto",
+    )
 
     # Are there class colourbars to add?
     if params.classes is not None:
-        add_mpl_colorbar(dfr, fig, coldend, params,
-                         orientation='col')
-        add_mpl_colorbar(dfr, fig, rowdend, params,
-                         orientation='row')
+        add_mpl_colorbar(dfr, fig, coldend, params, orientation="col")
+        add_mpl_colorbar(dfr, fig, rowdend, params, orientation="row")
 
     # Add heatmap labels
-    add_mpl_labels(heatmap_axes,
-                   dfr.index[rowdend['dendrogram']['leaves']],
-                   dfr.index[coldend['dendrogram']['leaves']],
-                   params)
+    add_mpl_labels(
+        heatmap_axes,
+        dfr.index[rowdend["dendrogram"]["leaves"]],
+        dfr.index[coldend["dendrogram"]["leaves"]],
+        params,
+    )
 
     # Add colour scale
     add_mpl_colorscale(fig, heatmap_gs, ax_map, params, title)
