@@ -178,6 +178,6 @@ class TestReportSubcommand(unittest.TestCase):
         """test reporting of run results in the database"""
         subcommands.subcmd_report(self.argsdict["run_results"], self.logger)
 
-    def test_matrice(self):
-        """test reporting of runatrices in the database"""
+    def test_matrices(self):
+        """test reporting of run matrices in the database"""
         subcommands.subcmd_report(self.argsdict["run_matrices"], self.logger)
