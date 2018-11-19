@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 """test_subcmd_05_report.py
 
 Test report subcommand for pyani
 
 The test suite is intended to be run from the repository root using:
 
-nosetests -v
+pytest -v
 
 Individual test classes can be run using, e.g.:
 
@@ -66,8 +65,6 @@ import shutil
 import unittest
 
 from argparse import Namespace
-
-from nose.tools import assert_equal
 
 from pyani.scripts import subcommands
 

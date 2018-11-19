@@ -7,11 +7,7 @@ Test index subcommand for pyani
 
 The test suite is intended to be run from the repository root using:
 
-nosetests -v
-
-Individual test classes can be run using, e.g.:
-
-nosetests -v tests/test_subcmd_01_download.py:TestDownloadSubcommand
+pytest -v
 
 Each command CMD available at the command line as pyani <CMD> is
 tested in its own class as a subclass of unittest.TestCase, where
@@ -67,8 +63,6 @@ import unittest
 
 from argparse import Namespace
 
-from nose.tools import assert_equal
-
 from pyani.scripts import subcommands
 
 
@@ -107,7 +101,7 @@ class TestIndexSubcommand(unittest.TestCase):
         for fname in ("labels.txt", "classes.txt"):
             with open(os.path.join(self.outdir, fname)) as ofh:
                 with open(os.path.join(self.tgtdir, fname)) as tfh:
-                    assert_equal(
+                    self.assertEqual(
                         sorted(ofh.readlines()),
                         sorted(tfh.readlines()),
                         msg="{} files differ".format(fname),
@@ -119,6 +113,6 @@ class TestIndexSubcommand(unittest.TestCase):
         ):
             with open(os.path.join(self.outdir, fname)) as ofh:
                 with open(os.path.join(self.tgtdir, fname)) as tfh:
-                    assert_equal(
+                    self.assertEqual(
                         ofh.read(), tfh.read(), msg="{} files differ".format(fname)
                     )

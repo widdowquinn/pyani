@@ -1,17 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 """test_subcmd_03_createdb.py
 
 Test createdb subcommand for pyani
 
 The test suite is intended to be run from the repository root using:
 
-nosetests -v
-
-Individual test classes can be run using, e.g.:
-
-nosetests -v tests/test_subcmd_01_download.py:TestDownloadSubcommand
+pytest -v
 
 Each command CMD available at the command line as pyani <CMD> is
 tested in its own class as a subclass of unittest.TestCase, where
@@ -66,8 +61,6 @@ import shutil
 import unittest
 
 from argparse import Namespace
-
-from nose.tools import assert_equal
 
 from pyani.scripts import subcommands
 

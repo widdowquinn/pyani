@@ -8,9 +8,6 @@ These tests are intended to be run from the repository root using:
 
 pytest -v
 
-print() statements will be caught by nosetests unless there is an
-error. They can also be recovered with the -s option.
-
 (c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
