@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """test_multiprocessing.py
 
 Test run_multiprocessing.py module.
@@ -12,7 +11,7 @@ nosetests -v
 print() statements will be caught by nosetests unless there is an
 error. They can also be recovered with the -s option.
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -30,7 +29,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -53,8 +52,6 @@ THE SOFTWARE.
 
 import os
 import unittest
-
-from nose.tools import assert_equal, nottest
 
 from pyani import run_multiprocessing, pyani_jobs, anib
 
@@ -82,7 +79,7 @@ class TestMultiprocessing(unittest.TestCase):
     def test_multiprocessing_run(self):
         """multiprocessing() runs basic jobs."""
         result = run_multiprocessing.multiprocessing_run(self.cmdlist)
-        assert_equal(0, result)
+        self.assertEqual(0, result)
 
     def test_cmdsets(self):
         """module builds command sets."""
@@ -91,7 +88,7 @@ class TestMultiprocessing(unittest.TestCase):
         job1.add_dependency(job2)
         cmdsets = run_multiprocessing.populate_cmdsets(job1, list(), depth=1)
         target = [{cmd} for cmd in self.cmds]
-        assert_equal(cmdsets, target)
+        self.assertEqual(cmdsets, target)
 
     def test_dependency_graph_run(self):
         """module runs dependency graph."""
@@ -99,4 +96,4 @@ class TestMultiprocessing(unittest.TestCase):
         blastcmds = anib.make_blastcmd_builder("ANIb", self.outdir)
         jobgraph = anib.make_job_graph(self.infiles, fragresult[0], blastcmds)
         result = run_multiprocessing.run_dependency_graph(jobgraph)
-        assert_equal(0, result)
+        self.assertEqual(0, result)
