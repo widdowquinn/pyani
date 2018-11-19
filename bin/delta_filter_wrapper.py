@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 #
 # delta_filter_wrapper.py
 #
@@ -63,7 +64,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-
+import shlex
 import subprocess
 import sys
 
@@ -75,6 +76,9 @@ outfname = sys.argv[-1]
 sys.stdout.write("script called with %s" % sys.argv)
 
 # Run delta-filter, routing output to the named file
-with open(outfname, 'w') as ofh:
-    ofh.write(subprocess.run([df_exe] + args,
-                             stdout=subprocess.PIPE).stdout.decode("utf-8"))
+with open(outfname, "w") as ofh:
+    ofh.write(
+        subprocess.run(
+            [shlex.quote(_) for _ in [df_exe] + args], stdout=subprocess.PIPE
+        ).stdout.decode("utf-8")
+    )
