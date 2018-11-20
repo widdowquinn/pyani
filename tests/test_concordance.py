@@ -52,15 +52,13 @@ THE SOFTWARE.
 
 import os
 import shutil
-import subprocess
-import sys
 import unittest
 
 import pandas as pd
 import pytest
 
 from pyani import run_multiprocessing as run_mp
-from pyani import anib, anim, tetra, pyani_files, pyani_config
+from pyani import anib, anim, tetra, pyani_files
 
 
 def parse_jspecies(infile):

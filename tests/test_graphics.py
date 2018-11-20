@@ -52,7 +52,6 @@ THE SOFTWARE.
 
 import os
 import pandas as pd
-import shutil
 
 from pyani import pyani_graphics, pyani_config, pyani_tools
 

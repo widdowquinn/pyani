@@ -262,9 +262,9 @@ def add_dblabels(dbpath, run_id, labelspath):
     label_ids = []
     with open(labelspath, "r") as lfh:
         for line in lfh.readlines():
-            hash, stem, label = line.strip().split("\t")
+            genomehash, _, label = line.strip().split("\t")
             try:
-                genome_id = pyani_db.get_genome(dbpath, hash)[0][0]
+                genome_id = pyani_db.get_genome(dbpath, genomehash)[0][0]
             except IndexError:
                 continue
             label_ids.append(
@@ -295,9 +295,9 @@ def add_dbclasses(dbpath, run_id, classespath):
     class_ids = []
     with open(classespath, "r") as lfh:
         for line in lfh.readlines():
-            hash, stem, gclass = line.strip().split("\t")
+            genomehash, _, gclass = line.strip().split("\t")
             try:
-                genome_id = pyani_db.get_genome(dbpath, hash)[0][0]
+                genome_id = pyani_db.get_genome(dbpath, genomehash)[0][0]
             except IndexError:
                 continue
             class_ids.append(

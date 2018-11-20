@@ -61,7 +61,6 @@ THE SOFTWARE.
 
 import logging
 import os
-import shutil
 import unittest
 
 from argparse import Namespace

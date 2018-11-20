@@ -154,7 +154,7 @@ class TestNUCmerCmdline(unittest.TestCase):
 
     def test_maxmatch_cmd_generation(self):
         """generate NUCmer command line with maxmatch."""
-        ncmd, fcmd = anim.construct_nucmer_cmdline(
+        ncmd, _ = anim.construct_nucmer_cmdline(
             "file1.fna", "file2.fna", outdir=self.outdir, maxmatch=True
         )
         self.assertEqual(ncmd, self.ntgtmax)

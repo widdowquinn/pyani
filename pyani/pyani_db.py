@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Module providing useful functions for manipulating pyani's SQLite3 db.
 
-(c) The James Hutton Institute 2016-2017
+(c) The James Hutton Institute 2016-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -19,7 +19,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2016-2017 The James Hutton Institute
+Copyright (c) 2016-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -289,7 +289,6 @@ SQL_GETRUNSGENOMES = """
           JOIN genomes ON runs_genomes.genome_id=genomes.genome_id
           JOIN classes ON runs.run_id=classes.run_id AND
                           genomes.genome_id=classes.genome_id
-          
           JOIN labels ON runs.run_id=labels.run_id AND
                          genomes.genome_id=labels.genome_id
      ORDER BY runs.run_id, genomes.genome_id
@@ -386,14 +385,14 @@ def get_method(dbpath, run_id):
 
 
 # Add a new genome to the database
-def add_genome(dbpath, hash, filepath, length, desc):
+def add_genome(dbpath, genomehash, filepath, length, desc):
     """Add a genome to the passed SQLite3 database."""
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
         # The following line will fail if the genome is already in the
         # database, i.e. if the hash is not unique
-        cur.execute(SQL_ADDGENOME, (hash, filepath, length, desc))
+        cur.execute(SQL_ADDGENOME, (genomehash, filepath, length, desc))
     return cur.lastrowid
 
 
@@ -427,7 +426,7 @@ def get_genome_path(dbpath, genome_id):
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_GETGENOMEPATH, (genome_id, ))
+        cur.execute(SQL_GETGENOMEPATH, (genome_id,))
         result = cur.fetchone()
     return result[0]
 
@@ -438,7 +437,7 @@ def get_genome_length(dbpath, genome_id):
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_GETGENOMELENGTH, (genome_id, ))
+        cur.execute(SQL_GETGENOMELENGTH, (genome_id,))
         result = cur.fetchone()
     return result[0]
 
@@ -455,8 +454,20 @@ def get_genome_ids_by_run(dbpath, run_id):
 
 
 # Add a comparison to the database
-def add_comparison(dbpath, qid, sid, aln_len, sim_errs, pid, qcov, scov,
-                   program, version, fragsize=0, maxmatch=None):
+def add_comparison(
+    dbpath,
+    qid,
+    sid,
+    aln_len,
+    sim_errs,
+    pid,
+    qcov,
+    scov,
+    program,
+    version,
+    fragsize=0,
+    maxmatch=None,
+):
     """Add a single pairwise comparison to the database.
 
     NOTE: Due to issues with Python/SQLite NULL queries,
@@ -465,15 +476,29 @@ def add_comparison(dbpath, qid, sid, aln_len, sim_errs, pid, qcov, scov,
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_ADDCOMPARISON, (qid, sid, aln_len, sim_errs, pid,
-                                        qcov, scov, program, version,
-                                        fragsize, maxmatch))
+        cur.execute(
+            SQL_ADDCOMPARISON,
+            (
+                qid,
+                sid,
+                aln_len,
+                sim_errs,
+                pid,
+                qcov,
+                scov,
+                program,
+                version,
+                fragsize,
+                maxmatch,
+            ),
+        )
     return cur.lastrowid
 
 
 # Add a comparison/run link to the database
-def add_comparison_link(dbpath, run_id, qid, sid, program, version,
-                        fragsize=0, maxmatch=None):
+def add_comparison_link(
+    dbpath, run_id, qid, sid, program, version, fragsize=0, maxmatch=None
+):
     """Add a single pairwise comparison:run ID link to the database.
 
     NOTE: Due to issues with Python/SQLite NULL queries,
@@ -482,14 +507,15 @@ def add_comparison_link(dbpath, run_id, qid, sid, program, version,
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_ADDCOMPARISONLINK, (run_id, qid, sid, program,
-                                            version, fragsize, maxmatch))
+        cur.execute(
+            SQL_ADDCOMPARISONLINK,
+            (run_id, qid, sid, program, version, fragsize, maxmatch),
+        )
     return cur.lastrowid
 
 
 # Check if a comparison has been performed
-def get_comparison(dbpath, qid, sid, program, version,
-                   fragsize=0, maxmatch=None):
+def get_comparison(dbpath, qid, sid, program, version, fragsize=0, maxmatch=None):
     """Return the genome ID of a specified comparison.
 
     NOTE: Due to issues with Python/SQLite NULL queries,
@@ -498,8 +524,7 @@ def get_comparison(dbpath, qid, sid, program, version,
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_GETCOMPARISON, (qid, sid, program, version,
-                                        fragsize, maxmatch))
+        cur.execute(SQL_GETCOMPARISON, (qid, sid, program, version, fragsize, maxmatch))
         result = cur.fetchone()
     return result
 
@@ -568,8 +593,7 @@ def add_genome_label(dbpath, genome_id, run_id, label):
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_ADDGENOMELABEL,
-                    (int(genome_id), int(run_id), str(label)))
+        cur.execute(SQL_ADDGENOMELABEL, (int(genome_id), int(run_id), str(label)))
     return cur.lastrowid
 
 
@@ -580,8 +604,7 @@ def update_genome_label(dbpath, genome_id, run_id, label):
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_UPDATEGENOMELABEL,
-                    (str(label), int(genome_id), int(run_id)))
+        cur.execute(SQL_UPDATEGENOMELABEL, (str(label), int(genome_id), int(run_id)))
     return cur.lastrowid
 
 
@@ -605,8 +628,7 @@ def add_genome_class(dbpath, genome_id, run_id, gclass):
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_ADDGENOMECLASS,
-                    (int(genome_id), int(run_id), str(gclass)))
+        cur.execute(SQL_ADDGENOMECLASS, (int(genome_id), int(run_id), str(gclass)))
     return cur.lastrowid
 
 
@@ -616,8 +638,7 @@ def update_genome_class(dbpath, genome_id, run_id, label):
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_UPDATEGENOMECLASS,
-                    (str(label), int(genome_id), int(run_id)))
+        cur.execute(SQL_UPDATEGENOMECLASS, (str(label), int(genome_id), int(run_id)))
     return cur.lastrowid
 
 
@@ -642,11 +663,21 @@ def get_genome_class(dbpath, genome_id, run_id):
 def get_df_comparisons(dbpath, run_id):
     """Return a dataframe describing all comparisons for a single run."""
     data = get_comparisons_by_run(dbpath, run_id)
-    headers = ['query', 'subject',
-               'query ID', 'subject ID', 'aligned length',
-               'similarity errors', 'percentage identity',
-               'query coverage', 'subject coverage', 'program',
-               'version', 'fragsize', 'maxmatch']
+    headers = [
+        "query",
+        "subject",
+        "query ID",
+        "subject ID",
+        "aligned length",
+        "similarity errors",
+        "percentage identity",
+        "query coverage",
+        "subject coverage",
+        "program",
+        "version",
+        "fragsize",
+        "maxmatch",
+    ]
     df = pd.DataFrame(data)
     df.columns = headers
     return df
@@ -656,8 +687,17 @@ def get_df_comparisons(dbpath, run_id):
 def get_df_genome_runs(dbpath):
     """Return dataframe describing all runs for which a genome is involved."""
     data = get_runs_by_genomes(dbpath)
-    headers = ['genome ID', 'description', 'path', 'MD5 hash',
-               'genome length', 'run ID', 'name', 'method', 'date run']
+    headers = [
+        "genome ID",
+        "description",
+        "path",
+        "MD5 hash",
+        "genome length",
+        "run ID",
+        "name",
+        "method",
+        "date run",
+    ]
     df = pd.DataFrame(data)
     df.columns = headers
     return df
@@ -667,9 +707,19 @@ def get_df_genome_runs(dbpath):
 def get_df_run_genomes(dbpath):
     """Return dataframe describing all genomes involved with each run."""
     data = get_genomes_by_runs(dbpath)
-    headers = ['run ID', 'name', 'method', 'date run',
-               'genome ID', 'description', 'path', 'MD5 hash',
-               'genome length', 'class', 'label']
+    headers = [
+        "run ID",
+        "name",
+        "method",
+        "date run",
+        "genome ID",
+        "description",
+        "path",
+        "MD5 hash",
+        "genome length",
+        "class",
+        "label",
+    ]
     df = pd.DataFrame(data)
     df.columns = headers
     return df
@@ -679,8 +729,7 @@ def get_df_run_genomes(dbpath):
 def get_df_genomes(dbpath):
     """Return dataframe describing all genomes in the database."""
     data = get_all_genomes(dbpath)
-    headers = ['genome ID', 'description', 'path',
-               'MD5 hash', 'genome length']
+    headers = ["genome ID", "description", "path", "MD5 hash", "genome length"]
     df = pd.DataFrame(data)
     df.columns = headers
     return df
@@ -690,7 +739,7 @@ def get_df_genomes(dbpath):
 def get_df_runs(dbpath):
     """Return dataframe describing all runs in the database."""
     data = get_all_runs(dbpath)
-    headers = ['run ID', 'name', 'method', 'date run', 'command-line']
+    headers = ["run ID", "name", "method", "date run", "command-line"]
     df = pd.DataFrame(data)
     df.columns = headers
     return df
@@ -702,14 +751,12 @@ def relabel_genomes_from_file(dbpath, relabelfname, run_id, force=False):
     newlabels = parse_labelfile(relabelfname)
     genomes = get_df_genomes(dbpath)
     genomes.set_index("MD5 hash", inplace=True)
-    for hash in newlabels:
-        genome_id = genomes.loc[hash]['genome ID']
+    for genomehash in newlabels:
+        genome_id = genomes.loc[genomehash]["genome ID"]
         if force:
-            lastrow = add_genome_label(
-                dbpath, genome_id, run_id, str(newlabels[hash]))
+            add_genome_label(dbpath, genome_id, run_id, str(newlabels[genomehash]))
         else:
-            lastrow = update_genome_label(
-                dbpath, genome_id, run_id, str(newlabels[hash]))
+            update_genome_label(dbpath, genome_id, run_id, str(newlabels[genomehash]))
 
 
 # Change classes of genomes in the database
@@ -718,14 +765,12 @@ def reclass_genomes_from_file(dbpath, reclassfname, run_id, force=False):
     newclasses = parse_labelfile(reclassfname)
     genomes = get_df_genomes(dbpath)
     genomes.set_index("MD5 hash", inplace=True)
-    for hash in newclasses:
-        genome_id = genomes.loc[hash]['genome ID']
+    for genomehash in newclasses:
+        genome_id = genomes.loc[genomehash]["genome ID"]
         if force:
-            lastrow = add_genome_class(
-                dbpath, genome_id, run_id, str(newclasses[hash]))
+            add_genome_class(dbpath, genome_id, run_id, str(newclasses[genomehash]))
         else:
-            lastrow = update_genome_class(
-                dbpath, genome_id, run_id, str(newclasses[hash]))
+            update_genome_class(dbpath, genome_id, run_id, str(newclasses[genomehash]))
 
 
 # Parse labelfile for genomes in database
@@ -738,9 +783,9 @@ def parse_labelfile(fname):
     Returns a dictionary keyed by genome hash, with value being the new label.
     """
     newlabels = {}
-    with open(fname, 'r') as infh:
+    with open(fname, "r") as infh:
         for line in infh:
-            cleanline = line.strip().split('\t')
+            cleanline = line.strip().split("\t")
             newlabels[cleanline[0]] = cleanline[1]
     return newlabels
 
@@ -779,57 +824,68 @@ class ANIResults(object):
 
         Creates five empty dataframes for ANI results.
         """
-        self.identity = pd.DataFrame(index=self.genome_ids,
-                                     columns=self.genome_ids, dtype=float)
-        self.coverage = pd.DataFrame(index=self.genome_ids,
-                                     columns=self.genome_ids, dtype=float)
-        self.aln_lengths = pd.DataFrame(index=self.genome_ids,
-                                        columns=self.genome_ids, dtype=float)
-        self.sim_errors = pd.DataFrame(index=self.genome_ids,
-                                       columns=self.genome_ids, dtype=float)
-        self.hadamard = pd.DataFrame(index=self.genome_ids,
-                                     columns=self.genome_ids, dtype=float)
+        self.identity = pd.DataFrame(
+            index=self.genome_ids, columns=self.genome_ids, dtype=float
+        )
+        self.coverage = pd.DataFrame(
+            index=self.genome_ids, columns=self.genome_ids, dtype=float
+        )
+        self.aln_lengths = pd.DataFrame(
+            index=self.genome_ids, columns=self.genome_ids, dtype=float
+        )
+        self.sim_errors = pd.DataFrame(
+            index=self.genome_ids, columns=self.genome_ids, dtype=float
+        )
+        self.hadamard = pd.DataFrame(
+            index=self.genome_ids, columns=self.genome_ids, dtype=float
+        )
 
     def __get_labels(self):
         """Retrieve genome IDs and labels for this run."""
         self.genome_ids = get_genome_ids_by_run(self.dbpath, self.run_id)
-        self.labels = {genome_id: '_'.join([
-            get_genome_label(self.dbpath, genome_id,
-                             self.run_id), str(genome_id)]) for
-                       genome_id in self.genome_ids}
-        self.classes = {genome_id: '_'.join([
-            get_genome_class(self.dbpath, genome_id,
-                             self.run_id), str(genome_id)]) for
-                        genome_id in self.genome_ids}
-        self.lengths = {genome_id: get_genome_length(self.dbpath, genome_id)
-                        for genome_id in self.genome_ids}
+        self.labels = {
+            genome_id: "_".join(
+                [get_genome_label(self.dbpath, genome_id, self.run_id), str(genome_id)]
+            )
+            for genome_id in self.genome_ids
+        }
+        self.classes = {
+            genome_id: "_".join(
+                [get_genome_class(self.dbpath, genome_id, self.run_id), str(genome_id)]
+            )
+            for genome_id in self.genome_ids
+        }
+        self.lengths = {
+            genome_id: get_genome_length(self.dbpath, genome_id)
+            for genome_id in self.genome_ids
+        }
 
     def __get_data(self):
         """Populate dataframes from database."""
         comparisons = get_df_comparisons(self.dbpath, self.run_id)
         for idx, row in comparisons.iterrows():
-            qid, sid = row['query ID'], row['subject ID']
+            qid, sid = row["query ID"], row["subject ID"]
 
             # Add percentage identity values; ANIm is symmetrical
-            self.identity.loc[qid, sid] = row['percentage identity']
-            if self.method == 'ANIm':
-                self.identity.loc[sid, qid] = row['percentage identity']
+            self.identity.loc[qid, sid] = row["percentage identity"]
+            if self.method == "ANIm":
+                self.identity.loc[sid, qid] = row["percentage identity"]
 
             # Add query coverage values; ANIm only has a single comparison,
             # so the lower triangle is subject coverage
-            self.coverage.loc[qid, sid] = row['query coverage']
-            if self.method == 'ANIm':
-                self.coverage.loc[sid, qid] = row['subject coverage']
+            self.coverage.loc[qid, sid] = row["query coverage"]
+            if self.method == "ANIm":
+                self.coverage.loc[sid, qid] = row["subject coverage"]
 
             # Add similarity errors; ANIm is symmetrical
-            self.sim_errors.loc[qid, sid] = row['similarity errors']
-            if self.method == 'ANIm':
-                self.sim_errors.loc[sid, qid] = row['similarity errors']
+            self.sim_errors.loc[qid, sid] = row["similarity errors"]
+            if self.method == "ANIm":
+                self.sim_errors.loc[sid, qid] = row["similarity errors"]
 
             # Add alignment lengths; ANIm is symmetrical
-            self.aln_lengths.loc[qid, sid] = row['aligned length']
-            if self.method == 'ANIm':
-                self.aln_lengths.loc[sid, qid] = row['aligned length']
+            self.aln_lengths.loc[qid, sid] = row["aligned length"]
+            if self.method == "ANIm":
+                self.aln_lengths.loc[sid, qid] = row["aligned length"]
 
             # Calculate Hadamard matrix
             self.hadamard = self.identity * self.coverage
@@ -843,9 +899,13 @@ class ANIResults(object):
             self.aln_lengths.loc[idx, idx] = length
 
         # Add labels and indices
-        for matname in ['identity', 'coverage', 'aln_lengths',
-                        'sim_errors', 'hadamard']:
+        for matname in [
+            "identity",
+            "coverage",
+            "aln_lengths",
+            "sim_errors",
+            "hadamard",
+        ]:
             mat = getattr(self, matname)
             mat.index = [self.labels[val] for val in mat.index]
-            mat.columns = [self.labels[val] for val in
-                           mat.columns]
+            mat.columns = [self.labels[val] for val in mat.columns]

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Module providing functions useful for downloading genomes from NCBI.
 
-(c) The James Hutton Institute 2016-2017
+(c) The James Hutton Institute 2016-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -19,7 +19,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2016-2017 The James Hutton Institute
+Copyright (c) 2016-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ from tqdm import tqdm
 from namedlist import namedlist
 
 
-taxonregex = re.compile("([0-9]\,?){1,}")
+taxonregex = re.compile(r"([0-9]\,?){1,}")
 
 
 # Custom exceptions
@@ -249,7 +249,7 @@ def compile_url(filestem, suffix, ftpstem):
     rm.run
     wgsmaster.gbff.gz
     """
-    gc, aa, an = tuple(filestem.split("_", 2))
+    gc, aa, _ = tuple(filestem.split("_", 2))
     aaval = aa.split(".")[0]
     subdirs = "/".join([aa[i : i + 3] for i in range(0, len(aaval), 3)])
 
@@ -349,12 +349,12 @@ def extract_contigs(fname, ename):
 
 
 # Using a genomes UID, create class and label text files
-def create_labels(classification, filestem, hash):
+def create_labels(classification, filestem, genomehash):
     """Return class and label text from UID classification.
 
     - classification  Classification named tuple (org, genus, species, strain)
     - filestem        filestem of input genome file
-    - hash            MD5 hash of genome data
+    - genomehash            MD5 hash of genome data
 
     The 'class' data is the organism as provided in the passed Classification
     named tuple; the 'label' data is genus, species and strain information
@@ -373,8 +373,10 @@ def create_labels(classification, filestem, hash):
         classification.species,
         classification.strain,
     )
-    labeltxt = "{0}\t{1}_genomic\t{2} {3} {4}".format(hash, *class_data)
-    classtxt = "{0}\t{1}_genomic\t{2}".format(hash, filestem, classification.organism)
+    labeltxt = "{0}\t{1}_genomic\t{2} {3} {4}".format(genomehash, *class_data)
+    classtxt = "{0}\t{1}_genomic\t{2}".format(
+        genomehash, filestem, classification.organism
+    )
 
     return (labeltxt, classtxt)
 

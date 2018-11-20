@@ -40,55 +40,56 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import os
 import sys
 
-import numpy as np
-import pandas as pd
 
 def colour_rows(series, even="#DDECF5", odd="#6CB6E4"):
     """Colour rows in a dataframe."""
     is_odd = [idx % 2 for idx, row in enumerate(series.index)]
-    return ['background-color: %s' % odd if v
-            else 'background-color: %s' % even for v in is_odd]
+    return [
+        "background-color: %s" % odd if v else "background-color: %s" % even
+        for v in is_odd
+    ]
 
 
 def table_padding():
     """Return HTML for table cell padding."""
-    return dict(selector="td",
-                props=[('padding', '15px')])
+    return dict(selector="td", props=[("padding", "15px")])
 
 
 def hover_highlight(hover_colour="#FFFF99"):
     """Return HTML style to colour dataframe row when hovering."""
-    return dict(selector="tr:hover",
-                props=[('background-color', '%s' % hover_colour)])
+    return dict(selector="tr:hover", props=[("background-color", "%s" % hover_colour)])
 
 
 def header_font():
     """Return header HTML font style."""
-    return dict(selector="th",
-                props=[('text-align', 'center'),
-                       ('font-family', 'Helvetica'),
-                       ('font-size', 'small')])
+    return dict(
+        selector="th",
+        props=[
+            ("text-align", "center"),
+            ("font-family", "Helvetica"),
+            ("font-size", "small"),
+        ],
+    )
 
 
 def colour_identity(series, threshold=0.95, colour="#FF2222"):
     """Highlight percentage identities over a threshold."""
-    if series.name == 'percentage identity':
+    if series.name == "percentage identity":
         mask = series >= threshold
-        return ['color: %s' % colour if v else '' for v in mask]
+        return ["color: %s" % colour if v else "" for v in mask]
     else:
-        return ['' for v in series]
+        return ["" for v in series]
 
 
 def colour_coverage(series, threshold=0.95, colour="#FF2222"):
     """Highlight percent coverage over a threshold."""
-    if 'coverage' in str(series.name):
+    if "coverage" in str(series.name):
         mask = series >= threshold
-        return ['color: %s' % colour if v else '' for v in mask]
+        return ["color: %s" % colour if v else "" for v in mask]
     else:
-        return ['' for v in series]
+        return ["" for v in series]
 
 
 def colour_numeric(val, threshold=0.95, colour="#FF2222"):
@@ -96,9 +97,9 @@ def colour_numeric(val, threshold=0.95, colour="#FF2222"):
     if val > threshold:
         colour = colour
     else:
-        colour = 'black'
-    return 'color: %s' % colour
-    
+        colour = "black"
+    return "color: %s" % colour
+
 
 # Write a dataframe in pyani-styled HTML
 def write_styled_html(path, df, index=None, colour_num=False):
@@ -123,17 +124,16 @@ def write_styled_html(path, df, index=None, colour_num=False):
         styled = styled.applymap(colour_numeric)
 
     # Apply styles
-    styled = styled.set_table_styles([hover_highlight(),
-                                      header_font(),
-                                      table_padding()])
+    styled = styled.set_table_styles(
+        [hover_highlight(), header_font(), table_padding()]
+    )
 
     # Set font to Helvetica
-    styled = styled.set_properties(**{'font-family': 'Helvetica',
-                                      'font-size': 'small'})
+    styled = styled.set_properties(**{"font-family": "Helvetica", "font-size": "small"})
 
     # Write styled HTML to path
     html = styled.render()
-    with open(path, 'w') as ofh:
+    with open(path, "w") as ofh:
         ofh.write(html)
 
 
@@ -141,27 +141,29 @@ def write_styled_html(path, df, index=None, colour_num=False):
 def write_to_stdout(stem, df, show_index=False, line_width=None):
     """Write dataframe in tab-separated form to STDOUT."""
     sys.stdout.write("TABLE: %s\n" % stem)
-    sys.stdout.write(df.to_string(index=show_index, line_width=line_width) +
-                     '\n\n')
-        
-        
+    sys.stdout.write(df.to_string(index=show_index, line_width=line_width) + "\n\n")
+
+
 # Write a table returned from the pyani database in the requested format
-def write_dbtable(df, path=None, formats=('tab',), index=False,
-                  show_index=False, colour_num=False):
+def write_dbtable(
+    df, path=None, formats=("tab",), index=False, show_index=False, colour_num=False
+):
     """Write database result table to output file in named format.
 
     - colour_num     use colours for values in HTML output for identity/
                      coverage tables
     """
-    formatdict = {'tab': (df.to_csv, {'sep': '\t', 'index': False}, '.tab'),
-                  'excel': (df.to_excel, {'index': show_index}, '.xlsx'),
-                  'html': (write_styled_html, {'df': df, 'index': index,
-                                               'colour_num': colour_num},
-                           '.html'),
-                  'stdout': (write_to_stdout, {'df': df,
-                                               'show_index': show_index}, '')
+    formatdict = {
+        "tab": (df.to_csv, {"sep": "\t", "index": False}, ".tab"),
+        "excel": (df.to_excel, {"index": show_index}, ".xlsx"),
+        "html": (
+            write_styled_html,
+            {"df": df, "index": index, "colour_num": colour_num},
+            ".html",
+        ),
+        "stdout": (write_to_stdout, {"df": df, "show_index": show_index}, ""),
     }
-    for format in formats:
-        func, args, ext = formatdict[format]
+    for fmt in formats:
+        func, args, ext = formatdict[fmt]
         ofname = path + ext
         func(ofname, **args)

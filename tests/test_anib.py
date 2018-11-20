@@ -294,7 +294,8 @@ class TestBLASTCmdline(unittest.TestCase):
             os.path.join(self.seqdir, "NC_002696.fna"), self.fmtdboutdir
         )
         self.assertEqual(cmd[0], self.fmtdbcmd)  # correct command
-        assert os.path.isfile(cmd[1])  # creates new file
+        if not os.path.isfile(cmd[1]):  # creates new file
+            raise AssertionError()
 
     def test_makeblastdb_generation(self):
         """generate makeblastdb command-line."""
@@ -375,10 +376,12 @@ class TestBLASTCmdline(unittest.TestCase):
         # We check that the main script job is a blastn job, and that there
         # is a single dependency, which is a makeblastdb job
         for job in jobgraph:
-            assert job.script.startswith("blastn")
+            if not job.script.startswith("blastn"):
+                raise AssertionError()
             self.assertEqual(1, len(job.dependencies))
             dep = job.dependencies[0]
-            assert dep.script.startswith("makeblastdb")
+            if not dep.script.startswith("makeblastdb"):
+                raise AssertionError()
 
     @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_blastall_graph(self):
@@ -389,10 +392,12 @@ class TestBLASTCmdline(unittest.TestCase):
         # We check that the main script job is a blastn job, and that there
         # is a single dependency, which is a makeblastdb job
         for job in jobgraph:
-            assert job.script.startswith("blastall -p blastn")
+            if not job.script.startswith("blastall -p blastn"):
+                raise AssertionError()
             self.assertEqual(1, len(job.dependencies))
             dep = job.dependencies[0]
-            assert dep.script.startswith("formatdb")
+            if not dep.script.startswith("formatdb"):
+                raise AssertionError()
 
 
 class TestFragments(unittest.TestCase):
@@ -429,12 +434,14 @@ class TestFragments(unittest.TestCase):
         result = anib.fragment_fasta_files(self.infnames, self.outdir, self.fraglen)
         # Are files created?
         for outfname in self.outfnames:
-            assert os.path.isfile(outfname)
+            if not os.path.isfile(outfname):
+                raise AssertionError()
 
         # Test fragment lengths
-        for accession, fragdict in result[-1].items():
-            for fragname, fraglen in fragdict.items():
-                assert fraglen <= self.fraglen
+        for _, fragdict in result[-1].items():
+            for _, fraglen in fragdict.items():
+                if not fraglen <= self.fraglen:
+                    raise AssertionError()
 
 
 class TestParsing(unittest.TestCase):

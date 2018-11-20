@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Implements the pyani script for classifying prokaryotic genomes.
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
 
 Contact: leighton.pritchard@hutton.ac.uk
@@ -18,7 +18,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -38,14 +38,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import logging
 import sys
 import time
 
 from .logger import build_logger
 from .parsers import parse_cmdline
 from .. import __version__
-from ..pyani_tools import last_exception
 
 
 # Main function

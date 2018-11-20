@@ -5,7 +5,7 @@
 
 Provides the anim subcommand for pyani
 
-(c) The James Hutton Institute 2017-18
+(c) The James Hutton Institute 2017-2018
 
 Author: Leighton Pritchard
 Contact: leighton.pritchard@hutton.ac.uk
@@ -22,7 +22,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017-18 The James Hutton Institute
+Copyright (c) 2017-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -318,7 +318,7 @@ def add_db_input_files(run_id, args, logger):
     # and add info to the current database
     for fastafile, hashfile in infiles:
         # Get genome data
-        inhash, filecheck = pyani_files.read_hash_string(hashfile)
+        inhash, _ = pyani_files.read_hash_string(hashfile)
         indesc = pyani_files.read_fasta_description(fastafile)
         abspath = os.path.abspath(fastafile)
         genome_len = pyani_tools.get_genome_length(abspath)

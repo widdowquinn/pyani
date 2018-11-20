@@ -422,7 +422,7 @@ def retrieve_asm_contigs(
         suffix = "genomic.gbff.gz"
 
     # Compile URL
-    gc, aa, an = tuple(filestem.split("_", 2))
+    gc, aa, _ = tuple(filestem.split("_", 2))
     aaval = aa.split(".")[0]
     subdirs = "/".join([aa[i : i + 3] for i in range(0, len(aaval), 3)])
 
