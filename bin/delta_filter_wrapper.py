@@ -76,9 +76,10 @@ outfname = sys.argv[-1]
 sys.stdout.write("script called with %s" % sys.argv)
 
 # Run delta-filter, routing output to the named file
+cmd = [shlex.quote(df_exe)] + [shlex.quote(_) for _ in args]
 with open(outfname, "w") as ofh:
     ofh.write(
         subprocess.run(
-            [shlex.quote(_) for _ in [df_exe] + args], stdout=subprocess.PIPE
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, shell=False
         ).stdout.decode("utf-8")
     )
