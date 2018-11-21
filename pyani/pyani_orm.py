@@ -235,6 +235,12 @@ class RunComparison(Base):
         return "<RunComparison(runcomparison_id={})>".format(self.runcomparison_id)
 
 
+def create_db(dbpath):
+    """Create an empty pyani SQLite3 database at the passed path"""
+    engine = create_engine("sqlite:///{}".format(dbpath), echo=False)
+    Base.metadata.create_all(engine)
+
+
 if __name__ == "__main__":
     # Create test database if run as script
 
