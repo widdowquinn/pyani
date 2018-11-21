@@ -52,25 +52,28 @@ def get_fasta_files(dirname=None):
     - dirname - path to input directory
     """
     if dirname is None:
-        dirname = '.'
-    infiles = get_input_files(dirname, '.fasta', '.fas', '.fa', '.fna',
-                              '.fsa_nt')
+        dirname = "."
+    infiles = get_input_files(dirname, ".fasta", ".fas", ".fa", ".fna", ".fsa_nt")
     return infiles
 
 
 # Return a list of paths to FASTA files in a directory
-def get_fasta_paths(dirname, extlist=['.fna', '.fa', '.fasta', '.fas']):
+def get_fasta_paths(dirname, extlist=None):
     """Return a list of paths to files matching a list of FASTA extensions.
 
     Returns the full path to each file.
     """
-    return [os.path.join(dirname, fname) for fname in os.listdir(dirname) if
-            os.path.isfile(os.path.join(dirname, fname)) and
-            os.path.splitext(fname)[-1] in extlist]
+    extlist = extlist or [".fna", ".fa", ".fasta", ".fas"]
+    return [
+        os.path.join(dirname, fname)
+        for fname in os.listdir(dirname)
+        if os.path.isfile(os.path.join(dirname, fname))
+        and os.path.splitext(fname)[-1] in extlist
+    ]
 
 
 # Get a list of FASTA files and corresponding hashes from the input directory
-def get_fasta_and_hash_paths(dirname='.'):
+def get_fasta_and_hash_paths(dirname="."):
     """Return a list of (FASTA file, hash file) tuples in passed directory.
 
     - dirname             - path to input directory
@@ -80,7 +83,7 @@ def get_fasta_and_hash_paths(dirname='.'):
     infiles = get_fasta_paths(dirname)
     outfiles = []
     for infile in infiles:
-        hashfile = os.path.splitext(infile)[0] + '.md5'
+        hashfile = os.path.splitext(infile)[0] + ".md5"
         if not os.path.isfile(hashfile):
             raise IOError("Hashfile %s does not exist" % hashfile)
         outfiles.append((infile, hashfile))
@@ -94,8 +97,7 @@ def get_input_files(dirname, *ext):
     - dirname - path to input directory
     - *ext - list of arguments describing permitted file extensions
     """
-    filelist = [f for f in os.listdir(dirname) if
-                os.path.splitext(f)[-1] in ext]
+    filelist = [f for f in os.listdir(dirname) if os.path.splitext(f)[-1] in ext]
     return [os.path.join(dirname, f) for f in filelist]
 
 
@@ -111,15 +113,16 @@ def get_sequence_lengths(fastafilenames):
     """
     tot_lengths = {}
     for fn in fastafilenames:
-        tot_lengths[os.path.splitext(os.path.split(fn)[-1])[0]] = \
-            sum([len(s) for s in SeqIO.parse(fn, 'fasta')])
+        tot_lengths[os.path.splitext(os.path.split(fn)[-1])[0]] = sum(
+            [len(s) for s in SeqIO.parse(fn, "fasta")]
+        )
     return tot_lengths
 
 
 # Get hash string from hash file
 def read_hash_string(filename):
     """Return the hash and file strings from the passed hash file."""
-    with open(filename, 'r') as ifh:
+    with open(filename, "r") as ifh:
         data = ifh.read().strip().split()
 
     # We expect the first string in the file to be the hash (the second is the
@@ -130,6 +133,6 @@ def read_hash_string(filename):
 # Get description string from FASTA file
 def read_fasta_description(filename):
     """Return the first description string from a FASTA file."""
-    for data in SeqIO.parse(filename, 'fasta'):
+    for data in SeqIO.parse(filename, "fasta"):
         if data.description:
             return data.description

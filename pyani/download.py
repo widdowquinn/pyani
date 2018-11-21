@@ -43,8 +43,9 @@ THE SOFTWARE.
 import hashlib
 import os
 import re
-import sys
+import shlex
 import subprocess
+import sys
 import traceback
 import urllib.request
 
@@ -345,8 +346,11 @@ def check_hash(fname, hashfile):
 # Extract contigs from a compressed file, using gunzip
 def extract_contigs(fname, ename):
     """Extract contents of fname to ename using gunzip."""
+    cmd = ["gunzip", "-c", shlex.quote(fname)]
     with open(ename, "w") as efh:
-        subprocess.run(["gunzip", "-c", fname], stdout=efh)  # can be subprocess.run
+        subprocess.run(
+            cmd, stdout=efh, check=True, shell=False
+        )  # can be subprocess.run
 
 
 # Using a genomes UID, create class and label text files

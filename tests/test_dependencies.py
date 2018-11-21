@@ -58,6 +58,8 @@ import unittest
 
 import pytest
 
+from pyani import pyani_config
+
 
 def test_import_biopython():
     """Test Biopython import."""
@@ -90,13 +92,10 @@ class TestDependencyExecutables(unittest.TestCase):
 
     def test_run_blast(self):
         """Test that BLAST+ is runnable."""
-        cmd = "blastn -version"
+        blastn_exe = pyani_config.BLASTN_DEFAULT
+        cmd = [blastn_exe, "-version"]
         result = subprocess.run(
-            cmd,
-            shell=sys.platform != "win32",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=True,
+            cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
         )
         print(result.stdout)
         self.assertEqual(result.stdout[:6], b"blastn")
@@ -104,26 +103,21 @@ class TestDependencyExecutables(unittest.TestCase):
     @pytest.mark.skip(reason="Deprecate legacy BLAST")
     def test_run_blastall(self):
         """Test that legacy BLAST is runnable."""
-        cmd = "blastall"
+        blastall_exe = pyani_config.BLASTALL_DEFAULT
+        cmd = blastall_exe
         # Can't use check=True, as blastall without arguments returns 1!
         result = subprocess.run(
-            cmd,
-            shell=sys.platform != "win32",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            cmd, shell=False, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         print(result.stdout)
         self.assertEqual(result.stdout[1:9], b"blastall")
 
     def test_run_nucmer(self):
         """Test that NUCmer is runnable."""
-        cmd = "nucmer --version"
+        nucmer_exe = pyani_config.NUCMER_DEFAULT
+        cmd = [nucmer_exe, "--version"]
         result = subprocess.run(
-            cmd,
-            shell=sys.platform != "win32",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=True,
+            cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
         )
         print(result.stderr)  # NUCmer puts output to STDERR!
         self.assertEqual(result.stderr[:6], b"nucmer")

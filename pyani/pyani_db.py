@@ -407,15 +407,15 @@ def add_genome_to_run(dbpath, run_id, genome_id):
 
 
 # Return the row corresponding to a single genome, defined by hash
-def get_genome(dbpath, hash, path=None):
+def get_genome(dbpath, genomehash, path=None):
     """Return genome data if the passed hash is in the genomes table."""
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
         if path is None:
-            cur.execute(SQL_GETGENOMEHASH, (hash,))
+            cur.execute(SQL_GETGENOMEHASH, (genomehash,))
         else:
-            cur.execute(SQL_GETGENOMEHASHPATH, (hash, path))
+            cur.execute(SQL_GETGENOMEHASHPATH, (genomehash, path))
         result = cur.fetchall()
     return result
 

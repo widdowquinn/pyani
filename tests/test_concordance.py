@@ -51,7 +51,6 @@ THE SOFTWARE.
 """
 
 import os
-import shutil
 import unittest
 
 import pandas as pd
