@@ -42,7 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from sqlalchemy import UniqueConstraint, create_engine
+from sqlalchemy import UniqueConstraint, create_engine, Table
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
@@ -50,6 +50,13 @@ from sqlalchemy.orm import relationship, sessionmaker
 # Using the declarative system
 Base = declarative_base()
 Session = sessionmaker()
+
+rungenome = Table(
+    "runs_genomes",
+    Base.metadata,
+    Column("genome_id", Integer, ForeignKey("genomes.genome_id")),
+    Column("run_id", Integer, ForeignKey("runs.run_id")),
+)
 
 
 class Class(Base):
@@ -106,6 +113,7 @@ class Genome(Base):
     """Describes an input genome for a pyani run"""
 
     __tablename__ = "genomes"
+    __table_args__ = (UniqueConstraint("genome_hash"),)
 
     genome_id = Column(Integer, primary_key=True)
     genome_hash = Column(String)
@@ -115,7 +123,9 @@ class Genome(Base):
 
     genome_classes = relationship("Class", back_populates="genome")
     genome_labels = relationship("Label", back_populates="genome")
-    runs = relationship("RunGenome", back_populates="genome", lazy="dynamic")
+    runs = relationship(
+        "Run", secondary=rungenome, back_populates="genomes", lazy="dynamic"
+    )
     query_comparisons = relationship(
         "Comparison",
         back_populates="query",
@@ -146,7 +156,9 @@ class Run(Base):
     status = Column(String)
     name = Column(String)
 
-    genomes = relationship("RunGenome", back_populates="run", lazy="dynamic")
+    genomes = relationship(
+        "Genome", secondary=rungenome, back_populates="runs", lazy="dynamic"
+    )
     run_labels = relationship("Label", back_populates="run", lazy="dynamic")
     run_classes = relationship("Class", back_populates="run", lazy="dynamic")
 
@@ -155,23 +167,6 @@ class Run(Base):
 
     def __repr__(self):
         return "<Run(run_id=[}])>".format(self.run_id)
-
-
-class RunGenome(Base):
-    """Describes the association between a pyani run and the analysed genomes"""
-
-    __tablename__ = "runs_genomes"
-    __table_args__ = (UniqueConstraint("run_id", "genome_id"),)
-
-    rungenome_id = Column(Integer, primary_key=True)
-    run_id = Column(Integer, ForeignKey("runs.run_id"), nullable=False)
-    genome_id = Column(Integer, ForeignKey("genomes.genome_id"), nullable=False)
-
-    genome = relationship("Genome", back_populates="runs")
-    run = relationship("Run", back_populates="genomes")
-
-    def __repr__(self):
-        return "<RunGenome(rungenome_id={})>".format(self.rungenome_id)
 
 
 class Comparison(Base):
@@ -241,6 +236,13 @@ def create_db(dbpath):
     Base.metadata.create_all(engine)
 
 
+def get_session(dbpath):
+    """Connect to an existing pyani SQLite3 database and return a session"""
+    engine = create_engine("sqlite:///{}".format(dbpath), echo=False)
+    Session.configure(bind=engine)
+    return Session()
+
+
 if __name__ == "__main__":
     # Create test database if run as script
 
@@ -257,23 +259,6 @@ if __name__ == "__main__":
 
     session = Session()
 
-    # Create test genomes
-    genome1 = Genome(
-        genome_hash="c8c15b0f79742e14afeee07cd63cead1",
-        path="C_blochmannia/GCF_000973545.1_ASM97354v1_genomic.fna",
-        length=773940,
-        description="NZ_CP010049.1 Blochmannia endosymbiont of Camponotus (Colobopsis) obliquus strain 757, complete genome",
-    )
-    session.add(genome1)
-    genome2 = Genome(
-        genome_hash="562fb00b9325563bf352512530897161",
-        path="C_blochmannia/GCF_000011745.1_ASM1174v1_genomic.fna",
-        length=791654,
-        description="NC_007292.1 Candidatus Blochmannia pennsylvanicus str. BPEN, complete genome",
-    )
-    session.add(genome2)
-    session.commit()
-
     # Create test run
     run = Run(
         method="ANIm",
@@ -285,11 +270,23 @@ if __name__ == "__main__":
     session.add(run)
     session.commit()
 
-    # Associate run with genomes
-    genomes = (genome1, genome2)
-    for genome in genomes:
-        rungenomes = RunGenome(run=run, genome=genome)
-        session.add(run)
+    # Create test genomes
+    genome1 = Genome(
+        genome_hash="c8c15b0f79742e14afeee07cd63cead1",
+        path="C_blochmannia/GCF_000973545.1_ASM97354v1_genomic.fna",
+        length=773940,
+        description="NZ_CP010049.1 Blochmannia endosymbiont of Camponotus (Colobopsis) obliquus strain 757, complete genome",
+    )
+    genome1.runs.append(run)
+    session.add(genome1)
+    genome2 = Genome(
+        genome_hash="562fb00b9325563bf352512530897161",
+        path="C_blochmannia/GCF_000011745.1_ASM1174v1_genomic.fna",
+        length=791654,
+        description="NC_007292.1 Candidatus Blochmannia pennsylvanicus str. BPEN, complete genome",
+    )
+    genome2.runs.append(run)
+    session.add(genome2)
     session.commit()
 
     # Add label and class for each genome
