@@ -87,9 +87,9 @@ def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
     nucmer
     NUCmer (NUCleotide MUMmer) version 3.1
     """
-    cmdline = "nucmer -V"
+    cmdline = [nucmer_exe, "-V"]
     result = subprocess.run(
-        cmdline, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+        cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
     )
     return re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8")).group()
 

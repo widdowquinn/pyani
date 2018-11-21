@@ -46,10 +46,10 @@ import re
 import sys
 import subprocess
 import traceback
+import urllib.request
 
 from collections import namedtuple
 from urllib.error import HTTPError, URLError
-from urllib.request import urlopen
 
 from Bio import Entrez
 from tqdm import tqdm
@@ -268,25 +268,26 @@ def download_url(url, outfname, timeout, disable_tqdm=False):
     filename, in buffered chunks
     """
     # Open connection, and get expected filesize
-    response = urlopen(url, timeout=timeout)
-    fsize = int(response.info().get("Content-length"))
+    req = urllib.request.Request(url)
+    with urllib.request.urlopen(req) as response:
+        fsize = int(response.info().get("Content-length"))
 
-    # Define buffer sizes
-    bsize = 1048576  # buffer size
-    fsize_dl = 0  # bytes downloaded
+        # Define buffer sizes
+        bsize = 1048576  # buffer size
+        fsize_dl = 0  # bytes downloaded
 
-    # Download file
-    with open(outfname, "wb") as ofh:
-        with tqdm(
-            total=fsize, disable=disable_tqdm, desc=os.path.split(outfname)[-1]
-        ) as pbar:
-            while True:
-                buffer = response.read(bsize)
-                if not buffer:
-                    break
-                fsize_dl += len(buffer)
-                ofh.write(buffer)
-                pbar.update(bsize)
+        # Download file
+        with open(outfname, "wb") as ofh:
+            with tqdm(
+                total=fsize, disable=disable_tqdm, desc=os.path.split(outfname)[-1]
+            ) as pbar:
+                while True:
+                    buffer = response.read(bsize)
+                    if not buffer:
+                        break
+                    fsize_dl += len(buffer)
+                    ofh.write(buffer)
+                    pbar.update(bsize)
 
 
 # Construct filepaths for downloaded files and their hashes
