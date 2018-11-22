@@ -173,9 +173,12 @@ def subcmd_anim(args, logger):
     # software package, version, and setting) we add that comparison to this run,
     # and remove it from the list of comparisons to be performed
     logger.info("Checking database for existing comparison data...")
+    nucmer_version = anim.get_version(args.nucmer_exe)
+    logger.info("Current nucmer version: %s", nucmer_version)
     # 1. Get set of existing comparisons
     existing_comparisons = {
-        (_.query_id, _.subject_id): _ for _ in session.query(Comparison).all()
+        (_.query_id, _.subject_id, _.program, _.version, _.fragsize, _.maxmatch): _
+        for _ in session.query(Comparison).all()
     }
     print("Existing comparisons:\n", existing_comparisons)
     logger.info("%d existing comparisons in the database", len(existing_comparisons))
@@ -185,7 +188,16 @@ def subcmd_anim(args, logger):
     for (query_genome, subject_genome) in comparisons:
         try:
             run.comparisons.append(
-                existing_comparisons[(query_genome.genome_id, subject_genome.genome_id)]
+                existing_comparisons[
+                    (
+                        query_genome.genome_id,
+                        subject_genome.genome_id,
+                        "nucmer",
+                        nucmer_version,
+                        None,
+                        args.maxmatch,
+                    )
+                ]
             )
         except KeyError:
             comparisons_to_run.append((query_genome, subject_genome))
@@ -258,49 +270,34 @@ def subcmd_anim(args, logger):
             sgeargs=args.sgeargs,
         )
 
-    # # Process output and add results to database
-    # # We have to drop out of threading/multiprocessing to do this: Python's
-    # # SQLite3 interface doesn't allow sharing connections and cursors
-    # # TODO: maybe an async/await approach might
-    # logger.info("Adding comparison results to database")
-    # for comp in tqdm(comparisons, disable=args.disable_tqdm):
-    #     aln_length, sim_errs = anim.parse_delta(comp.outfile)
-    #     qlen = pyani_orm.get_genome_length(args.dbpath, comp.query_id)
-    #     slen = pyani_orm.get_genome_length(args.dbpath, comp.subject_id)
-    #     qcov = aln_length / qlen
-    #     scov = aln_length / slen
-    #     pid = 1 - sim_errs / aln_length
-    #     comp_id = pyani_orm.add_comparison(
-    #         args.dbpath,
-    #         comp.query_id,
-    #         comp.subject_id,
-    #         aln_length,
-    #         sim_errs,
-    #         pid,
-    #         qcov,
-    #         scov,
-    #         "nucmer",
-    #         nucmer_version,
-    #         maxmatch=args.maxmatch,
-    #     )
-    #     link_id = pyani_orm.add_comparison_link(
-    #         args.dbpath,
-    #         run_id,
-    #         comp.query_id,
-    #         comp.subject_id,
-    #         "nucmer",
-    #         nucmer_version,
-    #         maxmatch=args.maxmatch,
-    #     )
-    #     logger.debug(
-    #         "Added ID %s vs %s, as comparison %s (link: %s)",
-    #         comp.query_id,
-    #         comp.subject_id,
-    #         comp_id,
-    #         link_id,
-    #     )
-
-    raise SystemError(0)
+    # Process output and add results to database
+    # We have to drop out of threading/multiprocessing to do this: Python's
+    # SQLite3 interface doesn't allow sharing connections and cursors
+    # TODO: maybe an async/await approach might
+    logger.info("Adding comparison results to database")
+    for job in tqdm(joblist, disable=args.disable_tqdm):
+        aln_length, sim_errs = anim.parse_delta(job.outfile)
+        qcov = aln_length / job.query.length
+        scov = aln_length / job.subject.length
+        pid = 1 - sim_errs / aln_length
+        run.comparisons.append(
+            Comparison(
+                query=job.query,
+                subject=job.subject,
+                aln_length=aln_length,
+                sim_errs=sim_errs,
+                identity=pid,
+                cov_query=qcov,
+                cov_subject=scov,
+                program="nucmer",
+                version=nucmer_version,
+                fragsize=None,
+                maxmatch=args.maxmatch,
+            )
+        )
+        logger.debug("Added comparison for job %s", job)
+    logger.info("Committing results to database")
+    session.commit()
 
 
 def load_classes_labels(path):
