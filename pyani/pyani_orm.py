@@ -58,6 +58,13 @@ rungenome = Table(
     Column("run_id", Integer, ForeignKey("runs.run_id")),
 )
 
+runcomparison = Table(
+    "runs_comparisons",
+    Base.metadata,
+    Column("comparison_id", Integer, ForeignKey("comparisons.comparison_id")),
+    Column("run_id", Integer, ForeignKey("runs.run_id")),
+)
+
 
 class Class(Base):
     """Describes the classification of an input genome"""
@@ -159,6 +166,9 @@ class Run(Base):
     genomes = relationship(
         "Genome", secondary=rungenome, back_populates="runs", lazy="dynamic"
     )
+    comparisons = relationship(
+        "Comparison", secondary=runcomparison, back_populates="runs", lazy="dynamic"
+    )
     run_labels = relationship("Label", back_populates="run", lazy="dynamic")
     run_classes = relationship("Class", back_populates="run", lazy="dynamic")
 
@@ -166,7 +176,7 @@ class Run(Base):
         return str("Run {}: {} ({})".format(self.run_id, self.name, self.date))
 
     def __repr__(self):
-        return "<Run(run_id=[}])>".format(self.run_id)
+        return "<Run(run_id={}}])>".format(self.run_id)
 
 
 class Comparison(Base):
@@ -198,6 +208,9 @@ class Comparison(Base):
     subject = relationship(
         "Genome", foreign_keys=[subject_id], back_populates="subject_comparisons"
     )
+    runs = relationship(
+        "Run", secondary=runcomparison, back_populates="comparisons", lazy="dynamic"
+    )
 
     def __str__(self):
         return str(
@@ -212,22 +225,6 @@ class Comparison(Base):
 
     def __repr__(self):
         return "<Comparison(comparison_id={})>".format(self.comparison_id)
-
-
-class RunComparison(Base):
-    """Describes the association between a pyani run and a pairwise genome comparison"""
-
-    __tablename__ = "runs_comparisons"
-    __table_args__ = (UniqueConstraint("run_id", "comparison_id"),)
-
-    runcomparison_id = Column(Integer, primary_key=True)
-    run_id = Column(Integer, ForeignKey("runs.run_id"), nullable=False)
-    comparison_id = Column(
-        Integer, ForeignKey("comparisons.comparison_id"), nullable=False
-    )
-
-    def __repr__(self):
-        return "<RunComparison(runcomparison_id={})>".format(self.runcomparison_id)
 
 
 def create_db(dbpath):

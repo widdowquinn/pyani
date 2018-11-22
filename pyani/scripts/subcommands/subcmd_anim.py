@@ -62,12 +62,16 @@ from pyani import (
     run_sge,
     run_multiprocessing as run_mp,
 )
-from pyani.pyani_orm import Run, Genome, Label, Class
+from pyani.pyani_orm import Run, Genome, Label, Class, Comparison
 from pyani.pyani_tools import last_exception
 
 
-# Named tuple describing a pairwise comparison
-Comparison = namedtuple("Comparison", "query_id subject_id cmdline outfile")
+# Named tuple describing a pairwise comparison job:
+# (query Genome, subject Genome, delta-filter command, nucmer command,
+#  nucmer output file, Job for scheduler)
+ComparisonJob = namedtuple(
+    "ComparisonJob", "query subject filtercmd nucmercmd outfile job"
+)
 
 
 def subcmd_anim(args, logger):
@@ -157,171 +161,146 @@ def subcmd_anim(args, logger):
     genomes = run.genomes.all()
     logger.info("Collated {} genomes for this run".format(len(genomes)))
 
-    # Generate all pair combinations of genome IDs
+    # Generate all pair combinations of genomes as a list of
+    # (Genome, Genome) tuples
     logger.info(
         "Compiling pairwise comparisons (this can take time for large datasets)"
     )
     comparisons = list(combinations(tqdm(genomes, disable=args.disable_tqdm), 2))
-    logger.debug("Total pairwise comparisons {}".format(len(comparisons)))
+    logger.info("Total pairwise comparisons to perform {}".format(len(comparisons)))
 
     # Check for existing comparisons; if one has been done (for the same
-    # software package, version, and setting) we remove it from the list
-    # of comparisons to be performed, but we add a new entry to the
-    # runs_comparisons table.
-    # TODO: turn this into a generator or some such?
-    # nucmer_version = anim.get_version(args.nucmer_exe)
+    # software package, version, and setting) we add that comparison to this run,
+    # and remove it from the list of comparisons to be performed
+    logger.info("Checking database for existing comparison data...")
+    # 1. Get set of existing comparisons
+    existing_comparisons = {
+        (_.query_id, _.subject_id): _ for _ in session.query(Comparison).all()
+    }
+    print("Existing comparisons:\n", existing_comparisons)
+    logger.info("%d existing comparisons in the database", len(existing_comparisons))
+    # 2. Reduce set of genomes for comparison
+    # TODO: (this could probably be a set calculation to speed things up)
+    comparisons_to_run = []
+    for (query_genome, subject_genome) in comparisons:
+        try:
+            run.comparisons.append(
+                existing_comparisons[(query_genome.genome_id, subject_genome.genome_id)]
+            )
+        except KeyError:
+            comparisons_to_run.append((query_genome, subject_genome))
+    logger.info("after check, %d comparisons still to be run", len(comparisons_to_run))
+    print("Comparisons to run:\n", comparisons_to_run)
 
-    import sys
+    # If we are in recovery mode, we are salvaging output from a previous
+    # run, and do not necessarily need to rerun all the jobs. In this case,
+    # we prepare a list of output files we want to recover from the results
+    # in the output directory.
+    if args.recovery:
+        logger.warning("Entering recovery mode")
+        logger.info(
+            "\tIn this mode, existing comparison output from %s is reused", deltadir
+        )
+        # Obtain collection of expected output files already present in directory
+        if args.nofilter:
+            suffix = ".delta"
+        else:
+            suffix = ".filter"
+        existingfiles = [
+            fname
+            for fname in os.listdir(deltadir)
+            if os.path.splitext(fname)[-1] == suffix
+        ]
+        logger.info("Identified %d existing output files", len(existingfiles))
+    else:
+        existingfiles = None
 
-    sys.exit(0)
+    if len(comparisons_to_run) == 0:
+        logger.info(
+            "All comparison results already present in database "
+            + "(skipping comparisons)"
+        )
+    else:
+        # Create list of NUCmer jobs for each comparison still to be
+        # performed
+        logger.info("Creating NUCmer jobs for ANIm")
+        joblist = generate_joblist(comparisons_to_run, existingfiles, args, logger)
+        logger.info("Generated %s jobs, %d comparisons", len(joblist), len(comparisons))
+    print("Joblist:\n", joblist)
 
-    # # Existing entries for the comparison:run link table
-    # new_link_ids = [
-    #     (genome1, genome2)
-    #     for (genome1, genome2) in comparisons
-    #     if pyani_orm.get_comparison(
-    #         args.dbpath, qid, sid, "nucmer", nucmer_version, maxmatch=args.maxmatch
+    # Pass jobs to the appropriate scheduler
+    logger.info("Passing %d jobs to scheduler", len(joblist))
+    if args.scheduler == "multiprocessing":
+        logger.info("Running jobs with multiprocessing")
+        if not args.workers:
+            logger.info("(using maximum number of worker threads)")
+        else:
+            logger.info("(using %d worker threads, if available)", args.workers)
+        cumval = run_mp.run_dependency_graph(
+            [_.job for _ in joblist], workers=args.workers, logger=logger
+        )
+        if 0 < cumval:
+            logger.error(
+                "At least one NUCmer comparison failed. "
+                + "Please investigate (exiting)"
+            )
+            raise pyani_tools.PyaniException("Multiprocessing run " + "failed in ANIm")
+        else:
+            logger.info("Multiprocessing run completed without error")
+    else:
+        logger.info("Running jobs with SGE")
+        logger.info("Setting jobarray group size to %d", args.sgegroupsize)
+        run_sge.run_dependency_graph(
+            [_.job for _ in joblist],
+            logger=logger,
+            jgprefix=args.jobprefix,
+            sgegroupsize=args.sgegroupsize,
+            sgeargs=args.sgeargs,
+        )
+
+    # # Process output and add results to database
+    # # We have to drop out of threading/multiprocessing to do this: Python's
+    # # SQLite3 interface doesn't allow sharing connections and cursors
+    # # TODO: maybe an async/await approach might
+    # logger.info("Adding comparison results to database")
+    # for comp in tqdm(comparisons, disable=args.disable_tqdm):
+    #     aln_length, sim_errs = anim.parse_delta(comp.outfile)
+    #     qlen = pyani_orm.get_genome_length(args.dbpath, comp.query_id)
+    #     slen = pyani_orm.get_genome_length(args.dbpath, comp.subject_id)
+    #     qcov = aln_length / qlen
+    #     scov = aln_length / slen
+    #     pid = 1 - sim_errs / aln_length
+    #     comp_id = pyani_orm.add_comparison(
+    #         args.dbpath,
+    #         comp.query_id,
+    #         comp.subject_id,
+    #         aln_length,
+    #         sim_errs,
+    #         pid,
+    #         qcov,
+    #         scov,
+    #         "nucmer",
+    #         nucmer_version,
+    #         maxmatch=args.maxmatch,
     #     )
-    #     is not None
-    # ]
-    # logger.info(
-    #     "Existing comparisons to be associated with new run:\n\t%s", new_link_ids
-    # )
-    # if len(new_link_ids) > 0:
-    #     for (qid, sid) in tqdm(new_link_ids, disable=args.disable_tqdm):
-    #         pyani_orm.add_comparison_link(
-    #             args.dbpath,
-    #             run_id,
-    #             qid,
-    #             sid,
-    #             "nucmer",
-    #             nucmer_version,
-    #             maxmatch=args.maxmatch,
-    #         )
-
-    # # If we are in recovery mode, we are salvaging output from a previous
-    # # run, and do not necessarily need to rerun all the jobs. In this case,
-    # # we prepare a list of output files we want to recover from the results
-    # # in the output directory.
-    # if args.recovery:
-    #     logger.warning("Entering recovery mode")
-    #     logger.info(
-    #         "\tIn this mode, existing comparison output from %s is reused", deltadir
+    #     link_id = pyani_orm.add_comparison_link(
+    #         args.dbpath,
+    #         run_id,
+    #         comp.query_id,
+    #         comp.subject_id,
+    #         "nucmer",
+    #         nucmer_version,
+    #         maxmatch=args.maxmatch,
     #     )
-    #     # Obtain collection of expected output files already present in directory
-    #     if args.nofilter:
-    #         suffix = ".delta"
-    #     else:
-    #         suffix = ".filter"
-    #     existingfiles = [
-    #         fname
-    #         for fname in os.listdir(deltadir)
-    #         if os.path.splitext(fname)[-1] == suffix
-    #     ]
-    #     logger.info("Identified %d existing output files", len(existingfiles))
-    # else:
-    #     existingfiles = None
-
-    # # New comparisons to be run for this analysis
-    # # TODO: Can we parallelise this as a function called with multiprocessing?
-    # logger.info("Excluding comparisons present in database")
-    # comparison_ids = [
-    #     (qid, sid)
-    #     for (qid, sid) in comparison_ids
-    #     if pyani_orm.get_comparison(
-    #         args.dbpath, qid, sid, "nucmer", nucmer_version, maxmatch=args.maxmatch
+    #     logger.debug(
+    #         "Added ID %s vs %s, as comparison %s (link: %s)",
+    #         comp.query_id,
+    #         comp.subject_id,
+    #         comp_id,
+    #         link_id,
     #     )
-    #     is None
-    # ]
-    # logger.debug("Comparisons still to be performed:\n\t%s", comparison_ids)
-    # logger.info("Total comparisons to be conducted: %d", len(comparison_ids))
 
-    # if not len(comparison_ids):
-    #     logger.info(
-    #         "All comparison results already present in database "
-    #         + "(skipping comparisons)"
-    #     )
-    # else:
-    #     # Create list of NUCmer jobs for each comparison still to be
-    #     # performed
-    #     logger.info("Creating NUCmer jobs for ANIm")
-    #     joblist, comparisons = generate_joblist(
-    #         comparison_ids, existingfiles, args, logger
-    #     )
-    #     logger.info("Generated %s jobs, %d comparisons", len(joblist), len(comparisons))
-
-    #     # Pass commands to the appropriate scheduler
-    #     logger.info("Passing %d jobs to scheduler", len(joblist))
-    #     if args.scheduler == "multiprocessing":
-    #         logger.info("Running jobs with multiprocessing")
-    #         if not args.workers:
-    #             logger.info("(using maximum number of worker threads)")
-    #         else:
-    #             logger.info("(using %d worker threads, if available)", args.workers)
-    #         cumval = run_mp.run_dependency_graph(
-    #             joblist, workers=args.workers, logger=logger
-    #         )
-    #         if 0 < cumval:
-    #             logger.error(
-    #                 "At least one NUCmer comparison failed. "
-    #                 + "Please investigate (exiting)"
-    #             )
-    #             raise pyani_tools.PyaniException(
-    #                 "Multiprocessing run " + "failed in ANIm"
-    #             )
-    #         else:
-    #             logger.info("Multiprocessing run completed without error")
-    #     else:
-    #         logger.info("Running jobs with SGE")
-    #         logger.info("Setting jobarray group size to %d", args.sgegroupsize)
-    #         run_sge.run_dependency_graph(
-    #             joblist,
-    #             logger=logger,
-    #             jgprefix=args.jobprefix,
-    #             sgegroupsize=args.sgegroupsize,
-    #             sgeargs=args.sgeargs,
-    #         )
-
-    #     # Process output and add results to database
-    #     # We have to drop out of threading/multiprocessing to do this: Python's
-    #     # SQLite3 interface doesn't allow sharing connections and cursors
-    #     logger.info("Adding comparison results to database")
-    #     for comp in tqdm(comparisons, disable=args.disable_tqdm):
-    #         aln_length, sim_errs = anim.parse_delta(comp.outfile)
-    #         qlen = pyani_orm.get_genome_length(args.dbpath, comp.query_id)
-    #         slen = pyani_orm.get_genome_length(args.dbpath, comp.subject_id)
-    #         qcov = aln_length / qlen
-    #         scov = aln_length / slen
-    #         pid = 1 - sim_errs / aln_length
-    #         comp_id = pyani_orm.add_comparison(
-    #             args.dbpath,
-    #             comp.query_id,
-    #             comp.subject_id,
-    #             aln_length,
-    #             sim_errs,
-    #             pid,
-    #             qcov,
-    #             scov,
-    #             "nucmer",
-    #             nucmer_version,
-    #             maxmatch=args.maxmatch,
-    #         )
-    #         link_id = pyani_orm.add_comparison_link(
-    #             args.dbpath,
-    #             run_id,
-    #             comp.query_id,
-    #             comp.subject_id,
-    #             "nucmer",
-    #             nucmer_version,
-    #             maxmatch=args.maxmatch,
-    #         )
-    #         logger.debug(
-    #             "Added ID %s vs %s, as comparison %s (link: %s)",
-    #             comp.query_id,
-    #             comp.subject_id,
-    #             comp_id,
-    #             link_id,
-    #         )
+    raise SystemError(0)
 
 
 def load_classes_labels(path):
@@ -427,14 +406,25 @@ def add_run_genomes(session, run, args, logger):
                 raise SystemExit(1)
 
 
-def generate_joblist(comparison_ids, existingfiles, args, logger):
-    """Returns tuple of ANIm jobs, and comparisons."""
-    joblist, comparisons = [], []
-    for idx, (qid, sid) in enumerate(tqdm(comparison_ids, disable=args.disable_tqdm)):
-        qpath = pyani_orm.get_genome_path(args.dbpath, qid)
-        spath = pyani_orm.get_genome_path(args.dbpath, sid)
+def generate_joblist(comparisons, existingfiles, args, logger):
+    """Returns tuple of ANIm jobs, and comparisons.
+
+    comparisons         a list of (Genome, Genome) tuples
+    existingfiles       a list of existing nucmer output files
+    args                the command-line arguments for this run
+    logger              a logging output
+    """
+    joblist = []  # will hold ComparisonJob objects
+    for idx, (query, subject) in enumerate(
+        tqdm(comparisons, disable=args.disable_tqdm)
+    ):
         ncmd, dcmd = anim.construct_nucmer_cmdline(
-            qpath, spath, args.outdir, args.nucmer_exe, args.filter_exe, args.maxmatch
+            query.path,
+            subject.path,
+            args.outdir,
+            args.nucmer_exe,
+            args.filter_exe,
+            args.maxmatch,
         )
         logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
         outprefix = ncmd.split()[3]  # prefix for NUCmer output
@@ -451,14 +441,13 @@ def generate_joblist(comparison_ids, existingfiles, args, logger):
         # The comparisons collections always gets updated, so that results are
         # added to the database whether they come from recovery mode or are run
         # in this call of the script.
-        comparisons.append(Comparison(qid, sid, dcmd, outfname))
         if args.recovery and os.path.split(outfname)[-1] in existingfiles:
             logger.debug("Recovering output from %s, not building job", outfname)
         else:
             logger.debug("Building job")
-            # Build jobs
+            # Build jobs to pass to scheduler
             njob = pyani_jobs.Job("%s_%06d-n" % (args.jobprefix, idx), ncmd)
             fjob = pyani_jobs.Job("%s_%06d-f" % (args.jobprefix, idx), dcmd)
             fjob.add_dependency(njob)
-            joblist.append(fjob)
-    return (joblist, comparisons)
+            joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, fjob))
+    return joblist
