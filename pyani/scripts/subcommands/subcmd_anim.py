@@ -49,6 +49,8 @@ import sqlite3
 
 from collections import namedtuple
 from itertools import combinations
+import numpy as np
+import pandas as pd
 
 from tqdm import tqdm
 
@@ -207,12 +209,15 @@ def subcmd_anim(args, logger):
     logger.info("after check, %d comparisons still to be run", len(comparisons_to_run))
     print("Comparisons to run:\n", comparisons_to_run)
 
-    # If we don't have any comparisons to run, then exit out of this function
+    # If we don't have any comparisons to run, then update the Run matrices, and
+    # exit out of this function
     if len(comparisons_to_run) == 0:
         logger.info(
             "All comparison results already present in database "
             + "(skipping comparisons)"
         )
+        logger.info("Updating summary matrices with existing results")
+        update_comparison_matrices(run, session, args, logger)
         return
 
     # If we are in recovery mode, we are salvaging output from a previous
@@ -239,9 +244,10 @@ def subcmd_anim(args, logger):
     # Process output and add results to database
     # We have to drop out of threading/multiprocessing to do this: Python's
     # SQLite3 interface doesn't allow sharing connections and cursors
-    # TODO: maybe an async/await approach might
+    # TODO: maybe an async/await approach might allow multiprocessing?
     logger.info("Adding comparison results to database...")
     update_comparison_results(joblist, run, session, nucmer_version, args, logger)
+    update_comparison_matrices(run, session, args, logger)
     logger.info("...database updated")
 
 
@@ -452,14 +458,25 @@ def run_anim_jobs(joblist, args, logger):
 
 
 def update_comparison_results(joblist, run, session, nucmer_version, args, logger):
-    """Update the comparison table with the completed result set
+    """Update the Comparison table with the completed result set
 
-    joblist       list of ComparisonJob namedtuples
-    run           Run ORM object for the current ANIm run
-    session       active pyanidb session via ORM
-    args          command-line arguments for this run
-    logger        logging output
+    joblist         list of ComparisonJob namedtuples
+    run             Run ORM object for the current ANIm run
+    session         active pyanidb session via ORM
+    nucmer_version  version of nucmer used for the comparison
+    args            command-line arguments for this run
+    logger          logging output
+
+    The Comparison table stores individual comparison results, one per row.
+
+    The Run table has five columns for each run, and these hold serialised
+    (JSON) representations of results matrices for the entire run: %identity,
+    %coverage, alignment length, similarity errors, and a Hadamard matrix of
+    %identity X % coverage.
+
+    The five dataframes are created and populated here.
     """
+    # Add individual results to Comparison table, and to run matrices
     for job in tqdm(joblist, disable=args.disable_tqdm):
         logger.debug("\t%s vs %s", job.query.description, job.subject.description)
         aln_length, sim_errs = anim.parse_delta(job.outfile)
@@ -481,6 +498,59 @@ def update_comparison_results(joblist, run, session, nucmer_version, args, logge
                 maxmatch=args.maxmatch,
             )
         )
-        logger.debug("Added comparison for job %s", job)
+
+    # Populate db
     logger.info("Committing results to database")
+    session.commit()
+
+
+def update_comparison_matrices(run, session, args, logger):
+    """Update the Run table with summary matrices for the analysis.
+
+    run           Run ORM object for the current ANIm run
+    session       active pyanidb session via ORM
+    args          command-line arguments for this run
+    logger        logging output
+    """
+    # Create dataframes for storing in the Run table
+    # Rows and columns are the (ordered) list of genome IDs
+    genome_ids = sorted([_.genome_id for _ in run.genomes.all()])
+    df_identity = pd.DataFrame(index=genome_ids, columns=genome_ids, dtype=float)
+    df_coverage = pd.DataFrame(index=genome_ids, columns=genome_ids, dtype=float)
+    df_alnlength = pd.DataFrame(index=genome_ids, columns=genome_ids, dtype=float)
+    df_simerrors = pd.DataFrame(index=genome_ids, columns=genome_ids, dtype=float)
+    df_hadamard = pd.DataFrame(index=genome_ids, columns=genome_ids, dtype=float)
+
+    # Set appropriate diagonals for each matrix
+    np.fill_diagonal(df_identity.values, 1.0)
+    np.fill_diagonal(df_coverage.values, 1.0)
+    np.fill_diagonal(df_simerrors.values, 1.0)
+    np.fill_diagonal(df_hadamard.values, 1.0)
+    for genome in run.genomes.all():
+        df_alnlength.loc[genome.genome_id, genome.genome_id] = genome.length
+
+    # Loop over all comparisons for the run and fill in result matrices
+    for cmp in tqdm(run.comparisons.all(), disable=args.disable_tqdm):
+        qid, sid = cmp.query_id, cmp.subject_id
+        df_identity.loc[qid, sid] = cmp.identity
+        df_identity.loc[sid, qid] = cmp.identity
+        df_coverage.loc[qid, sid] = cmp.cov_query
+        df_coverage.loc[sid, qid] = cmp.cov_subject
+        df_alnlength.loc[qid, sid] = cmp.aln_length
+        df_alnlength.loc[sid, qid] = cmp.aln_length
+        df_simerrors.loc[qid, sid] = cmp.sim_errs
+        df_simerrors.loc[sid, qid] = cmp.sim_errs
+        df_hadamard.loc[qid, sid] = cmp.identity * cmp.cov_query
+        df_hadamard.loc[sid, qid] = cmp.identity * cmp.cov_subject
+        logger.debug(
+            "Added comparison matrix entries for comparison %s", cmp.comparison_id
+        )
+
+    # Add matrices to the database
+    logger.info("Committing summary matrices to database")
+    run.df_identity = df_identity.to_json()
+    run.df_coverage = df_coverage.to_json()
+    run.df_alnlength = df_alnlength.to_json()
+    run.df_simerrors = df_simerrors.to_json()
+    run.df_hadamard = df_hadamard.to_json()
     session.commit()

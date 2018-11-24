@@ -162,6 +162,11 @@ class Run(Base):
     date = Column(DateTime)
     status = Column(String)
     name = Column(String)
+    df_identity = Column(String)  # JSON-encoded Pandas dataframe
+    df_coverage = Column(String)  # JSON-encoded Pandas dataframe
+    df_alnlength = Column(String)  # JSON-encoded Pandas dataframe
+    df_simerrors = Column(String)  # JSON-encoded Pandas dataframe
+    df_hadamard = Column(String)  # JSON-encoded Pandas dataframe
 
     genomes = relationship(
         "Genome", secondary=rungenome, back_populates="runs", lazy="dynamic"
@@ -176,7 +181,7 @@ class Run(Base):
         return str("Run {}: {} ({})".format(self.run_id, self.name, self.date))
 
     def __repr__(self):
-        return "<Run(run_id={}}])>".format(self.run_id)
+        return "<Run(run_id={})>".format(self.run_id)
 
 
 class Comparison(Base):
