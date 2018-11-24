@@ -64,7 +64,7 @@ from pyani import (
     run_sge,
     run_multiprocessing as run_mp,
 )
-from pyani.pyani_orm import Run, Genome, Label, Class, Comparison
+from pyani.pyani_orm import Run, Genome, Label, Comparison, LabelMembership
 from pyani.pyani_tools import last_exception
 
 
@@ -282,9 +282,23 @@ def add_run_genomes(session, run, args, logger):
     infiles = pyani_files.get_fasta_and_hash_paths(args.indir)
     # Get labels and classes, keyed by hash
     if args.classes:
-        classes = load_classes_labels(args.classes)
+        class_data = load_classes_labels(args.classes)
     if args.labels:
-        labels = load_classes_labels(args.labels)
+        label_data = load_classes_labels(args.labels)
+    new_keys = set(list(class_data.keys()) + list(label_data.keys()))
+    label_dict = {}
+    label_tuple = namedtuple("ClassData", "label class_label")
+    for key in new_keys:
+        label_dict[key] = label_tuple(class_data[key] or None, label_data[key] or None)
+    #     classes = {
+    #         key: Class(class_label=val)
+    #         for key, val in load_classes_labels(args.classes).items()
+    #     }
+    # if args.labels:
+    #     labels = {
+    #         key: Label(label=val)
+    #         for key, val in load_classes_labels(args.labels).items()
+    #     }
     # Get hash string and sequence description for each FASTA/hash pair,
     # and add info to the current database
     for fastafile, hashfile in infiles:
@@ -334,22 +348,15 @@ def add_run_genomes(session, run, args, logger):
             raise SystemExit(1)
 
         # If there is an associated class or label for this genome, add it
-        if inhash in classes:
+        if inhash in label_dict:
             try:
-                gclass = Class(genome=genome, run=run, genome_class=classes[inhash])
-                session.add(gclass)
-                session.commit()
+                label = Label(
+                    label=label_dict[inhash].label,
+                    class_label=label_dict[inhash].class_label,
+                )
+                session.add(LabelMembership(genome=genome, run=run, label=label))
             except Exception:
-                logger.error("Could not add genome class to database (exiting)")
-                logger.error(last_exception())
-                raise SystemExit(1)
-        if inhash in labels:
-            try:
-                glabel = Label(genome=genome, run=run, genome_label=labels[inhash])
-                session.add(glabel)
-                session.commit()
-            except Exception:
-                logger.error("Could not add genome label to database (exiting)")
+                logger.error("Could not add genome labels to database (exiting)")
                 logger.error(last_exception())
                 raise SystemExit(1)
 

@@ -45,7 +45,10 @@ THE SOFTWARE.
 
 import os
 
-from pyani import pyani_db, pyani_report
+import pandas as pd
+
+from pyani import pyani_orm, pyani_report, pyani_db
+from pyani.pyani_orm import Run, Genome, Comparison, Label, LabelMembership
 
 
 def subcmd_report(args, logger):
@@ -64,29 +67,44 @@ def subcmd_report(args, logger):
     in that format, where possible.
     """
     # Output formats will apply across all tabular data requested
-    # Expect comma-separated, and turn them into an iterable
+    # Expect comma-separated format arguments, and turn them into an iterable
     formats = ["tab"]
     if args.formats:
         formats += [fmt.strip() for fmt in args.formats.split(",")]
     formats = list(set(formats))  # remove duplicates
     logger.info("Creating output in formats: %s", formats)
 
-    # Declare which database is being used
+    # Declare which database is being used, and connect to the session
     logger.info("Using database: %s", args.dbpath)
+    session = pyani_orm.get_session(args.dbpath)
 
     # Report runs in the database
     if args.show_runs:
         outfname = os.path.join(args.outdir, "runs")
         logger.info("Writing table of pyani runs from the database to %s.*", outfname)
-        data = pyani_db.get_df_runs(args.dbpath)
-        pyani_report.write_dbtable(data, outfname, formats, index="run ID")
+        statement = session.query(
+            Run.run_id, Run.name, Run.method, Run.date, Run.cmdline
+        ).statement
+        data = pd.read_sql(statement, session.bind)
+        headers = ["run ID", "name", "method", "date run", "command-line"]
+        data.columns = headers
+        pyani_report.write_dbtable(data, outfname, formats)
 
     # Report genomes in the database
     if args.show_genomes:
         outfname = os.path.join(args.outdir, "genomes")
         logger.info("Writing table of genomes from the database to %s.*", outfname)
-        data = pyani_db.get_df_genomes(args.dbpath)
-        pyani_report.write_dbtable(data, outfname, formats, index="genome ID")
+        statement = session.query(
+            Genome.genome_id,
+            Genome.description,
+            Genome.path,
+            Genome.genome_hash,
+            Genome.length,
+        ).statement
+        data = pd.read_sql(statement, session.bind)
+        headers = ["genome ID", "description", "path", "MD5 hash", "genome length"]
+        data.columns = headers
+        pyani_report.write_dbtable(data, outfname, formats)
 
     # Report table of all genomes used for each run
     if args.show_runs_genomes:
@@ -95,7 +113,39 @@ def subcmd_report(args, logger):
             "Writing table of pyani runs, with associated genomes " + "to %s.*",
             outfname,
         )
-        data = pyani_db.get_df_run_genomes(args.dbpath)
+        # We query on the LabelMembership table, then join out to Run, Genome
+        # and Label, so that we avoid multiple left joins
+        statement = (
+            session.query(
+                LabelMembership.run_id,
+                Run.name,
+                Run.method,
+                Run.date,
+                LabelMembership.genome_id,
+                Genome.description,
+                Genome.path,
+                Genome.genome_hash,
+                Label.label,
+                Label.class_label,
+            )
+            .join(Run, Genome, Label)
+            .order_by(Run.run_id, Genome.genome_id)
+            .statement
+        )
+        data = pd.read_sql(statement, session.bind)
+        headers = [
+            "run ID",
+            "run name",
+            "method",
+            "date run",
+            "genome ID",
+            "genome description",
+            "genome path",
+            "genome hash",
+            "genome label",
+            "genome class",
+        ]
+        data.columns = headers
         pyani_report.write_dbtable(data, outfname, formats)
 
     # Report table of all runs in which a genome is involved
@@ -104,7 +154,39 @@ def subcmd_report(args, logger):
         logger.info(
             "Writing table of genomes, with associated pyani runs" + "to %s.*", outfname
         )
-        data = pyani_db.get_df_genome_runs(args.dbpath)
+        # We query on the LabelMembership table, then join out to Run, Genome
+        # and Label, so that we avoid multiple left joins
+        statement = (
+            session.query(
+                LabelMembership.genome_id,
+                Genome.description,
+                Genome.path,
+                Genome.genome_hash,
+                Label.label,
+                Label.class_label,
+                LabelMembership.run_id,
+                Run.name,
+                Run.method,
+                Run.date,
+            )
+            .join(Genome, Run, Label)
+            .order_by(Genome.genome_id, Run.run_id)
+            .statement
+        )
+        data = pd.read_sql(statement, session.bind)
+        headers = [
+            "genome ID",
+            "genome description",
+            "genome path",
+            "genome hash",
+            "genome label",
+            "genome class",
+            "run ID",
+            "run name",
+            "method",
+            "date run",
+        ]
+        data.columns = headers
         pyani_report.write_dbtable(data, outfname, formats)
 
     # Report table of comparison results for the indicated runs

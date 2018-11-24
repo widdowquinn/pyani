@@ -66,51 +66,49 @@ runcomparison = Table(
 )
 
 
-class Class(Base):
-    """Describes the classification of an input genome"""
+class LabelMembership(Base):
+    """Describes relationship between genome, run and genome label
 
-    __tablename__ = "classes"
-    __table_args__ = (UniqueConstraint("genome_id", "run_id"),)
+    Each genome and run combination can be assigned a single label
+    """
 
-    class_id = Column(Integer, primary_key=True)
-    genome_id = Column(Integer, ForeignKey("genomes.genome_id"), nullable=False)
-    run_id = Column(Integer, ForeignKey("runs.run_id"), nullable=False)
-    genome_class = Column(String)
+    __tablename__ = "labelmembership"
+    __tableargs__ = (UniqueConstraint("genome_id", "run_id", "label_id"),)
 
-    genome = relationship("Genome", back_populates="genome_classes")
-    run = relationship("Run", back_populates="run_classes")
+    genome_id = Column(Integer, ForeignKey("genomes.genome_id"), primary_key=True)
+    run_id = Column(Integer, ForeignKey("runs.run_id"), primary_key=True)
+    label_id = Column(Integer, ForeignKey("labels.label_id"), primary_key=True)
+
+    genome = relationship("Genome", back_populates="labels")
+    run = relationship("Run", back_populates="labels")
+    label = relationship("Label", back_populates="genomes")
 
     def __str__(self):
         return str(
-            "Class, genome {} - run {}: {}".format(
-                self.genome_id, self.run_id, self.genome_class
+            "Genome ID: {}, Run ID: {}, Label ID: {}".format(
+                self.genome_id, self.run_id, self.label_id
             )
         )
 
     def __repr__(self):
-        return "<Class(class_id={})>".format(self.class_id)
+        return "<LabelMembership(key=({}, {}, {}))>".format(
+            self.genome_id, self.run_id, self.label_id
+        )
 
 
 class Label(Base):
     """Describes the label for an input genome to be used in visualisation"""
 
     __tablename__ = "labels"
-    __table_args__ = (UniqueConstraint("genome_id", "run_id"),)
 
     label_id = Column(Integer, primary_key=True)
-    genome_id = Column(Integer, ForeignKey("genomes.genome_id"), nullable=False)
-    run_id = Column(Integer, ForeignKey("runs.run_id"), nullable=False)
-    genome_label = Column(String)
+    label = Column(String)
+    class_label = Column(String)
 
-    genome = relationship("Genome", back_populates="genome_labels")
-    run = relationship("Run", back_populates="run_labels")
+    genomes = relationship("LabelMembership", back_populates="label")
 
     def __str__(self):
-        return str(
-            "Label, genome {} - run {}: {}".format(
-                self.genome_id, self.run_id, self.genome_label
-            )
-        )
+        return str("Label {}: {}".format(self.label_id, self.label))
 
     def __repr__(self):
         return "<Label(label_id=[}])>".format(self.label_id)
@@ -128,8 +126,7 @@ class Genome(Base):
     length = Column(Integer)
     description = Column(String)
 
-    genome_classes = relationship("Class", back_populates="genome")
-    genome_labels = relationship("Label", back_populates="genome")
+    labels = relationship("LabelMembership", back_populates="genome", lazy="dynamic")
     runs = relationship(
         "Run", secondary=rungenome, back_populates="genomes", lazy="dynamic"
     )
@@ -174,8 +171,7 @@ class Run(Base):
     comparisons = relationship(
         "Comparison", secondary=runcomparison, back_populates="runs", lazy="dynamic"
     )
-    run_labels = relationship("Label", back_populates="run", lazy="dynamic")
-    run_classes = relationship("Class", back_populates="run", lazy="dynamic")
+    labels = relationship("LabelMembership", back_populates="run")
 
     def __str__(self):
         return str("Run {}: {} ({})".format(self.run_id, self.name, self.date))
@@ -296,10 +292,8 @@ if __name__ == "__main__":
         (genome1, run, "757", "C. blochmannia"),
         (genome2, run, "BPEN", "C. blochmannia"),
     ]:
-        glabel = Label(genome=genome, run=run, genome_label=glabel)
-        session.add(glabel)
-        gclass = Class(genome=genome, run=run, genome_class=gclass)
-        session.add(gclass)
+        glabel = Label(label=glabel, class_label=gclass)
+        session.add(LabelMembership(genome=genome, run=run, label=glabel))
     session.commit()
 
     # Add a comparison for the two genomes
