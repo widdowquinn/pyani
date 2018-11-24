@@ -12,3 +12,4 @@ namedlist
 pre-commit
 pytest
 pytest-cov
+sqlalchemy
