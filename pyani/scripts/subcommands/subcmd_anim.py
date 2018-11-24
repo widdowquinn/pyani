@@ -64,7 +64,7 @@ from pyani import (
     run_sge,
     run_multiprocessing as run_mp,
 )
-from pyani.pyani_orm import Run, Genome, Label, Comparison, LabelMembership
+from pyani.pyani_orm import Run, Genome, Label, Comparison
 from pyani.pyani_tools import last_exception
 
 
@@ -289,16 +289,7 @@ def add_run_genomes(session, run, args, logger):
     label_dict = {}
     label_tuple = namedtuple("ClassData", "label class_label")
     for key in new_keys:
-        label_dict[key] = label_tuple(class_data[key] or None, label_data[key] or None)
-    #     classes = {
-    #         key: Class(class_label=val)
-    #         for key, val in load_classes_labels(args.classes).items()
-    #     }
-    # if args.labels:
-    #     labels = {
-    #         key: Label(label=val)
-    #         for key, val in load_classes_labels(args.labels).items()
-    #     }
+        label_dict[key] = label_tuple(label_data[key] or None, class_data[key] or None)
     # Get hash string and sequence description for each FASTA/hash pair,
     # and add info to the current database
     for fastafile, hashfile in infiles:
@@ -350,11 +341,14 @@ def add_run_genomes(session, run, args, logger):
         # If there is an associated class or label for this genome, add it
         if inhash in label_dict:
             try:
-                label = Label(
-                    label=label_dict[inhash].label,
-                    class_label=label_dict[inhash].class_label,
+                session.add(
+                    Label(
+                        genome=genome,
+                        run=run,
+                        label=label_dict[inhash].label,
+                        class_label=label_dict[inhash].class_label,
+                    )
                 )
-                session.add(LabelMembership(genome=genome, run=run, label=label))
             except Exception:
                 logger.error("Could not add genome labels to database (exiting)")
                 logger.error(last_exception())

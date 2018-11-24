@@ -66,52 +66,34 @@ runcomparison = Table(
 )
 
 
-class LabelMembership(Base):
+class Label(Base):
     """Describes relationship between genome, run and genome label
 
     Each genome and run combination can be assigned a single label
     """
 
-    __tablename__ = "labelmembership"
-    __tableargs__ = (UniqueConstraint("genome_id", "run_id", "label_id"),)
+    __tablename__ = "labels"
 
-    genome_id = Column(Integer, ForeignKey("genomes.genome_id"), primary_key=True)
-    run_id = Column(Integer, ForeignKey("runs.run_id"), primary_key=True)
-    label_id = Column(Integer, ForeignKey("labels.label_id"), primary_key=True)
+    label_id = Column(Integer, primary_key=True)
+    genome_id = Column(Integer, ForeignKey("genomes.genome_id"))
+    run_id = Column(Integer, ForeignKey("runs.run_id"))
+    label = Column(String)
+    class_label = Column(String)
 
     genome = relationship("Genome", back_populates="labels")
     run = relationship("Run", back_populates="labels")
-    label = relationship("Label", back_populates="genomes")
 
     def __str__(self):
         return str(
-            "Genome ID: {}, Run ID: {}, Label ID: {}".format(
-                self.genome_id, self.run_id, self.label_id
+            "Genome ID: {}, Run ID: {}, Label ID: {}, Label: {}, Class: {}".format(
+                self.genome_id, self.run_id, self.label_id, self.label, self.class_label
             )
         )
 
     def __repr__(self):
-        return "<LabelMembership(key=({}, {}, {}))>".format(
-            self.genome_id, self.run_id, self.label_id
+        return "<Label(key=({}, {}, {}))>".format(
+            self.label_id, self.run_id, self.genome_id
         )
-
-
-class Label(Base):
-    """Describes the label for an input genome to be used in visualisation"""
-
-    __tablename__ = "labels"
-
-    label_id = Column(Integer, primary_key=True)
-    label = Column(String)
-    class_label = Column(String)
-
-    genomes = relationship("LabelMembership", back_populates="label")
-
-    def __str__(self):
-        return str("Label {}: {}".format(self.label_id, self.label))
-
-    def __repr__(self):
-        return "<Label(label_id=[}])>".format(self.label_id)
 
 
 class Genome(Base):
@@ -126,7 +108,7 @@ class Genome(Base):
     length = Column(Integer)
     description = Column(String)
 
-    labels = relationship("LabelMembership", back_populates="genome", lazy="dynamic")
+    labels = relationship("Label", back_populates="genome", lazy="dynamic")
     runs = relationship(
         "Run", secondary=rungenome, back_populates="genomes", lazy="dynamic"
     )
@@ -171,7 +153,7 @@ class Run(Base):
     comparisons = relationship(
         "Comparison", secondary=runcomparison, back_populates="runs", lazy="dynamic"
     )
-    labels = relationship("LabelMembership", back_populates="run")
+    labels = relationship("Label", back_populates="run", lazy="dynamic")
 
     def __str__(self):
         return str("Run {}: {} ({})".format(self.run_id, self.name, self.date))
@@ -292,8 +274,7 @@ if __name__ == "__main__":
         (genome1, run, "757", "C. blochmannia"),
         (genome2, run, "BPEN", "C. blochmannia"),
     ]:
-        glabel = Label(label=glabel, class_label=gclass)
-        session.add(LabelMembership(genome=genome, run=run, label=glabel))
+        session.add(Label(genome=genome, run=run, label=glabel, class_label=gclass))
     session.commit()
 
     # Add a comparison for the two genomes

@@ -47,8 +47,11 @@ import os
 
 import pandas as pd
 
+from sqlalchemy import and_
+from sqlalchemy.orm import aliased
+
 from pyani import pyani_orm, pyani_report, pyani_db
-from pyani.pyani_orm import Run, Genome, Comparison, Label, LabelMembership
+from pyani.pyani_orm import Run, Genome, Comparison, Label, rungenome, runcomparison
 
 
 def subcmd_report(args, logger):
@@ -110,25 +113,28 @@ def subcmd_report(args, logger):
     if args.show_runs_genomes:
         outfname = os.path.join(args.outdir, "runs_genomes")
         logger.info(
-            "Writing table of pyani runs, with associated genomes " + "to %s.*",
-            outfname,
+            "Writing table of pyani runs, with associated genomes to %s.*", outfname
         )
         # We query on the LabelMembership table, then join out to Run, Genome
         # and Label, so that we avoid multiple left joins
         statement = (
             session.query(
-                LabelMembership.run_id,
+                Run.run_id,
                 Run.name,
                 Run.method,
                 Run.date,
-                LabelMembership.genome_id,
+                Genome.genome_id,
                 Genome.description,
                 Genome.path,
                 Genome.genome_hash,
                 Label.label,
                 Label.class_label,
             )
-            .join(Run, Genome, Label)
+            .join(rungenome, Genome)
+            .join(
+                Label,
+                and_(Genome.genome_id == Label.genome_id, Run.run_id == Label.run_id),
+            )
             .order_by(Run.run_id, Genome.genome_id)
             .statement
         )
@@ -152,36 +158,40 @@ def subcmd_report(args, logger):
     if args.show_genomes_runs:
         outfname = os.path.join(args.outdir, "genomes_runs")
         logger.info(
-            "Writing table of genomes, with associated pyani runs" + "to %s.*", outfname
+            "Writing table of genomes, with associated pyani runs to %s.*", outfname
         )
         # We query on the LabelMembership table, then join out to Run, Genome
         # and Label, so that we avoid multiple left joins
         statement = (
             session.query(
-                LabelMembership.genome_id,
+                Genome.genome_id,
+                Run.run_id,
                 Genome.description,
                 Genome.path,
                 Genome.genome_hash,
                 Label.label,
                 Label.class_label,
-                LabelMembership.run_id,
                 Run.name,
                 Run.method,
                 Run.date,
             )
-            .join(Genome, Run, Label)
+            .join(rungenome, Run)
+            .join(
+                Label,
+                and_(Genome.genome_id == Label.genome_id, Run.run_id == Label.run_id),
+            )
             .order_by(Genome.genome_id, Run.run_id)
             .statement
         )
         data = pd.read_sql(statement, session.bind)
         headers = [
             "genome ID",
+            "run ID",
             "genome description",
             "genome path",
             "genome hash",
             "genome label",
             "genome class",
-            "run ID",
             "run name",
             "method",
             "date run",
@@ -195,10 +205,52 @@ def subcmd_report(args, logger):
         run_ids = [run_id.strip() for run_id in args.run_results.split(",")]
         logger.info("Attempting to write results tables for runs: %s", run_ids)
         for run_id in run_ids:
+            logger.info("Processing run %d", run_id)
             outfname = "_".join([outfstem, str(run_id)])
-            run_data = pyani_db.get_run(args.dbpath, run_id)
-            logger.info("Collecting data for run with ID: %s (%s)", run_id, run_data[5])
-            data = pyani_db.get_df_comparisons(args.dbpath, run_id)
+            genome_query = aliased(Genome, name="genome_query")
+            genome_subject = aliased(Genome, name="genome_subject")
+            statement = (
+                session.query(
+                    Comparison.comparison_id,
+                    Comparison.query_id,
+                    genome_query.description,
+                    Comparison.subject_id,
+                    genome_subject.description,
+                    Comparison.identity,
+                    Comparison.cov_query,
+                    Comparison.cov_subject,
+                    Comparison.aln_length,
+                    Comparison.sim_errs,
+                    Comparison.program,
+                    Comparison.version,
+                    Comparison.fragsize,
+                    Comparison.maxmatch,
+                    Run.run_id,
+                )
+                .join(genome_query, Comparison.query_id == genome_query.genome_id)
+                .join(genome_subject, Comparison.subject_id == genome_subject.genome_id)
+                .filter(Run.run_id == run_id)
+                .statement
+            )
+            data = pd.read_sql(statement, session.bind)
+            headers = [
+                "Comparison ID",
+                "Query ID",
+                "Query description",
+                "Subject ID",
+                "Subject description",
+                "% identity",
+                "% query coverage",
+                "% subject coverage",
+                "alignment length",
+                "similarity errors",
+                "program",
+                "version",
+                "fragment size",
+                "maxmatch",
+                "Run ID",
+            ]
+            data.columns = headers
             pyani_report.write_dbtable(data, outfname, formats)
 
     # Report matrices of comparison results for the indicated runs
@@ -207,23 +259,41 @@ def subcmd_report(args, logger):
     if args.run_matrices:
         outfstem = os.path.join(args.outdir, "matrix")
         run_ids = [run_id.strip() for run_id in args.run_matrices.split(",")]
-        logger.info("Attempting to write results matrices for runs: %s", run_ids)
+        logger.info("Writing result matrices for runs: %s", run_ids)
         for run_id in run_ids:
-            logger.info("Extracting comparison results for run %s", run_id)
-            results = pyani_db.ANIResults(args.dbpath, run_id)
-            for matname, args in [
-                ("identity", {"colour_num": 0.95}),
-                ("coverage", {"colour_num": 0.95}),
-                ("aln_lengths", {}),
-                ("sim_errors", {}),
-                ("hadamard", {}),
+            logger.info("Extracting matrices for run %s", run_id)
+            run = session.query(Run).filter(Run.run_id == run_id).first()
+            #  Make dictionary of labels for each genome, keyed by genome ID
+            results = (
+                session.query(Genome.genome_id, Label.label)
+                .join(rungenome, Run)
+                .join(
+                    Label,
+                    and_(
+                        Genome.genome_id == Label.genome_id, Run.run_id == Label.run_id
+                    ),
+                )
+                .filter(Run.run_id == run_id)
+                .all()
+            )
+            label_dict = {_.genome_id: _.label for _ in results}
+            for matname, data, args in [
+                ("identity", run.df_identity, {"colour_num": 0.95}),
+                ("coverage", run.df_coverage, {"colour_num": 0.95}),
+                ("aln_lengths", run.df_alnlength, {}),
+                ("sim_errors", run.df_simerrors, {}),
+                ("hadamard", run.df_hadamard, {}),
             ]:
                 logger.info("Writing %s results", matname)
                 outfname = "_".join([outfstem, matname, str(run_id)])
+                matrix = pd.read_json(data)
+                matrix.columns = [
+                    "{}:{}".format(label_dict[col], col) for col in matrix.columns
+                ]
+                matrix.index = [
+                    "{}:{}".format(label_dict[idx], idx) for idx in matrix.index
+                ]
+                print(matrix)
                 pyani_report.write_dbtable(
-                    getattr(results, matname),
-                    outfname,
-                    formats,
-                    show_index=True,
-                    **args
+                    matrix, outfname, formats, show_index=True, **args
                 )
