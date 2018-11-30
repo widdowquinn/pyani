@@ -42,10 +42,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import os
+
+from collections import namedtuple
+
 from sqlalchemy import UniqueConstraint, create_engine, Table
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
+
+from pyani import PyaniException
+from pyani.pyani_files import (
+    get_fasta_and_hash_paths,
+    load_classes_labels,
+    read_fasta_description,
+    read_hash_string,
+)
+from pyani.pyani_tools import get_genome_length
+
+
+class PyaniORMException(PyaniException):
+    """Exception raised when ORM or database interaction fails."""
+
+    def __init__(self, msg="Error in pyani ORM/database interface"):
+        PyaniException.__init__(self, msg)
+
 
 # Using the declarative system
 Base = declarative_base()
@@ -64,6 +85,10 @@ runcomparison = Table(
     Column("comparison_id", Integer, ForeignKey("comparisons.comparison_id")),
     Column("run_id", Integer, ForeignKey("runs.run_id")),
 )
+
+
+# convenience namedtuples
+label_tuple = namedtuple("ClassData", "label class_label")
 
 
 class Label(Base):
@@ -223,16 +248,93 @@ def get_session(dbpath):
     return Session()
 
 
-def add_run_genomes(session, run, indir, classpath, labelpath):
-    """Add the genomes for a run to the database
+def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
+    """Add genomes for a run to the database
 
     session       live SQLAlchemy session of pyani database
     run           Run object describing the parent pyani run
     indir         path to the directory containing genomes
     classpath     path to the file containing class information for each genome
     labelpath     path to the file containing class information for each genome
+
+    This function expects a single directory (indir) containing all FASTA files
+    for a run, and optional paths to plain text files that contain information
+    on class and label strings for each genome.
+
+    The function will attempt to associate new Genome objects with the passed
+    Run object.
+
+    The session changes are committed once genomes and labels are added to the
+    database without error, as a single transaction.
     """
-    raise NotImplementedError
+    # Get list of genome files and paths to class and labels files
+    infiles = get_fasta_and_hash_paths(indir)  # paired FASTA/hash files
+    class_data, label_data, all_keys = None, None, []
+    if classpath:
+        class_data = load_classes_labels(classpath)
+        all_keys += list(class_data.keys())
+    if labelpath:
+        label_data = load_classes_labels(labelpath)
+        all_keys += list(label_data.keys())
+
+    # Make dictionary of labels and/or classes
+    new_keys = set(all_keys)
+    label_dict = {}
+    for key in new_keys:
+        label_dict[key] = label_tuple(label_data[key] or None, class_data[key] or None)
+
+    # Get hash and sequence description for each FASTA/hash pair, and add
+    # to current session database
+    for fastafile, hashfile in infiles:
+        try:
+            inhash, _ = read_hash_string(hashfile)
+            indesc = read_fasta_description(fastafile)
+        except Exception:
+            raise PyaniORMException("Could not read genome files for database import")
+        abspath = os.path.abspath(fastafile)
+        genome_len = get_genome_length(abspath)
+
+        # If the genome is not already in the database, add it as a Genome object
+        genome = session.query(Genome).filter(Genome.genome_hash == inhash).first()
+        if not isinstance(genome, Genome):
+            try:
+                genome = Genome(
+                    genome_hash=inhash,
+                    path=abspath,
+                    length=genome_len,
+                    description=indesc,
+                )
+                session.add(genome)
+            except Exception:
+                raise PyaniORMException(
+                    "Could not add genome {} to database".format(genome)
+                )
+
+        # Associate this genome with the current run
+        try:
+            genome.runs.append(run)
+        except Exception:
+            raise PyaniORMException(
+                "Could not associate genome {} with run {}".format(genome, run)
+            )
+
+        # If there's an associated class or label for the genome, add it
+        if inhash in label_dict:
+            try:
+                session.add(
+                    Label(
+                        genome=genome,
+                        run=run,
+                        label=label_dict[inhash].label,
+                        class_label=label_dict[inhash].class_label,
+                    )
+                )
+            except Exception:
+                raise PyaniORMException("Could not add new genome labels to database.")
+        try:
+            session.commit()
+        except Exception:
+            raise PyaniORMException("Could not commit new genomes in database.")
 
 
 if __name__ == "__main__":
@@ -240,7 +342,6 @@ if __name__ == "__main__":
 
     import datetime
     import time
-    import os
 
     dbpath = os.path.join(".", "test.sqlite")
     if os.path.isfile(dbpath):

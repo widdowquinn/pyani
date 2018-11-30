@@ -56,6 +56,7 @@ from Bio import Entrez
 from tqdm import tqdm
 from namedlist import namedlist
 
+from pyani import last_exception
 
 taxonregex = re.compile(r"([0-9]\,?){1,}")
 
@@ -75,12 +76,6 @@ class FileExistsException(Exception):
     def __init__(self, msg="Specified file exists"):
         """Instantiate class."""
         Exception.__init__(self, msg)
-
-
-def last_exception():
-    """Return last exception as a string."""
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
 
 def set_ncbi_email(email):

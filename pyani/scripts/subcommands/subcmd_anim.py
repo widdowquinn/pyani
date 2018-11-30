@@ -56,6 +56,7 @@ from tqdm import tqdm
 
 from pyani import (
     anim,
+    last_exception,
     pyani_config,
     pyani_orm,
     pyani_files,
@@ -64,8 +65,8 @@ from pyani import (
     run_sge,
     run_multiprocessing as run_mp,
 )
-from pyani.pyani_orm import Run, Genome, Label, Comparison
-from pyani.pyani_tools import last_exception
+from pyani.pyani_files import load_classes_labels
+from pyani.pyani_orm import Run, Genome, Label, Comparison, add_run_genomes
 
 
 # Named tuple describing a pairwise comparison job:
@@ -144,8 +145,14 @@ def subcmd_anim(args, logger):
 
     # Identify input files for comparison, and populate the database
     logger.info("Adding this run's genomes to database")
-    add_run_genomes(session, run, args, logger)
+    # add_run_genomes(session, run, args, logger)
     logger.info("Input genome/hash files added to database")
+    try:
+        add_run_genomes(session, run, args.indir, args.classes, args.labels)
+    except Exception:
+        logger.error("Could not add genomes to database for run %s (exiting)", run)
+        logger.error(last_exception())
+        raise SystemExit(1)
 
     # Generate commandlines for NUCmer analysis and output compression
     logger.info("Generating ANIm command-lines")
@@ -248,110 +255,6 @@ def subcmd_anim(args, logger):
     update_comparison_results(joblist, run, session, nucmer_version, args, logger)
     update_comparison_matrices(run, session, args, logger)
     logger.info("...database updated")
-
-
-def load_classes_labels(path):
-    """Returns a dictionary of genome classes or labels keyed by hash
-
-    The expected format of the classes and labels files is:
-
-    <HASH>\t<FILESTEM>\t<CLASS>|<LABEL>,
-
-    where <HASH> is the MD5 hash of the genome data (this is not checked);
-    <FILESTEM> is the path to the genome file (this is intended to be a
-    record for humans to audit, it's not needed for the database interaction;
-    and <CLASS>|<LABEL> is the class or label associated with that genome.
-    """
-    datadict = {}
-    with open(path, "r") as ifh:
-        for line in ifh.readlines():
-            genomehash, _, data = line.strip().split("\t")
-            datadict[genomehash] = data
-    return datadict
-
-
-def add_run_genomes(session, run, args, logger):
-    """Add genomes to a run in the pyani database
-
-    session    live SQLAlchemy session to pyani database
-    run        a pyani_orm.Run object describing a pyani run
-    args       parsed command-line arguments
-    logger     logging object
-    """
-    infiles = pyani_files.get_fasta_and_hash_paths(args.indir)
-    # Get labels and classes, keyed by hash
-    if args.classes:
-        class_data = load_classes_labels(args.classes)
-    if args.labels:
-        label_data = load_classes_labels(args.labels)
-    new_keys = set(list(class_data.keys()) + list(label_data.keys()))
-    label_dict = {}
-    label_tuple = namedtuple("ClassData", "label class_label")
-    for key in new_keys:
-        label_dict[key] = label_tuple(label_data[key] or None, class_data[key] or None)
-    # Get hash string and sequence description for each FASTA/hash pair,
-    # and add info to the current database
-    for fastafile, hashfile in infiles:
-        # Get genome data
-        logger.info("Processing genome hash: %s", hashfile)
-        inhash, _ = pyani_files.read_hash_string(hashfile)
-        logger.info("Processing genome sequence: %s", fastafile)
-        indesc = pyani_files.read_fasta_description(fastafile)
-        abspath = os.path.abspath(fastafile)
-        genome_len = pyani_tools.get_genome_length(abspath)
-        outstr = [
-            "FASTA file:\t%s" % abspath,
-            "description:\t%s" % indesc,
-            "hash file:\t%s" % hashfile,
-            "MD5 hash:\t%s" % inhash,
-            "Total length:\t%d" % genome_len,
-        ]
-        logger.info("\t" + "\n\t".join(outstr))
-
-        # If it's not already there, add the passed genome to the database and
-        # associate with the passed run
-        logger.info("Checking if genome is in database...")
-        genome = session.query(Genome).filter(Genome.genome_hash == inhash).first()
-        if not isinstance(genome, Genome):
-            # No existing genome with this hash
-            logger.info("Adding genome to database...")
-            try:
-                genome = Genome(
-                    genome_hash=inhash,
-                    path=abspath,
-                    length=genome_len,
-                    description=indesc,
-                )
-                session.add(genome)
-                session.commit()
-                logger.info("Added genome %s to database", genome)
-            except Exception:
-                logger.error("Could not add genome to database (exiting)")
-                logger.error(last_exception())
-                raise SystemExit(1)
-        try:
-            logger.info("Connecting run with genome")
-            genome.runs.append(run)
-        except Exception:
-            logger.error("Could not link genome to current run (exiting)")
-            logger.error(last_exception())
-            raise SystemExit(1)
-
-        # If there is an associated class or label for this genome, add it
-        if inhash in label_dict:
-            try:
-                session.add(
-                    Label(
-                        genome=genome,
-                        run=run,
-                        label=label_dict[inhash].label,
-                        class_label=label_dict[inhash].class_label,
-                    )
-                )
-            except Exception:
-                logger.error("Could not add genome labels to database (exiting)")
-                logger.error(last_exception())
-                raise SystemExit(1)
 
 
 def generate_joblist(comparisons, existingfiles, args, logger):

@@ -44,6 +44,15 @@ import os
 
 from Bio import SeqIO
 
+from pyani import PyaniException
+
+
+class PyaniFilesException(PyaniException):
+    """Exception raised when file loading in pyani fails."""
+
+    def __init__(self, msg="Error in pyani file I/O"):
+        PyaniException.__init__(self, msg)
+
 
 # Get a list of FASTA files from the input directory
 def get_fasta_files(dirname=None):
@@ -122,8 +131,11 @@ def get_sequence_lengths(fastafilenames):
 # Get hash string from hash file
 def read_hash_string(filename):
     """Return the hash and file strings from the passed hash file."""
-    with open(filename, "r") as ifh:
-        data = ifh.read().strip().split()
+    try:
+        with open(filename, "r") as ifh:
+            data = ifh.read().strip().split()
+    except Exception:
+        raise PyaniFilesException("Could not load hash file {}".format(filename))
 
     # We expect the first string in the file to be the hash (the second is the
     # filename)
@@ -133,6 +145,29 @@ def read_hash_string(filename):
 # Get description string from FASTA file
 def read_fasta_description(filename):
     """Return the first description string from a FASTA file."""
-    for data in SeqIO.parse(filename, "fasta"):
-        if data.description:
-            return data.description
+    try:
+        data = list(SeqIO.parse(filename, "fasta"))
+    except Exception:
+        raise PyaniFilesException("Could not parse FASTA file {}".format(filename))
+    return data[0].description
+
+
+# Load class or label file as dictionary
+def load_classes_labels(path):
+    """Returns a dictionary of genome classes or labels keyed by hash
+
+    The expected format of the classes and labels files is:
+
+    <HASH>\t<FILESTEM>\t<CLASS>|<LABEL>,
+
+    where <HASH> is the MD5 hash of the genome data (this is not checked);
+    <FILESTEM> is the path to the genome file (this is intended to be a
+    record for humans to audit, it's not needed for the database interaction;
+    and <CLASS>|<LABEL> is the class or label associated with that genome.
+    """
+    datadict = {}
+    with open(path, "r") as ifh:
+        for line in ifh.readlines():
+            genomehash, _, data = line.strip().split("\t")
+            datadict[genomehash] = data
+    return datadict

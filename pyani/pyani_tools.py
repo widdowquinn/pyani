@@ -49,29 +49,9 @@ from . import pyani_config, pyani_db, download
 
 from Bio import SeqIO
 
-# EXCEPTIONS
-# ==========
-
-# General exception for scripts
-
-
-class PyaniException(Exception):
-    """General exception for pyani."""
-
-    def __init__(self, msg="Error in pyani module"):
-        """Instantiate class."""
-        Exception.__init__(self, msg)
-
-
-# Report last exception as string
-def last_exception():
-    """Return last exception as a string, or use in logging."""
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-
-
 # CLASSES
 # =======
+
 
 # Class to hold ANI dataframe results
 class ANIResults(object):

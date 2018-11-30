@@ -45,9 +45,8 @@ THE SOFTWARE.
 
 import datetime
 
-from pyani import anib, pyani_orm
+from pyani import anib, last_exception, pyani_orm
 from pyani.pyani_orm import Run, add_run_genomes
-from pyani.pyani_tools import last_exception
 
 
 def subcmd_anib(args, logger):
@@ -117,7 +116,7 @@ def subcmd_anib(args, logger):
     logger.info("\tLabels file: %s", args.labels)
     try:
         add_run_genomes(session, run, args.indir, args.classes, args.labels)
-    except:
+    except Exception:
         logger.error("Could not add genomes to database (exiting)")
         logger.error(last_exception())
         raise SystemExit(1)
