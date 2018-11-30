@@ -76,6 +76,7 @@ class TestANIbSubcommand(unittest.TestCase):
         self.classes = os.path.join(self.indir, "classes.txt")
         self.labels = os.path.join(self.indir, "labels.txt")
         self.blastn_exe = "blastn"
+        self.makeblastdb_exe = "makeblastdb"
         self.scheduler = "multiprocessing"
 
         # Null logger instance
@@ -100,6 +101,7 @@ class TestANIbSubcommand(unittest.TestCase):
                 disable_tqdm=True,
                 jobprefix="ANIbTest",
                 fragsize=1000,
+                makeblastdb_exe=self.makeblastdb_exe,
             )
         }
 

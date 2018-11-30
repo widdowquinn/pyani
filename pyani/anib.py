@@ -88,14 +88,22 @@ import re
 import shutil
 import subprocess
 
+from collections import namedtuple
+
 import pandas as pd
 
 from Bio import SeqIO
 
-from . import pyani_config
-from . import pyani_files
-from . import pyani_jobs
-from .pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
+from pyani import pyani_config, pyani_files, pyani_jobs
+from pyani.pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
+
+
+# convenience data structures
+# Relationship beween genome FASTA file hash, path, and the path
+# to the fragmented FASTA file
+fragfileinfo = namedtuple(
+    "FragFileInfo", "hash genomepath fragpath dbpath fragcount formatcmd"
+)
 
 
 # Divide input FASTA sequences into fragments
@@ -559,3 +567,64 @@ def get_version(blast_exe=pyani_config.BLASTN_DEFAULT):
         cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
     )
     return re.search(r"(?<=blastn:\s)[0-9\.]*", str(result.stdout, "utf-8")).group()
+
+
+# Chop genomes into consecutive fragments
+def fragment_genomes(indir, fragsize, outdir, makeblastdb_exe):
+    """Chop FASTA files in the passed directory into fragments.
+
+    indir          directory containing FASTA files to be chopped
+    fragsize       fragment size to generate
+    outdir         location to place `fragments` directory containing output
+
+    Each FASTA file in `indir` is split into consecutive fragments of length
+    `fragsize` (trailing sequences are included) and written to a file in
+    `outdir` having the same filestem.
+
+    All fragments are named consecutively and uniquely (within a file) as
+    fragNNNNN.
+
+    Sequence description fields are retained.
+    """
+    results = []
+    # Chop up files
+    for fname, hname in pyani_files.get_fasta_and_hash_paths(indir):
+        fstem, fext = os.path.splitext(os.path.split(fname)[-1])
+        outfname = os.path.join(outdir, fstem) + "_fragments" + fext
+        outseqs = []
+        fhash = pyani_files.read_hash_string(hname)[0]
+        for seq in SeqIO.parse(fname, "fasta"):
+            idx, count = 0, 0
+            while idx < len(seq):
+                count += 1
+                newseq = seq[idx : idx + fragsize]
+                newseq.id = "frag%08d" % count
+                outseqs.append(newseq)
+                idx += fragsize
+        results.append(
+            fragfileinfo(
+                fhash,
+                fname,
+                outfname,
+                outfname,
+                count,
+                construct_makeblastdb_cmd(fname, outdir, makeblastdb_exe)[0],
+            )
+        )
+        SeqIO.write(outseqs, outfname, "fasta")
+    return results
+
+
+# Generate list of pyani_jobs.Job objects for creating BLAST nucleotide databases
+def generate_makeblastdb_jobs(fragdata, jobprefix="ANIb"):
+    """Returns list of Job objects for running makeblastdb commands in `fragdata`
+
+    fragdata         list of FragFileInfo named tuples
+    jobprefix        prefix for jobs
+    """
+    joblist = []
+    for idx, fraginfo in enumerate(fragdata):
+        joblist.append(
+            pyani_jobs.Job("%s_%06d-makeblastdb" % (jobprefix, idx), fraginfo.formatcmd)
+        )
+    return joblist

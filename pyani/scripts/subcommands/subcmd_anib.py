@@ -48,10 +48,21 @@ import os
 
 from itertools import permutations
 
+from Bio import SeqIO
 from tqdm import tqdm
 
-from pyani import anib, last_exception, pyani_config
-from pyani.pyani_files import collect_existing_output
+from pyani import (
+    anib,
+    last_exception,
+    pyani_config,
+    run_multiprocessing as run_mp,
+    run_sge,
+)
+from pyani.pyani_files import (
+    collect_existing_output,
+    get_fasta_and_hash_paths,
+    read_hash_string,
+)
 from pyani.pyani_orm import (
     Comparison,
     Run,
@@ -188,7 +199,53 @@ def subcmd_anib(args, logger):
         existingfiles = None
     print(existingfiles)
 
-    # 6. create list of makeblastdb and blastn jobs that still need to be run
-    # logger.info("Creating BLAST+ jobs for ANIb")
-    # joblist = generate_joblist(comparisons_to_run, existingfiles, args, logger)
-    # logger.info("Generated %s jobs, %s comparisons", len(joblist), len(comparisons))
+    # 6. construct BLAST nucleotide databases with the appropriate fragment
+    #    size for each genome, and add these to the database
+    fragdir = os.path.join(args.outdir, "fragments")
+    os.makedirs(fragdir, exist_ok=True)
+    logger.info(
+        "Fragmenting all FASTA files in %s to %dnt in %s",
+        args.indir,
+        args.fragsize,
+        fragdir,
+    )
+    fragdata = anib.fragment_genomes(
+        args.indir, args.fragsize, fragdir, args.makeblastdb_exe
+    )
+    print(fragdata)
+    logger.info("Building databases for BLAST+ comparisons")
+    joblist = anib.generate_makeblastdb_jobs(fragdata)
+    run_jobs(joblist, args, logger)
+
+
+def run_jobs(joblist, args, logger):
+    """Pass ANIb jobs to the scheduler
+
+    joblist           list of Jobs
+    args              command-line arguments for the run
+    logger            logging output
+    """
+    if args.scheduler == "multiprocessing":
+        logger.info("Running jobs with multiprocessing")
+        if not args.workers:
+            logger.info("(using maximum number of worker threads)")
+        else:
+            logger.info("(using %d worker threads, if available)", args.workers)
+        cumval = run_mp.run_dependency_graph(
+            [_ for _ in joblist], workers=args.workers, logger=logger
+        )
+        if 0 < cumval:
+            logger.error("At least one command failed, please investigate (exiting)")
+            raise PyaniException("Multiprocessing run failed in ANIb")
+        else:
+            logger.info("Multiprocessing run completed without error")
+    else:
+        logger.info("Running jobs with SGE")
+        logger.info("Setting jobarray group size to %d", args.sgegroupsize)
+        run_sge.run_dependency_graph(
+            [_.job for _ in joblist],
+            logger=logger,
+            jgprefix=args.jobprefix,
+            sgegroupsize=args.sgegroupsize,
+            sgeargs=args.sgeargs,
+        )

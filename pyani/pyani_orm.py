@@ -124,6 +124,42 @@ class Label(Base):
         )
 
 
+class BlastDB(Base):
+    """Describes relationship between genome, run and BLAST database
+
+    Each genome and run combination can be assigned a single BLAST database
+    for the comparisons
+
+    path      path to database files
+    size      number of fragment sequences in database
+    dbcmd     command used to generate database
+    """
+
+    __tablename__ = "blastdb"
+
+    blastdb_id = Column(Integer, primary_key=True)
+    genome_id = Column(Integer, ForeignKey("genomes.genome_id"))
+    run_id = Column(Integer, ForeignKey("runs.run_id"))
+    path = Column(String)
+    size = Column(Integer)
+    dbcmd = Column(String)
+
+    genome = relationship("Genome", back_populates="blastdbs")
+    run = relationship("Run", back_populates="blastdbs")
+
+    def __str__(self):
+        return str(
+            "Genome ID: {}, Run ID: {}, Label ID: {}, Label: {}, Class: {}".format(
+                self.genome_id, self.run_id, self.label_id, self.label, self.class_label
+            )
+        )
+
+    def __repr__(self):
+        return "<Label(key=({}, {}, {}))>".format(
+            self.label_id, self.run_id, self.genome_id
+        )
+
+
 class Genome(Base):
     """Describes an input genome for a pyani run"""
 
@@ -137,6 +173,7 @@ class Genome(Base):
     description = Column(String)
 
     labels = relationship("Label", back_populates="genome", lazy="dynamic")
+    blastdbs = relationship("BlastDB", back_populates="genome", lazy="dynamic")
     runs = relationship(
         "Run", secondary=rungenome, back_populates="genomes", lazy="dynamic"
     )
@@ -182,6 +219,7 @@ class Run(Base):
         "Comparison", secondary=runcomparison, back_populates="runs", lazy="dynamic"
     )
     labels = relationship("Label", back_populates="run", lazy="dynamic")
+    blastdbs = relationship("BlastDB", back_populates="run", lazy="dynamic")
 
     def __str__(self):
         return str("Run {}: {} ({})".format(self.run_id, self.name, self.date))

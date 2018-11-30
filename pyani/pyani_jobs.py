@@ -22,7 +22,7 @@ interleaved by the scheduler with no need for pools.
 This code is essentially a frozen and cut-down version of pysge
 (https://github.com/widdowquinn/pysge)
 
-(c) The James Hutton Institute 2013-2017
+(c) The James Hutton Institute 2013-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -40,7 +40,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2013-2017 The James Hutton Institute
+Copyright (c) 2013-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -64,10 +64,15 @@ THE SOFTWARE.
 import os
 import time
 
-from .pyani_config import SGE_WAIT
+from pyani import PyaniException
+from pyani.pyani_config import SGE_WAIT
 
-###
-# CLASSES
+
+class PyaniJobException(PyaniException):
+    """Exception raised when a Job run fails"""
+
+    def __init__(self, msg="Error in pyani Job"):
+        PyaniException.__init__(self, msg)
 
 
 # The Job class describes a single command-line job, with dependencies (jobs
@@ -82,13 +87,13 @@ class Job:
         - command        String, the valid shell command to run the job
         - queue          String, the SGE queue under which the job shall run
         """
-        self.name = name                 # Unique name for the job
-        self.queue = queue               # The SGE queue to run the job under
-        self.command = command           # Command line to run for this job
+        self.name = name  # Unique name for the job
+        self.queue = queue  # The SGE queue to run the job under
+        self.command = command  # Command line to run for this job
         self.script = command
-        self.scriptPath = None           # Will hold path to the script file
-        self.dependencies = []           # List of jobs to be completed first
-        self.submitted = False           # Flag: is job submitted?
+        self.scriptPath = None  # Will hold path to the script file
+        self.dependencies = []  # List of jobs to be completed first
+        self.submitted = False  # Flag: is job submitted?
         self.finished = False
 
     def add_dependency(self, job):
@@ -139,22 +144,22 @@ class JobGroup:
         arguments='{'fooargs': ['1','2','3','4'],
                     'barargs': ['a','b','c','d']}
         """
-        self.name = name               # Set JobQueue name
-        self.queue = queue             # Set SGE queue to request
-        self.command = command         # Set command string
-        self.dependencies = []         # Create empty list for dependencies
-        self.submitted = False          # Set submitted Boolean
+        self.name = name  # Set JobQueue name
+        self.queue = queue  # Set SGE queue to request
+        self.command = command  # Set command string
+        self.dependencies = []  # Create empty list for dependencies
+        self.submitted = False  # Set submitted Boolean
         self.finished = False
         if arguments is not None:
             self.arguments = arguments  # Dictionary of arguments for command
         else:
             self.arguments = {}
-        self.generate_script()         # Make SGE script for sweep/array
+        self.generate_script()  # Make SGE script for sweep/array
 
     def generate_script(self):
         """Create the SGE script that will run the jobs in the JobGroup."""
-        self.script = ""        # Holds the script string
-        total = 1               # total number of jobs in this group
+        self.script = ""  # Holds the script string
+        total = 1  # total number of jobs in this group
 
         # for now, SGE_TASK_ID becomes TASK_ID, but we base it at zero
         self.script += """let "TASK_ID=$SGE_TASK_ID - 1"\n"""
@@ -163,7 +168,7 @@ class JobGroup:
         for key in sorted(self.arguments.keys()):
             # The keys are sorted for py3.5 compatibility with tests
             values = self.arguments[key]
-            line = ("%s_ARRAY=( " % (key))
+            line = "%s_ARRAY=( " % (key)
             for value in values:
                 line += value
                 line += " "

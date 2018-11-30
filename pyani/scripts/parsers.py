@@ -579,6 +579,13 @@ def build_parser_anib(subps, parents=None):
         help="path to BLASTN+ executable",
     )
     parser.add_argument(
+        "--makeblastdb_exe",
+        dest="makeblastdb_exe",
+        action="store",
+        default=pyani_config.MAKEBLASTDB_DEFAULT,
+        help="path to BLAST+ makeblastdb executable",
+    )
+    parser.add_argument(
         "--fragsize",
         dest="fragsize",
         action="store",

@@ -4,7 +4,7 @@
 For parallelisation on multi-node system, we use some custom code to submit
 jobs.
 
-(c) The James Hutton Institute 2013-2017
+(c) The James Hutton Institute 2013-2018
 Author: Leighton Pritchard
 
 Contact:
@@ -22,7 +22,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2013-2017 The James Hutton Institute
+Copyright (c) 2013-2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -48,8 +48,8 @@ import os
 
 from collections import defaultdict
 
-from . import pyani_config
-from .pyani_jobs import JobGroup
+from pyani import pyani_config
+from pyani.pyani_jobs import JobGroup
 
 
 def split_seq(iterable, size):
@@ -61,7 +61,7 @@ def split_seq(iterable, size):
         item = list(itertools.islice(elm, size))
 
 
-# Build a list of SGE jobs from a graph
+# Build a list of jobs from a jobgraph
 def build_joblist(jobgraph):
     """Return a list of jobs, from a passed jobgraph."""
     jobset = set()
@@ -75,7 +75,7 @@ def compile_jobgroups_from_joblist(joblist, jgprefix, sgegroupsize):
     """Return list of jobgroups, rather than list of jobs."""
     jobcmds = defaultdict(list)
     for job in joblist:
-        jobcmds[job.command.split(' ', 1)[0]].append(job.command)
+        jobcmds[job.command.split(" ", 1)[0]].append(job.command)
     jobgroups = []
     for cmds in list(jobcmds.items()):
         # Break arglist up into batches of sgegroupsize (default: 10,000)
@@ -83,16 +83,21 @@ def compile_jobgroups_from_joblist(joblist, jgprefix, sgegroupsize):
         count = 0
         for sublist in sublists:
             count += 1
-            sge_jobcmdlist = ['\"%s\"' % jc for jc in sublist]
-            jobgroups.append(JobGroup("%s_%d" % (jgprefix, count),
-                                      "$cmds",
-                                      arguments={'cmds': sge_jobcmdlist}))
+            sge_jobcmdlist = ['"%s"' % jc for jc in sublist]
+            jobgroups.append(
+                JobGroup(
+                    "%s_%d" % (jgprefix, count),
+                    "$cmds",
+                    arguments={"cmds": sge_jobcmdlist},
+                )
+            )
     return jobgroups
 
 
 # Run a job dependency graph, with SGE
-def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
-                         sgegroupsize=10000, sgeargs=None):
+def run_dependency_graph(
+    jobgraph, logger=None, jgprefix="pyani_SGE_JG", sgegroupsize=10000, sgeargs=None
+):
     """Create and runs SGE scripts for jobs based on passed jobgraph.
 
     - jobgraph - list of jobs, which may have dependencies.
@@ -108,8 +113,8 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
     the dependency graph into two lists of corresponding jobs, and
     run the corresponding nucmer jobs before the delta-filter jobs.
     """
-    jobs_main = []    # Can be run first, before deps
-    jobs_deps = []    # Depend on the main jobs
+    jobs_main = []  # Can be run first, before deps
+    jobs_deps = []  # Depend on the main jobs
 
     # Try to be informative by telling the user what jobs will run
     dep_count = 0  # how many dependencies are there
@@ -121,8 +126,7 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
             if len(job.dependencies):
                 dep_count += len(job.dependencies)
                 for dep in job.dependencies:
-                    logger.info("\t[^ depends on: %s (%s)]",
-                                dep.name, dep.command)
+                    logger.info("\t[^ depends on: %s (%s)]", dep.name, dep.command)
                     jobs_deps.append(dep)
     logger.info("There are %d job dependencies" % dep_count)
     # Clear dependencies in main group
@@ -135,12 +139,12 @@ def run_dependency_graph(jobgraph, logger=None, jgprefix="ANIm_SGE_JG",
     # We split the main and dependent jobs into separate JobGroups.
     # These JobGroups are paired, in order
     logger.info("Compiling main and dependent jobs into separate JobGroups")
-    maingroups = compile_jobgroups_from_joblist(jobs_main,
-                                                jgprefix + "_main",
-                                                sgegroupsize)
-    depgroups = compile_jobgroups_from_joblist(jobs_deps, jgprefix +
-                                               "_deps",
-                                               sgegroupsize)
+    maingroups = compile_jobgroups_from_joblist(
+        jobs_main, jgprefix + "_main", sgegroupsize
+    )
+    depgroups = compile_jobgroups_from_joblist(
+        jobs_deps, jgprefix + "_deps", sgegroupsize
+    )
 
     # Assign dependencies to jobgroups
     for mg, dg in zip(maingroups, depgroups):
@@ -190,8 +194,10 @@ def build_directories(root_dir):
         os.mkdir(root_dir)
 
     # Create subdirectories
-    directories = [os.path.join(root_dir, subdir) for subdir in
-                   ("output", "stderr", "stdout", "jobs")]
+    directories = [
+        os.path.join(root_dir, subdir)
+        for subdir in ("output", "stderr", "stdout", "jobs")
+    ]
     for dirname in directories:
         os.makedirs(dirname, exist_ok=True)
 
@@ -215,13 +221,12 @@ def extract_submittable_jobs(waiting):
 
     - waiting           List of Job objects
     """
-    submittable = set()            # Holds jobs that are able to be submitted
+    submittable = set()  # Holds jobs that are able to be submitted
     # Loop over each job, and check all the subjobs in that job's dependency
     # list.  If there are any, and all of these have been submitted, then
     # append the job to the list of submittable jobs.
     for job in waiting:
-        unsatisfied = sum([(subjob.submitted is False) for subjob in
-                           job.dependencies])
+        unsatisfied = sum([(subjob.submitted is False) for subjob in job.dependencies])
         if unsatisfied == 0:
             submittable.add(job)
     return list(submittable)
@@ -262,12 +267,11 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
             args = args[:-1]
 
         # Build the qsub SGE commandline (passing local environment)
-        qsubcmd = ("%s -V %s %s" %
-                   (pyani_config.QSUB_DEFAULT, args, job.scriptpath))
+        qsubcmd = "%s -V %s %s" % (pyani_config.QSUB_DEFAULT, args, job.scriptpath)
         if sgeargs is not None:
             qsubcmd = "%s %s" % (qsubcmd, sgeargs)
-        os.system(qsubcmd)               # Run the command
-        job.submitted = True             # Set the job's submitted flag to True
+        os.system(qsubcmd)  # Run the command
+        job.submitted = True  # Set the job's submitted flag to True
 
 
 def submit_jobs(root_dir, jobs, sgeargs=None):
@@ -276,7 +280,7 @@ def submit_jobs(root_dir, jobs, sgeargs=None):
     - root_dir       Path to output directory
     - jobs           List of Job objects
     """
-    waiting = list(jobs)                 # List of jobs still to be done
+    waiting = list(jobs)  # List of jobs still to be done
     # Loop over the list of pending jobs, while there still are any
     while len(waiting) > 0:
         # extract submittable jobs
@@ -303,6 +307,6 @@ def build_and_submit_jobs(root_dir, jobs, sgeargs=None):
         jobs = [jobs]
 
     # Build and submit the passed jobs
-    build_directories(root_dir)        # build all necessary directories
+    build_directories(root_dir)  # build all necessary directories
     build_job_scripts(root_dir, jobs)  # build job scripts
-    submit_jobs(root_dir, jobs, sgeargs)        # submit the jobs to SGE
+    submit_jobs(root_dir, jobs, sgeargs)  # submit the jobs to SGE
