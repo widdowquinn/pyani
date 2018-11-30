@@ -553,6 +553,31 @@ def build_parser_anib(subps, parents=None):
     parser = subps.add_parser(
         "anib", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
+    # Required positional arguments: input and output directories
+    parser.add_argument(
+        action="store", dest="indir", default=None, help="input genome directory"
+    )
+    parser.add_argument(
+        action="store",
+        dest="outdir",
+        default=None,
+        help="output analysis results directory",
+    )
+    # Optional arguments
+    parser.add_argument(
+        "--dbpath",
+        action="store",
+        dest="dbpath",
+        default=".pyani/pyanidb",
+        help="path to pyani database",
+    )
+    parser.add_argument(
+        "--blastn_exe",
+        dest="blastn_exe",
+        action="store",
+        default=pyani_config.BLASTN_DEFAULT,
+        help="path to BLASTN+ executable",
+    )
     parser.set_defaults(func=subcommands.subcmd_anib)
 
 

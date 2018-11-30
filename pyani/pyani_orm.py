@@ -223,6 +223,18 @@ def get_session(dbpath):
     return Session()
 
 
+def add_run_genomes(session, run, indir, classpath, labelpath):
+    """Add the genomes for a run to the database
+
+    session       live SQLAlchemy session of pyani database
+    run           Run object describing the parent pyani run
+    indir         path to the directory containing genomes
+    classpath     path to the file containing class information for each genome
+    labelpath     path to the file containing class information for each genome
+    """
+    raise NotImplementedError
+
+
 if __name__ == "__main__":
     # Create test database if run as script
 
