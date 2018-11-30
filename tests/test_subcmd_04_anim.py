@@ -34,7 +34,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2018 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -80,7 +80,7 @@ class TestANImSubcommand(unittest.TestCase):
         self.scheduler = "multiprocessing"
 
         # Null logger instance
-        self.logger = logging.getLogger("TestIndexSubcommand logger")
+        self.logger = logging.getLogger("TestANImSubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
         # Command line namespaces

@@ -111,10 +111,8 @@ def subcmd_anim(args, logger):
 
     # Use the provided name or make one for the analysis
     start_time = datetime.datetime.now()
-    if args.name is None:
-        name = "_".join(["ANIm", start_time.isoformat()])
-    else:
-        name = args.name
+    name = args.name or "_".join(["ANIm", start_time.isoformat()])
+    logger.info("Analysis name: %s", name)
 
     # Add info for this analysis to the database
     # First, get a connection to an existing database (which may or may not have data)
@@ -123,6 +121,7 @@ def subcmd_anim(args, logger):
         session = pyani_orm.get_session(args.dbpath)
     except Exception:
         logger.error("Could not connect to database %s (exiting)", args.dbpath)
+        logger.error(last_exception())
         raise SystemExit(1)
 
     # Add this run to the database
