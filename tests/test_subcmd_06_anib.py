@@ -99,6 +99,7 @@ class TestANIbSubcommand(unittest.TestCase):
                 workers=None,
                 disable_tqdm=True,
                 jobprefix="ANIbTest",
+                fragsize=1000,
             )
         }
 

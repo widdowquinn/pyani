@@ -171,3 +171,24 @@ def load_classes_labels(path):
             genomehash, _, data = line.strip().split("\t")
             datadict[genomehash] = data
     return datadict
+
+
+# Collect existing output files when in recovery mode
+def collect_existing_output(dirpath, program, args):
+    """Returns a list of existing output files at dirpath
+
+    dirpath       path to existing output directory
+    args          command-line arguments for the run
+    """
+    # Obtain collection of expected output files already present in directory
+    if program == "nucmer":
+        if args.nofilter:
+            suffix = ".delta"
+        else:
+            suffix = ".filter"
+    elif program == "blastn":
+        suffix = ".blast_tab"
+    existingfiles = [
+        fname for fname in os.listdir(dirpath) if os.path.splitext(fname)[-1] == suffix
+    ]
+    return existingfiles

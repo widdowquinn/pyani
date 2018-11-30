@@ -578,6 +578,14 @@ def build_parser_anib(subps, parents=None):
         default=pyani_config.BLASTN_DEFAULT,
         help="path to BLASTN+ executable",
     )
+    parser.add_argument(
+        "--fragsize",
+        dest="fragsize",
+        action="store",
+        type=int,
+        default=1000,
+        help="size of fragments in genome database",
+    )
     parser.set_defaults(func=subcommands.subcmd_anib)
 
 

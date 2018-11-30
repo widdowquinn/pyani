@@ -46,6 +46,9 @@ import os
 
 from collections import namedtuple
 
+import numpy as np
+import pandas as pd
+
 from sqlalchemy import UniqueConstraint, create_engine, Table
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Boolean
 from sqlalchemy.ext.declarative import declarative_base
@@ -248,6 +251,61 @@ def get_session(dbpath):
     return Session()
 
 
+def get_comparison_dict(session):
+    """Return a dictionary of comparisons in the session database
+
+    session      live SQLAlchemy session of pyani database
+
+    Returns Comparison objects, keyed by (_.query_id, _.subject_id,
+    _.program, _.version, _.fragsize, _.maxmatch) tuple
+    """
+    return {
+        (_.query_id, _.subject_id, _.program, _.version, _.fragsize, _.maxmatch): _
+        for _ in session.query(Comparison).all()
+    }
+
+
+def filter_existing_comparisons(
+    session, run, comparisons, program, version, fragsize=None, maxmatch=None
+):
+    """Filter list of (Genome, Genome) comparisons for those not in the session db.
+
+    session       live SQLAlchemy session of pyani database
+    run           Run object describing parent pyani run
+    comparisons   list of (Genome, Genome) query vs subject comparisons
+    program       program used for comparison
+    version       version of program for comparison
+    fragsize      fragment size for BLAST databases
+    maxmatch      maxmatch used with nucmer comparison
+
+    When passed a list of (Genome, Genome) comparisons as comparisons, check whether
+    the comparison exists in the database and, if so, associate it with the passed run.
+    If not, then add the (Genome, Genome) pair to a list for returning as the
+    comparisons that still need to be run.
+    """
+    existing_comparisons = get_comparison_dict(session)
+    comparisons_to_run = []
+    for (qgenome, sgenome) in comparisons:
+        try:
+            # Associate run with existing comparisons
+            run.comparisons.append(
+                existing_comparisons[
+                    (
+                        qgenome.genome_id,
+                        sgenome.genome_id,
+                        program,
+                        version,
+                        fragsize,
+                        maxmatch,
+                    )
+                ]
+            )
+            session.commit()
+        except KeyError:
+            comparisons_to_run.append((qgenome, sgenome))
+    return comparisons_to_run
+
+
 def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
     """Add genomes for a run to the database
 
@@ -335,6 +393,52 @@ def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
             session.commit()
         except Exception:
             raise PyaniORMException("Could not commit new genomes in database.")
+
+
+def update_comparison_matrices(session, run):
+    """Update the Run table with summary matrices for the analysis.
+
+    session       active pyanidb session via ORM
+    run           Run ORM object for the current ANIm run
+    """
+    # Create dataframes for storing in the Run table
+    # Rows and columns are the (ordered) list of genome IDs
+    genome_ids = sorted([_.genome_id for _ in run.genomes.all()])
+    df_identity = pd.DataFrame(index=genome_ids, columns=genome_ids, dtype=float)
+    df_coverage = pd.DataFrame(index=genome_ids, columns=genome_ids, dtype=float)
+    df_alnlength = pd.DataFrame(index=genome_ids, columns=genome_ids, dtype=float)
+    df_simerrors = pd.DataFrame(index=genome_ids, columns=genome_ids, dtype=float)
+    df_hadamard = pd.DataFrame(index=genome_ids, columns=genome_ids, dtype=float)
+
+    # Set appropriate diagonals for each matrix
+    np.fill_diagonal(df_identity.values, 1.0)
+    np.fill_diagonal(df_coverage.values, 1.0)
+    np.fill_diagonal(df_simerrors.values, 1.0)
+    np.fill_diagonal(df_hadamard.values, 1.0)
+    for genome in run.genomes.all():
+        df_alnlength.loc[genome.genome_id, genome.genome_id] = genome.length
+
+    # Loop over all comparisons for the run and fill in result matrices
+    for cmp in run.comparisons.all():
+        qid, sid = cmp.query_id, cmp.subject_id
+        df_identity.loc[qid, sid] = cmp.identity
+        df_identity.loc[sid, qid] = cmp.identity
+        df_coverage.loc[qid, sid] = cmp.cov_query
+        df_coverage.loc[sid, qid] = cmp.cov_subject
+        df_alnlength.loc[qid, sid] = cmp.aln_length
+        df_alnlength.loc[sid, qid] = cmp.aln_length
+        df_simerrors.loc[qid, sid] = cmp.sim_errs
+        df_simerrors.loc[sid, qid] = cmp.sim_errs
+        df_hadamard.loc[qid, sid] = cmp.identity * cmp.cov_query
+        df_hadamard.loc[sid, qid] = cmp.identity * cmp.cov_subject
+
+    # Add matrices to the database
+    run.df_identity = df_identity.to_json()
+    run.df_coverage = df_coverage.to_json()
+    run.df_alnlength = df_alnlength.to_json()
+    run.df_simerrors = df_simerrors.to_json()
+    run.df_hadamard = df_hadamard.to_json()
+    session.commit()
 
 
 if __name__ == "__main__":
