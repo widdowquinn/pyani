@@ -249,11 +249,15 @@ def make_job_graph(infiles, fragfiles, blastcmds):
             jobs = [
                 pyani_jobs.Job(
                     "%s_exe_%06d_a" % (blastcmds.prefix, jobnum),
-                    blastcmds.build_blast_cmd(fname1, fname2.replace("-fragments", "")),
+                    blastcmds.build_blast_cmd(fname1, fname2.replace("-fragments", ""))[
+                        0
+                    ],
                 ),
                 pyani_jobs.Job(
                     "%s_exe_%06d_b" % (blastcmds.prefix, jobnum),
-                    blastcmds.build_blast_cmd(fname2, fname1.replace("-fragments", "")),
+                    blastcmds.build_blast_cmd(fname2, fname1.replace("-fragments", ""))[
+                        0
+                    ],
                 ),
             ]
             jobs[0].add_dependency(dbjobdict[fname1.replace("-fragments", "")])
@@ -344,14 +348,14 @@ def generate_blastn_commands(filenames, outdir, blast_exe=None, mode="ANIb"):
         for fname2 in filenames[idx + 1 :]:
             dbname2 = fname2.replace("-fragments", "")
             if blast_exe is None:
-                cmdlines.append(construct_blast_cmdline(fname1, dbname2, outdir))
-                cmdlines.append(construct_blast_cmdline(fname2, dbname1, outdir))
+                cmdlines.append(construct_blast_cmdline(fname1, dbname2, outdir)[0])
+                cmdlines.append(construct_blast_cmdline(fname2, dbname1, outdir)[0])
             else:
                 cmdlines.append(
-                    construct_blast_cmdline(fname1, dbname2, outdir, blast_exe)
+                    construct_blast_cmdline(fname1, dbname2, outdir, blast_exe)[0]
                 )
                 cmdlines.append(
-                    construct_blast_cmdline(fname2, dbname1, outdir, blast_exe)
+                    construct_blast_cmdline(fname2, dbname1, outdir, blast_exe)[0]
                 )
     return cmdlines
 
@@ -392,12 +396,13 @@ def construct_blastall_cmdline(
     fstem2 = os.path.splitext(os.path.split(fname2)[-1])[0]
     fstem1 = fstem1.replace("-fragments", "")
     prefix = os.path.join(outdir, "%s_vs_%s" % (fstem1, fstem2))
+    outfname = prefix + ".blast_tab"
     cmd = (
-        "{0} -p blastn -o {1}.blast_tab -i {2} -d {3} "
+        "{0} -p blastn -o {1} -i {2} -d {3} "
         + "-X 150 -q -1 -F F -e 1e-15 "
         + "-b 1 -v 1 -m 8"
     )
-    return cmd.format(blastall_exe, prefix, fname1, fname2)
+    return (cmd.format(blastall_exe, outfname, fname1, fname2), outfname)
 
 
 # Process pairwise BLASTN output
