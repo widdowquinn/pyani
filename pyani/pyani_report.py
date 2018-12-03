@@ -154,7 +154,7 @@ def write_dbtable(
                      coverage tables
     """
     formatdict = {
-        "tab": (df.to_csv, {"sep": "\t", "index": False}, ".tab"),
+        "tab": (df.to_csv, {"sep": "\t", "index": True}, ".tab"),
         "excel": (df.to_excel, {"index": show_index}, ".xlsx"),
         "html": (
             write_styled_html,

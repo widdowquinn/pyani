@@ -287,13 +287,16 @@ def subcmd_report(args, logger):
                 logger.info("Writing %s results", matname)
                 outfname = "_".join([outfstem, matname, str(run_id)])
                 matrix = pd.read_json(data)
+                # Matrix rows and columns are labelled if there is a label
+                # dictionary, and take the dataframe index otherwise
                 matrix.columns = [
-                    "{}:{}".format(label_dict[col], col) for col in matrix.columns
+                    "{}:{}".format(label_dict.get(col, col), col)
+                    for col in matrix.columns
                 ]
                 matrix.index = [
-                    "{}:{}".format(label_dict[idx], idx) for idx in matrix.index
+                    "{}:{}".format(label_dict.get(idx, idx), idx)
+                    for idx in matrix.index
                 ]
-                print(matrix)
                 pyani_report.write_dbtable(
                     matrix, outfname, formats, show_index=True, **args
                 )
