@@ -251,8 +251,8 @@ def generate_joblist(comparisons, existingfiles, args, logger):
 
     comparisons         a list of (Genome, Genome) tuples
     existingfiles       a list of existing nucmer output files
-    args                the command-line arguments for this run
-    logger              a logging output
+    args                the command-line arguments for this pyani run
+    logger              a logging object
     """
     joblist = []  # will hold ComparisonJob objects
     for idx, (query, subject) in enumerate(
@@ -340,15 +340,8 @@ def update_comparison_results(joblist, run, session, nucmer_version, args, logge
     logger          logging output
 
     The Comparison table stores individual comparison results, one per row.
-
-    The Run table has five columns for each run, and these hold serialised
-    (JSON) representations of results matrices for the entire run: %identity,
-    %coverage, alignment length, similarity errors, and a Hadamard matrix of
-    %identity X % coverage.
-
-    The five dataframes are created and populated here.
     """
-    # Add individual results to Comparison table, and to run matrices
+    # Add individual results to Comparison table
     for job in tqdm(joblist, disable=args.disable_tqdm):
         logger.debug("\t%s vs %s", job.query.description, job.subject.description)
         aln_length, sim_errs = anim.parse_delta(job.outfile)
