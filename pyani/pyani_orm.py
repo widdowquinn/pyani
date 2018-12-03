@@ -125,14 +125,15 @@ class Label(Base):
 
 
 class BlastDB(Base):
-    """Describes relationship between genome, run and BLAST database
+    """Describes relationship between genome, run, source BLAST database and query fragments
 
     Each genome and run combination can be assigned a single BLAST database
     for the comparisons
 
-    path      path to database files
-    size      number of fragment sequences in database
-    dbcmd     command used to generate database
+    fragpath      path to fragmented genome (query in ANIb)
+    dbpath        path to source genome database (subject in ANIb)
+    size          number of fragment sequences in query file
+    dbcmd         command used to generate database
     """
 
     __tablename__ = "blastdbs"
@@ -140,7 +141,8 @@ class BlastDB(Base):
     blastdb_id = Column(Integer, primary_key=True)
     genome_id = Column(Integer, ForeignKey("genomes.genome_id"))
     run_id = Column(Integer, ForeignKey("runs.run_id"))
-    path = Column(String)
+    fragpath = Column(String)
+    dbpath = Column(String)
     size = Column(Integer)
     dbcmd = Column(String)
 

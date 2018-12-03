@@ -227,7 +227,9 @@ def subcmd_anim(args, logger):
     # performed
     logger.info("Creating NUCmer jobs for ANIm")
     joblist = generate_joblist(comparisons_to_run, existingfiles, args, logger)
-    logger.info("Generated %s jobs, %d comparisons", len(joblist), len(comparisons))
+    logger.info(
+        "Generated %s jobs, %d comparisons", len(joblist), len(comparisons_to_run)
+    )
 
     # Pass jobs to the appropriate scheduler
     logger.info("Passing %d jobs to scheduler...", len(joblist))

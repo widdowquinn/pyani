@@ -576,12 +576,13 @@ def get_version(blast_exe=pyani_config.BLASTN_DEFAULT):
 
 
 # Chop genomes into consecutive fragments
-def fragment_genomes(indir, fragsize, outdir, makeblastdb_exe):
-    """Chop FASTA files in the passed directory into fragments, return FragFileInfo.
+def fragment_genomes(indir, fragsize, fragdir, dbdir, makeblastdb_exe):
+    """Chop FASTA files in passed directory, make source database, return FragFileInfo.
 
     indir          directory containing FASTA files to be chopped
     fragsize       fragment size to generate
-    outdir         location to place `fragments` directory containing output
+    fragdir         location to place `fragments` directory containing output
+    dbdir          location to place source sequence BLAST+ database
 
     Each FASTA file in `indir` is split into consecutive fragments of length
     `fragsize` (trailing sequences are included) and written to a file in
@@ -601,7 +602,7 @@ def fragment_genomes(indir, fragsize, outdir, makeblastdb_exe):
     # Chop up files
     for fname, hname in pyani_files.get_fasta_and_hash_paths(indir):
         fstem, fext = os.path.splitext(os.path.split(fname)[-1])
-        outfname = os.path.join(outdir, fstem) + "_fragments" + fext
+        fragfname = os.path.join(fragdir, fstem) + "_fragments" + fext
         outseqs = []
         fhash = pyani_files.read_hash_string(hname)[0]
         for seq in SeqIO.parse(fname, "fasta"):
@@ -612,19 +613,23 @@ def fragment_genomes(indir, fragsize, outdir, makeblastdb_exe):
                 newseq.id = "frag%08d" % count
                 outseqs.append(newseq)
                 idx += fragsize
+        cmdline, dbfname = construct_makeblastdb_cmd(fname, dbdir, makeblastdb_exe)
         results.append(
             fragfileinfo(
-                fhash,
-                fname,
-                outfname,
-                outfname,
-                count,
-                construct_makeblastdb_cmd(fname, outdir, makeblastdb_exe)[0],
+                fhash,  # input sequence hash
+                fname,  # path to input sequence
+                fragfname,  # path to fragment file
+                dbfname,  # path to BLAST+ database
+                count,  # number of fragments
+                cmdline,  # command to create BLAST+ database
             )
         )
-        SeqIO.write(outseqs, outfname, "fasta")
+        SeqIO.write(outseqs, fragfname, "fasta")
     return results
 
+
+# Convenience namedtuple for makeblastdb jobs
+ANIbMakeBlastDBJob = namedtuple("ANIbMakeBlastDBJob", "genomepath dbpath formatcmd job")
 
 # Generate list of pyani_jobs.Job objects for creating BLAST nucleotide databases
 def generate_makeblastdb_jobs(fragdata, jobprefix="ANIb"):
@@ -636,6 +641,13 @@ def generate_makeblastdb_jobs(fragdata, jobprefix="ANIb"):
     joblist = []
     for idx, fraginfo in enumerate(fragdata):
         joblist.append(
-            pyani_jobs.Job("%s_%06d-makeblastdb" % (jobprefix, idx), fraginfo.formatcmd)
+            ANIbMakeBlastDBJob(
+                genomepath=fraginfo.genomepath,
+                dbpath=fraginfo.dbpath,
+                formatcmd=fraginfo.formatcmd,
+                job=pyani_jobs.Job(
+                    "%s_%06d-makeblastdb" % (jobprefix, idx), fraginfo.formatcmd
+                ),
+            )
         )
     return joblist

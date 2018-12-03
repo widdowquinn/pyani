@@ -46,15 +46,18 @@ THE SOFTWARE.
 import datetime
 import os
 
+from collections import namedtuple
 from itertools import permutations
 
 from Bio import SeqIO
+from sqlalchemy import and_
 from tqdm import tqdm
 
 from pyani import (
     anib,
     last_exception,
     pyani_config,
+    pyani_jobs,
     run_multiprocessing as run_mp,
     run_sge,
 )
@@ -201,9 +204,11 @@ def subcmd_anib(args, logger):
         existingfiles = None
     print(existingfiles)
 
-    # 6. construct BLAST nucleotide databases with the appropriate fragment
-    #    size for each genome, and add these to the database
+    # 6. construct BLAST nucleotide sequences with the appropriate fragment
+    #    size for each genome, and source genome BLASTN+ database, and add
+    #    these to the database
     fragdir = os.path.join(args.outdir, "fragments")
+    dbdir = os.path.join(args.outdir, "blastdbs")
     os.makedirs(fragdir, exist_ok=True)
     logger.info(
         "Fragmenting all FASTA files in %s to %dnt in %s",
@@ -212,35 +217,94 @@ def subcmd_anib(args, logger):
         fragdir,
     )
     fragdata = anib.fragment_genomes(
-        args.indir, args.fragsize, fragdir, args.makeblastdb_exe
+        args.indir, args.fragsize, fragdir, dbdir, args.makeblastdb_exe
     )
+    print(fragdata)
 
-    # Build the BLAST+ nucleotide databases in-place, handing off commands
-    # to the appropriate scheduler
+    # 7. Build the BLAST+ nucleotide databases in-place, handing off commands
+    #    to the appropriate scheduler
     logger.info("Building databases for BLAST+ comparisons")
     joblist = anib.generate_makeblastdb_jobs(fragdata)
     run_jobs(joblist, args, logger)
 
-    # Add the created BLAST+ databases to the pyani database, recording relative
-    # path (so that the database can be bundled with results, if a suitable pyani
-    # analysis structure is followed). This is transactional, so either all
-    # databases are added (with reference to the current run) or none are.
+    # 8. Add the created BLAST+ databases to the pyani database, recording relative
+    #    path (so that the database can be bundled with results, if a suitable pyani
+    #    analysis structure is followed). This is transactional, so either all
+    #    databases are added (with reference to the current run) or none are.
     logger.info("Adding BLAST+ databases to pyani database")
     for fraginfo in fragdata:
         print(fraginfo)
         fragsource = (
             session.query(Genome).filter(Genome.genome_hash == fraginfo.hash).first()
         )
-        print(fragsource)
         blastdb = BlastDB(
             genome=fragsource,
             run=run,
-            path=fraginfo.dbpath,
+            fragpath=fraginfo.fragpath,
+            dbpath=fraginfo.dbpath,
             size=fraginfo.fragcount,
             dbcmd=fraginfo.formatcmd,
         )
         session.add(blastdb)
     session.commit()
+
+    # 9. Build the BLASTN+ job commands for comparisons that are still to run
+    logger.info("Creating BLASTN+ jobs for ANIb")
+    anib_joblist = generate_anib_jobs(
+        session, run, comparisons_to_run, existingfiles, blastdir, args, logger
+    )
+    logger.info(
+        "Generated %s jobs, %d comparisons", len(anib_joblist), len(comparisons_to_run)
+    )
+
+    # 10. Pass BLASTN+ job commands to scheduler
+    logger.info("Passing %d BLASTN+ jobs to scheduler...", len(joblist))
+    run_jobs(anib_joblist, args, logger)
+    logger.info("...BLASTN+ jobs complete")
+
+
+# Convenience namedtuple for ANIb comparison jobs
+ANIbComparisonJob = namedtuple("ANIbComparisonJob", "query subject cmdline job")
+
+
+def generate_anib_jobs(
+    session, run, comparisons, existingfiles, blastdir, args, logger
+):
+    """Returns an ANIbComparisonJob tuple of Job objects and comparison info
+    
+    session              active pyani database session
+    comparisons          an iterable of (Genome, Genome) tuples
+    existingfiles        a list of existing output files
+    blastdir             directory to place BLASTN+ output
+    args                 command-line arguments for this pyani run
+    logger               a logging object
+
+    This function loops over the (Genome, Genome) [(query, subject)] tuples in 
+    `comparisons`, extracts the query fragment file location, and subject database
+    location, and builds the corresponding BLASTN+ command-line. If the output 
+    file does not already exist (determined by a check against `existingfiles`), 
+    a new ANIbComparisonJob tuple is created, describing the query, subject,
+    command-line and expected output filename, and with a pyani_jobs.Job object
+    for use with the scheduler
+    """
+    joblist = []
+    for idx, (query, subject) in enumerate(
+        tqdm(comparisons, disable=args.disable_tqdm)
+    ):
+        queryfrags = (
+            session.query(BlastDB.fragpath)
+            .filter(and_(BlastDB.run == run, BlastDB.genome == query))
+            .first()
+        )
+        subjectdb = (
+            session.query(BlastDB.dbpath)
+            .filter(and_(BlastDB.run == run, BlastDB.genome == subject))
+            .first()
+        )
+        cmdline = anib.construct_blastn_cmdline(queryfrags[0], subjectdb[0], blastdir)
+        job = pyani_jobs.Job("%s_%06d" % (args.jobprefix, idx), cmdline)
+        joblist.append(ANIbComparisonJob(query, subject, cmdline, job))
+    return joblist
 
 
 def run_jobs(joblist, args, logger):
@@ -257,7 +321,7 @@ def run_jobs(joblist, args, logger):
         else:
             logger.info("(using %d worker threads, if available)", args.workers)
         cumval = run_mp.run_dependency_graph(
-            [_ for _ in joblist], workers=args.workers, logger=logger
+            [_.job for _ in joblist], workers=args.workers, logger=logger
         )
         if 0 < cumval:
             logger.error("At least one command failed, please investigate (exiting)")
