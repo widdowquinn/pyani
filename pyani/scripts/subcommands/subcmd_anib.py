@@ -79,6 +79,10 @@ from pyani.pyani_orm import (
 )
 
 
+# Convenience namedtuple for ANIb comparison jobs
+ANIbComparisonJob = namedtuple("ANIbComparisonJob", "query subject cmdline outfile job")
+
+
 def subcmd_anib(args, logger):
     """Perform ANIb on all genome files in an input directory.
 
@@ -201,8 +205,7 @@ def subcmd_anib(args, logger):
         )
         existingfiles = collect_existing_output(blastdir, "blastn", args)
     else:
-        existingfiles = None
-    print(existingfiles)
+        existingfiles = []
 
     # 6. construct BLAST nucleotide sequences with the appropriate fragment
     #    size for each genome, and source genome BLASTN+ database, and add
@@ -219,7 +222,6 @@ def subcmd_anib(args, logger):
     fragdata = anib.fragment_genomes(
         args.indir, args.fragsize, fragdir, dbdir, args.makeblastdb_exe
     )
-    print(fragdata)
 
     # 7. Build the BLAST+ nucleotide databases in-place, handing off commands
     #    to the appropriate scheduler
@@ -233,7 +235,6 @@ def subcmd_anib(args, logger):
     #    databases are added (with reference to the current run) or none are.
     logger.info("Adding BLAST+ databases to pyani database")
     for fraginfo in fragdata:
-        print(fraginfo)
         fragsource = (
             session.query(Genome).filter(Genome.genome_hash == fraginfo.hash).first()
         )
@@ -262,9 +263,11 @@ def subcmd_anib(args, logger):
     run_jobs(anib_joblist, args, logger)
     logger.info("...BLASTN+ jobs complete")
 
-
-# Convenience namedtuple for ANIb comparison jobs
-ANIbComparisonJob = namedtuple("ANIbComparisonJob", "query subject cmdline job")
+    # 11. Process output and add results to database
+    logger.info("Adding comparison results to database")
+    update_comparison_results(anib_joblist, run, session, blast_version, args, logger)
+    update_comparison_matrices(session, run)
+    logger.info("...database updated")
 
 
 def generate_anib_jobs(
@@ -301,9 +304,13 @@ def generate_anib_jobs(
             .filter(and_(BlastDB.run == run, BlastDB.genome == subject))
             .first()
         )
-        cmdline = anib.construct_blastn_cmdline(queryfrags[0], subjectdb[0], blastdir)
-        job = pyani_jobs.Job("%s_%06d" % (args.jobprefix, idx), cmdline)
-        joblist.append(ANIbComparisonJob(query, subject, cmdline, job))
+        cmdline, outfname = anib.construct_blastn_cmdline(
+            queryfrags[0], subjectdb[0], blastdir
+        )
+
+        if outfname not in existingfiles:  # skip existing files in recovery mode
+            job = pyani_jobs.Job("%s_%06d" % (args.jobprefix, idx), cmdline)
+            joblist.append(ANIbComparisonJob(query, subject, cmdline, outfname, job))
     return joblist
 
 
@@ -338,3 +345,42 @@ def run_jobs(joblist, args, logger):
             sgegroupsize=args.sgegroupsize,
             sgeargs=args.sgeargs,
         )
+
+
+def update_comparison_results(joblist, run, session, blast_version, args, logger):
+    """Update the Comparison table with a completed ANIb result set
+
+    joblist             list of ANIbComparisonJob namedtuples
+    run                 Run ORM object for current ANIb run
+    session             active pyanidb session via ORM
+    blast_version       version of BLASTN+ used for the comparison
+    args                command-line arguments for the run
+    logger              logging object    
+    """
+    # Add individual results to Comparison table
+    for job in tqdm(joblist, disable=args.disable_tqdm):
+        logger.debug("\t%s vs %s", job.query.description, job.subject.description)
+        aln_length, sim_errs, pid = anib.parse_blast_tab(job.outfile)
+        print(aln_length, sim_errs, pid)
+        qcov = aln_length / job.query.length
+        scov = aln_length / job.subject.length
+        # pid = 1 - sim_errs / aln_length
+        run.comparisons.append(
+            Comparison(
+                query=job.query,
+                subject=job.subject,
+                aln_length=aln_length,
+                sim_errs=sim_errs,
+                identity=pid,
+                cov_query=qcov,
+                cov_subject=scov,
+                program="blastn+",
+                version=blast_version,
+                fragsize=args.fragsize,
+                maxmatch=None,
+            )
+        )
+
+    # Populate db
+    logger.info("Committing results to database")
+    session.commit()

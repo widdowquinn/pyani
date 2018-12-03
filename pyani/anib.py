@@ -104,6 +104,8 @@ from pyani.pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
 fragfileinfo = namedtuple(
     "FragFileInfo", "hash genomepath fragpath dbpath fragcount formatcmd"
 )
+# Convenience namedtuple for makeblastdb jobs
+ANIbMakeBlastDBJob = namedtuple("ANIbMakeBlastDBJob", "genomepath dbpath formatcmd job")
 
 
 # Divide input FASTA sequences into fragments
@@ -367,14 +369,15 @@ def construct_blastn_cmdline(
     fstem2 = os.path.splitext(os.path.split(fname2)[-1])[0]
     fstem1 = fstem1.replace("-fragments", "")
     prefix = os.path.join(outdir, "%s_vs_%s" % (fstem1, fstem2))
+    outfname = prefix + ".blast_tab"
     cmd = (
-        "{0} -out {1}.blast_tab -query {2} -db {3} "
+        "{0} -out {1} -query {2} -db {3} "
         + "-xdrop_gap_final 150 -dust no -evalue 1e-15 "
         + "-max_target_seqs 1 -outfmt '6 qseqid sseqid length mismatch "
         + "pident nident qlen slen qstart qend sstart send positive "
         + "ppos gaps' -task blastn"
     )
-    return cmd.format(blastn_exe, prefix, fname1, fname2)
+    return (cmd.format(blastn_exe, outfname, fname1, fname2), outfname)
 
 
 # Generate single BLASTALL command line
@@ -463,7 +466,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb", logger=
 
 
 # Parse BLASTALL output to get total alignment length and mismatches
-def parse_blast_tab(filename, fraglengths, mode="ANIb"):
+def parse_blast_tab(filename, fraglengths=None, mode="ANIb"):
     """Return (alignment length, similarity errors, mean_pid) tuple.
 
     - filename - path to .blast_tab file
@@ -556,7 +559,7 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     aln_length = filtered["ani_alnlen"].sum()
     sim_errors = filtered["blast_mismatch"].sum() + filtered["blast_gaps"].sum()
     filtered.to_csv(filename + ".dataframe", sep="\t")
-    return aln_length, sim_errors, ani_pid
+    return int(aln_length), int(sim_errors), float(ani_pid)
 
 
 # Get BLASTN+ version
@@ -627,9 +630,6 @@ def fragment_genomes(indir, fragsize, fragdir, dbdir, makeblastdb_exe):
         SeqIO.write(outseqs, fragfname, "fasta")
     return results
 
-
-# Convenience namedtuple for makeblastdb jobs
-ANIbMakeBlastDBJob = namedtuple("ANIbMakeBlastDBJob", "genomepath dbpath formatcmd job")
 
 # Generate list of pyani_jobs.Job objects for creating BLAST nucleotide databases
 def generate_makeblastdb_jobs(fragdata, jobprefix="ANIb"):
