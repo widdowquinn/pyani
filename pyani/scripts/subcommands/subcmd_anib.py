@@ -64,7 +64,9 @@ from pyani.pyani_files import (
     read_hash_string,
 )
 from pyani.pyani_orm import (
+    BlastDB,
     Comparison,
+    Genome,
     Run,
     add_run_genomes,
     filter_existing_comparisons,
@@ -212,14 +214,37 @@ def subcmd_anib(args, logger):
     fragdata = anib.fragment_genomes(
         args.indir, args.fragsize, fragdir, args.makeblastdb_exe
     )
-    print(fragdata)
+
+    # Build the BLAST+ nucleotide databases in-place, handing off commands
+    # to the appropriate scheduler
     logger.info("Building databases for BLAST+ comparisons")
     joblist = anib.generate_makeblastdb_jobs(fragdata)
     run_jobs(joblist, args, logger)
 
+    # Add the created BLAST+ databases to the pyani database, recording relative
+    # path (so that the database can be bundled with results, if a suitable pyani
+    # analysis structure is followed). This is transactional, so either all
+    # databases are added (with reference to the current run) or none are.
+    logger.info("Adding BLAST+ databases to pyani database")
+    for fraginfo in fragdata:
+        print(fraginfo)
+        fragsource = (
+            session.query(Genome).filter(Genome.genome_hash == fraginfo.hash).first()
+        )
+        print(fragsource)
+        blastdb = BlastDB(
+            genome=fragsource,
+            run=run,
+            path=fraginfo.dbpath,
+            size=fraginfo.fragcount,
+            dbcmd=fraginfo.formatcmd,
+        )
+        session.add(blastdb)
+    session.commit()
+
 
 def run_jobs(joblist, args, logger):
-    """Pass ANIb jobs to the scheduler
+    """Pass ANIb jobs to a scheduler
 
     joblist           list of Jobs
     args              command-line arguments for the run

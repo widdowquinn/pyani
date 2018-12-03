@@ -135,7 +135,7 @@ class BlastDB(Base):
     dbcmd     command used to generate database
     """
 
-    __tablename__ = "blastdb"
+    __tablename__ = "blastdbs"
 
     blastdb_id = Column(Integer, primary_key=True)
     genome_id = Column(Integer, ForeignKey("genomes.genome_id"))

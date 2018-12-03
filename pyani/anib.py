@@ -120,6 +120,12 @@ def fragment_fasta_files(infiles, outdirname, fragsize):
     set of sequences to a file with the same name in the output directory.
     All fragments are named consecutively and uniquely (within a file) as
     fragNNNNN. Sequence description fields are retained.
+
+    TODO: Make sure this is not a redundant function with fragment_genomes()
+          in this same module. This function returns a list of filenames,
+          and a dictionary of fragment lengths (useful/specific to pyani).
+          This is superseded by the more informative FragFileInfo namedtuple
+          returned by fragment_genomes(), which should be used in preference.
     """
     outfnames = []
     for fname in infiles:
@@ -571,7 +577,7 @@ def get_version(blast_exe=pyani_config.BLASTN_DEFAULT):
 
 # Chop genomes into consecutive fragments
 def fragment_genomes(indir, fragsize, outdir, makeblastdb_exe):
-    """Chop FASTA files in the passed directory into fragments.
+    """Chop FASTA files in the passed directory into fragments, return FragFileInfo.
 
     indir          directory containing FASTA files to be chopped
     fragsize       fragment size to generate
@@ -585,6 +591,11 @@ def fragment_genomes(indir, fragsize, outdir, makeblastdb_exe):
     fragNNNNN.
 
     Sequence description fields are retained.
+
+    TODO: Make sure this is not a redundant function with fragment_fasta_files()
+          in this same module. This function returns a FragFileInfo namedtuple
+          that also includes a command to make a BLAST+ nucleotide database. This
+          function is more specialised for pyani than fragment_fasta_files()
     """
     results = []
     # Chop up files
