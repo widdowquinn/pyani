@@ -279,7 +279,10 @@ def subcmd_anim(args, logger):
             slen = pyani_db.get_genome_length(args.dbpath, comp.subject_id)
             qcov = aln_length / qlen
             scov = aln_length / slen
-            pid = 1 - sim_errs / aln_length
+            try:
+                pid = 1 - sim_errs / aln_length
+            except ZeroDivisionError:  # There is no alignment, so we call PID=0
+                pid = 0
             comp_id = pyani_db.add_comparison(
                 args.dbpath,
                 comp.query_id,
