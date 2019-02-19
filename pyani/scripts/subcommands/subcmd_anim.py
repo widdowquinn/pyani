@@ -347,7 +347,10 @@ def update_comparison_results(joblist, run, session, nucmer_version, args, logge
         aln_length, sim_errs = anim.parse_delta(job.outfile)
         qcov = aln_length / job.query.length
         scov = aln_length / job.subject.length
-        pid = 1 - sim_errs / aln_length
+        try:
+            pid = 1 - sim_errs / aln_length
+        except ZeroDivisionError:  # aln_length was zero (no alignment)
+            pid = 0
         run.comparisons.append(
             Comparison(
                 query=job.query,
