@@ -35,6 +35,7 @@ setuptools.setup(
     author_email="leighton.pritchard@hutton.ac.uk",
     description="pyani provides a package and script for calculation of genome-scale average nucleotide identity.",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     license="MIT",
     keywords="genome bioinformatics sequence",
     platforms="Posix; MacOS X",
