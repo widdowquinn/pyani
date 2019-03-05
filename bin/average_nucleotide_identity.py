@@ -114,7 +114,7 @@
 #   --makeblastdb_exe=MAKEBLASTDB_EXE
 #                         Path to BLAST+ makeblastdb executable
 #
-# (c) The James Hutton Institute 2013-2015
+# (c) The James Hutton Institute 2013-2019
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -132,7 +132,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2010-2014 The James Hutton Institute
+# Copyright (c) 2010-2019 The James Hutton Institute
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -166,8 +166,15 @@ import traceback
 
 from argparse import ArgumentParser
 
-from pyani import (anib, anim, tetra, pyani_config, pyani_files,
-                   pyani_graphics, pyani_tools)
+from pyani import (
+    anib,
+    anim,
+    tetra,
+    pyani_config,
+    pyani_files,
+    pyani_graphics,
+    pyani_tools,
+)
 from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
 from pyani.pyani_config import params_mpl, ALIGNDIR, FRAGSIZE, TETRA_FILESTEMS
@@ -178,119 +185,253 @@ from pyani import __version__ as VERSION
 def parse_cmdline():
     """Parse command-line arguments for script."""
     parser = ArgumentParser(prog="average_nucleotide_identity.py")
-    parser.add_argument('--version', action='version',
-                        version='%(prog)s: pyani ' + VERSION)
-    parser.add_argument("-o", "--outdir", dest="outdirname",
-                        action="store", default=None, required=True,
-                        help="Output directory (required)")
-    parser.add_argument("-i", "--indir", dest="indirname",
-                        action="store", default=None, required=True,
-                        help="Input directory name (required)")
-    parser.add_argument("-v", "--verbose", dest="verbose",
-                        action="store_true", default=False,
-                        help="Give verbose output")
-    parser.add_argument("-f", "--force", dest="force",
-                        action="store_true", default=False,
-                        help="Force file overwriting")
-    parser.add_argument("-s", "--fragsize", dest="fragsize",
-                        action="store", default=FRAGSIZE,
-                        type=int,
-                        help="Sequence fragment size for ANIb "
-                        "(default %i)" % FRAGSIZE)
-    parser.add_argument("-l", "--logfile", dest="logfile",
-                        action="store", default=None,
-                        help="Logfile location")
-    parser.add_argument("--skip_nucmer", dest="skip_nucmer",
-                        action="store_true", default=False,
-                        help="Skip NUCmer runs, for testing " +
-                        "(e.g. if output already present)")
-    parser.add_argument("--skip_blastn", dest="skip_blastn",
-                        action="store_true", default=False,
-                        help="Skip BLASTN runs, for testing " +
-                        "(e.g. if output already present)")
-    parser.add_argument("--noclobber", dest="noclobber",
-                        action="store_true", default=False,
-                        help="Don't nuke existing files")
-    parser.add_argument("--nocompress", dest="nocompress",
-                        action="store_true", default=False,
-                        help="Don't compress/delete the comparison output")
-    parser.add_argument("-g", "--graphics", dest="graphics",
-                        action="store_true", default=False,
-                        help="Generate heatmap of ANI")
-    parser.add_argument("--gformat", dest="gformat",
-                        action="store", default="pdf,png,eps",
-                        help="Graphics output format(s) [pdf|png|jpg|svg] "
-                        "(default pdf,png,eps meaning three file formats)")
-    parser.add_argument("--gmethod", dest="gmethod",
-                        action="store", default="mpl",
-                        choices=["mpl", "seaborn"],
-                        help="Graphics output method (default mpl)")
-    parser.add_argument("--labels", dest="labels",
-                        action="store", default=None,
-                        help="Path to file containing sequence labels")
-    parser.add_argument("--classes", dest="classes",
-                        action="store", default=None,
-                        help="Path to file containing sequence classes")
-    parser.add_argument("-m", "--method", dest="method",
-                        action="store", default="ANIm",
-                        choices=["ANIm", "ANIb", "ANIblastall", "TETRA"],
-                        help="ANI method (default ANIm)")
-    parser.add_argument("--scheduler", dest="scheduler",
-                        action="store", default="multiprocessing",
-                        choices=["multiprocessing", "SGE"],
-                        help="Job scheduler (default multiprocessing, i.e. locally)")
-    parser.add_argument("--workers", dest="workers",
-                        action="store", default=None, type=int,
-                        help="Number of worker processes for multiprocessing "
-                        "(default zero, meaning use all available cores)")
-    parser.add_argument("--SGEgroupsize", dest="sgegroupsize",
-                        action="store", default=10000, type=int,
-                        help="Number of jobs to place in an SGE array group "
-                        "(default 10000)")
-    parser.add_argument("--SGEargs", dest="sgeargs",
-                        action="store", default=None, type=str,
-                        help="Additional arguments for qsub")
-    parser.add_argument("--maxmatch", dest="maxmatch",
-                        action="store_true", default=False,
-                        help="Override MUMmer to allow all NUCmer matches")
-    parser.add_argument("--nucmer_exe", dest="nucmer_exe",
-                        action="store", default=pyani_config.NUCMER_DEFAULT,
-                        help="Path to NUCmer executable")
-    parser.add_argument("--filter_exe", dest="filter_exe",
-                        action="store", default=pyani_config.FILTER_DEFAULT,
-                        help="Path to delta-filter executable")
-    parser.add_argument("--blastn_exe", dest="blastn_exe",
-                        action="store", default=pyani_config.BLASTN_DEFAULT,
-                        help="Path to BLASTN+ executable")
-    parser.add_argument("--makeblastdb_exe", dest="makeblastdb_exe",
-                        action="store",
-                        default=pyani_config.MAKEBLASTDB_DEFAULT,
-                        help="Path to BLAST+ makeblastdb executable")
-    parser.add_argument("--blastall_exe", dest="blastall_exe",
-                        action="store", default=pyani_config.BLASTALL_DEFAULT,
-                        help="Path to BLASTALL executable")
-    parser.add_argument("--formatdb_exe", dest="formatdb_exe",
-                        action="store",
-                        default=pyani_config.FORMATDB_DEFAULT,
-                        help="Path to BLAST formatdb executable")
-    parser.add_argument("--write_excel", dest="write_excel",
-                        action="store_true",
-                        default=False,
-                        help="Write Excel format output tables")
-    parser.add_argument("--rerender", dest="rerender",
-                        action="store_true",
-                        default=False,
-                        help="Rerender graphics output without recalculation")
-    parser.add_argument("--subsample", dest="subsample",
-                        action="store", default=None,
-                        help="Subsample a percentage [0-1] or specific " +
-                        "number (1-n) of input sequences")
-    parser.add_argument("--seed", dest="seed",
-                        action="store", default=None,
-                        help="Set random seed for reproducible subsampling.")
-    parser.add_argument("--jobprefix", dest="jobprefix",
-                        action="store", default="ANI",
-                        help="Prefix for SGE jobs (default ANI).")
+    parser.add_argument(
+        "--version", action="version", version="%(prog)s: pyani " + VERSION
+    )
+    parser.add_argument(
+        "-o",
+        "--outdir",
+        dest="outdirname",
+        action="store",
+        default=None,
+        required=True,
+        help="Output directory (required)",
+    )
+    parser.add_argument(
+        "-i",
+        "--indir",
+        dest="indirname",
+        action="store",
+        default=None,
+        required=True,
+        help="Input directory name (required)",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        dest="verbose",
+        action="store_true",
+        default=False,
+        help="Give verbose output",
+    )
+    parser.add_argument(
+        "-f",
+        "--force",
+        dest="force",
+        action="store_true",
+        default=False,
+        help="Force file overwriting",
+    )
+    parser.add_argument(
+        "-s",
+        "--fragsize",
+        dest="fragsize",
+        action="store",
+        default=FRAGSIZE,
+        type=int,
+        help="Sequence fragment size for ANIb " "(default %i)" % FRAGSIZE,
+    )
+    parser.add_argument(
+        "-l",
+        "--logfile",
+        dest="logfile",
+        action="store",
+        default=None,
+        help="Logfile location",
+    )
+    parser.add_argument(
+        "--skip_nucmer",
+        dest="skip_nucmer",
+        action="store_true",
+        default=False,
+        help="Skip NUCmer runs, for testing " + "(e.g. if output already present)",
+    )
+    parser.add_argument(
+        "--skip_blastn",
+        dest="skip_blastn",
+        action="store_true",
+        default=False,
+        help="Skip BLASTN runs, for testing " + "(e.g. if output already present)",
+    )
+    parser.add_argument(
+        "--noclobber",
+        dest="noclobber",
+        action="store_true",
+        default=False,
+        help="Don't nuke existing files",
+    )
+    parser.add_argument(
+        "--nocompress",
+        dest="nocompress",
+        action="store_true",
+        default=False,
+        help="Don't compress/delete the comparison output",
+    )
+    parser.add_argument(
+        "-g",
+        "--graphics",
+        dest="graphics",
+        action="store_true",
+        default=False,
+        help="Generate heatmap of ANI",
+    )
+    parser.add_argument(
+        "--gformat",
+        dest="gformat",
+        action="store",
+        default="pdf,png,eps",
+        help="Graphics output format(s) [pdf|png|jpg|svg] "
+        "(default pdf,png,eps meaning three file formats)",
+    )
+    parser.add_argument(
+        "--gmethod",
+        dest="gmethod",
+        action="store",
+        default="mpl",
+        choices=["mpl", "seaborn"],
+        help="Graphics output method (default mpl)",
+    )
+    parser.add_argument(
+        "--labels",
+        dest="labels",
+        action="store",
+        default=None,
+        help="Path to file containing sequence labels",
+    )
+    parser.add_argument(
+        "--classes",
+        dest="classes",
+        action="store",
+        default=None,
+        help="Path to file containing sequence classes",
+    )
+    parser.add_argument(
+        "-m",
+        "--method",
+        dest="method",
+        action="store",
+        default="ANIm",
+        choices=["ANIm", "ANIb", "ANIblastall", "TETRA"],
+        help="ANI method (default ANIm)",
+    )
+    parser.add_argument(
+        "--scheduler",
+        dest="scheduler",
+        action="store",
+        default="multiprocessing",
+        choices=["multiprocessing", "SGE"],
+        help="Job scheduler (default multiprocessing, i.e. locally)",
+    )
+    parser.add_argument(
+        "--workers",
+        dest="workers",
+        action="store",
+        default=None,
+        type=int,
+        help="Number of worker processes for multiprocessing "
+        "(default zero, meaning use all available cores)",
+    )
+    parser.add_argument(
+        "--SGEgroupsize",
+        dest="sgegroupsize",
+        action="store",
+        default=10000,
+        type=int,
+        help="Number of jobs to place in an SGE array group " "(default 10000)",
+    )
+    parser.add_argument(
+        "--SGEargs",
+        dest="sgeargs",
+        action="store",
+        default=None,
+        type=str,
+        help="Additional arguments for qsub",
+    )
+    parser.add_argument(
+        "--maxmatch",
+        dest="maxmatch",
+        action="store_true",
+        default=False,
+        help="Override MUMmer to allow all NUCmer matches",
+    )
+    parser.add_argument(
+        "--nucmer_exe",
+        dest="nucmer_exe",
+        action="store",
+        default=pyani_config.NUCMER_DEFAULT,
+        help="Path to NUCmer executable",
+    )
+    parser.add_argument(
+        "--filter_exe",
+        dest="filter_exe",
+        action="store",
+        default=pyani_config.FILTER_DEFAULT,
+        help="Path to delta-filter executable",
+    )
+    parser.add_argument(
+        "--blastn_exe",
+        dest="blastn_exe",
+        action="store",
+        default=pyani_config.BLASTN_DEFAULT,
+        help="Path to BLASTN+ executable",
+    )
+    parser.add_argument(
+        "--makeblastdb_exe",
+        dest="makeblastdb_exe",
+        action="store",
+        default=pyani_config.MAKEBLASTDB_DEFAULT,
+        help="Path to BLAST+ makeblastdb executable",
+    )
+    parser.add_argument(
+        "--blastall_exe",
+        dest="blastall_exe",
+        action="store",
+        default=pyani_config.BLASTALL_DEFAULT,
+        help="Path to BLASTALL executable",
+    )
+    parser.add_argument(
+        "--formatdb_exe",
+        dest="formatdb_exe",
+        action="store",
+        default=pyani_config.FORMATDB_DEFAULT,
+        help="Path to BLAST formatdb executable",
+    )
+    parser.add_argument(
+        "--write_excel",
+        dest="write_excel",
+        action="store_true",
+        default=False,
+        help="Write Excel format output tables",
+    )
+    parser.add_argument(
+        "--rerender",
+        dest="rerender",
+        action="store_true",
+        default=False,
+        help="Rerender graphics output without recalculation",
+    )
+    parser.add_argument(
+        "--subsample",
+        dest="subsample",
+        action="store",
+        default=None,
+        help="Subsample a percentage [0-1] or specific "
+        + "number (1-n) of input sequences",
+    )
+    parser.add_argument(
+        "--seed",
+        dest="seed",
+        action="store",
+        default=None,
+        help="Set random seed for reproducible subsampling.",
+    )
+    parser.add_argument(
+        "--jobprefix",
+        dest="jobprefix",
+        action="store",
+        default="ANI",
+        help="Prefix for SGE jobs (default ANI).",
+    )
     return parser.parse_args()
 
 
@@ -299,8 +440,7 @@ def last_exception():
     """ Returns last exception as a string, or use in logging.
     """
     exc_type, exc_value, exc_traceback = sys.exc_info()
-    return ''.join(traceback.format_exception(exc_type, exc_value,
-                                              exc_traceback))
+    return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
 
 # Create output directory if it doesn't exist
@@ -319,22 +459,26 @@ def make_outdir():
     """
     if os.path.exists(args.outdirname):
         if not args.force:
-            logger.error("Output directory %s would overwrite existing " +
-                         "files (exiting)", args.outdirname)
+            logger.error(
+                "Output directory %s would overwrite existing " + "files (exiting)",
+                args.outdirname,
+            )
             sys.exit(1)
         elif args.noclobber:
-            logger.warning("NOCLOBBER: not actually deleting directory %s",
-                           args.outdirname)
+            logger.warning(
+                "NOCLOBBER: not actually deleting directory %s", args.outdirname
+            )
         else:
-            logger.info("Removing directory %s and everything below it",
-                        args.outdirname)
+            logger.info(
+                "Removing directory %s and everything below it", args.outdirname
+            )
             shutil.rmtree(args.outdirname)
     logger.info("Creating directory %s", args.outdirname)
     try:
-        os.makedirs(args.outdirname)   # We make the directory recursively
+        os.makedirs(args.outdirname)  # We make the directory recursively
         # Depending on the choice of method, a subdirectory will be made for
         # alignment output files
-        if args.method != 'TETRA':
+        if args.method != "TETRA":
             os.makedirs(os.path.join(args.outdirname, ALIGNDIR[args.method]))
     except OSError:
         # This gets thrown if the directory exists. If we've forced overwrite/
@@ -350,7 +494,7 @@ def make_outdir():
 def compress_delete_outdir(outdir):
     """Compress the contents of the passed directory to .tar.gz and delete."""
     # Compress output in .tar.gz file and remove raw output
-    tarfn = outdir + '.tar.gz'
+    tarfn = outdir + ".tar.gz"
     logger.info("\tCompressing output from %s to %s", outdir, tarfn)
     with tarfile.open(tarfn, "w:gz") as fh:
         fh.add(outdir)
@@ -383,40 +527,44 @@ def calculate_anim(infiles, org_lengths):
     """
     logger.info("Running ANIm")
     logger.info("Generating NUCmer command-lines")
-    deltadir = os.path.join(args.outdirname, ALIGNDIR['ANIm'])
+    deltadir = os.path.join(args.outdirname, ALIGNDIR["ANIm"])
     logger.info("Writing nucmer output to %s", deltadir)
     # Schedule NUCmer runs
     if not args.skip_nucmer:
-        joblist = anim.generate_nucmer_jobs(infiles, args.outdirname,
-                                            nucmer_exe=args.nucmer_exe,
-                                            filter_exe=args.filter_exe,
-                                            maxmatch=args.maxmatch,
-                                            jobprefix=args.jobprefix)
-        if args.scheduler == 'multiprocessing':
+        joblist = anim.generate_nucmer_jobs(
+            infiles,
+            args.outdirname,
+            nucmer_exe=args.nucmer_exe,
+            filter_exe=args.filter_exe,
+            maxmatch=args.maxmatch,
+            jobprefix=args.jobprefix,
+        )
+        if args.scheduler == "multiprocessing":
             logger.info("Running jobs with multiprocessing")
             if args.workers is None:
-                logger.info("(using maximum number of available " +
-                            "worker threads)")
+                logger.info("(using maximum number of available " + "worker threads)")
             else:
-                logger.info("(using %d worker threads, if available)",
-                            args.workers)
-            cumval = run_mp.run_dependency_graph(joblist,
-                                                 workers=args.workers, 
-                                                 logger=logger)
+                logger.info("(using %d worker threads, if available)", args.workers)
+            cumval = run_mp.run_dependency_graph(
+                joblist, workers=args.workers, logger=logger
+            )
             logger.info("Cumulative return value: %d", cumval)
             if 0 < cumval:
-                logger.warning("At least one NUCmer comparison failed. " +
-                               "ANIm may fail.")
+                logger.warning(
+                    "At least one NUCmer comparison failed. " + "ANIm may fail."
+                )
             else:
                 logger.info("All multiprocessing jobs complete.")
         else:
             logger.info("Running jobs with SGE")
             logger.info("Jobarray group size set to %d", args.sgegroupsize)
-            run_sge.run_dependency_graph(joblist,
-                                         logger=logger,
-                                         jgprefix=args.jobprefix,
-                                         sgegroupsize=args.sgegroupsize,
-                                         sgeargs=args.sgeargs)
+            run_sge.run_dependency_graph(
+                joblist,
+                logger=logger,
+                jgprefix=args.jobprefix,
+                sgegroupsize=args.sgegroupsize,
+                sgeargs=args.sgeargs,
+            )
     else:
         logger.warning("Skipping NUCmer run (as instructed)!")
 
@@ -424,19 +572,25 @@ def calculate_anim(infiles, org_lengths):
     logger.info("Processing NUCmer .delta files.")
     results = anim.process_deltadir(deltadir, org_lengths, logger=logger)
     if results.zero_error:  # zero percentage identity error
-        if not args.skip_nucmer and args.scheduler == 'multiprocessing':
+        if not args.skip_nucmer and args.scheduler == "multiprocessing":
             if 0 < cumval:
-                logger.error("This has possibly been a NUCmer run failure, " +
-                             "please investigate")
+                logger.error(
+                    "This has possibly been a NUCmer run failure, "
+                    + "please investigate"
+                )
                 logger.error(last_exception())
                 sys.exit(1)
             else:
-                logger.error("This is possibly due to a NUCmer comparison " +
-                             "being too distant for use. Please consider " +
-                             "using the --maxmatch option.")
-                logger.error("This is alternatively due to NUCmer run " +
-                             "failure, analysis will continue, but please " +
-                             "investigate.")
+                logger.error(
+                    "This is possibly due to a NUCmer comparison "
+                    + "being too distant for use. Please consider "
+                    + "using the --maxmatch option."
+                )
+                logger.error(
+                    "This is alternatively due to NUCmer run "
+                    + "failure, analysis will continue, but please "
+                    + "investigate."
+                )
     if not args.nocompress:
         logger.info("Compressing/deleting %s", deltadir)
         compress_delete_outdir(deltadir)
@@ -517,48 +671,45 @@ def unified_anib(infiles, org_lengths):
     # Build BLAST databases and run pairwise BLASTN
     if not args.skip_blastn:
         # Make sequence fragments
-        logger.info("Fragmenting input files, and writing to %s",
-                    args.outdirname)
+        logger.info("Fragmenting input files, and writing to %s", args.outdirname)
         # Fraglengths does not get reused with BLASTN
-        fragfiles, fraglengths = anib.fragment_fasta_files(infiles,
-                                                           blastdir,
-                                                           args.fragsize)
+        fragfiles, fraglengths = anib.fragment_fasta_files(
+            infiles, blastdir, args.fragsize
+        )
         # Export fragment lengths as JSON, in case we re-run with --skip_blastn
-        with open(os.path.join(blastdir,
-                               'fraglengths.json'), 'w') as outfile:
+        with open(os.path.join(blastdir, "fraglengths.json"), "w") as outfile:
             json.dump(fraglengths, outfile)
 
         # Which executables are we using?
-        #if args.method == "ANIblastall":
+        # if args.method == "ANIblastall":
         #    format_exe = args.formatdb_exe
         #    blast_exe = args.blastall_exe
-        #else:
+        # else:
         #    format_exe = args.makeblastdb_exe
         #    blast_exe = args.blastn_exe
 
         # Run BLAST database-building and executables from a jobgraph
         logger.info("Creating job dependency graph")
-        jobgraph = anib.make_job_graph(infiles, fragfiles,
-                                       anib.make_blastcmd_builder(args.method,
-                                                                  blastdir))
-        #jobgraph = anib.make_job_graph(infiles, fragfiles, blastdir,
+        jobgraph = anib.make_job_graph(
+            infiles, fragfiles, anib.make_blastcmd_builder(args.method, blastdir)
+        )
+        # jobgraph = anib.make_job_graph(infiles, fragfiles, blastdir,
         #                               format_exe, blast_exe, args.method,
         #                               jobprefix=args.jobprefix)
-        if args.scheduler == 'multiprocessing':
+        if args.scheduler == "multiprocessing":
             logger.info("Running jobs with multiprocessing")
             logger.info("Running job dependency graph")
             if args.workers is None:
-                logger.info("(using maximum number of available " +
-                            "worker threads)")
+                logger.info("(using maximum number of available " + "worker threads)")
             else:
-                logger.info("(using %d worker threads, if available)",
-                            args.workers)
-            cumval = run_mp.run_dependency_graph(jobgraph,
-                                                 workers=args.workers,
-                                                 logger=logger)
+                logger.info("(using %d worker threads, if available)", args.workers)
+            cumval = run_mp.run_dependency_graph(
+                jobgraph, workers=args.workers, logger=logger
+            )
             if 0 < cumval:
-                logger.warning("At least one BLAST run failed. " +
-                               "%s may fail.", args.method)
+                logger.warning(
+                    "At least one BLAST run failed. " + "%s may fail.", args.method
+                )
             else:
                 logger.info("All multiprocessing jobs complete.")
         else:
@@ -567,8 +718,7 @@ def unified_anib(infiles, org_lengths):
     else:
         # Import fragment lengths from JSON
         if args.method == "ANIblastall":
-            with open(os.path.join(blastdir, 'fraglengths.json'),
-                      'rU') as infile:
+            with open(os.path.join(blastdir, "fraglengths.json"), "rU") as infile:
                 fraglengths = json.load(infile)
         else:
             fraglengths = None
@@ -577,17 +727,22 @@ def unified_anib(infiles, org_lengths):
     # Process pairwise BLASTN output
     logger.info("Processing pairwise %s BLAST output.", args.method)
     try:
-        data = anib.process_blast(blastdir, org_lengths,
-                                  fraglengths=fraglengths, mode=args.method)
+        data = anib.process_blast(
+            blastdir, org_lengths, fraglengths=fraglengths, mode=args.method
+        )
     except ZeroDivisionError:
         logger.error("One or more BLAST output files has a problem.")
         if not args.skip_blastn:
             if 0 < cumval:
-                logger.error("This is possibly due to BLASTN run failure, " +
-                             "please investigate")
+                logger.error(
+                    "This is possibly due to BLASTN run failure, "
+                    + "please investigate"
+                )
             else:
-                logger.error("This is possibly due to a BLASTN comparison " +
-                             "being too distant for use.")
+                logger.error(
+                    "This is possibly due to a BLASTN comparison "
+                    + "being too distant for use."
+                )
         logger.error(last_exception())
     if not args.nocompress:
         logger.info("Compressing/deleting %s", blastdir)
@@ -595,7 +750,7 @@ def unified_anib(infiles, org_lengths):
 
     # Return processed BLAST data
     return data
-               
+
 
 # Write ANIb/ANIm/TETRA output
 def write(results):
@@ -609,24 +764,22 @@ def write(results):
     """
     logger.info("Writing %s results to %s", args.method, args.outdirname)
     if args.method == "TETRA":
-        out_excel = os.path.join(args.outdirname,
-                                 TETRA_FILESTEMS[0]) + '.xlsx'
-        out_csv = os.path.join(args.outdirname,
-                               TETRA_FILESTEMS[0]) + '.tab'
+        out_excel = os.path.join(args.outdirname, TETRA_FILESTEMS[0]) + ".xlsx"
+        out_csv = os.path.join(args.outdirname, TETRA_FILESTEMS[0]) + ".tab"
         if args.write_excel:
             results.to_excel(out_excel, index=True)
         results.to_csv(out_csv, index=True, sep="\t")
-            
+
     else:
         for dfr, filestem in results.data:
-            out_excel = os.path.join(args.outdirname, filestem) + '.xlsx'
-            out_csv = os.path.join(args.outdirname, filestem) + '.tab'
+            out_excel = os.path.join(args.outdirname, filestem) + ".xlsx"
+            out_csv = os.path.join(args.outdirname, filestem) + ".tab"
             logger.info("\t%s", filestem)
             if args.write_excel:
                 dfr.to_excel(out_excel, index=True)
             dfr.to_csv(out_csv, index=True, sep="\t")
 
-            
+
 # Draw ANIb/ANIm/TETRA output
 def draw(filestems, gformat):
     """Draw ANIb/ANIm/TETRA results
@@ -637,21 +790,23 @@ def draw(filestems, gformat):
     # Draw heatmaps
     for filestem in filestems:
         fullstem = os.path.join(args.outdirname, filestem)
-        outfilename = fullstem + '.%s' % gformat
-        infilename = fullstem + '.tab'
+        outfilename = fullstem + ".%s" % gformat
+        infilename = fullstem + ".tab"
         df = pd.read_csv(infilename, index_col=0, sep="\t")
         logger.info("Writing heatmap to %s", outfilename)
-        params = pyani_graphics.Params(params_mpl(df)[filestem],
-                                       pyani_tools.get_labels(args.labels),
-                                       pyani_tools.get_labels(args.classes))
+        params = pyani_graphics.Params(
+            params_mpl(df)[filestem],
+            pyani_tools.get_labels(args.labels),
+            pyani_tools.get_labels(args.classes),
+        )
         if args.gmethod == "mpl":
-            pyani_graphics.heatmap_mpl(df, outfilename=outfilename,
-                                       title=filestem,
-                                       params=params)
+            pyani_graphics.heatmap_mpl(
+                df, outfilename=outfilename, title=filestem, params=params
+            )
         elif args.gmethod == "seaborn":
-            pyani_graphics.heatmap_seaborn(df, outfilename=outfilename,
-                                           title=filestem,
-                                           params=params)
+            pyani_graphics.heatmap_seaborn(
+                df, outfilename=outfilename, title=filestem, params=params
+            )
 
 
 # Subsample the input files
@@ -664,12 +819,12 @@ def subsample_input(infiles):
     try:
         samplesize = float(args.subsample)
     except TypeError:  # Not a number
-        logger.error("--subsample must be int or float, got %s (exiting)",
-                     type(args.subsample))
+        logger.error(
+            "--subsample must be int or float, got %s (exiting)", type(args.subsample)
+        )
         sys.exit(1)
-    if samplesize <= 0: # Not a positive value
-        logger.error("--subsample must be positive value, got %s",
-                     str(args.subsample))
+    if samplesize <= 0:  # Not a positive value
+        logger.error("--subsample must be positive value, got %s", str(args.subsample))
         sys.exit(1)
     if int(samplesize) > 1:
         logger.info("Sample size integer > 1: %d", samplesize)
@@ -688,31 +843,29 @@ def subsample_input(infiles):
 
 
 # Run as script
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # Parse command-line
     args = parse_cmdline()
 
     # Set up logging
-    logger = logging.getLogger('average_nucleotide_identity.py: %s' %
-                               time.asctime())
+    logger = logging.getLogger("average_nucleotide_identity.py: %s" % time.asctime())
     t0 = time.time()
     logger.setLevel(logging.DEBUG)
     err_handler = logging.StreamHandler(sys.stderr)
-    err_formatter = logging.Formatter('%(levelname)s: %(message)s')
+    err_formatter = logging.Formatter("%(levelname)s: %(message)s")
     err_handler.setFormatter(err_formatter)
 
     # Was a logfile specified? If so, use it
     if args.logfile is not None:
         try:
-            logstream = open(args.logfile, 'w')
+            logstream = open(args.logfile, "w")
             err_handler_file = logging.StreamHandler(logstream)
             err_handler_file.setFormatter(err_formatter)
             err_handler_file.setLevel(logging.INFO)
             logger.addHandler(err_handler_file)
         except:
-            logger.error("Could not open %s for logging",
-                         args.logfile)
+            logger.error("Could not open %s for logging", args.logfile)
             sys.exit(1)
 
     # Do we need verbosity?
@@ -725,7 +878,7 @@ if __name__ == '__main__':
     # Report arguments, if verbose
     logger.info("pyani version: %s", VERSION)
     logger.info(args)
-    logger.info("command-line: %s", ' '.join(sys.argv))
+    logger.info("command-line: %s", " ".join(sys.argv))
 
     # Have we got an input and output directory? If not, exit.
     if args.indirname is None:
@@ -735,7 +888,7 @@ if __name__ == '__main__':
     if args.outdirname is None:
         logger.error("No output directory name (exiting)")
         sys.exit(1)
-    if args.rerender: # Rerendering, we want to overwrite graphics
+    if args.rerender:  # Rerendering, we want to overwrite graphics
         args.force, args.noclobber = True, True
     make_outdir()
     logger.info("Output directory: %s", args.outdirname)
@@ -744,7 +897,7 @@ if __name__ == '__main__':
     # or output directory. If we have any, abort here and now.
     filenames = [args.outdirname] + os.listdir(args.indirname)
     for fname in filenames:
-        if ' ' in  os.path.abspath(fname):
+        if " " in os.path.abspath(fname):
             logger.error("File or directory '%s' contains whitespace", fname)
             logger.error("This will cause issues with MUMmer and BLAST")
             logger.error("(exiting)")
@@ -754,17 +907,18 @@ if __name__ == '__main__':
         logger.error("Missing labels file: %s", args.labels)
         sys.exit(1)
     if args.classes and not os.path.isfile(args.classes):
-        logger.error("Missing classes file: %s",args.classes)
+        logger.error("Missing classes file: %s", args.classes)
         sys.exit(1)
 
     # Have we got a valid method choice?
     # Dictionary below defines analysis function, and output presentation
     # functions/settings, dependent on selected method.
-    methods = {"ANIm": (calculate_anim, pyani_config.ANIM_FILESTEMS),
-               "ANIb": (unified_anib, pyani_config.ANIB_FILESTEMS),
-               "TETRA": (calculate_tetra, pyani_config.TETRA_FILESTEMS),
-               "ANIblastall": (unified_anib,
-                               pyani_config.ANIBLASTALL_FILESTEMS)}
+    methods = {
+        "ANIm": (calculate_anim, pyani_config.ANIM_FILESTEMS),
+        "ANIb": (unified_anib, pyani_config.ANIB_FILESTEMS),
+        "TETRA": (calculate_tetra, pyani_config.TETRA_FILESTEMS),
+        "ANIblastall": (unified_anib, pyani_config.ANIBLASTALL_FILESTEMS),
+    }
     if args.method not in methods:
         logger.error("ANI method %s not recognised (exiting)", args.method)
         logger.error("Valid methods are: %s", list(methods.keys()))
@@ -779,28 +933,30 @@ if __name__ == '__main__':
         # Have we got a valid scheduler choice?
         schedulers = ["multiprocessing", "SGE"]
         if args.scheduler not in schedulers:
-            logger.error("scheduler %s not recognised (exiting)",
-                         args.scheduler)
-            logger.error("Valid schedulers are: %s", '; '.join(schedulers))
+            logger.error("scheduler %s not recognised (exiting)", args.scheduler)
+            logger.error("Valid schedulers are: %s", "; ".join(schedulers))
             sys.exit(1)
         logger.info("Using scheduler method: %s", args.scheduler)
-        
+
         # Get input files
         logger.info("Identifying FASTA files in %s", args.indirname)
         infiles = pyani_files.get_fasta_files(args.indirname)
-        logger.info("Input files:\n\t%s", '\n\t'.join(infiles))
+        logger.info("Input files:\n\t%s", "\n\t".join(infiles))
 
         # Are we subsampling? If so, make the selection here
         if args.subsample:
             infiles = subsample_input(infiles)
-            logger.info("Sampled input files:\n\t%s", '\n\t'.join(infiles))
+            logger.info("Sampled input files:\n\t%s", "\n\t".join(infiles))
 
         # Get lengths of input sequences
         logger.info("Processing input sequence lengths")
         org_lengths = pyani_files.get_sequence_lengths(infiles)
-        logger.info("Sequence lengths:\n" +
-                    os.linesep.join(["\t%s: %d" % (k, v) for
-                                     k, v in list(org_lengths.items())]))
+        logger.info(
+            "Sequence lengths:\n"
+            + os.linesep.join(
+                ["\t%s: %d" % (k, v) for k, v in list(org_lengths.items())]
+            )
+        )
 
         # Run appropriate method on the contents of the input directory,
         # and write out corresponding results.
@@ -815,11 +971,11 @@ if __name__ == '__main__':
     if args.graphics or args.rerender:
         logger.info("Rendering output graphics")
         logger.info("Formats requested: %s", args.gformat)
-        for gfmt in args.gformat.split(','):
+        for gfmt in args.gformat.split(","):
             logger.info("Graphics format: %s", gfmt)
             logger.info("Graphics method: %s", args.gmethod)
             draw(methods[args.method][1], gfmt)
 
     # Report that we've finished
     logger.info("Done: %s.", time.asctime())
-    logger.info("Time taken: %.2fs", (time.time() - t0)) 
+    logger.info("Time taken: %.2fs", (time.time() - t0))
