@@ -4,6 +4,7 @@
 [![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/master/LICENSE)
 [![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=master)](https://travis-ci.org/widdowquinn/pyani/branches)
 [![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)](https://codecov.io/github/widdowquinn/pyani)
+[![pyani Docker Pulls](https://hub.docker.com/r/leightonpritchard/average_nucleotide_identity)](https://img.shields.io/docker/pulls/leightonpritchard/average_nucleotide_identity.svg)
 
 <!-- TOC -->
 
@@ -258,7 +259,7 @@ pre-commit install
 
 Unless otherwise indicated, all code is subject to the following agreement:
 
-    (c) The James Hutton Institute 2014-2018
+    (c) The James Hutton Institute 2014-2019
     Author: Leighton Pritchard
 
     Contact: leighton.pritchard@hutton.ac.uk
@@ -276,7 +277,7 @@ Unless otherwise indicated, all code is subject to the following agreement:
 
 The MIT License
 
-Copyright (c) 2014-2018 The James Hutton Institute
+Copyright (c) 2014-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
