@@ -47,7 +47,7 @@ setuptools.setup(
     ],
     packages=["pyani"],
     package_data={"pyani": ["tests/test_JSpecies/*.tab"]},
-    include_package_date=True,
+    include_package_data=True,
     install_requires=["biopython", "matplotlib", "pandas", "scipy", "seaborn"],
     classifiers=[
         "Development Status :: 4 - Beta",
