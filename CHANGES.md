@@ -4,6 +4,7 @@
 
 ## v0.2.8
 
+- fixed warnings about deprecated usage of `pandas` and other syntax
 - ANIb now respects the `--workers` argument (PR #127 from [Özcan Esen](https://github.com/ozcan))
 - distance matrices are converted from square to condensed form for linkage analysis
 - `matplotlib` calls use new API ('false', 'off' -> False; 'true', 'on' -> True)

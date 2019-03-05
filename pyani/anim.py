@@ -30,11 +30,14 @@ from .pyani_tools import ANIResults
 
 
 # Generate list of Job objects, one per NUCmer run
-def generate_nucmer_jobs(filenames, outdir='.',
-                         nucmer_exe=pyani_config.NUCMER_DEFAULT,
-                         filter_exe=pyani_config.FILTER_DEFAULT,
-                         maxmatch=False,
-                         jobprefix="ANINUCmer"):
+def generate_nucmer_jobs(
+    filenames,
+    outdir=".",
+    nucmer_exe=pyani_config.NUCMER_DEFAULT,
+    filter_exe=pyani_config.FILTER_DEFAULT,
+    maxmatch=False,
+    jobprefix="ANINUCmer",
+):
     """Return a list of Jobs describing NUCmer command-lines for ANIm
 
     - filenames - a list of paths to input FASTA files
@@ -45,24 +48,28 @@ def generate_nucmer_jobs(filenames, outdir='.',
     Loop over all FASTA files, generating Jobs describing NUCmer command lines
     for each pairwise comparison.
     """
-    ncmds, fcmds = generate_nucmer_commands(filenames, outdir, nucmer_exe,
-                                            filter_exe, maxmatch)
+    ncmds, fcmds = generate_nucmer_commands(
+        filenames, outdir, nucmer_exe, filter_exe, maxmatch
+    )
     joblist = []
     for idx, ncmd in enumerate(ncmds):
         njob = pyani_jobs.Job("%s_%06d-n" % (jobprefix, idx), ncmd)
         fjob = pyani_jobs.Job("%s_%06d-f" % (jobprefix, idx), fcmds[idx])
         fjob.add_dependency(njob)
-        #joblist.append(njob)  # not required: dependency in fjob
+        # joblist.append(njob)  # not required: dependency in fjob
         joblist.append(fjob)
     return joblist
 
 
 # Generate list of NUCmer pairwise comparison command lines from
 # passed sequence filenames
-def generate_nucmer_commands(filenames, outdir='.',
-                             nucmer_exe=pyani_config.NUCMER_DEFAULT,
-                             filter_exe=pyani_config.FILTER_DEFAULT,
-                             maxmatch=False):
+def generate_nucmer_commands(
+    filenames,
+    outdir=".",
+    nucmer_exe=pyani_config.NUCMER_DEFAULT,
+    filter_exe=pyani_config.FILTER_DEFAULT,
+    maxmatch=False,
+):
     """Return a tuple of lists of NUCmer command-lines for ANIm
 
     The first element is a list of NUCmer commands, the second a list
@@ -80,10 +87,10 @@ def generate_nucmer_commands(filenames, outdir='.',
     """
     nucmer_cmdlines, delta_filter_cmdlines = [], []
     for idx, fname1 in enumerate(filenames[:-1]):
-        for fname2 in filenames[idx+1:]:
-            ncmd, dcmd = construct_nucmer_cmdline(fname1, fname2, outdir,
-                                                  nucmer_exe, filter_exe,
-                                                  maxmatch)
+        for fname2 in filenames[idx + 1 :]:
+            ncmd, dcmd = construct_nucmer_cmdline(
+                fname1, fname2, outdir, nucmer_exe, filter_exe, maxmatch
+            )
             nucmer_cmdlines.append(ncmd)
             delta_filter_cmdlines.append(dcmd)
     return (nucmer_cmdlines, delta_filter_cmdlines)
@@ -91,10 +98,14 @@ def generate_nucmer_commands(filenames, outdir='.',
 
 # Generate single NUCmer pairwise comparison command line from pair of
 # input filenames
-def construct_nucmer_cmdline(fname1, fname2, outdir='.',
-                             nucmer_exe=pyani_config.NUCMER_DEFAULT,
-                             filter_exe=pyani_config.FILTER_DEFAULT,
-                             maxmatch=False):
+def construct_nucmer_cmdline(
+    fname1,
+    fname2,
+    outdir=".",
+    nucmer_exe=pyani_config.NUCMER_DEFAULT,
+    filter_exe=pyani_config.FILTER_DEFAULT,
+    maxmatch=False,
+):
     """Returns a tuple of NUCmer and delta-filter commands
 
     The split into a tuple was made necessary by changes to SGE/OGE. The
@@ -110,22 +121,27 @@ def construct_nucmer_cmdline(fname1, fname2, outdir='.',
     - maxmatch - Boolean flag indicating whether to use NUCmer's -maxmatch
     option. If not, the -mum option is used instead
     """
-    outsubdir = os.path.join(outdir, pyani_config.ALIGNDIR['ANIm'])
-    outprefix = os.path.join(outsubdir, "%s_vs_%s" %
-                             (os.path.splitext(os.path.split(fname1)[-1])[0],
-                              os.path.splitext(os.path.split(fname2)[-1])[0]))
+    outsubdir = os.path.join(outdir, pyani_config.ALIGNDIR["ANIm"])
+    outprefix = os.path.join(
+        outsubdir,
+        "%s_vs_%s"
+        % (
+            os.path.splitext(os.path.split(fname1)[-1])[0],
+            os.path.splitext(os.path.split(fname2)[-1])[0],
+        ),
+    )
     if maxmatch:
         mode = "--maxmatch"
     else:
         mode = "--mum"
-    nucmercmd = "{0} {1} -p {2} {3} {4}".format(nucmer_exe, mode, outprefix,
-                                                fname1, fname2)
-    filtercmd = "delta_filter_wrapper.py " + \
-    "{0} -1 {1} {2}".format(filter_exe,
-                            outprefix + '.delta',
-                            outprefix + '.filter')
-    return(nucmercmd, filtercmd)
-    #return "{0}; {1}".format(nucmercmd, filtercmd)
+    nucmercmd = "{0} {1} -p {2} {3} {4}".format(
+        nucmer_exe, mode, outprefix, fname1, fname2
+    )
+    filtercmd = "delta_filter_wrapper.py " + "{0} -1 {1} {2}".format(
+        filter_exe, outprefix + ".delta", outprefix + ".filter"
+    )
+    return (nucmercmd, filtercmd)
+    # return "{0}; {1}".format(nucmercmd, filtercmd)
 
 
 # Parse NUCmer delta file to get total alignment length and total sim_errors
@@ -139,8 +155,8 @@ def parse_delta(filename):
     each as a tuple.
     """
     aln_length, sim_errors = 0, 0
-    for line in [l.strip().split() for l in open(filename, 'rU').readlines()]:
-        if line[0] == 'NUCMER' or line[0].startswith('>'):  # Skip headers
+    for line in [l.strip().split() for l in open(filename, "r").readlines()]:
+        if line[0] == "NUCMER" or line[0].startswith(">"):  # Skip headers
             continue
         # We only process lines with seven columns:
         if len(line) == 7:
@@ -169,7 +185,7 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     """
     # Process directory to identify input files - as of v0.2.4 we use the
     # .filter files that result from delta-filter (1:1 alignments)
-    deltafiles = pyani_files.get_input_files(delta_dir, '.filter')
+    deltafiles = pyani_files.get_input_files(delta_dir, ".filter")
 
     # Hold data in ANIResults object
     results = ANIResults(list(org_lengths.keys()), "ANIm")
@@ -181,26 +197,30 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     # Process .delta files assuming that the filename format holds:
     # org1_vs_org2.delta
     for deltafile in deltafiles:
-        qname, sname = \
-            os.path.splitext(os.path.split(deltafile)[-1])[0].split('_vs_')
+        qname, sname = os.path.splitext(os.path.split(deltafile)[-1])[0].split("_vs_")
 
         # We may have .delta files from other analyses in the same directory
         # If this occurs, we raise a warning, and skip the .delta file
         if qname not in list(org_lengths.keys()):
             if logger:
-                logger.warning("Query name %s not in input " % qname +
-                               "sequence list, skipping %s" % deltafile)
+                logger.warning(
+                    "Query name %s not in input " % qname
+                    + "sequence list, skipping %s" % deltafile
+                )
             continue
         if sname not in list(org_lengths.keys()):
             if logger:
-                logger.warning("Subject name %s not in input " % sname +
-                               "sequence list, skipping %s" % deltafile)
+                logger.warning(
+                    "Subject name %s not in input " % sname
+                    + "sequence list, skipping %s" % deltafile
+                )
             continue
         tot_length, tot_sim_error = parse_delta(deltafile)
         if tot_length == 0 and logger is not None:
             if logger:
-                logger.warning("Total alignment length reported in " +
-                               "%s is zero!" % deltafile)
+                logger.warning(
+                    "Total alignment length reported in " + "%s is zero!" % deltafile
+                )
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
 

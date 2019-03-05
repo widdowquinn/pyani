@@ -12,7 +12,7 @@ nosetests -v
 print() statements will be caught by nosetests unless there is an
 error. They can also be recovered with the -s option.
 
-(c) The James Hutton Institute 2017
+(c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -30,7 +30,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -157,7 +157,7 @@ class TestConcordance(unittest.TestCase):
 
         # Compare JSpecies output to results
         result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
-        diffmat = result_pid.as_matrix() - self.target["ANIm"].as_matrix()
+        diffmat = result_pid.values - self.target["ANIm"].values
         anim_diff = pd.DataFrame(
             diffmat, index=result_pid.index, columns=result_pid.columns
         )
@@ -193,9 +193,9 @@ class TestConcordance(unittest.TestCase):
         hi_result = result_pid.mask(result_pid < 90).fillna(0)
         lo_target = self.target["ANIb"].mask(self.target["ANIb"] >= 90).fillna(0)
         hi_target = self.target["ANIb"].mask(self.target["ANIb"] < 90).fillna(0)
-        lo_diffmat = lo_result.as_matrix() - lo_target.as_matrix()
-        hi_diffmat = hi_result.as_matrix() - hi_target.as_matrix()
-        diffmat = result_pid.as_matrix() - self.target["ANIb"].as_matrix()
+        lo_diffmat = lo_result.values - lo_target.values
+        hi_diffmat = hi_result.values - hi_target.values
+        diffmat = result_pid.values - self.target["ANIb"].values
         lo_diff = pd.DataFrame(
             lo_diffmat, index=result_pid.index, columns=result_pid.columns
         )
@@ -230,7 +230,7 @@ class TestConcordance(unittest.TestCase):
 
         # Compare JSpecies output to results
         result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
-        diffmat = result_pid.as_matrix() - self.target["ANIb"].as_matrix()
+        diffmat = result_pid.values - self.target["ANIb"].values
         aniblastall_diff = pd.DataFrame(
             diffmat, index=result_pid.index, columns=result_pid.columns
         )
@@ -250,7 +250,7 @@ class TestConcordance(unittest.TestCase):
         results.to_csv(os.path.join(self.outdir, "pyani_tetra.tab"), sep="\t")
 
         # Compare JSpecies output
-        diffmat = results.as_matrix() - self.target["Tetra"].as_matrix()
+        diffmat = results.values - self.target["Tetra"].values
         tetra_diff = pd.DataFrame(diffmat, index=results.index, columns=results.columns)
         tetra_diff.to_csv(os.path.join(self.outdir, "pyani_tetra_diff.tab"), sep="\t")
         assert_less(tetra_diff.abs().values.max(), self.tolerance["TETRA"])

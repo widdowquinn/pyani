@@ -1,4 +1,4 @@
-# Copyright 2013-2016, The James Hutton Insitute
+# Copyright 2013-2019, The James Hutton Insitute
 # Author: Leighton Pritchard
 #
 # This code is part of the pyani package, and is governed by its licence.
@@ -337,7 +337,7 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
     # Add heatmap axes to figure, with rows/columns as in the dendrograms
     heatmap_axes = get_mpl_heatmap_axes(dfr, fig, heatmap_gs)
     ax_map = heatmap_axes.imshow(
-        dfr.ix[rowdend["dendrogram"]["leaves"], coldend["dendrogram"]["leaves"]],
+        dfr.iloc[rowdend["dendrogram"]["leaves"], coldend["dendrogram"]["leaves"]],
         interpolation="nearest",
         cmap=params.cmap,
         origin="lower",
