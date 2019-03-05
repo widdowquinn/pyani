@@ -547,7 +547,14 @@ def unified_anib(infiles, org_lengths):
         if args.scheduler == 'multiprocessing':
             logger.info("Running jobs with multiprocessing")
             logger.info("Running job dependency graph")
+            if args.workers is None:
+                logger.info("(using maximum number of available " +
+                            "worker threads)")
+            else:
+                logger.info("(using %d worker threads, if available)",
+                            args.workers)
             cumval = run_mp.run_dependency_graph(jobgraph,
+                                                 workers=args.workers,
                                                  logger=logger)
             if 0 < cumval:
                 logger.warning("At least one BLAST run failed. " +
