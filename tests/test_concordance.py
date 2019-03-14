@@ -204,7 +204,7 @@ class TestConcordance(unittest.TestCase):
         self.assertLess(lo_diff.abs().values.max(), self.tolerance["ANIb_lo"])
         self.assertLess(hi_diff.abs().values.max(), self.tolerance["ANIb_hi"])
 
-    @pytest.mark.skip(reason="Deprecate legacy BLAST")
+    # @pytest.mark.skip(reason="Deprecate legacy BLAST")
     def test_aniblastall_concordance(self):
         """ANIblastall results concordant with JSpecies."""
         # Perform ANIblastall on the input directory contents
