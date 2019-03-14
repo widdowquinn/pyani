@@ -54,6 +54,7 @@ from sqlalchemy import and_
 from tqdm import tqdm
 
 from pyani import (
+    PyaniException,
     anib,
     last_exception,
     pyani_config,
@@ -274,7 +275,7 @@ def generate_anib_jobs(
     session, run, comparisons, existingfiles, blastdir, args, logger
 ):
     """Returns an ANIbComparisonJob tuple of Job objects and comparison info
-    
+
     session              active pyani database session
     comparisons          an iterable of (Genome, Genome) tuples
     existingfiles        a list of existing output files
@@ -282,10 +283,10 @@ def generate_anib_jobs(
     args                 command-line arguments for this pyani run
     logger               a logging object
 
-    This function loops over the (Genome, Genome) [(query, subject)] tuples in 
+    This function loops over the (Genome, Genome) [(query, subject)] tuples in
     `comparisons`, extracts the query fragment file location, and subject database
-    location, and builds the corresponding BLASTN+ command-line. If the output 
-    file does not already exist (determined by a check against `existingfiles`), 
+    location, and builds the corresponding BLASTN+ command-line. If the output
+    file does not already exist (determined by a check against `existingfiles`),
     a new ANIbComparisonJob tuple is created, describing the query, subject,
     command-line and expected output filename, and with a pyani_jobs.Job object
     for use with the scheduler
@@ -355,13 +356,12 @@ def update_comparison_results(joblist, run, session, blast_version, args, logger
     session             active pyanidb session via ORM
     blast_version       version of BLASTN+ used for the comparison
     args                command-line arguments for the run
-    logger              logging object    
+    logger              logging object
     """
     # Add individual results to Comparison table
     for job in tqdm(joblist, disable=args.disable_tqdm):
         logger.debug("\t%s vs %s", job.query.description, job.subject.description)
         aln_length, sim_errs, pid = anib.parse_blast_tab(job.outfile)
-        print(aln_length, sim_errs, pid)
         qcov = aln_length / job.query.length
         scov = aln_length / job.subject.length
         # pid = 1 - sim_errs / aln_length
@@ -374,7 +374,7 @@ def update_comparison_results(joblist, run, session, blast_version, args, logger
                 identity=pid,
                 cov_query=qcov,
                 cov_subject=scov,
-                program="blastn+",
+                program="blastn",
                 version=blast_version,
                 fragsize=args.fragsize,
                 maxmatch=None,

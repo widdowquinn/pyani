@@ -324,7 +324,7 @@ class TestBLASTCmdline(unittest.TestCase):
         """generate BLASTN+ command-line."""
         cmd = anib.construct_blastn_cmdline(
             self.blastdbfnames[0], self.blastdbfnames[1], self.outdir
-        )
+        )[0]
         self.assertEqual(cmd, self.blastncmd)
 
     @pytest.mark.skip(reason="Deprecating legacy BLAST")
