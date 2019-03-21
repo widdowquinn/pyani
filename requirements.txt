@@ -1,5 +1,4 @@
 biopython
-Jinja2
 matplotlib
 namedlist
 networkx

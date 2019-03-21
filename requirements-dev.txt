@@ -1,2 +1,5 @@
+black
+flake8
+jinja2
 pytest
 pytest-cov
