@@ -139,8 +139,6 @@ def calculate_correlations(tetra_z):
     correlations = pd.DataFrame(index=orgs, columns=orgs, dtype=float).fillna(1.0)
     for idx, org1 in enumerate(orgs[:-1]):
         for org2 in orgs[idx + 1 :]:
-            print(org1, len(tetra_z[org1].keys()), org2, len(tetra_z[org2].keys()))
-            assert sorted(tetra_z[org1].keys()) == sorted(tetra_z[org2].keys())
             tets = sorted(tetra_z[org1].keys())
             zscores = [
                 [tetra_z[org1][t] for t in tets],
