@@ -24,6 +24,8 @@ import collections
 import os
 import math
 
+from itertools import product
+
 import pandas as pd
 
 from Bio import SeqIO
@@ -57,19 +59,22 @@ def calculate_tetra_zscore(filename):
     # For the Teeling et al. method, the Z-scores require us to count
     # mono, di, tri and tetranucleotide sequences - these are stored
     # (in order) in the counts tuple
-    counts = (collections.defaultdict(int), collections.defaultdict(int),
-              collections.defaultdict(int), collections.defaultdict(int))
-    for rec in SeqIO.parse(filename, 'fasta'):
-        for seq in [str(rec.seq).upper(),
-                    str(rec.seq.reverse_complement()).upper()]:
+    counts = (
+        collections.defaultdict(int),
+        collections.defaultdict(int),
+        collections.defaultdict(int),
+        collections.defaultdict(int),
+    )
+    for rec in SeqIO.parse(filename, "fasta"):
+        for seq in [str(rec.seq).upper(), str(rec.seq.reverse_complement()).upper()]:
             # The Teeling et al. algorithm requires us to consider
             # both strand orientations, so monocounts are easy
-            for base in ('G', 'C', 'T', 'A'):
+            for base in ("G", "C", "T", "A"):
                 counts[0][base] += seq.count(base)
             # For di, tri and tetranucleotide counts, loop over the
             # sequence and its reverse complement, until near the end:
             for i in range(len(seq[:-4])):
-                din, tri, tetra = seq[i:i+2], seq[i:i+3], seq[i:i+4]
+                din, tri, tetra = seq[i : i + 2], seq[i : i + 3], seq[i : i + 4]
                 counts[1][str(din)] += 1
                 counts[2][str(tri)] += 1
                 counts[3][str(tetra)] += 1
@@ -83,18 +88,21 @@ def calculate_tetra_zscore(filename):
     # tetranucleotide; we ignore ambiguity symbols
     tetra_exp = {}
     for tet in [tetn for tetn in counts[3] if tetra_clean(tetn)]:
-        tetra_exp[tet] = 1. * counts[2][tet[:3]] * counts[2][tet[1:]] / \
-                         counts[1][tet[1:3]]
+        tetra_exp[tet] = (
+            1.0 * counts[2][tet[:3]] * counts[2][tet[1:]] / counts[1][tet[1:3]]
+        )
     # Following Teeling (2004) we approximate the std dev and Z-score for each
     # tetranucleotide
     tetra_sd = {}
-    tetra_z = {}
+    bases = ["A", "C", "G", "T"]
+    tetra_z = {"".join(_): 0 for _ in product(bases, bases, bases, bases)}
     for tet, exp in list(tetra_exp.items()):
         den = counts[1][tet[1:3]]
-        tetra_sd[tet] = math.sqrt(exp * (den - counts[2][tet[:3]]) *
-                                  (den - counts[2][tet[1:]]) / (den * den))
+        tetra_sd[tet] = math.sqrt(
+            exp * (den - counts[2][tet[:3]]) * (den - counts[2][tet[1:]]) / (den * den)
+        )
         try:
-            tetra_z[tet] = (counts[3][tet] - exp)/tetra_sd[tet]
+            tetra_z[tet] = (counts[3][tet] - exp) / tetra_sd[tet]
         except ZeroDivisionError:
             # To record if we hit a zero in the estimation of variance
             # zeroes = [k for k, v in list(tetra_sd.items()) if v == 0]
@@ -108,7 +116,7 @@ def tetra_clean(string):
         symbols. We are assuming that a low frequency of IUPAC ambiguity
         symbols doesn't affect our calculation.
     """
-    if not len(set(string) - set('ACGT')):
+    if not len(set(string) - set("ACGT")):
         return True
     return False
 
@@ -128,22 +136,25 @@ def calculate_correlations(tetra_z):
     percentage identity.
     """
     orgs = sorted(tetra_z.keys())
-    correlations = pd.DataFrame(index=orgs, columns=orgs,
-                                dtype=float).fillna(1.0)
+    correlations = pd.DataFrame(index=orgs, columns=orgs, dtype=float).fillna(1.0)
     for idx, org1 in enumerate(orgs[:-1]):
-        for org2 in orgs[idx+1:]:
+        for org2 in orgs[idx + 1 :]:
+            print(org1, len(tetra_z[org1].keys()), org2, len(tetra_z[org2].keys()))
             assert sorted(tetra_z[org1].keys()) == sorted(tetra_z[org2].keys())
             tets = sorted(tetra_z[org1].keys())
-            zscores = [[tetra_z[org1][t] for t in tets],
-                       [tetra_z[org2][t] for t in tets]]
-            zmeans = [sum(zscore)/len(zscore) for zscore in zscores]
-            zdiffs = [[z - zmeans[0] for z in zscores[0]],
-                      [z - zmeans[1] for z in zscores[1]]]
-            diffprods = sum([zdiffs[0][i] * zdiffs[1][i] for i in
-                             range(len(zdiffs[0]))])
-            zdiffs2 = [sum([z * z for z in zdiffs[0]]),
-                       sum([z * z for z in zdiffs[1]])]
-            correlations[org1][org2] = diffprods / \
-                                       math.sqrt(zdiffs2[0] * zdiffs2[1])
+            zscores = [
+                [tetra_z[org1][t] for t in tets],
+                [tetra_z[org2][t] for t in tets],
+            ]
+            zmeans = [sum(zscore) / len(zscore) for zscore in zscores]
+            zdiffs = [
+                [z - zmeans[0] for z in zscores[0]],
+                [z - zmeans[1] for z in zscores[1]],
+            ]
+            diffprods = sum(
+                [zdiffs[0][i] * zdiffs[1][i] for i in range(len(zdiffs[0]))]
+            )
+            zdiffs2 = [sum([z * z for z in zdiffs[0]]), sum([z * z for z in zdiffs[1]])]
+            correlations[org1][org2] = diffprods / math.sqrt(zdiffs2[0] * zdiffs2[1])
             correlations[org2][org1] = correlations[org1][org2]
     return correlations
