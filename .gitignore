@@ -25,6 +25,7 @@ tests/test_input/anib/blastall/*.dataframe
 tests/test_*_out/
 tests/test_*_output/
 tests/test_concordance_*/
+tests/test_output
 tests/test_JSpecies/C1/
 tests/test_JSpecies/C2/
 tests/test_JSpecies/C3/
@@ -57,3 +58,9 @@ docs/
 # Development virtualenvs
 venv-*
 .python-version
+
+# issue-fixing directories
+issue*/
+
+# VS Code configs
+.vscode

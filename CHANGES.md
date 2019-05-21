@@ -1,6 +1,8 @@
 # CHANGES.md
 
-## v0.2.8-dev
+## v0.2.9
+
+- fix 1ssue #132: TETRA would fail if not all 4-mers present in all input sequences
 
 ## v0.2.8
 

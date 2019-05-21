@@ -1,0 +1,7 @@
+black
+flake8
+nose
+pytest
+setuptools
+twine
+wheel
