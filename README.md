@@ -4,6 +4,7 @@
 [![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/master/LICENSE)
 [![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=master)](https://travis-ci.org/widdowquinn/pyani/branches)
 [![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)](https://codecov.io/github/widdowquinn/pyani)
+[![CodeFactor](https://www.codefactor.io/repository/github/widdowquinn/pyani/badge)](https://www.codefactor.io/repository/github/widdowquinn/pyani)
 [![pyani Docker Pulls](https://img.shields.io/docker/pulls/leightonpritchard/average_nucleotide_identity.svg)](https://hub.docker.com/r/leightonpritchard/average_nucleotide_identity)
 
 <!-- TOC -->
