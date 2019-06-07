@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
-"""Provides command-line/subcommand parsers for the pyani.py script.
+"""parsers.py
 
+Provides command-line/subcommand parsers for the pyani.py script.
+
+- createdb:        create local database for pyani analyses
 - download:        download genome files from NCBI
+- index:           index local genome files
+- anib:            perform ANIb analysis
+- aniblastall:     perform ANIb analysis with legacy BLAST
+- anim:            perform ANIm analysis
 - classify:        classify input sequences on the basis of ANI output
+- report:          report analysis tables from database
+- plot:            report analysis as images
 
-(c) The James Hutton Institute 2016-2017
+(c) The James Hutton Institute 2016-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -22,7 +31,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2016-2017 The James Hutton Institute
+Copyright (c) 2016-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

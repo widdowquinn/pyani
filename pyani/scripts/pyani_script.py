@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Implements the pyani script for classifying prokaryotic genomes.
+"""pyani_script.py
+
+Implements the pyani script for classifying prokaryotic genomes.
 
 (c) The James Hutton Institute 2017-2018
 Author: Leighton Pritchard
