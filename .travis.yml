@@ -12,6 +12,7 @@ matrix:
 
 # command to install dependencies
 install:
+  - travis_wait mvn install
   - pip install -r requirements.txt
   - pip install -r requirements-dev.txt
   - pip install codecov
@@ -20,7 +21,6 @@ install:
   - pip install -e .
 
 # command to run tests
-# Use --nocapture with nosetests to get extra verbose output for debugging on Travis
 script:
   - pytest -v --cov=./
 
