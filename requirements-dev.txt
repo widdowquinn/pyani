@@ -1,5 +1,7 @@
+bandit
 black
 flake8
 jinja2
+pylint
 pytest
 pytest-cov

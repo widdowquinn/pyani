@@ -59,9 +59,21 @@ import logging
 import os
 import unittest
 
+from collections import namedtuple
+
 from argparse import Namespace
 
 from pyani.scripts import subcommands
+
+
+# Convenience struct with paths to third-party executables
+ThirdPartyExes = namedtuple("ThirdPartyExes", "nucmer_exe filter_exe")
+
+# Convenience struct with paths to working directories
+DirPaths = namedtuple("DirPaths", "indir outdir")
+
+# Convenience struct for label/class files
+LabelPaths = namedtuple("LabelPaths", "classes labels")
 
 
 class TestANImSubcommand(unittest.TestCase):
@@ -69,14 +81,17 @@ class TestANImSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Configure parameters for tests."""
-        self.indir = os.path.join("tests", "test_input", "subcmd_anim")
-        self.outdir = os.path.join("tests", "test_output", "subcmd_anim")
-        os.makedirs(self.outdir, exist_ok=True)
+        self.dirpaths = DirPaths(
+            os.path.join("tests", "test_input", "subcmd_anim"),
+            os.path.join("tests", "test_output", "subcmd_anim"),
+        )
+        os.makedirs(self.dirpaths.outdir, exist_ok=True)
         self.dbpath = os.path.join("tests", "test_output", "subcmd_createdb", "pyanidb")
-        self.classes = os.path.join(self.indir, "classes.txt")
-        self.labels = os.path.join(self.indir, "labels.txt")
-        self.nucmer_exe = "nucmer"
-        self.filter_exe = "delta-filter"
+        self.lblfiles = LabelPaths(
+            os.path.join(self.dirpaths.indir, "classes.txt"),
+            os.path.join(self.dirpaths.indir, "labels.txt"),
+        )
+        self.exes = ThirdPartyExes("nucmer", "delta-filter")
         self.scheduler = "multiprocessing"
 
         # Null logger instance
@@ -86,17 +101,17 @@ class TestANImSubcommand(unittest.TestCase):
         # Command line namespaces
         self.argsdict = {
             "anim": Namespace(
-                indir=self.indir,
-                outdir=self.outdir,
+                indir=self.dirpaths.indir,
+                outdir=self.dirpaths.outdir,
                 dbpath=self.dbpath,
                 force=False,
                 name="test_anim",
-                classes=self.classes,
-                labels=self.labels,
+                classes=self.lblfiles.classes,
+                labels=self.lblfiles.labels,
                 recovery=False,
                 cmdline="ANIm test suite",
-                nucmer_exe=self.nucmer_exe,
-                filter_exe=self.filter_exe,
+                nucmer_exe=self.exes.nucmer_exe,
+                filter_exe=self.exes.filter_exe,
                 maxmatch=False,
                 nofilter=False,
                 scheduler=self.scheduler,
