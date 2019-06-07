@@ -5,7 +5,7 @@
 
 Provides the anib subcommand for pyani
 
-(c) The James Hutton Institute 2017-18
+(c) The James Hutton Institute 2017-2019
 
 Author: Leighton Pritchard
 Contact: leighton.pritchard@hutton.ac.uk
@@ -22,7 +22,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017-18 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
