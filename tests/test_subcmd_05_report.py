@@ -21,7 +21,7 @@ by test name, with values representing command-line options.
 For each test, command line options are defined in a Namespace and
 passed as the sole argument to the appropriate subcommand.
 
-(c) The James Hutton Institute 2018
+(c) The James Hutton Institute 2018-2019
 
 Author: Leighton Pritchard
 Contact: leighton.pritchard@hutton.ac.uk
@@ -38,7 +38,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2018 The James Hutton Institute
+Copyright (c) 2018-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -153,7 +153,7 @@ class TestReportSubcommand(unittest.TestCase):
                 run_results=False,
                 run_matrices="1",
                 force=True,
-                formats="html,excel,stdout",
+                formats="html,excel",
             ),
         }
 

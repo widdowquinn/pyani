@@ -458,21 +458,13 @@ def get_genome_ids_by_run(dbpath, run_id):
 
 
 # Add a comparison to the database
-def add_comparison(
-    dbpath,
-    qid,
-    sid,
-    aln_len,
-    sim_errs,
-    pid,
-    qcov,
-    scov,
-    program,
-    version,
-    fragsize=0,
-    maxmatch=None,
-):
+def add_comparison(dbpath, compresult, progdata, params):
     """Add a single pairwise comparison to the database.
+
+    :param dbpath: path to pyani database
+    :param compresult: namedtuple with comparison result info
+    :param progdata: namedtuple with comparison program info
+    :param params: namedtuple with comparison program parameters
 
     NOTE: Due to issues with Python/SQLite NULL queries,
           fragsize default is zero
@@ -483,27 +475,32 @@ def add_comparison(
         cur.execute(
             SQL_ADDCOMPARISON,
             (
-                qid,
-                sid,
-                aln_len,
-                sim_errs,
-                pid,
-                qcov,
-                scov,
-                program,
-                version,
-                fragsize,
-                maxmatch,
+                compresult.qid,
+                compresult.sid,
+                compresult.aln_length,
+                compresult.sim_errs,
+                compresult.pid,
+                compresult.qcov,
+                compresult.scov,
+                progdata.program,
+                progdata.version,
+                params.fragsize,
+                params.maxmatch,
             ),
         )
     return cur.lastrowid
 
 
 # Add a comparison/run link to the database
-def add_comparison_link(
-    dbpath, run_id, qid, sid, program, version, fragsize=0, maxmatch=None
-):
+def add_comparison_link(dbpath, run_id, qid, sid, progdata, params):
     """Add a single pairwise comparison:run ID link to the database.
+
+    :param dbpath: path to pyani database
+    :param run_id: run ID number
+    :param qid: ID of query sequence
+    :param sid: ID of subject sequence
+    :param progdata: namedtuple with comparison program info
+    :param params: namedtuple with comparison program parameters
 
     NOTE: Due to issues with Python/SQLite NULL queries,
           fragsize default is zero
@@ -513,14 +510,25 @@ def add_comparison_link(
         cur = conn.cursor()
         cur.execute(
             SQL_ADDCOMPARISONLINK,
-            (run_id, qid, sid, program, version, fragsize, maxmatch),
+            (
+                run_id,
+                qid,
+                sid,
+                progdata.program,
+                progdata.version,
+                params.fragsize,
+                params.maxmatch,
+            ),
         )
     return cur.lastrowid
 
 
 # Check if a comparison has been performed
-def get_comparison(dbpath, qid, sid, program, version, fragsize=0, maxmatch=None):
+def get_comparison(dbpath, qid, sid, progdata, params):
     """Return the genome ID of a specified comparison.
+
+    :param progdata: namedtuple with comparison program info
+    :param params: namedtuple with comparison program parameters
 
     NOTE: Due to issues with Python/SQLite NULL queries,
           fragsize default is zero
@@ -528,7 +536,17 @@ def get_comparison(dbpath, qid, sid, program, version, fragsize=0, maxmatch=None
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_GETCOMPARISON, (qid, sid, program, version, fragsize, maxmatch))
+        cur.execute(
+            SQL_GETCOMPARISON,
+            (
+                qid,
+                sid,
+                progdata.program,
+                progdata.version,
+                params.fragsize,
+                params.maxmatch,
+            ),
+        )
         result = cur.fetchone()
     return result
 
@@ -542,6 +560,7 @@ def get_comparisons_by_run(dbpath, run_id):
         cur = conn.cursor()
         cur.execute(SQL_GETRUNCOMPARISONS, (run_id,))
         result = cur.fetchall()
+        print("\nget_comparisons_by_run", result, run_id)
     return result
 
 
@@ -665,6 +684,8 @@ def get_genome_class(dbpath, genome_id, run_id):
 def get_df_comparisons(dbpath, run_id):
     """Return a dataframe describing all comparisons for a single run."""
     data = get_comparisons_by_run(dbpath, run_id)
+    print(dbpath, run_id)
+    print(data)
     headers = [
         "query",
         "subject",

@@ -71,6 +71,19 @@ Comparison = namedtuple("Comparison", "query_id subject_id cmdline outfile")
 # Convenience struct describing an analysis run
 RunData = namedtuple("RunData", "method name date cmdline")
 
+# Convenience struct for a single nucmer comparison result
+ComparisonResult = namedtuple(
+    "ComparisonResult", "qid sid aln_length sim_errs pid qlen slen qcov scov"
+)
+
+# Convenience struct for comparison program data/info
+ProgData = namedtuple("ProgData", "program version")
+
+# Convenience struct for comparison parameters
+# Use default of zero for fragsize or else db queries will not work
+# SQLite/Python nulls do not match up well
+ProgParams = namedtuple("ProgParams", "fragsize maxmatch")
+
 
 def subcmd_anim(args, logger):
     """Perform ANIm on all genome files in an input directory.
@@ -161,17 +174,18 @@ def subcmd_anim(args, logger):
     # software package, version, and setting) we remove it from the list
     # of comparisons to be performed, but we add a new entry to the
     # runs_comparisons table.
-    # TODO: turn this into a generator or some such?
-    nucmer_version = anim.get_version(args.nucmer_exe)
+
+    # Convenience structs for repeated data
+    # Use default of zero for fragsize or else db queries will not work
+    # SQLite/Python nulls do not match up well
+    progdata = ProgData("nucmer", anim.get_version(args.nucmer_exe))
+    params = ProgParams(0, args.maxmatch)
 
     # Existing entries for the comparison:run link table
     new_link_ids = [
         (qid, sid)
         for (qid, sid) in comparison_ids
-        if pyani_db.get_comparison(
-            args.dbpath, qid, sid, "nucmer", nucmer_version, maxmatch=args.maxmatch
-        )
-        is not None
+        if pyani_db.get_comparison(args.dbpath, qid, sid, progdata, params) is not None
     ]
     logger.info(
         "Existing comparisons to be associated with new run:\n\t%s", new_link_ids
@@ -179,13 +193,7 @@ def subcmd_anim(args, logger):
     if new_link_ids:
         for (qid, sid) in tqdm(new_link_ids, disable=args.disable_tqdm):
             pyani_db.add_comparison_link(
-                args.dbpath,
-                run_id,
-                qid,
-                sid,
-                "nucmer",
-                nucmer_version,
-                maxmatch=args.maxmatch,
+                args.dbpath, run_id, qid, sid, progdata, params
             )
 
     # If we are in recovery mode, we are salvaging output from a previous
@@ -217,10 +225,7 @@ def subcmd_anim(args, logger):
     comparison_ids = [
         (qid, sid)
         for (qid, sid) in comparison_ids
-        if pyani_db.get_comparison(
-            args.dbpath, qid, sid, "nucmer", nucmer_version, maxmatch=args.maxmatch
-        )
-        is None
+        if pyani_db.get_comparison(args.dbpath, qid, sid, progdata, params) is None
     ]
     logger.debug("Comparisons still to be performed:\n\t%s", comparison_ids)
     logger.info("Total comparisons to be conducted: %d", len(comparison_ids))
@@ -275,36 +280,10 @@ def subcmd_anim(args, logger):
         # SQLite3 interface doesn't allow sharing connections and cursors
         logger.info("Adding comparison results to database")
         for comp in tqdm(comparisons, disable=args.disable_tqdm):
-            aln_length, sim_errs = anim.parse_delta(comp.outfile)
-            qlen = pyani_db.get_genome_length(args.dbpath, comp.query_id)
-            slen = pyani_db.get_genome_length(args.dbpath, comp.subject_id)
-            qcov = aln_length / qlen
-            scov = aln_length / slen
-            try:
-                pid = 1 - sim_errs / aln_length
-            except ZeroDivisionError:  # There is no alignment, so we call PID=0
-                pid = 0
-            comp_id = pyani_db.add_comparison(
-                args.dbpath,
-                comp.query_id,
-                comp.subject_id,
-                aln_length,
-                sim_errs,
-                pid,
-                qcov,
-                scov,
-                "nucmer",
-                nucmer_version,
-                maxmatch=args.maxmatch,
-            )
+            compresult = make_comparison_result(args, comp)
+            comp_id = pyani_db.add_comparison(args.dbpath, compresult, progdata, params)
             link_id = pyani_db.add_comparison_link(
-                args.dbpath,
-                run_id,
-                comp.query_id,
-                comp.subject_id,
-                "nucmer",
-                nucmer_version,
-                maxmatch=args.maxmatch,
+                args.dbpath, run_id, compresult.qid, compresult.sid, progdata, params
             )
             logger.debug(
                 "Added ID %s vs %s, as comparison %s (link: %s)",
@@ -313,6 +292,35 @@ def subcmd_anim(args, logger):
                 comp_id,
                 link_id,
             )
+
+
+def make_comparison_result(args, comp):
+    """Return a ComparisonResult tuple describing a comparison
+
+    :param args: Namespace of command-line arguments
+    :param comp: comparison result
+    """
+    # Calculate percentage ID
+    aln_length, sim_errs = anim.parse_delta(comp.outfile)
+    qlen = pyani_db.get_genome_length(args.dbpath, comp.query_id)
+    slen = pyani_db.get_genome_length(args.dbpath, comp.subject_id)
+    try:
+        pid = 1 - sim_errs / aln_length
+    except ZeroDivisionError:  # There is no alignment, so we call PID=0
+        pid = 0
+
+    # Combine comparison results
+    return ComparisonResult(
+        comp.query_id,
+        comp.subject_id,
+        aln_length,
+        sim_errs,
+        pid,
+        qlen,
+        slen,
+        aln_length / qlen,
+        aln_length / slen,
+    )
 
 
 def add_db_input_files(run_id, args, logger):
