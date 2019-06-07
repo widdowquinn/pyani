@@ -47,7 +47,7 @@ import logging.handlers
 import os
 import re
 import shutil
-import subprocess
+import subprocess  # nosec
 import sys
 import time
 import traceback
@@ -357,14 +357,14 @@ def get_ncbi_asm(asm_uid, fmt="fasta"):
 
     # Create label and class strings
     genus, species = organism.split(" ", 1)
-    labeltxt = "%s_genomic\t%s %s %s" % (filestem, genus[0] + ".", species, strain)
-    classtxt = "%s_genomic\t%s" % (filestem, organism)
-    logger.info("\tLabel: %s", labeltxt)
-    logger.info("\tClass: %s", classtxt)
+    lbltxt = "%s_genomic\t%s %s %s" % (filestem, genus[0] + ".", species, strain)
+    clstxt = "%s_genomic\t%s" % (filestem, organism)
+    logger.info("\tLabel: %s", lbltxt)
+    logger.info("\tClass: %s", clstxt)
 
     # Download and extract genome assembly
     try:
-        fastafilename = retrieve_asm_contigs(filestem, fmt=fmt)
+        fastafname = retrieve_asm_contigs(filestem, fmt=fmt)
     except NCBIDownloadException:
         # This is a little hacky. Sometimes, RefSeq assemblies are
         # suppressed (presumably because they are non-redundant),
@@ -375,11 +375,11 @@ def get_ncbi_asm(asm_uid, fmt="fasta"):
         gbfilestem = re.sub("^GCF_", "GCA_", filestem)
         logger.warning("Could not download %s, trying %s", filestem, gbfilestem)
         try:
-            fastafilename = retrieve_asm_contigs(gbfilestem, fmt=fmt)
+            fastafname = retrieve_asm_contigs(gbfilestem, fmt=fmt)
         except NCBIDownloadException:
-            fastafilename = None
+            fastafname = None
 
-    return (fastafilename, classtxt, labeltxt, data["AssemblyAccession"])
+    return (fastafname, clstxt, lbltxt, data["AssemblyAccession"])
 
 
 # Download and extract an NCBI assembly file, given a filestem
@@ -426,24 +426,24 @@ def retrieve_asm_contigs(
     aaval = aa.split(".")[0]
     subdirs = "/".join([aa[i : i + 3] for i in range(0, len(aaval), 3)])
 
-    url = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gc, subdirs, filestem, suffix)
-    logger.info("Using URL: %s", url)
+    asmurl = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gc, subdirs, filestem, suffix)
+    logger.info("Using URL: %s", asmurl)
 
     # Get data info
     try:
-        response = urlopen(url, timeout=args.timeout)
+        response = urlopen(asmurl, timeout=args.timeout)
     except HTTPError:
-        logger.error("Download failed for URL: %s\n%s", url, last_exception())
+        logger.error("Download failed for URL: %s\n%s", asmurl, last_exception())
         raise NCBIDownloadException()
     except URLError as e:
         if isinstance(e.reason, timeout):
-            logger.error("Download timed out for URL: %s\n%s", url, last_exception())
+            logger.error("Download timed out for URL: %s\n%s", asmurl, last_exception())
         else:
-            logger.error("Download failed for URL: %s\n%s", url, last_exception())
+            logger.error("Download failed for URL: %s\n%s", asmurl, last_exception())
         raise NCBIDownloadException()
     except timeout:
         # TODO: Does this ever happen?
-        logger.error("Download timed out for URL: %s\n%s", url, last_exception())
+        logger.error("Download timed out for URL: %s\n%s", asmurl, last_exception())
         raise NCBIDownloadException()
     else:
         fsize = int(response.info().get("Content-length"))
@@ -454,21 +454,21 @@ def retrieve_asm_contigs(
     if os.path.exists(outfname):
         logger.warning("Output file %s exists, not downloading", outfname)
     else:
-        logger.info("Downloading %s (%d bytes)", url, fsize)
+        logger.info("Downloading %s (%d bytes)", asmurl, fsize)
         bsize = 1048576  # buffer size
         fsize_dl = 0  # bytes downloaded
         try:
-            with open(outfname, "wb") as ofh:
+            with open(outfname, "wb") as outfh:
                 while True:
                     buffer = response.read(bsize)
                     if not buffer:
                         break
                     fsize_dl += len(buffer)
-                    ofh.write(buffer)
+                    outfh.write(buffer)
                     status = r"%10d  [%3.2f%%]" % (fsize_dl, fsize_dl * 100.0 / fsize)
                     logger.info(status)
         except IOError:
-            logger.error("Download failed for %s", url)
+            logger.error("Download failed for %s", asmurl)
             logger.error(last_exception())
             raise NCBIDownloadException()
 
@@ -584,14 +584,14 @@ def write_contigs(asm_uid, contig_uids, batchsize=10000):
 
 
 # Function to report whether an accession has been downloaded
-def logreport_downloaded(accession, skippedlist, accessiondict, uidaccdict):
+def logreport_downloaded(accn, skiplist, accndict, uidaccndict):
     """Report to logger if alternative assemblies were downloaded."""
-    for vid in accessiondict[accession.split(".")[0]]:
-        if vid in skippedlist:
+    for vid in accndict[accn.split(".")[0]]:
+        if vid in skiplist:
             status = "NOT DOWNLOADED"
         else:
             status = "DOWNLOADED"
-        logger.warning("\t\t%s: %s - %s", vid, uidaccdict[vid], status)
+        logger.warning("\t\t%s: %s - %s", vid, uidaccndict[vid], status)
 
 
 # Run as script

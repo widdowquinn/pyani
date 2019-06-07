@@ -245,7 +245,7 @@ def subcmd_download(args, logger):
             ofh.write("\n".join(labels) + "\n")
 
     # Report skipped genome list
-    if len(skippedlist):
+    if skippedlist:
         logger.warning("%d genome downloads were skipped", len(skippedlist))
         for skipped in skippedlist:
             outstr = "\n\t".join(

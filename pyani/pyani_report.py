@@ -79,8 +79,7 @@ def colour_identity(series, threshold=0.95, colour="#FF2222"):
     if series.name == "percentage identity":
         mask = series >= threshold
         return ["color: %s" % colour if v else "" for v in mask]
-    else:
-        return ["" for v in series]
+    return ["" for v in series]
 
 
 def colour_coverage(series, threshold=0.95, colour="#FF2222"):
@@ -88,8 +87,7 @@ def colour_coverage(series, threshold=0.95, colour="#FF2222"):
     if "coverage" in str(series.name):
         mask = series >= threshold
         return ["color: %s" % colour if v else "" for v in mask]
-    else:
-        return ["" for v in series]
+    return ["" for v in series]
 
 
 def colour_numeric(val, threshold=0.95, colour="#FF2222"):
@@ -102,19 +100,19 @@ def colour_numeric(val, threshold=0.95, colour="#FF2222"):
 
 
 # Write a dataframe in pyani-styled HTML
-def write_styled_html(path, df, index=None, colour_num=False):
+def write_styled_html(path, dfm, index=None, colour_num=False):
     """Add CSS styling to a dataframe and write as HTML.
 
-    path       path to write output file
-    df         dataframe to be written out
-    index      column to be set as index (if necessary)
+    :param path:       path to write output file
+    :param dfm:         dataframe to be written out
+    :param index:      column to be set as index (if necessary)
     """
     # Reset the index to a specified column
-    if index is not None and index in df.columns:
-        df.set_index(index, inplace=True)
+    if index is not None and index in dfm.columns:
+        dfm.set_index(index, inplace=True)
 
     # Colour rows in alternating shades of blue
-    styled = df.style.apply(colour_rows)
+    styled = dfm.style.apply(colour_rows)
 
     # Colour percentage identity threshold/coverage values > 95% in red
     styled = styled.apply(colour_identity).apply(colour_coverage)
@@ -138,30 +136,28 @@ def write_styled_html(path, df, index=None, colour_num=False):
 
 
 # Write a dataframe to STDOUT
-def write_to_stdout(stem, df, show_index=False, line_width=None):
+def write_to_stdout(stem, dfm, show_index=False, line_width=None):
     """Write dataframe in tab-separated form to STDOUT."""
     sys.stdout.write("TABLE: %s\n" % stem)
-    sys.stdout.write(df.to_string(index=show_index, line_width=line_width) + "\n\n")
+    sys.stdout.write(dfm.to_string(index=show_index, line_width=line_width) + "\n\n")
 
 
 # Write a table returned from the pyani database in the requested format
-def write_dbtable(
-    df, path=None, formats=("tab",), index=False, show_index=False, colour_num=False
-):
+def write_dbtable(dfm, path=None, formats=("tab",), show_index=False, colour_num=False):
     """Write database result table to output file in named format.
 
-    - colour_num     use colours for values in HTML output for identity/
-                     coverage tables
+    :param colour_num:     use colours for values in HTML output
+        colours are used for identity/coverage tables
     """
     formatdict = {
-        "tab": (df.to_csv, {"sep": "\t", "index": False}, ".tab"),
-        "excel": (df.to_excel, {"index": show_index}, ".xlsx"),
+        "tab": (dfm.to_csv, {"sep": "\t", "index": False}, ".tab"),
+        "excel": (dfm.to_excel, {"index": show_index}, ".xlsx"),
         "html": (
             write_styled_html,
-            {"df": df, "index": index, "colour_num": colour_num},
+            {"dfm": dfm, "index": show_index, "colour_num": colour_num},
             ".html",
         ),
-        "stdout": (write_to_stdout, {"df": df, "show_index": show_index}, ""),
+        "stdout": (write_to_stdout, {"dfm": dfm, "show_index": show_index}, ""),
     }
     for fmt in formats:
         func, args, ext = formatdict[fmt]

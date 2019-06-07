@@ -45,6 +45,7 @@ THE SOFTWARE.
 
 import itertools
 import os
+import subprocess  # nosec
 
 from collections import defaultdict
 
@@ -147,8 +148,8 @@ def run_dependency_graph(
     )
 
     # Assign dependencies to jobgroups
-    for mg, dg in zip(maingroups, depgroups):
-        mg.add_dependency(dg)
+    for mgp, dgp in zip(maingroups, depgroups):
+        mgp.add_dependency(dgp)
     jobgroups = maingroups + depgroups
 
     # Send jobs to scheduler
@@ -260,7 +261,7 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
 
         # If there are dependencies for this job, hold the job until they are
         # complete
-        if len(job.dependencies) > 0:
+        if job.dependencies:
             args += "-hold_jid "
             for dep in job.dependencies:
                 args += dep.name + ","
@@ -270,7 +271,8 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
         qsubcmd = "%s -V %s %s" % (pyani_config.QSUB_DEFAULT, args, job.scriptpath)
         if sgeargs is not None:
             qsubcmd = "%s %s" % (qsubcmd, sgeargs)
-        os.system(qsubcmd)  # Run the command
+        # We've considered Bandit warnings B404,B603 and silence
+        subprocess.call(qsubcmd, shell=False)  # nosec
         job.submitted = True  # Set the job's submitted flag to True
 
 
@@ -282,7 +284,7 @@ def submit_jobs(root_dir, jobs, sgeargs=None):
     """
     waiting = list(jobs)  # List of jobs still to be done
     # Loop over the list of pending jobs, while there still are any
-    while len(waiting) > 0:
+    while waiting:
         # extract submittable jobs
         submittable = extract_submittable_jobs(waiting)
         # run those jobs
