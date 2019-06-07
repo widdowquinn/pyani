@@ -5,7 +5,7 @@
 
 Provides the anim subcommand for pyani
 
-(c) The James Hutton Institute 2017-2018
+(c) The James Hutton Institute 2017-2019
 
 Author: Leighton Pritchard
 Contact: leighton.pritchard@hutton.ac.uk
@@ -22,7 +22,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017-2018 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -174,7 +174,7 @@ def subcmd_anim(args, logger):
     logger.info(
         "Existing comparisons to be associated with new run:\n\t%s", new_link_ids
     )
-    if len(new_link_ids) > 0:
+    if new_link_ids:
         for (qid, sid) in tqdm(new_link_ids, disable=args.disable_tqdm):
             pyani_db.add_comparison_link(
                 args.dbpath,
@@ -223,7 +223,7 @@ def subcmd_anim(args, logger):
     logger.debug("Comparisons still to be performed:\n\t%s", comparison_ids)
     logger.info("Total comparisons to be conducted: %d", len(comparison_ids))
 
-    if not len(comparison_ids):
+    if not comparison_ids:
         logger.info(
             "All comparison results already present in database "
             + "(skipping comparisons)"
@@ -248,7 +248,7 @@ def subcmd_anim(args, logger):
             cumval = run_mp.run_dependency_graph(
                 joblist, workers=args.workers, logger=logger
             )
-            if 0 < cumval:
+            if cumval > 0:
                 logger.error(
                     "At least one NUCmer comparison failed. "
                     + "Please investigate (exiting)"
@@ -256,8 +256,7 @@ def subcmd_anim(args, logger):
                 raise pyani_tools.PyaniException(
                     "Multiprocessing run " + "failed in ANIm"
                 )
-            else:
-                logger.info("Multiprocessing run completed without error")
+            logger.info("Multiprocessing run completed without error")
         else:
             logger.info("Running jobs with SGE")
             logger.info("Setting jobarray group size to %d", args.sgegroupsize)
