@@ -129,7 +129,7 @@ def subcmd_report(args, logger):
         for run_id in run_ids:
             logger.info("Extracting comparison results for run %s", run_id)
             results = pyani_db.ANIResults(args.dbpath, run_id)
-            for matname, args in [
+            for matname, graphic_args in [
                 ("identity", {"colour_num": 0.95}),
                 ("coverage", {"colour_num": 0.95}),
                 ("aln_lengths", {}),
@@ -139,9 +139,9 @@ def subcmd_report(args, logger):
                 logger.info("Writing %s results", matname)
                 outfname = "_".join([outfstem, matname, str(run_id)])
                 pyani_report.write_dbtable(
-                    getattr(results, matname),
+                    getattr(results.dataframes, matname),
                     outfname,
                     formats,
                     show_index=True,
-                    **args
+                    **graphic_args
                 )

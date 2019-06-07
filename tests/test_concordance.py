@@ -82,7 +82,7 @@ def parse_jspecies(infile):
                 data = pd.DataFrame(index=columns, columns=columns)
                 in_table, header = True, False
             elif in_table:
-                if not len(line):
+                if not line:
                     dfs[method] = data.sort_index(axis=0).sort_index(axis=1)
                     in_table = False
                 else:

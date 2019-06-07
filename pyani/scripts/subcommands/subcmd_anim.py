@@ -185,7 +185,8 @@ def subcmd_anim(args, logger):
     new_link_ids = [
         (qid, sid)
         for (qid, sid) in comparison_ids
-        if pyani_db.get_comparison(args.dbpath, qid, sid, progdata, params) is not None
+        if pyani_db.get_comparison(args.dbpath, (qid, sid), progdata, params)
+        is not None
     ]
     logger.info(
         "Existing comparisons to be associated with new run:\n\t%s", new_link_ids
@@ -193,7 +194,7 @@ def subcmd_anim(args, logger):
     if new_link_ids:
         for (qid, sid) in tqdm(new_link_ids, disable=args.disable_tqdm):
             pyani_db.add_comparison_link(
-                args.dbpath, run_id, qid, sid, progdata, params
+                args.dbpath, run_id, (qid, sid), progdata, params
             )
 
     # If we are in recovery mode, we are salvaging output from a previous
@@ -225,7 +226,7 @@ def subcmd_anim(args, logger):
     comparison_ids = [
         (qid, sid)
         for (qid, sid) in comparison_ids
-        if pyani_db.get_comparison(args.dbpath, qid, sid, progdata, params) is None
+        if pyani_db.get_comparison(args.dbpath, (qid, sid), progdata, params) is None
     ]
     logger.debug("Comparisons still to be performed:\n\t%s", comparison_ids)
     logger.info("Total comparisons to be conducted: %d", len(comparison_ids))
@@ -283,7 +284,7 @@ def subcmd_anim(args, logger):
             compresult = make_comparison_result(args, comp)
             comp_id = pyani_db.add_comparison(args.dbpath, compresult, progdata, params)
             link_id = pyani_db.add_comparison_link(
-                args.dbpath, run_id, compresult.qid, compresult.sid, progdata, params
+                args.dbpath, run_id, (compresult.qid, compresult.sid), progdata, params
             )
             logger.debug(
                 "Added ID %s vs %s, as comparison %s (link: %s)",

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Module providing functions useful for downloading genomes from NCBI.
 
-(c) The James Hutton Institute 2016-2018
+(c) The James Hutton Institute 2016-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -19,7 +19,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2016-2018 The James Hutton Institute
+Copyright (c) 2016-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -388,8 +388,14 @@ def create_labels(classification, filestem, genomehash):
 
 # Create an MD5 hash for the passed genome
 def create_hash(fname):
-    """Return MD5 hash of the passed file contents."""
-    hash_md5 = hashlib.md5()
+    """Return MD5 hash of the passed file contents.
+
+    :param fname: path to file for hashing
+
+    We can ignore the Bandit B303 error as we're not using the hash for
+    cryptographic purposes.
+    """
+    hash_md5 = hashlib.md5()  # nosec
     with open(fname, "rb") as fhandle:
         for chunk in iter(lambda: fhandle.read(65536), b""):
             hash_md5.update(chunk)

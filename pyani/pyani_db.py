@@ -42,6 +42,8 @@ THE SOFTWARE.
 
 import sqlite3
 
+from collections import namedtuple
+
 import numpy as np
 import pandas as pd
 
@@ -492,13 +494,12 @@ def add_comparison(dbpath, compresult, progdata, params):
 
 
 # Add a comparison/run link to the database
-def add_comparison_link(dbpath, run_id, qid, sid, progdata, params):
+def add_comparison_link(dbpath, run_id, ids, progdata, params):
     """Add a single pairwise comparison:run ID link to the database.
 
     :param dbpath: path to pyani database
     :param run_id: run ID number
-    :param qid: ID of query sequence
-    :param sid: ID of subject sequence
+    :param ids: tuple, IDs of query and subject sequences
     :param progdata: namedtuple with comparison program info
     :param params: namedtuple with comparison program parameters
 
@@ -512,8 +513,8 @@ def add_comparison_link(dbpath, run_id, qid, sid, progdata, params):
             SQL_ADDCOMPARISONLINK,
             (
                 run_id,
-                qid,
-                sid,
+                ids[0],
+                ids[1],
                 progdata.program,
                 progdata.version,
                 params.fragsize,
@@ -524,9 +525,11 @@ def add_comparison_link(dbpath, run_id, qid, sid, progdata, params):
 
 
 # Check if a comparison has been performed
-def get_comparison(dbpath, qid, sid, progdata, params):
+def get_comparison(dbpath, ids, progdata, params):
     """Return the genome ID of a specified comparison.
 
+    :param dbpath: path to pyani database
+    :param ids: tuple, IDs of query and subject sequences
     :param progdata: namedtuple with comparison program info
     :param params: namedtuple with comparison program parameters
 
@@ -539,8 +542,8 @@ def get_comparison(dbpath, qid, sid, progdata, params):
         cur.execute(
             SQL_GETCOMPARISON,
             (
-                qid,
-                sid,
+                ids[0],
+                ids[1],
                 progdata.program,
                 progdata.version,
                 params.fragsize,
@@ -818,11 +821,20 @@ def parse_labelfile(fname):
 
 # Class to produce/hold ANI results from a named run
 
+# Convenience struct to hold dataframes
+ANIResultDataframes = namedtuple(
+    "ANIResultDataFrames", "identity coverage aln_lengths sim_errors hadamard"
+)
+
+# Convenience struct to hold run data
+ANIResultRunData = namedtuple("ANIResultRunData", "dbpath run_id method")
+
 
 class ANIResults:
     """Interfaces with the pyani database to extract and hold run output.
 
-    Provides five dataframes, populated on instantiation
+    Provides five dataframes under the .dataframes attribute, which are
+    populated on instantiation
 
     - identity    %ID of aligned regions, symmetrical for ANIm,
                   not necessarily for other methods
@@ -835,9 +847,7 @@ class ANIResults:
 
     def __init__(self, dbpath, run_id):
         """Initialise with empty dataframes and path to database."""
-        self.dbpath = dbpath
-        self.run_id = run_id
-        self.method = get_method(self.dbpath, self.run_id)
+        self.rundata = ANIResultRunData(dbpath, run_id, get_method(dbpath, run_id))
         self.__get_labels()
         self.__initialise_dataframes()
         self.__get_data()
@@ -847,79 +857,87 @@ class ANIResults:
 
         Creates five empty dataframes for ANI results.
         """
-        self.identity = pd.DataFrame(
-            index=self.genome_ids, columns=self.genome_ids, dtype=float
-        )
-        self.coverage = pd.DataFrame(
-            index=self.genome_ids, columns=self.genome_ids, dtype=float
-        )
-        self.aln_lengths = pd.DataFrame(
-            index=self.genome_ids, columns=self.genome_ids, dtype=float
-        )
-        self.sim_errors = pd.DataFrame(
-            index=self.genome_ids, columns=self.genome_ids, dtype=float
-        )
-        self.hadamard = pd.DataFrame(
-            index=self.genome_ids, columns=self.genome_ids, dtype=float
+        self.dataframes = ANIResultDataframes(
+            pd.DataFrame(index=self.genome_ids, columns=self.genome_ids, dtype=float),
+            pd.DataFrame(index=self.genome_ids, columns=self.genome_ids, dtype=float),
+            pd.DataFrame(index=self.genome_ids, columns=self.genome_ids, dtype=float),
+            pd.DataFrame(index=self.genome_ids, columns=self.genome_ids, dtype=float),
+            pd.DataFrame(index=self.genome_ids, columns=self.genome_ids, dtype=float),
         )
 
     def __get_labels(self):
         """Retrieve genome IDs and labels for this run."""
-        self.genome_ids = get_genome_ids_by_run(self.dbpath, self.run_id)
+        self.genome_ids = get_genome_ids_by_run(
+            self.rundata.dbpath, self.rundata.run_id
+        )
         self.labels = {
             genome_id: "_".join(
-                [get_genome_label(self.dbpath, genome_id, self.run_id), str(genome_id)]
+                [
+                    get_genome_label(
+                        self.rundata.dbpath, genome_id, self.rundata.run_id
+                    ),
+                    str(genome_id),
+                ]
             )
             for genome_id in self.genome_ids
         }
         self.classes = {
             genome_id: "_".join(
-                [get_genome_class(self.dbpath, genome_id, self.run_id), str(genome_id)]
+                [
+                    get_genome_class(
+                        self.rundata.dbpath, genome_id, self.rundata.run_id
+                    ),
+                    str(genome_id),
+                ]
             )
             for genome_id in self.genome_ids
         }
         self.lengths = {
-            genome_id: get_genome_length(self.dbpath, genome_id)
+            genome_id: get_genome_length(self.rundata.dbpath, genome_id)
             for genome_id in self.genome_ids
         }
 
     def __get_data(self):
         """Populate dataframes from database."""
-        comparisons = get_df_comparisons(self.dbpath, self.run_id)
+        comparisons = get_df_comparisons(self.rundata.dbpath, self.rundata.run_id)
         for idx, row in comparisons.iterrows():
             qid, sid = row["query ID"], row["subject ID"]
 
             # Add percentage identity values; ANIm is symmetrical
-            self.identity.loc[qid, sid] = row["percentage identity"]
-            if self.method == "ANIm":
-                self.identity.loc[sid, qid] = row["percentage identity"]
+            self.dataframes.identity.loc[qid, sid] = row["percentage identity"]
+            if self.rundata.method == "ANIm":
+                self.dataframes.identity.loc[sid, qid] = row["percentage identity"]
 
             # Add query coverage values; ANIm only has a single comparison,
             # so the lower triangle is subject coverage
-            self.coverage.loc[qid, sid] = row["query coverage"]
-            if self.method == "ANIm":
-                self.coverage.loc[sid, qid] = row["subject coverage"]
+            self.dataframes.coverage.loc[qid, sid] = row["query coverage"]
+            if self.rundata.method == "ANIm":
+                self.dataframes.coverage.loc[sid, qid] = row["subject coverage"]
 
             # Add similarity errors; ANIm is symmetrical
-            self.sim_errors.loc[qid, sid] = row["similarity errors"]
-            if self.method == "ANIm":
-                self.sim_errors.loc[sid, qid] = row["similarity errors"]
+            self.dataframes.sim_errors.loc[qid, sid] = row["similarity errors"]
+            if self.rundata.method == "ANIm":
+                self.dataframes.sim_errors.loc[sid, qid] = row["similarity errors"]
 
             # Add alignment lengths; ANIm is symmetrical
-            self.aln_lengths.loc[qid, sid] = row["aligned length"]
-            if self.method == "ANIm":
-                self.aln_lengths.loc[sid, qid] = row["aligned length"]
+            self.dataframes.aln_lengths.loc[qid, sid] = row["aligned length"]
+            if self.rundata.method == "ANIm":
+                self.dataframes.aln_lengths.loc[sid, qid] = row["aligned length"]
 
-            # Calculate Hadamard matrix
-            self.hadamard = self.identity * self.coverage
+            # Calculate Hadamard matrix; we can't change the whole element in-place,
+            # so we reassign to the namedtuple
+            self.dataframes = ANIResultDataframes(
+                *self.dataframes[:4],
+                self.dataframes.identity * self.dataframes.coverage
+            )
 
         # Populate remaining diagonals
-        np.fill_diagonal(self.identity.values, 1.0)
-        np.fill_diagonal(self.coverage.values, 1.0)
-        np.fill_diagonal(self.sim_errors.values, 0.0)
-        np.fill_diagonal(self.hadamard.values, 1.0)
+        np.fill_diagonal(self.dataframes.identity.values, 1.0)
+        np.fill_diagonal(self.dataframes.coverage.values, 1.0)
+        np.fill_diagonal(self.dataframes.sim_errors.values, 0.0)
+        np.fill_diagonal(self.dataframes.hadamard.values, 1.0)
         for idx, length in self.lengths.items():
-            self.aln_lengths.loc[idx, idx] = length
+            self.dataframes.aln_lengths.loc[idx, idx] = length
 
         # Add labels and indices
         for matname in [
@@ -929,6 +947,6 @@ class ANIResults:
             "sim_errors",
             "hadamard",
         ]:
-            mat = getattr(self, matname)
+            mat = getattr(self.dataframes, matname)
             mat.index = [self.labels[val] for val in mat.index]
             mat.columns = [self.labels[val] for val in mat.columns]
