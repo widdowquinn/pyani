@@ -143,7 +143,9 @@ def write_to_stdout(stem, dfm, show_index=False, line_width=None):
 
 
 # Write a table returned from the pyani database in the requested format
-def write_dbtable(dfm, path=None, formats=("tab",), show_index=False, colour_num=False):
+def write_dbtable(
+    dfm, path=None, formats=("tab",), index=False, show_index=False, colour_num=False
+):
     """Write database result table to output file in named format.
 
     :param colour_num:     use colours for values in HTML output
@@ -154,7 +156,7 @@ def write_dbtable(dfm, path=None, formats=("tab",), show_index=False, colour_num
         "excel": (dfm.to_excel, {"index": show_index}, ".xlsx"),
         "html": (
             write_styled_html,
-            {"dfm": dfm, "index": show_index, "colour_num": colour_num},
+            {"dfm": dfm, "index": index, "colour_num": colour_num},
             ".html",
         ),
         "stdout": (write_to_stdout, {"dfm": dfm, "show_index": show_index}, ""),
