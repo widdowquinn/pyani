@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Module providing useful functions for manipulating pyani's SQLite3 db.
 
-(c) The James Hutton Institute 2016-2018
+(c) The James Hutton Institute 2016-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -19,7 +19,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2016-2018 The James Hutton Institute
+Copyright (c) 2016-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -40,9 +40,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import sqlite3
+
 import numpy as np
 import pandas as pd
-import sqlite3
 
 # SQL SCRIPTS
 # ============
@@ -355,12 +356,15 @@ def create_db(path):
 
 
 # Add a new run to the database
-def add_run(dbpath, method, cmdline, date, status, name):
+def add_run(dbpath, status, rundata):
     """Add run information to the passed database, and return a run ID."""
     conn = sqlite3.connect(dbpath)
     with conn:
         cur = conn.cursor()
-        cur.execute(SQL_ADDRUN, (method, cmdline, date, status, name))
+        cur.execute(
+            SQL_ADDRUN,
+            (rundata.method, rundata.cmdline, rundata.date, status, rundata.name),
+        )
     return cur.lastrowid
 
 
@@ -618,8 +622,7 @@ def get_genome_label(dbpath, genome_id, run_id):
         result = cur.fetchone()
     if result is not None:
         return result[2]
-    else:
-        return "run {0}, genome {1}".format(run_id, genome_id)
+    return "run {0}, genome {1}".format(run_id, genome_id)
 
 
 # Add a genome class to the database
@@ -652,8 +655,7 @@ def get_genome_class(dbpath, genome_id, run_id):
         result = cur.fetchone()
     if result is not None:
         return result[2]
-    else:
-        return "run {0}, genome {1}".format(run_id, genome_id)
+    return "run {0}, genome {1}".format(run_id, genome_id)
 
 
 # RESULTS AS DATAFRAMES
@@ -678,9 +680,9 @@ def get_df_comparisons(dbpath, run_id):
         "fragsize",
         "maxmatch",
     ]
-    df = pd.DataFrame(data)
-    df.columns = headers
-    return df
+    dfm = pd.DataFrame(data)
+    dfm.columns = headers
+    return dfm
 
 
 # Get all runs for which each genome is involved
@@ -698,9 +700,9 @@ def get_df_genome_runs(dbpath):
         "method",
         "date run",
     ]
-    df = pd.DataFrame(data)
-    df.columns = headers
-    return df
+    dfm = pd.DataFrame(data)
+    dfm.columns = headers
+    return dfm
 
 
 # Get all genomes used for each run
@@ -720,9 +722,9 @@ def get_df_run_genomes(dbpath):
         "class",
         "label",
     ]
-    df = pd.DataFrame(data)
-    df.columns = headers
-    return df
+    dfm = pd.DataFrame(data)
+    dfm.columns = headers
+    return dfm
 
 
 # Get all genomes in the database
@@ -730,9 +732,9 @@ def get_df_genomes(dbpath):
     """Return dataframe describing all genomes in the database."""
     data = get_all_genomes(dbpath)
     headers = ["genome ID", "description", "path", "MD5 hash", "genome length"]
-    df = pd.DataFrame(data)
-    df.columns = headers
-    return df
+    dfm = pd.DataFrame(data)
+    dfm.columns = headers
+    return dfm
 
 
 # Get all runs in the database
@@ -740,9 +742,9 @@ def get_df_runs(dbpath):
     """Return dataframe describing all runs in the database."""
     data = get_all_runs(dbpath)
     headers = ["run ID", "name", "method", "date run", "command-line"]
-    df = pd.DataFrame(data)
-    df.columns = headers
-    return df
+    dfm = pd.DataFrame(data)
+    dfm.columns = headers
+    return dfm
 
 
 # Relabel genomes in the database
@@ -796,7 +798,7 @@ def parse_labelfile(fname):
 # Class to produce/hold ANI results from a named run
 
 
-class ANIResults(object):
+class ANIResults:
     """Interfaces with the pyani database to extract and hold run output.
 
     Provides five dataframes, populated on instantiation

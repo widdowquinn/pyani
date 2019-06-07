@@ -65,8 +65,11 @@ from pyani import (
 from pyani.pyani_tools import last_exception
 
 
-# Named tuple describing a pairwise comparison
+# Convenience struct describing a pairwise comparison
 Comparison = namedtuple("Comparison", "query_id subject_id cmdline outfile")
+
+# Convenience struct describing an analysis run
+RunData = namedtuple("RunData", "method name date cmdline")
 
 
 def subcmd_anim(args, logger):
@@ -104,12 +107,11 @@ def subcmd_anim(args, logger):
         name = "_".join(["ANIm", start_time])
     else:
         name = args.name
+    rundata = RunData("ANIm", name, start_time, args.cmdline)
 
     # Add info for this analysis to the database
     logger.info("Adding analysis information to database %s", args.dbpath)
-    run_id = pyani_db.add_run(
-        args.dbpath, "ANIm", args.cmdline, start_time, "started", name
-    )
+    run_id = pyani_db.add_run(args.dbpath, "started", rundata)
     logger.info("Current analysis has ID %s in this database", run_id)
 
     # Identify input files for comparison, and populate the database
