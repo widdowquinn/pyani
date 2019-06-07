@@ -690,7 +690,7 @@ if __name__ == "__main__":  # noqa: C901
 
     # How many downloads did we do/have to skip?
     logger.info("Obtained %d assemblies", len(contig_dict))
-    if len(skippedlist):
+    if skippedlist:
         logger.warning("Skipped %d downloads through error", len(skippedlist))
         for uid in sorted(skippedlist):
             logger.warning("Assembly UID %s skipped", uid)
