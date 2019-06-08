@@ -1,5 +1,6 @@
 bandit
 black
+codecov
 doc8
 flake8
 jinja2
