@@ -47,6 +47,7 @@ output/
 # Coverage test output
 cover/
 .coverage
+.coverage.*
 
 # iPython/Jupyter
 .ipynb_checkpoints
