@@ -137,6 +137,8 @@ def download_genome_and_hash(
         args.timeout,
         disable_tqdm,
     )
+    print("GETTING THIS FAR")
+    return  # EARLY RETURN FOR TRAVIS-CI FAILURE TRACKING
     # Pylint is confused by the content of dlstatus (a namedlist)
     if dlstatus.error is not None:  # pylint: disable=no-member
         logger.warning(
