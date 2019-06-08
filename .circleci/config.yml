@@ -75,9 +75,6 @@ jobs:
           path: test-reports
           destination: test-reports
 
-      - codecov/upload:
-        file: {{ coverage_report_filepath }}
-
   test-3.6:
     <<: *test-template
     docker:
