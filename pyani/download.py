@@ -271,13 +271,13 @@ def download_url(url, outfname, timeout, disable_tqdm=False):
     """
     # Open connection, and get expected filesize
     req = urllib.request.Request(url)
-    return  # WHILE TESTING TRAVIS-CI FAILURE
     with urllib.request.urlopen(req) as response:
         fsize = int(response.info().get("Content-length"))
 
         # Define buffer sizes
         bsize = 1048576  # buffer size
         fsize_dl = 0  # bytes downloaded
+        return  # WHILE TESTING TRAVIS-CI FAILURE
 
         # Download file
         with open(outfname, "wb") as ofh:
