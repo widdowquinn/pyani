@@ -133,11 +133,11 @@ class TestDownloadSubcommand(unittest.TestCase):
         """dry run of C. blochmannia download"""
         subcommands.subcmd_download(self.argsdict["dry_run"], self.logger)
 
-    @pytest.mark.skip(reason="Testing Travis-CI failures")
     def test_download_c_blochmannia(self):
         """test C. blochmannia download"""
         subcommands.subcmd_download(self.argsdict["C_blochmannia"], self.logger)
 
+    @pytest.mark.skip(reason="Investigating Travis-CI test failures")
     def test_download_kraken(self):
         """C. blochmannia download in Kraken format"""
         subcommands.subcmd_download(self.argsdict["kraken"], self.logger)

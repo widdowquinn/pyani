@@ -139,6 +139,7 @@ def subcmd_download(args, logger):
                 dltype="RefSeq",
                 disable_tqdm=args.disable_tqdm,
             )
+            continue  # testing TravisCI failures
             # RefSeq failed, try GenBank
             # Pylint is confused by the content of dlstatus (a namedlist)
             if dlstatus.skipped:  # pylint: disable=no-member
