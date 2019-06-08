@@ -16,7 +16,9 @@ If you find a bug, or an error in the code or documentation, please report this 
 Contributing code or documentation
 ----------------------------------
 
-We gratefully accept code contributions, if you would like to fix a bug, improve documentation, or extend ``pyani``. To make everyone's lives easier in this process, we ask that you please follow the guidelines below:
+We gratefully accept code and other contributions. A list of contributors can be found via the `Github contributors`_ link.
+
+You are welcome to help develop ``pyani``, fix a bug, improve documentation, or contribute in any other way. To make everyone's lives easier in this process, we ask that you please follow the guidelines for developers below:
 
 
 :::::::::::::::::::::::::::::::::
@@ -99,6 +101,7 @@ we welcome contributions at the `GitHub issues page`_.
 
 
 .. _GitHub: https://github.com
+.. _Github contributors: https://github.com/widdowquinn/pyani/blob/master/CONTRIBUTORS.md
 .. _Github issues page: https://github.com/widdowquinn/pyani/issues
 .. _PEP8: http://www.python.org/dev/peps/pep-0008/
 .. _PEP257: http://www.python.org/dev/peps/pep-0257/

@@ -1,5 +1,6 @@
 bandit
 black
+doc8
 flake8
 jinja2
 pylint
