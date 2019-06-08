@@ -61,8 +61,6 @@ import unittest
 
 from argparse import Namespace
 
-import pytest
-
 from pyani.scripts import subcommands
 
 
@@ -137,7 +135,6 @@ class TestDownloadSubcommand(unittest.TestCase):
         """test C. blochmannia download"""
         subcommands.subcmd_download(self.argsdict["C_blochmannia"], self.logger)
 
-    @pytest.mark.skip(reason="Investigating Travis-CI test failures")
     def test_download_kraken(self):
         """C. blochmannia download in Kraken format"""
         subcommands.subcmd_download(self.argsdict["kraken"], self.logger)
