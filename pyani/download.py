@@ -271,6 +271,7 @@ def download_url(url, outfname, timeout, disable_tqdm=False):
     """
     # Open connection, and get expected filesize
     req = urllib.request.Request(url)
+    return  # WHILE TESTING TRAVIS-CI FAILURE
     with urllib.request.urlopen(req) as response:
         fsize = int(response.info().get("Content-length"))
 
@@ -315,11 +316,11 @@ def retrieve_genome_and_hash(
 
     # Download the genome sequence and corresponding hash file
     # COMMENTED TO TRACK DOWN TRAVIS-CI FAIL
-    # try:
-    #     download_url(url, outfname, timeout, disable_tqdm)
-    #     download_url(hashurl, outfhash, timeout, disable_tqdm)
-    # except IOError:
-    #     error = last_exception()
+    try:
+        download_url(url, outfname, timeout, disable_tqdm)
+        download_url(hashurl, outfhash, timeout, disable_tqdm)
+    except IOError:
+        error = last_exception()
 
     return DLStatus(url, hashurl, outfname, outfhash, skipped, error)
 
