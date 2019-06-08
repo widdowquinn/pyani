@@ -65,17 +65,17 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            pytest -v --cov=pyani
+            pytest -v --cov=pyani --cov-report xml:.coverage.xml
 
       - store_artifacts:
           path: test-reports
           destination: test-reports
       - store_artifacts:
-          path: .coverage
-          destination: .coverage
+          path: .coverage.xml
+          destination: .coverage.xml
 
       - codecov/upload:
-          file: .coverage
+          file: .coverage.xml
 
 
   test-3_6:
