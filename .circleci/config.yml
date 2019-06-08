@@ -5,8 +5,14 @@
 version: 2
 orbs:
   codecov: codecov/codecov@1.0.5
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test-3.7
+
 jobs:
-  build:
+  test-3.7:
     branches:
       only:
         - development
