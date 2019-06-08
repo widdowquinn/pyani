@@ -349,9 +349,7 @@ def extract_contigs(fname, ename):
     """Extract contents of fname to ename using gunzip."""
     cmd = ["gunzip", "-c", shlex.quote(fname)]
     with open(ename, "w") as efh:
-        subprocess.run(
-            cmd, stdout=efh  # , check=True, shell=False
-        )  # can be subprocess.run
+        subprocess.run(cmd, stdout=efh, check=True, shell=False)
 
 
 # Using a genomes UID, create class and label text files
