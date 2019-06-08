@@ -14,8 +14,7 @@ workflows:
       - test-3.7
         filters:
           branches:
-            only:
-              - development
+            only: development
       - test-3.6
 
 jobs:
