@@ -86,8 +86,8 @@ def subcmd_plot(args, logger):
             "sim_errors",
             "hadamard",
         ]:
-            df = getattr(results, matname)  # results matrix
-            cmap = pyani_config.get_colormap(df, matname)
+            dfm = getattr(results.dataframes, matname)  # results matrix
+            cmap = pyani_config.get_colormap(dfm, matname)
             for fmt in outfmts:
                 outfname = os.path.join(
                     args.outdir, "matrix_{0}_{1}.{2}".format(matname, run_id, fmt)
@@ -96,7 +96,7 @@ def subcmd_plot(args, logger):
                 params = pyani_graphics.Params(cmap, results.labels, results.classes)
                 # Draw figure
                 gmethod[args.method](
-                    df,
+                    dfm,
                     outfname,
                     title="matrix_{0}_{1}".format(matname, run_id),
                     params=params,
