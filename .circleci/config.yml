@@ -11,11 +11,7 @@ workflows:
   version: 2
   test:
     jobs:
-      - test-3.7:
-        filters:
-          branches:
-            only: 
-              - development
+      - test-3.7
 
 
 jobs:
