@@ -3,11 +3,14 @@
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2
+orbs:
+  codecov: codecov/codecov@1.0.4
 jobs:
   build:
     branches:
       only:
         - development
+
     docker:
       # specify the version you desire here
       # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
@@ -22,9 +25,6 @@ jobs:
 
     steps:
       - checkout
-      # Install required third-party packages
-      - run: sudo apt-get update
-      - run: sudo apt-get install csh mummer ncbi-blast+
 
       # Download and cache dependencies
       - restore_cache:
@@ -33,6 +33,11 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
+      # Install required third-party packages
+      - run: sudo apt-get update
+      - run: sudo apt-get install csh mummer ncbi-blast+
+
+      # Install Python code/dependencies
       - run:
           name: install dependencies
           command: |
@@ -48,18 +53,17 @@ jobs:
           key: v1-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}
 
       # run tests!
-      # this example uses Django's built-in test-runner
-      # other common Python testing frameworks include pytest and nose
+      # common Python testing frameworks include pytest and nose
       # https://pytest.org
       # https://nose.readthedocs.io
       - run:
           name: run tests
           command: |
             . venv/bin/activate
-            pytest -v --cov=./ tests/test_subcmd_01_download.py
+            pytest -v --cov=pyani
 
-      # Run codecov to calculate coverage
-      - run: codecov
+      - codecov/upload:
+        file: {{ coverage_report_filepath }}
 
       - store_artifacts:
           path: test-reports

@@ -17,4 +17,4 @@ repos:
     - id: check-docstring-first
     - id: check-json
     - id: check-merge-conflict
-    - id: check-yaml
+#    - id: check-yaml
