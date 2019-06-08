@@ -21,7 +21,7 @@ install:
 
 # command to run tests
 script:
-  - travis_wait pytest -v --cov=./
+  - pytest -v --cov=./
 
 # application dependencies: BLAST+, legacy BLAST, MUMMER
 before_install:

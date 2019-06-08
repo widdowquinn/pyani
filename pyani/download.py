@@ -350,7 +350,7 @@ def extract_contigs(fname, ename):
     cmd = ["gunzip", "-c", shlex.quote(fname)]
     with open(ename, "w") as efh:
         subprocess.run(
-            cmd, stdout=efh, check=True, shell=False
+            cmd, stdout=efh  # , check=True, shell=False
         )  # can be subprocess.run
 
 
