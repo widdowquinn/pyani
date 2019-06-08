@@ -2,7 +2,7 @@
 
 [![pyani PyPi version](https://img.shields.io/pypi/v/pyani.svg "PyPi version")](https://pypi.python.org/pypi/pyani)
 [![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/development/LICENSE)
-[![pyani TravisCI build status](https://api.travis-ci.org/widdowquinn/pyani.svg?branch=development)](https://travis-ci.org/widdowquinn/pyani/branches)
+[![CircleCI](https://circleci.com/gh/widdowquinn/pyani/tree/development.svg?style=svg)](https://circleci.com/gh/widdowquinn/pyani/tree/development)
 [![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/development.svg)](https://codecov.io/github/widdowquinn/pyani)
 
 [![GitHub Issues](https://img.shields.io/github/issues-closed/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/issues)
