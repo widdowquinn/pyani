@@ -57,8 +57,13 @@ def populate_cmdsets(job, cmdsets, depth):
     if len(cmdsets) < depth:
         cmdsets.append(set())
     cmdsets[depth - 1].add(job.command)
-    if len(job.dependencies) == 0:
+
+    # Return now if there are no dependencies
+    # (I think I can remove this check/return)
+    if not job.dependencies:
         return cmdsets
+
+    # There are dependencies, so add these to the command sets
     for j in job.dependencies:
         cmdsets = populate_cmdsets(j, cmdsets, depth + 1)
     return cmdsets
@@ -78,11 +83,18 @@ def multiprocessing_run(cmdlines, workers=None):
     # If workers is None or greater than the number of cores available,
     # it will be set to the maximum number of cores
     pool = multiprocessing.Pool(processes=workers)
-    results = [pool.apply_async(subprocess.run, (str(cline), ),
-                                {'shell': sys.platform != "win32",
-                                 'stdout': subprocess.PIPE,
-                                 'stderr': subprocess.PIPE})
-               for cline in cmdlines]
+    results = [
+        pool.apply_async(
+            subprocess.run,
+            (str(cline),),
+            {
+                "shell": sys.platform != "win32",
+                "stdout": subprocess.PIPE,
+                "stderr": subprocess.PIPE,
+            },
+        )
+        for cline in cmdlines
+    ]
     pool.close()
     pool.join()
     return sum([r.get().returncode for r in results])

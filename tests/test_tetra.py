@@ -62,12 +62,12 @@ from pyani import tetra
 
 
 def ordered(obj):
+    """Return a consistently ordered version of the passed object"""
     if isinstance(obj, dict):
         return sorted((k, ordered(v)) for k, v in obj.items())
-    elif isinstance(obj, list):
+    if isinstance(obj, list):
         return sorted(ordered(x) for x in obj)
-    else:
-        return obj
+    return obj
 
 
 class TestTETRA(unittest.TestCase):

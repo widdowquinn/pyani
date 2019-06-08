@@ -114,9 +114,9 @@ def tetra_clean(string):
     We are assuming that a low frequency of IUPAC ambiguity symbols doesn't
     affect our calculation.
     """
-    if not len(set(string) - set("ACGT")):
-        return True
-    return False
+    if set(string) - set("ACGT"):
+        return False
+    return True
 
 
 # Calculate Pearson's correlation coefficient from the Z-scores for each
