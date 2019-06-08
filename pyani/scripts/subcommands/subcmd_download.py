@@ -52,6 +52,9 @@ from Bio import SeqIO
 from pyani import download
 from pyani.scripts import tools
 
+# Convenience struct for file download data
+DLFileData = namedtuple("DLFileData", "filestem ftpstem suffix")
+
 
 def subcmd_download(args, logger):
     """Download assembled genomes in subtree of passed NCBI taxon ID."""
@@ -124,28 +127,28 @@ def subcmd_download(args, logger):
 
             # Obtain URLs, trying the RefSeq filestem first, then GenBank if
             # there's a failure
-            ftpstem = "ftp://ftp.ncbi.nlm.nih.gov/genomes/all"
-            suffix = "genomic.fna.gz"
+            dlfiledata = DLFileData(
+                filestem, "ftp://ftp.ncbi.nlm.nih.gov/genomes/all", "genomic.fna.gz"
+            )
             logger.info("Retrieving URLs for %s", filestem)
             # Try RefSeq first
             dlstatus = tools.download_genome_and_hash(
-                filestem,
-                suffix,
-                ftpstem,
-                args.outdir,
-                args.timeout,
+                args,
                 logger,
+                dlfiledata,
                 dltype="RefSeq",
                 disable_tqdm=args.disable_tqdm,
             )
-            if dlstatus.skipped:  # RefSeq failed, try GenBank
+            # RefSeq failed, try GenBank
+            # Pylint is confused by the content of dlstatus (a namedlist)
+            if dlstatus.skipped:  # pylint: disable=no-member
                 skippedlist.append(
                     Skipped(
                         tid,
                         uid,
                         uid_class.organism,
                         uid_class.strain,
-                        dlstatus.url,
+                        dlstatus.url,  # pylint: disable=no-member
                         "RefSeq",
                     )
                 )
@@ -154,16 +157,14 @@ def subcmd_download(args, logger):
                 )
                 # Try GenBank assembly
                 dlstatus = tools.download_genome_and_hash(
-                    filestem,
-                    suffix,
-                    ftpstem,
-                    args.outdir,
-                    args.timeout,
+                    args,
                     logger,
+                    dlfiledata,
                     dltype="GenBank",
                     disable_tqdm=args.disable_tqdm,
                 )
-                if dlstatus.skipped:
+                # Pylint is confused by the content of dlstatus (a namedlist)
+                if dlstatus.skipped:  # pylint: disable=no-member
                     skippedlist.append(
                         Skipped(
                             tid,

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Module providing functions in support of the pyani command-line scripts.
 
-(c) The James Hutton Institute 2016-2017
+(c) The James Hutton Institute 2016-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -19,7 +19,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2016-2017 The James Hutton Institute
+Copyright (c) 2016-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ import os
 import re
 import shutil
 
-from .. import download
+from pyani import download
 
 
 # EXCEPTIONS
@@ -77,21 +77,21 @@ def make_outdir(outdir, force, noclobber, logger):
     """
     if os.path.isdir(outdir):
         logger.warning("Output directory %s exists", outdir)
-        if not force:
-            raise PyaniScriptException(
-                "Will not modify existing directory " + "%s" % outdir
-            )
-        elif force and not noclobber:
+        if force and not noclobber:  # user forces directory reuse, and overwrite
             # Delete old directory and start again
             logger.warning(
                 "Overwrite forced. Removing %s and everything " + "below it (--force)",
                 outdir,
             )
             shutil.rmtree(outdir)
-        else:
+        elif force and noclobber:  # user forces directory reuse, not file overwrite
             logger.warning(
                 "Keeping existing directory, skipping existing "
                 + "files (--force --noclobber)."
+            )
+        else:  # user is not forcing directory reuse
+            raise PyaniScriptException(
+                "Will not modify existing directory " + "%s" % outdir
             )
     os.makedirs(outdir, exist_ok=True)
 
@@ -110,16 +110,15 @@ def make_asm_dict(taxon_ids, retries):
 
 # Download the RefSeq genome and MD5 hash from NCBI
 def download_genome_and_hash(
-    filestem,
-    suffix,
-    ftpstem,
-    outdir,
-    timeout,
-    logger,
-    dltype="RefSeq",
-    disable_tqdm=False,
+    args, logger, dlfiledata, dltype="RefSeq", disable_tqdm=False
 ):
     """Download genome and accompanying MD5 hash from NCBI.
+
+    :param args:  Namespace for command-line arguments
+    :param logger:  logging object
+    :param dlfiledata:  namedtuple of info for file to download
+    :param dltype:  reference database to use: RefSeq or GenBank
+    :param disable_tqdm:  disable progress bar
 
     This function tries the (assumed to be passed) RefSeq FTP URL first and,
     if that fails, then attempts to download the corresponding GenBank data.
@@ -127,12 +126,24 @@ def download_genome_and_hash(
     We attempt to gracefully skip genomes with download errors.
     """
     if dltype == "GenBank":
-        filestem = re.sub("^GCF_", "GCA_", filestem)
+        filestem = re.sub("^GCF_", "GCA_", dlfiledata.filestem)
+    else:
+        filestem = dlfiledata.filestem
     dlstatus = download.retrieve_genome_and_hash(
-        filestem, suffix, ftpstem, outdir, timeout, disable_tqdm
+        filestem,
+        dlfiledata.suffix,
+        dlfiledata.ftpstem,
+        args.outdir,
+        args.timeout,
+        disable_tqdm,
     )
-    if dlstatus.error is not None:  # Something went awry
-        logger.warning("%s download failed: skipping!\n%s", dltype, dlstatus.error)
+    # Pylint is confused by the content of dlstatus (a namedlist)
+    if dlstatus.error is not None:  # pylint: disable=no-member
+        logger.warning(
+            "%s download failed: skipping!\n%s",
+            dltype,
+            dlstatus.error,  # pylint: disable=no-member
+        )
         dlstatus.skipped = True
 
     return dlstatus

@@ -57,7 +57,8 @@ from tqdm import tqdm
 from namedlist import namedlist
 
 
-taxonregex = re.compile(r"([0-9]\,?){1,}")
+# Regular expression for NCBI taxon numbers
+TAXONREGEX = re.compile(r"([0-9]\,?){1,}")
 
 
 # Custom exceptions
@@ -142,7 +143,7 @@ def split_taxa(taxa):
     that permits comma-separated numerical symbols only.
     """
     # Check format of passed taxa
-    match = taxonregex.match(taxa)
+    match = TAXONREGEX.match(taxa)
     if match is None or len(match.group()) != len(taxa):
         raise ValueError("invalid taxon string: {0}".format(taxa))
     return [taxon for taxon in taxa.split(",") if len(taxon)]
@@ -250,13 +251,13 @@ def compile_url(filestem, suffix, ftpstem):
     rm.run
     wgsmaster.gbff.gz
     """
-    gc, aa, _ = tuple(filestem.split("_", 2))
-    aaval = aa.split(".")[0]
-    subdirs = "/".join([aa[i : i + 3] for i in range(0, len(aaval), 3)])
+    gcstem, acc, _ = tuple(filestem.split("_", 2))
+    aaval = acc.split(".")[0]
+    subdirs = "/".join([acc[i : i + 3] for i in range(0, len(aaval), 3)])
 
-    url = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gc, subdirs, filestem, suffix)
+    url = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gcstem, subdirs, filestem, suffix)
     hashurl = "{0}/{1}/{2}/{3}/{4}".format(
-        ftpstem, gc, subdirs, filestem, "md5checksums.txt"
+        ftpstem, gcstem, subdirs, filestem, "md5checksums.txt"
     )
     return (url, hashurl)
 
@@ -411,7 +412,7 @@ def extract_hash(hashfile, name):
     """
     filehash = None
     with open(hashfile, "r") as hhandle:
-        for l in [l.strip().split() for l in hhandle if len(l.strip())]:
-            if os.path.split(l[1])[-1] == name:  # hash filename
-                filehash = l[0]
+        for line in [_.strip().split() for _ in hhandle if len(_.strip())]:
+            if os.path.split(line[1])[-1] == name:  # hash filename
+                filehash = line[0]
     return filehash
