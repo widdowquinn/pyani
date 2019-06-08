@@ -76,7 +76,7 @@ jobs:
           destination: test-reports
 
       - codecov/upload:
-        file: {{ .coverage }}
+        file: .coverage
 
 
   test-3.6:
