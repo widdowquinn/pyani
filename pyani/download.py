@@ -277,7 +277,6 @@ def download_url(url, outfname, timeout, disable_tqdm=False):
         # Define buffer sizes
         bsize = 1048576  # buffer size
         fsize_dl = 0  # bytes downloaded
-        return  # WHILE TESTING TRAVIS-CI FAILURE
 
         # Download file
         with open(outfname, "wb") as ofh:
@@ -315,7 +314,6 @@ def retrieve_genome_and_hash(
     outfname, outfhash = construct_output_paths(filestem, suffix, outdir)
 
     # Download the genome sequence and corresponding hash file
-    # COMMENTED TO TRACK DOWN TRAVIS-CI FAIL
     try:
         download_url(url, outfname, timeout, disable_tqdm)
         download_url(hashurl, outfhash, timeout, disable_tqdm)
