@@ -21,7 +21,7 @@ install:
 
 # command to run tests
 script:
-  - pytest -v --cov=./ tests/test_subcmd_01_download.py
+  - pytest -v -s --cov=./ tests/test_subcmd_01_download.py
 
 # application dependencies: BLAST+, legacy BLAST, MUMMER
 before_install:
