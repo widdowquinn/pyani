@@ -314,11 +314,12 @@ def retrieve_genome_and_hash(
     outfname, outfhash = construct_output_paths(filestem, suffix, outdir)
 
     # Download the genome sequence and corresponding hash file
-    try:
-        download_url(url, outfname, timeout, disable_tqdm)
-        download_url(hashurl, outfhash, timeout, disable_tqdm)
-    except IOError:
-        error = last_exception()
+    # COMMENTED TO TRACK DOWN TRAVIS-CI FAIL
+    # try:
+    #     download_url(url, outfname, timeout, disable_tqdm)
+    #     download_url(hashurl, outfhash, timeout, disable_tqdm)
+    # except IOError:
+    #     error = last_exception()
 
     return DLStatus(url, hashurl, outfname, outfhash, skipped, error)
 
