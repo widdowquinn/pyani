@@ -183,6 +183,11 @@ def subcmd_download(args, logger):
             logger.info("Wrote assembly to: %s", dlstatus.outfname)
             logger.info("Wrote MD5 hashes to: %s", dlstatus.outfhash)
 
+            print("GETTING THIS FAR")
+            import sys
+
+            sys.exit(0)
+
             # Check hash for the download
             hashstatus = download.check_hash(dlstatus.outfname, dlstatus.outfhash)
             logger.info("Local MD5 hash: %s", hashstatus.localhash)
