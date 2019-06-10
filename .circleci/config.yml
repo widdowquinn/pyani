@@ -34,7 +34,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
@@ -46,9 +46,9 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            pip install --upgrade pip setuptools virtualenv
             python3 -m venv venv
             . venv/bin/activate
+            pip install --upgrade pip setuptools virtualenv
             pip install -r requirements.txt
             pip install -r requirements-dev.txt
             pip install -e .  # Install the repo as a package
