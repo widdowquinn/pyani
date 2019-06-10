@@ -45,12 +45,22 @@ THE SOFTWARE.
 
 import os
 
+from collections import namedtuple
+
 import pandas as pd
+
 from sqlalchemy import and_
 from sqlalchemy.orm import aliased
 
-from pyani import pyani_db, pyani_orm, pyani_report
-from pyani.pyani_orm import Run, Genome, Comparison, Label, rungenome, runcomparison
+from pyani import pyani_orm, pyani_report
+from pyani.pyani_orm import Run, Genome, Comparison, Label, rungenome
+
+
+# Convenience struct for matrix data
+MatrixData = namedtuple("MatrixData", "name data graphic_args")
+
+# Convenience struct for report query/header data
+ReportParams = namedtuple("ReportParams", "name statement headers")
 
 
 def subcmd_report(args, logger):
@@ -70,10 +80,7 @@ def subcmd_report(args, logger):
     """
     # Output formats will apply across all tabular data requested
     # Expect comma-separated format arguments, and turn them into an iterable
-    formats = ["tab"]
-    if args.formats:
-        formats += [fmt.strip() for fmt in args.formats.split(",")]
-    formats = list(set(formats))  # remove duplicates
+    formats = process_formats(args)
     logger.info(f"Creating output in formats: {formats}")
 
     # Declare which database is being used, and connect to session
@@ -82,20 +89,14 @@ def subcmd_report(args, logger):
 
     # Report runs in the database
     if args.show_runs:
-        outfname = os.path.join(args.outdir, "runs")
-        logger.info(f"Writing table of pyani runs from the database to {outfname}.*")
         statement = session.query(
             Run.run_id, Run.name, Run.method, Run.date, Run.cmdline
         ).statement
-        data = pd.read_sql(statement, session.bind)
         headers = ["run ID", "name", "method", "date run", "command-line"]
-        data.columns = headers
-        pyani_report.write_dbtable(data, outfname, formats)
+        report(args, logger, session, formats, ReportParams("runs", statement, headers))
 
     # Report genomes in the database
     if args.show_genomes:
-        outfname = os.path.join(args.outdir, "genomes")
-        logger.info(f"Writing table of genomes from the database to {outfname}.*")
         statement = session.query(
             Genome.genome_id,
             Genome.description,
@@ -103,17 +104,13 @@ def subcmd_report(args, logger):
             Genome.genome_hash,
             Genome.length,
         ).statement
-        data = pd.read_sql(statement, session.bind)
         headers = ["genome ID", "description", "path", "MD5 hash", "genome length"]
+        report(
+            args, logger, session, formats, ReportParams("genomes", statement, headers)
+        )
 
     # Report table of all genomes used for each run
     if args.show_runs_genomes:
-        outfname = os.path.join(args.outdir, "runs_genomes")
-        logger.info(
-            f"Writing table of pyani runs, with associated genomes to {outfname}.*"
-        )
-        # We query on the LabelMembership table, then join out to Run, Genome, and Label.
-        # This avoids multiple left-joins
         statement = (
             session.query(
                 Run.run_id,
@@ -135,7 +132,6 @@ def subcmd_report(args, logger):
             .order_by(Run.run_id, Genome.genome_id)
             .statement
         )
-        data = pd.read_sql(statement, session.bind)
         headers = [
             "run ID",
             "run name",
@@ -148,16 +144,16 @@ def subcmd_report(args, logger):
             "genome label",
             "genome class",
         ]
-        data.columns = headers
+        report(
+            args,
+            logger,
+            session,
+            formats,
+            ReportParams("runs_genomes", statement, headers),
+        )
 
     # Report table of all runs in which a genome is involved
     if args.show_genomes_runs:
-        outfname = os.path.join(args.outdir, "genomes_runs")
-        logger.info(
-            f"Writing table of genomes, with associated pyani runs to {outfname}.*"
-        )
-        # We query on the LabelMembership table, then join out to Run, Genom and Label.
-        # This avoids multiple left-joins
         statement = (
             session.query(
                 Genome.genome_id,
@@ -179,7 +175,6 @@ def subcmd_report(args, logger):
             .order_by(Genome.genome_id, Run.run_id)
             .statement
         )
-        data = pd.read_sql(statement, session.bind)
         headers = [
             "genome ID",
             "run ID",
@@ -192,16 +187,20 @@ def subcmd_report(args, logger):
             "method",
             "date run",
         ]
-        data.columns = headers
+        report(
+            args,
+            logger,
+            session,
+            formats,
+            ReportParams("genomes_runs", statement, headers),
+        )
 
     # Report table of comparison results for the indicated runs
     if args.run_results:
-        outfstem = os.path.join(args.outdir, "results")
         run_ids = [run_id.strip() for run_id in args.run_results.split(",")]
         logger.info(f"Attempting to write results tables for runs: {run_ids}")
         for run_id in run_ids:
             logger.info(f"Processing run ID {run_id}")
-            outfname = "_".join([outfstem, str(run_id)])
             genome_query = aliased(Genome, name="genome_query")
             genome_subject = aliased(Genome, name="genome_subject")
             statement = (
@@ -227,7 +226,6 @@ def subcmd_report(args, logger):
                 .filter(Run.run_id == run_id)
                 .statement
             )
-            data = pd.read_sql(statement, session.bind)
             headers = [
                 "Comparison ID",
                 "Query ID",
@@ -245,17 +243,22 @@ def subcmd_report(args, logger):
                 "maxmatch",
                 "Run ID",
             ]
-            data.columns = headers
-            pyani_report.write_dbtable(data, outfname, formats)
+            report(
+                args,
+                logger,
+                session,
+                formats,
+                ReportParams(f"results_{run_id}", statement, headers),
+            )
 
     # Report matrices of comparison results for the indicated runs
     # For ANIm, all results other than coverage are symmetric matrices,
     # so we only get results in the forward direction.
+    # As we need to pull down the matrices as Pandas dataframes by reading from
+    # JSON, we don't bother with a helper function like report(), and write out
+    # our matrices directly, here
     if args.run_matrices:
-        outfstem = os.path.join(args.outdir, "matrix")
-        run_ids = [run_id.strip() for run_id in args.run_matrices.split(",")]
-        logger.info(f"Attempting to write results matrices for runs: {run_ids}")
-        for run_id in run_ids:
+        for run_id in [run_id.strip() for run_id in args.run_matrices.split(",")]:
             logger.info(f"Extracting matrices for run {run_id}")
             run = session.query(Run).filter(Run.run_id == run_id).first()
             # Make dictionary of labels for each genome, keyed by genome ID
@@ -272,20 +275,57 @@ def subcmd_report(args, logger):
                 .all()
             )
             label_dict = {_.genome_id: _.label for _ in results}
-            for matname, data, graphic_args in [
-                ("identity", run.df_identity, {"colour_num": 0.95}),
-                ("coverage", run.df_coverage, {"colour_num": 0.95}),
-                ("aln_lengths", run.df_alnlength, {}),
-                ("sim_errors", run.df_simerrors, {}),
-                ("hadamard", run.df_hadamard, {}),
+            for matdata in [
+                MatrixData(*_)
+                for _ in [
+                    ("identity", run.df_identity, {"colour_num": 0.95}),
+                    ("coverage", run.df_coverage, {"colour_num": 0.95}),
+                    ("aln_lengths", run.df_alnlength, {}),
+                    ("sim_errors", run.df_simerrors, {}),
+                    ("hadamard", run.df_hadamard, {}),
+                ]
             ]:
-                logger.info(f"Writing {matname} results")
-                outfname = "_".join([outfstem, matname, str(run_id)])
-                matrix = pd.read_json(data)
+                logger.info(f"Writing {matdata.name} results")
+                matrix = pd.read_json(matdata.data)
                 # Matrix rows and columns are labelled if there's a label dictionary,
                 # and take the dataframe index otherwise
                 matrix.columns = [f"{label_dict.get(_, _)}:{_}" for _ in matrix.columns]
                 matrix.index = [f"{label_dict.get(_, _)}:{_}" for _ in matrix.index]
                 pyani_report.write_dbtable(
-                    matrix, outfname, formats, show_index=True, **graphic_args
+                    matrix,
+                    "_".join(
+                        [os.path.join(args.outdir, "matrix"), matdata.name, str(run_id)]
+                    ),
+                    formats,
+                    show_index=True,
+                    **matdata.graphic_args,
                 )
+
+
+def report(args, logger, session, formats, params):
+    """Write tabular report of pyani runs from database
+
+    :param args:  Namespace of command-line arguments
+    :param logger:  logging object
+    :param session:  SQLAlchemy database session
+    :param formats:  list of output formats
+    :param params:  ReportParams namedtuple
+    """
+    outfname = os.path.join(args.outdir, params.name)
+    logger.info(
+        f"Writing table of pyani {params.name} from the database to {outfname}.*"
+    )
+    data = pd.read_sql(params.statement, session.bind)
+    data.columns = params.headers
+    pyani_report.write_dbtable(data, outfname, formats)
+
+
+def process_formats(args):
+    """Return processed list of output formats for writing reports
+
+    :param args:  Namespace of command-line arguments
+    """
+    formats = ["tab"]
+    if args.formats:
+        formats += [fmt.strip() for fmt in args.formats.split(",")]
+    return list(set(formats))  # remove duplicates
