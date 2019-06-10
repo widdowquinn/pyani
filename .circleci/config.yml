@@ -51,7 +51,7 @@ jobs:
             pip install --upgrade pip setuptools virtualenv
             pip install -r requirements.txt
             # pip install -r requirements-dev.txt
-            pip install -e .  # Install the repo as a package
+            python setup.py install  # Install the repo as a package
 
       - save_cache:
           paths:
