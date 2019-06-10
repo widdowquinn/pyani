@@ -9,5 +9,5 @@ pytest
 pytest-cov
 scipy
 seaborn
-sqlalchemy=1.2.18
+sqlalchemy==1.2.18
 tqdm
