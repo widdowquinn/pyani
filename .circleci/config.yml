@@ -61,7 +61,8 @@ jobs:
       - run:
           name: install pyani
           command: |
-            python setup.py install  # Install the repo as a package
+            . venv/bin/activate
+            pip install -e .  # Install the repo as a package
 
       # run tests!
       # common Python testing frameworks include pytest and nose

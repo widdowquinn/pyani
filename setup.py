@@ -62,7 +62,7 @@ with open("README.md", "r") as dfh:
 # evaluating the code
 with open("pyani/__init__.py") as fh:
     for line in fh:
-        print(line)
+        # The escaping/use of quotes in the re.search() below can be treacherous
         m = re.search(r'^__version__ = "(?P<version>[^"]+)"$', line)
         print(m)
         if m:
