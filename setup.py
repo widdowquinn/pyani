@@ -62,7 +62,9 @@ with open("README.md", "r") as dfh:
 # evaluating the code
 with open("pyani/__init__.py") as fh:
     for line in fh:
-        m = re.search(r"^__version__ = '(?P<version>[^']+)'$", line)
+        print(line)
+        m = re.search(r'^__version__ = "(?P<version>[^"]+)"$', line)
+        print(m)
         if m:
             version = m.group("version")
             break
