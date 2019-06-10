@@ -7,4 +7,5 @@ openpyxl
 pandas
 scipy
 seaborn
+sqlalchemy
 tqdm

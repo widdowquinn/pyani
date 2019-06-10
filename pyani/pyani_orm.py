@@ -3,7 +3,7 @@
 
 This SQLAlchemy-based ORM replaces the previous SQL-based module
 
-(c) The James Hutton Institute 2018
+(c) The James Hutton Institute 2018-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -21,7 +21,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2018 The James Hutton Institute
+Copyright (c) 2018-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -67,22 +67,22 @@ from pyani.pyani_tools import get_genome_length
 class PyaniORMException(PyaniException):
     """Exception raised when ORM or database interaction fails."""
 
-    def __init__(self, msg="Error in pyani ORM/database interface"):
-        PyaniException.__init__(self, msg)
-
 
 # Using the declarative system
-Base = declarative_base()
-Session = sessionmaker()
+# We follow Flask-like naming conventions, so override some of the pyline errors
+Base = declarative_base()  # pylint: disable=C0103
+Session = sessionmaker()  # pylint: disable=C0103
 
-rungenome = Table(
+# Linker table between genomes and runs tables
+rungenome = Table(  # pylint: disable=C0103
     "runs_genomes",
     Base.metadata,
     Column("genome_id", Integer, ForeignKey("genomes.genome_id")),
     Column("run_id", Integer, ForeignKey("runs.run_id")),
 )
 
-runcomparison = Table(
+# Linker table between comparisons and runs tables
+runcomparison = Table(  # pylint: disable=C0103
     "runs_comparisons",
     Base.metadata,
     Column("comparison_id", Integer, ForeignKey("comparisons.comparison_id")),
@@ -90,8 +90,8 @@ runcomparison = Table(
 )
 
 
-# convenience namedtuples
-label_tuple = namedtuple("ClassData", "label class_label")
+# Convenience struct for labels and classes files
+LabelTuple = namedtuple("LabelTuple", "label class_label")
 
 
 class Label(Base):
@@ -379,7 +379,7 @@ def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
     new_keys = set(all_keys)
     label_dict = {}
     for key in new_keys:
-        label_dict[key] = label_tuple(label_data[key] or None, class_data[key] or None)
+        label_dict[key] = LabelTuple(label_data[key] or None, class_data[key] or None)
 
     # Get hash and sequence description for each FASTA/hash pair, and add
     # to current session database
@@ -479,85 +479,3 @@ def update_comparison_matrices(session, run):
     run.df_simerrors = df_simerrors.to_json()
     run.df_hadamard = df_hadamard.to_json()
     session.commit()
-
-
-if __name__ == "__main__":
-    # Create test database if run as script
-
-    import datetime
-    import time
-
-    dbpath = os.path.join(".", "test.sqlite")
-    if os.path.isfile(dbpath):
-        os.remove(dbpath)
-    engine = create_engine("sqlite:///{}".format(dbpath), echo=False)
-    Base.metadata.create_all(engine)
-    Session.configure(bind=engine)
-
-    session = Session()
-
-    # Create test run
-    run = Run(
-        method="ANIm",
-        cmdline="pyani anim C_blochmannia C_blochmannia_ANIm --name C. blochmannia run 1 --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt",
-        date=datetime.datetime.fromtimestamp(time.time()),
-        status="started",
-        name="C. blochmannia run 1",
-    )
-    session.add(run)
-    session.commit()
-
-    # Create test genomes
-    genome1 = Genome(
-        genome_hash="c8c15b0f79742e14afeee07cd63cead1",
-        path="C_blochmannia/GCF_000973545.1_ASM97354v1_genomic.fna",
-        length=773940,
-        description="NZ_CP010049.1 Blochmannia endosymbiont of Camponotus (Colobopsis) obliquus strain 757, complete genome",
-    )
-    genome1.runs.append(run)
-    session.add(genome1)
-    genome2 = Genome(
-        genome_hash="562fb00b9325563bf352512530897161",
-        path="C_blochmannia/GCF_000011745.1_ASM1174v1_genomic.fna",
-        length=791654,
-        description="NC_007292.1 Candidatus Blochmannia pennsylvanicus str. BPEN, complete genome",
-    )
-    genome2.runs.append(run)
-    session.add(genome2)
-    session.commit()
-
-    # Add label and class for each genome
-    for (genome, run, glabel, gclass) in [
-        (genome1, run, "757", "C. blochmannia"),
-        (genome2, run, "BPEN", "C. blochmannia"),
-    ]:
-        session.add(Label(genome=genome, run=run, label=glabel, class_label=gclass))
-    session.commit()
-
-    # Add a comparison for the two genomes
-    comparison = Comparison(
-        query=genome1,
-        subject=genome2,
-        aln_length=16627,
-        sim_errs=2838,
-        identity=0.8293137667649,
-        cov_query=0.0214835775383105,
-        cov_subject=0.0210028623615873,
-        program="nucmer",
-        version="3.1",
-        fragsize=0,
-        maxmatch=False,
-    )
-    session.add(comparison)
-    session.commit()
-
-    # Test that we can use the objects/tables
-    our_genomes = session.query(Genome).all()
-    print("Genomes:")
-    print("\n".join([str(_) for _ in our_genomes]))
-
-    print("\nComparisons by genome")
-    for genome in our_genomes:
-        print("{}:".format(genome.description))
-        print("Query: {}".format(genome.query_comparisons))
-        print("Subject: {}".format(genome.subject_comparisons))

@@ -129,8 +129,11 @@ def get_sequence_lengths(fastafilenames):
 # Get hash string from hash file
 def read_hash_string(filename):
     """Return the hash and file strings from the passed hash file."""
-    with open(filename, "r") as ifh:
-        data = ifh.read().strip().split()
+    try:
+        with open(filename, "r") as ifh:
+            data = ifh.read().strip().split()
+    except Exception:
+        raise PyaniFilesException(f"Could not load hash file {filename}.")
 
     # We expect the first string in the file to be the hash (the second is the
     # filename)
@@ -144,3 +147,45 @@ def read_fasta_description(filename):
         if data.description:
             return data.description
     raise PyaniFilesException(f"No sequences in {filename} contain a description.")
+
+
+# Load class or label file as dictionary
+def load_classes_labels(path):
+    """Returns a dictionary of genome classes or labels keyed by hash
+
+    :param path:  path to classes or labels file
+
+    The expected format of the classes and labels files is:
+    <HASH>\t<FILESTEM>\t<CLASS>|<LABEL>,
+    where <HASH> is the MD5 hash of the genome data (this is not checked);
+    <FILESTEM> is the path to the genome file (this is intended to be a
+    record for humans to audit, it's not needed for the database interaction;
+    and <CLASS>|<LABEL> is the class or label associated with that genome.
+    """
+    datadict = {}
+    with open(path, "r") as ifh:
+        for line in ifh.readlines():
+            genomehash, _, data = line.strip().split("\t")
+            datadict[genomehash] = data
+    return datadict
+
+
+# Collect existing output files when in recovery mode
+def collect_existing_output(dirpath, program, args):
+    """Returns a list of existing output files at dirpath
+
+    :param dirpath"       path to existing output directory
+    :param args:          command-line arguments for the run
+    """
+    # Obtain collection of expected output files already present in directory
+    if program == "nucmer":
+        if args.nofilter:
+            suffix = ".delta"
+        else:
+            suffix = ".filter"
+    elif program == "blastn":
+        suffix = ".blast_tab"
+    existingfiles = [
+        fname for fname in os.listdir(dirpath) if os.path.splitext(fname)[-1] == suffix
+    ]
+    return existingfiles
