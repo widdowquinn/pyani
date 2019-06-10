@@ -49,7 +49,7 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             pip install --upgrade pip setuptools virtualenv
-            pip install -r requirements.txt
+            #pip install -r requirements.txt
             pip install -r requirements-dev.txt
             pip install -e .  # Install the repo as a package
 
