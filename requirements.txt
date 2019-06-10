@@ -5,6 +5,8 @@ networkx
 numpy
 openpyxl
 pandas
+pytest
+pytest-cov
 scipy
 seaborn
 sqlalchemy
