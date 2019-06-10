@@ -56,10 +56,10 @@ THE SOFTWARE.
 """
 
 import logging
-import os
 import unittest
 
 from argparse import Namespace
+from pathlib import Path
 
 from pyani.scripts import subcommands
 
@@ -69,7 +69,7 @@ class TestCreatedbSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Configure parameters for tests."""
-        self.dbpath = os.path.join("tests", "test_output", "subcmd_createdb", "pyanidb")
+        self.dbpath = Path("tests/test_output/subcmd_createdb/pyanidb")
 
         # Null logger instance
         self.logger = logging.getLogger("TestIndexSubcommand logger")

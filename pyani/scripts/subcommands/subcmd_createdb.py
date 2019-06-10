@@ -52,9 +52,12 @@ from pyani import pyani_orm
 def subcmd_createdb(args, logger):
     """Create an empty pyani database."""
     # If the database exists, raise an error rather than overwrite
-    if os.path.isfile(args.dbpath) and not args.force:
-        logger.error(f"Database {args.dbpath} already exists (exiting)")
-        raise SystemError(1)
+    if os.path.isfile(args.dbpath):
+        if not args.force:
+            logger.error(f"Database {args.dbpath} already exists (exiting)")
+            raise SystemError(1)
+        logger.warning(f"Database {args.dbpath} already exists - overwriting")
+        os.remove(args.dbpath)
 
     # If the path to the database doesn't exist, create it
     dbdir = os.path.split(args.dbpath)[0]
