@@ -44,6 +44,13 @@ import os
 
 from Bio import SeqIO
 
+from pyani import PyaniException
+
+
+# General exception for scripts
+class PyaniFilesException(PyaniException):
+    """Exception raised by pyani when file interaction goes bad."""
+
 
 # Get a list of FASTA files from the input directory
 def get_fasta_files(dirname=None):
@@ -112,9 +119,9 @@ def get_sequence_lengths(fastafilenames):
     NOTE: ambiguity symbols are not discounted.
     """
     tot_lengths = {}
-    for fn in fastafilenames:
-        tot_lengths[os.path.splitext(os.path.split(fn)[-1])[0]] = sum(
-            [len(s) for s in SeqIO.parse(fn, "fasta")]
+    for fname in fastafilenames:
+        tot_lengths[os.path.splitext(os.path.split(fname)[-1])[0]] = sum(
+            [len(s) for s in SeqIO.parse(fname, "fasta")]
         )
     return tot_lengths
 
@@ -136,3 +143,4 @@ def read_fasta_description(filename):
     for data in SeqIO.parse(filename, "fasta"):
         if data.description:
             return data.description
+    raise PyaniFilesException(f"No sequences in {filename} contain a description.")
