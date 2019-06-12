@@ -241,7 +241,7 @@ def add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation="col"):
     )
     dend_axes = fig.add_subplot(gspec[0, 0])
     dend = sch.dendrogram(
-        sch.linkage(dists, method="complete"),
+        sch.linkage(distance.squareform(dists), method="complete"),
         color_threshold=np.inf,
         orientation=orient,
     )

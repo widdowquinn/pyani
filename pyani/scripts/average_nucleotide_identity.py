@@ -133,6 +133,7 @@ import traceback
 
 from argparse import ArgumentParser
 
+import matplotlib.pyplot as plt
 import pandas as pd
 
 from pyani import (
@@ -897,6 +898,9 @@ def run_main(args=None, logger=None):
             logger.info("Graphics format: %s", gfmt)
             logger.info("Graphics method: %s", args.gmethod)
             draw(args, logger, methods[args.method][1], gfmt)
+
+    # Close any open matplotlib figures
+    plt.close("all")
 
     # Report that we've finished
     logger.info("Done: %s.", time.asctime())
