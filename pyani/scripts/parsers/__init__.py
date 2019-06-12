@@ -43,7 +43,6 @@ from pyani.scripts.parsers import (
     download_parser,
     index_parser,
     createdb_parser,
-    db_parser,
     anim_parser,
     anib_parser,
     aniblastall_parser,
@@ -91,7 +90,6 @@ def parse_cmdline(argv=None):
     download_parser.build(subparsers, parents=[parser_common])
     index_parser.build(subparsers, parents=[parser_common])
     createdb_parser.build(subparsers, parents=[parser_common])
-    db_parser.build(subparsers, parents=[parser_common])
     anim_parser.build(
         subparsers, parents=[parser_common, parser_scheduler, parser_run_common]
     )
