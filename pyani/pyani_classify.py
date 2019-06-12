@@ -50,12 +50,12 @@ from pyani.pyani_tools import label_results_matrix
 
 # Holds summary information about a graph's cliques
 Cliquesinfo = namedtuple(
-    "Cliquesinfo", "n_nodes n_subgraphs n_cliques " + "n_cliquenodes confused"
+    "Cliquesinfo", "n_nodes n_subgraphs n_cliques n_cliquenodes confused"
 )
 
 
 # Build an undirected graph from an ANIResults object
-def build_graph_from_results(results, label_dict, cov_min, id_min):
+def build_graph_from_results(results, label_dict, cov_min=0, id_min=0):
     """Return undirected graph representing the passed ANIResults object.
 
     The passed ANIResults object is converted to an undirected graph where
@@ -75,6 +75,13 @@ def build_graph_from_results(results, label_dict, cov_min, id_min):
 
     node_names = mat_coverage.columns
     rows = []
+    # Loop over dataframe entries and add edges to the base graph for classification
+    # We loop over only the lower-triangle indices of each matrix, but check the
+    # identity and coverage in both directions. Coverage is not expected to be
+    # symmetrical, and while identity should be symmetrical for ANIm, it will not
+    # likely be so for ANIb and related methods.
+    # Where results are non-symmetrical, we take the minimum value when creating the
+    # base graph.
     for idx, node_from in enumerate(node_names[:-1]):
         for node_to in node_names[idx + 1 :]:
             datadict = {
@@ -83,13 +90,19 @@ def build_graph_from_results(results, label_dict, cov_min, id_min):
                 "coverage": min(
                     mat_coverage[node_from][node_to], mat_coverage[node_to][node_from]
                 ),
-                "identity": mat_identity[node_from][node_to],
+                "identity": min(
+                    mat_identity[node_from][node_to], mat_identity[node_to][node_from]
+                ),
             }
-            rows.append(datadict)
+            if datadict["identity"] > id_min and datadict["coverage"] > cov_min:
+                rows.append(datadict)
     node_data = pd.DataFrame(rows, columns=["from", "to", "coverage", "identity"])
 
     # Convert reordered data to undirected graph and return
     graph = nx.from_pandas_edgelist(node_data, "from", "to", ["coverage", "identity"])
+    for node in node_names[:-1]:
+        if node not in graph.nodes:
+            graph.add_node(node)
     return graph
 
 
