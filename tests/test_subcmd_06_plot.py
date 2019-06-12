@@ -67,6 +67,8 @@ import unittest
 from argparse import Namespace
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+
 from pyani.scripts import subcommands
 
 
@@ -147,31 +149,39 @@ class TestPlotSubcommand(unittest.TestCase):
     def test_plot_mpl_pdf(self):
         """test PDF output from Matplotlib"""
         subcommands.subcmd_plot(self.argsdict["mpl_pdf"], self.logger)
+        plt.close("all")
 
     def test_plot_mpl_png(self):
         """test PNG output from Matplotlib"""
         subcommands.subcmd_plot(self.argsdict["mpl_png"], self.logger)
+        plt.close("all")
 
     def test_plot_mpl_svg(self):
         """test SVG output from Matplotlib"""
         subcommands.subcmd_plot(self.argsdict["mpl_svg"], self.logger)
+        plt.close("all")
 
     def test_plot_mpl_jpg(self):
         """test JPG output from Matplotlib"""
         subcommands.subcmd_plot(self.argsdict["mpl_jpg"], self.logger)
+        plt.close("all")
 
     def test_plot_seaborn_pdf(self):
         """test PDF output from Matplotlib"""
         subcommands.subcmd_plot(self.argsdict["seaborn_pdf"], self.logger)
+        plt.close("all")
 
     def test_plot_seaborn_png(self):
         """test PNG output from Matplotlib"""
         subcommands.subcmd_plot(self.argsdict["seaborn_png"], self.logger)
+        plt.close("all")
 
     def test_plot_seaborn_svg(self):
         """test SVG output from Matplotlib"""
         subcommands.subcmd_plot(self.argsdict["seaborn_svg"], self.logger)
+        plt.close("all")
 
     def test_plot_seaborn_jpg(self):
         """test JPG output from Matplotlib"""
         subcommands.subcmd_plot(self.argsdict["seaborn_jpg"], self.logger)
+        plt.close("all")

@@ -34,7 +34,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}
+            - pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
             # fallback to using the latest cache if no exact match is found
             - pyani-dependencies-
 
@@ -51,11 +51,12 @@ jobs:
             pip install --upgrade pip setuptools virtualenv
             pip install -r requirements.txt
             pip install -r requirements-dev.txt
+            pip install -r requirements-pip.txt
 
       - save_cache:
           paths:
             - ./venv
-          key: pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}
+          key: pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
 
       # Install pyani
       - run:
