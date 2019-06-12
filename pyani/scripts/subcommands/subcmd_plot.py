@@ -45,7 +45,10 @@ THE SOFTWARE.
 
 import os
 
-from pyani import pyani_config, pyani_db, pyani_graphics
+import pandas as pd
+
+from pyani import pyani_config, pyani_orm, pyani_graphics
+from pyani.pyani_tools import MatrixData
 
 
 def subcmd_plot(args, logger):
@@ -56,8 +59,9 @@ def subcmd_plot(args, logger):
     """
     # Announce what's going on to the user
     logger.info("Generating graphical output for analyses")
-    logger.info("Writing output to: %s", args.outdir)
-    logger.info("Rendering method: %s", args.method)
+    logger.info(f"Writing output to: {args.outdir}")
+    os.makedirs(args.outdir, exist_ok=True)
+    logger.info(f"Rendering method: {args.method}")
 
     # Distribution dictionary of graphics methods
     gmethod = {
@@ -67,37 +71,50 @@ def subcmd_plot(args, logger):
 
     # Work on each run:
     run_ids = [int(run) for run in args.run_id.split(",")]
-    logger.info("Generating graphics for runs: %s", run_ids)
+    logger.info(f"Generating graphics for runs: {run_ids}")
     for run_id in run_ids:
 
         # Get results matrices for the run
-        logger.info("Acquiring results for run %d", run_id)
-        results = pyani_db.ANIResults(args.dbpath, run_id)
+        logger.info(f"Acquiring results for run {run_id}")
+        logger.info(f"Connecting to database: {args.dbpath}")
+        session = pyani_orm.get_session(args.dbpath)
+        logger.info("Retrieving results matrices")
+        results = (
+            session.query(pyani_orm.Run)
+            .filter(pyani_orm.Run.run_id == args.run_id)
+            .first()
+        )
+        result_label_dict = pyani_orm.get_matrix_labels_for_run(session, args.run_id)
 
         # Parse output formats
         outfmts = args.formats.split(",")
-        logger.info("Requested output formats: %s", outfmts)
+        logger.info(f"Requested output formats: {outfmts}")
 
-        # Generate filestems
-        for matname in [
-            "identity",
-            "coverage",
-            "aln_lengths",
-            "sim_errors",
-            "hadamard",
+        # Write heatmaps for each results matrix
+        for matdata in [
+            MatrixData(*_)
+            for _ in [
+                ("identity", results.df_identity, {}),
+                ("coverage", results.df_coverage, {}),
+                ("aln_lengths", results.df_alnlength, {}),
+                ("sim_errors", results.df_simerrors, {}),
+                ("hadamard", results.df_hadamard, {}),
+            ]
         ]:
-            dfm = getattr(results.dataframes, matname)  # results matrix
-            cmap = pyani_config.get_colormap(dfm, matname)
+            dfm = pd.read_json(matdata.data)
+            cmap = pyani_config.get_colormap(dfm, matdata.name)
             for fmt in outfmts:
                 outfname = os.path.join(
-                    args.outdir, "matrix_{0}_{1}.{2}".format(matname, run_id, fmt)
+                    args.outdir, f"matrix_{matdata.name}_run{run_id}.{fmt}"
                 )
-                logger.info("Writing graphics to %s", outfname)
-                params = pyani_graphics.Params(cmap, results.labels, results.classes)
+                logger.info(f"Writing graphics to {outfname}")
+                params = pyani_graphics.Params(
+                    cmap, result_label_dict, result_label_dict
+                )
                 # Draw figure
                 gmethod[args.method](
                     dfm,
                     outfname,
-                    title="matrix_{0}_{1}".format(matname, run_id),
+                    title=f"matrix_{matdata.name}_run{run_id}",
                     params=params,
                 )
