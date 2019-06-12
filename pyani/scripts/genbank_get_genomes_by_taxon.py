@@ -199,7 +199,7 @@ def make_outdir(args, logger):
                 "Output directory %s would overwrite existing files (exiting)",
                 args.outdirname,
             )
-            sys.exit(1)
+            raise SystemExit(1)
         else:
             logger.info("--force output directory use")
             if args.noclobber:
@@ -219,7 +219,7 @@ def make_outdir(args, logger):
             logger.info("NOCLOBBER+FORCE: not creating directory")
         else:
             logger.error(last_exception)
-            sys.exit(1)
+            raise SystemExit(1)
 
 
 # Retry Entrez requests (or any other function)
@@ -243,12 +243,14 @@ def entrez_retry(args, logger, func, *fnargs, **fnkwargs):
             logger.warning(last_exception())
     if not success:
         logger.error("Too many Entrez failures (exiting)")
-        sys.exit(1)
+        raise SystemExit(1)
     return output
 
 
 # Get results from NCBI web history, in batches
-def entrez_batch_webhistory(record, expected, batchsize, *fnargs, **fnkwargs):
+def entrez_batch_webhistory(
+    args, logger, record, expected, batchsize, *fnargs, **fnkwargs
+):
     """Recover Entrez data from a prior NCBI webhistory search.
 
     Recovery is performed in in batches of defined size, using Efetch.
@@ -263,6 +265,8 @@ def entrez_batch_webhistory(record, expected, batchsize, *fnargs, **fnkwargs):
     results = []
     for start in range(0, expected, batchsize):
         batch_handle = entrez_retry(
+            args,
+            logger,
             Entrez.efetch,
             retstart=start,
             retmax=batchsize,
@@ -303,7 +307,7 @@ def get_asm_uids(args, logger, taxon_uid):
 
     # Recover assembly UIDs from the web history
     asm_ids = entrez_batch_webhistory(
-        record, result_count, 250, db="assembly", retmode="xml"
+        args, logger, record, result_count, 250, db="assembly", retmode="xml"
     )
     logger.info("Identified %d unique assemblies", len(asm_ids))
     return asm_ids
@@ -616,13 +620,11 @@ def logreport_downloaded(accn, skiplist, accndict, uidaccndict, logger):
 
 
 # Run as script
-def run_main(argv=None, logger=None):
+def run_main(args=None, logger=None):
     """Run main process for average_nucleotide_identity.py script."""
     # If we need to (i.e. a namespace isn't passed), parse the command-line
-    if argv is None:
+    if args is None:
         args = parse_cmdline()
-    else:
-        args = parse_cmdline(argv)
 
     # Catch execution with no arguments
     if len(sys.argv) == 1:
@@ -636,7 +638,7 @@ def run_main(argv=None, logger=None):
     # Have we got an email address? If not, exit.
     if args.email is None:
         logger.error("No email contact address provided (exiting)")
-        sys.exit(1)
+        raise SystemExit(1)
     set_ncbi_email(args, logger)
 
     # Have we got an output directory? If not, exit.
@@ -713,7 +715,9 @@ def run_main(argv=None, logger=None):
                     "\tAlternative RefSeq candidate accession: %s", rsacc.split(".")[0]
                 )
                 logger.warning("\tWere alternative assemblies downloaded?")
-                logreport_downloaded(rsacc, skippedlist, accessiondict, uidaccdict, logger)
+                logreport_downloaded(
+                    rsacc, skippedlist, accessiondict, uidaccdict, logger
+                )
             # Is this a suppressed RefSeq sequence?
             if acc.startswith("GCF"):
                 logger.warning("\tAccession is RefSeq: is it suppressed?")
@@ -724,7 +728,9 @@ def run_main(argv=None, logger=None):
                     "\tAlternative GenBank candidate accession: %s", gbacc.split(".")[0]
                 )
                 logger.warning("\tWere alternative assemblies downloaded?")
-                logreport_downloaded(gbacc, skippedlist, accessiondict, uidaccdict, logger)
+                logreport_downloaded(
+                    gbacc, skippedlist, accessiondict, uidaccdict, logger
+                )
     logger.info("Skipped assembly UIDs: %s", skippedlist)
 
     # Let the user know we're done

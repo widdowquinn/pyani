@@ -788,13 +788,11 @@ def subsample_input(args, logger, infiles):
 
 
 # Main function
-def run_main(argv=None, logger=None):
+def run_main(args=None, logger=None):
     """Run main process for average_nucleotide_identity.py script."""
     # If we need to (i.e. a namespace isn't passed), parse the command-line
-    if argv is None:
+    if args is None:
         args = parse_cmdline()
-    else:
-        args = parse_cmdline(argv)
 
     # Catch execution with no arguments
     if len(sys.argv) == 1:
@@ -886,9 +884,9 @@ def run_main(argv=None, logger=None):
         # and write out corresponding results.
         logger.info("Carrying out %s analysis", args.method)
         if args.method == "TETRA":
-            results = methods[args.method][0](infiles)
+            results = methods[args.method][0](args, logger, infiles)
         else:
-            results = methods[args.method][0](infiles, org_lengths)
+            results = methods[args.method][0](args, logger, infiles, org_lengths)
         write(args, logger, results)
 
     # Do we want graphical output?
