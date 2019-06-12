@@ -45,6 +45,7 @@ THE SOFTWARE.
 
 import os
 
+import matplotlib.pyplot as plt
 import pandas as pd
 
 from pyani import pyani_config, pyani_orm, pyani_graphics
@@ -121,3 +122,6 @@ def subcmd_plot(args, logger):
                     title=f"matrix_{matdata.name}_run{run_id}",
                     params=params,
                 )
+
+    # Be tidy with matplotlib caches
+    plt.close("all")

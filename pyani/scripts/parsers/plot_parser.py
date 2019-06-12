@@ -78,7 +78,7 @@ def build(subps, parents=None):
         dest="formats",
         action="store",
         default="png",
-        help="graphics output format (seaborn/mpl)",
+        help="graphics output format (pdf/png/svg/jpg)",
     )
     parser.add_argument(
         "--method",
