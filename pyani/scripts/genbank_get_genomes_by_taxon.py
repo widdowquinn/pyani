@@ -42,8 +42,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import logging
-import logging.handlers
 import os
 import re
 import shutil
@@ -60,6 +58,10 @@ from urllib.request import urlopen
 
 from Bio import Entrez, SeqIO
 
+from pyani import __version__
+
+from .logger import build_logger
+
 
 class NCBIDownloadException(Exception):
     """General exception for failed NCBI download."""
@@ -70,7 +72,7 @@ class NCBIDownloadException(Exception):
 
 
 # Parse command-line
-def parse_cmdline():
+def parse_cmdline(argv=None):
     """Parse command-line arguments."""
     parser = ArgumentParser(prog="genbank_get_genomes_by_taxon.py")
     parser.add_argument(
@@ -157,7 +159,10 @@ def parse_cmdline():
         default=10,
         help="Timeout for URL connection (s)",
     )
-    return parser.parse_args()
+    # Parse arguments
+    if argv is None:
+        argv = sys.argv[1:]
+    return parser.parse_args(argv)
 
 
 # Report last exception as string
@@ -168,7 +173,7 @@ def last_exception():
 
 
 # Set contact email for NCBI
-def set_ncbi_email():
+def set_ncbi_email(args, logger):
     """Set contact email for NCBI."""
     Entrez.email = args.email
     logger.info("Set NCBI contact email to %s", args.email)
@@ -176,7 +181,7 @@ def set_ncbi_email():
 
 
 # Create output directory if it doesn't exist
-def make_outdir():
+def make_outdir(args, logger):
     """Make the output directory, if required.
 
     This is a little involved.  If the output directory already exists,
@@ -218,7 +223,7 @@ def make_outdir():
 
 
 # Retry Entrez requests (or any other function)
-def entrez_retry(func, *fnargs, **fnkwargs):
+def entrez_retry(args, logger, func, *fnargs, **fnkwargs):
     """Retry the passed function a defined number of times."""
     tries, success = 0, False
     while not success and tries < args.retries:
@@ -272,7 +277,7 @@ def entrez_batch_webhistory(record, expected, batchsize, *fnargs, **fnkwargs):
 
 
 # Get assembly UIDs for the root taxon
-def get_asm_uids(taxon_uid):
+def get_asm_uids(args, logger, taxon_uid):
     """Return a set of NCBI UIDs associated with the passed taxon.
 
     This query at NCBI returns all assemblies for the taxon subtree
@@ -284,7 +289,13 @@ def get_asm_uids(taxon_uid):
     # Perform initial search for assembly UIDs with taxon ID as query.
     # Use NCBI history for the search.
     handle = entrez_retry(
-        Entrez.esearch, db="assembly", term=query, format="xml", usehistory="y"
+        args,
+        logger,
+        Entrez.esearch,
+        db="assembly",
+        term=query,
+        format="xml",
+        usehistory="y",
     )
     record = Entrez.read(handle, validate=False)
     result_count = int(record["Count"])
@@ -315,7 +326,7 @@ def extract_filestem(data):
 
 
 # Download NCBI assembly file for a passed Assembly UID
-def get_ncbi_asm(asm_uid, fmt="fasta"):
+def get_ncbi_asm(args, logger, asm_uid, fmt="fasta"):
     """Return the NCBI AssemblyAccession and AssemblyName for an assembly.
 
     Returns organism data for class/label files also, as well
@@ -332,7 +343,9 @@ def get_ncbi_asm(asm_uid, fmt="fasta"):
 
     # Obtain full eSummary data for the assembly
     summary = Entrez.read(
-        entrez_retry(Entrez.esummary, db="assembly", id=asm_uid, report="full"),
+        entrez_retry(
+            args, logger, Entrez.esummary, db="assembly", id=asm_uid, report="full"
+        ),
         validate=False,
     )
 
@@ -364,7 +377,7 @@ def get_ncbi_asm(asm_uid, fmt="fasta"):
 
     # Download and extract genome assembly
     try:
-        fastafname = retrieve_asm_contigs(filestem, fmt=fmt)
+        fastafname = retrieve_asm_contigs(args, logger, filestem, fmt=fmt)
     except NCBIDownloadException:
         # This is a little hacky. Sometimes, RefSeq assemblies are
         # suppressed (presumably because they are non-redundant),
@@ -375,7 +388,7 @@ def get_ncbi_asm(asm_uid, fmt="fasta"):
         gbfilestem = re.sub("^GCF_", "GCA_", filestem)
         logger.warning("Could not download %s, trying %s", filestem, gbfilestem)
         try:
-            fastafname = retrieve_asm_contigs(gbfilestem, fmt=fmt)
+            fastafname = retrieve_asm_contigs(args, logger, gbfilestem, fmt=fmt)
         except NCBIDownloadException:
             fastafname = None
 
@@ -384,7 +397,11 @@ def get_ncbi_asm(asm_uid, fmt="fasta"):
 
 # Download and extract an NCBI assembly file, given a filestem
 def retrieve_asm_contigs(
-    filestem, ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all", fmt="fasta"
+    args,
+    logger,
+    filestem,
+    ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all",
+    fmt="fasta",
 ):
     """Download assembly sequence to a local directory.
 
@@ -435,8 +452,8 @@ def retrieve_asm_contigs(
     except HTTPError:
         logger.error("Download failed for URL: %s\n%s", asmurl, last_exception())
         raise NCBIDownloadException()
-    except URLError as e:
-        if isinstance(e.reason, timeout):
+    except URLError as err:
+        if isinstance(err.reason, timeout):
             logger.error("Download timed out for URL: %s\n%s", asmurl, last_exception())
         else:
             logger.error("Download failed for URL: %s\n%s", asmurl, last_exception())
@@ -493,7 +510,7 @@ def retrieve_asm_contigs(
 
 
 # Write contigs for a single assembly out to file
-def write_contigs(asm_uid, contig_uids, batchsize=10000):
+def write_contigs(args, logger, asm_uid, contig_uids, batchsize=10000):
     """Write assembly contigs to a single FASTA file.
 
     FASTA records are returned, as GenBank and even GenBankWithParts format
@@ -506,7 +523,9 @@ def write_contigs(asm_uid, contig_uids, batchsize=10000):
     logger.info("Collecting contig data for %s", asm_uid)
     # Assembly record - get binomial and strain names
     asm_record = Entrez.read(
-        entrez_retry(Entrez.esummary, db="assembly", id=asm_uid, rettype="text"),
+        entrez_retry(
+            args, logger, Entrez.esummary, db="assembly", id=asm_uid, rettype="text"
+        ),
         validate=False,
     )
     asm_smry = asm_record["DocumentSummarySet"]["DocumentSummary"][0]
@@ -544,6 +563,8 @@ def write_contigs(asm_uid, contig_uids, batchsize=10000):
                     list(
                         SeqIO.parse(
                             entrez_retry(
+                                args,
+                                logger,
                                 Entrez.efetch,
                                 db="nucleotide",
                                 id=query_uids,
@@ -584,7 +605,7 @@ def write_contigs(asm_uid, contig_uids, batchsize=10000):
 
 
 # Function to report whether an accession has been downloaded
-def logreport_downloaded(accn, skiplist, accndict, uidaccndict):
+def logreport_downloaded(accn, skiplist, accndict, uidaccndict, logger):
     """Report to logger if alternative assemblies were downloaded."""
     for vid in accndict[accn.split(".")[0]]:
         if vid in skiplist:
@@ -595,53 +616,34 @@ def logreport_downloaded(accn, skiplist, accndict, uidaccndict):
 
 
 # Run as script
-if __name__ == "__main__":  # noqa: C901
+def run_main(argv=None, logger=None):
+    """Run main process for average_nucleotide_identity.py script."""
+    # If we need to (i.e. a namespace isn't passed), parse the command-line
+    if argv is None:
+        args = parse_cmdline()
+    else:
+        args = parse_cmdline(argv)
 
-    # Parse command-line
-    args = parse_cmdline()
+    # Catch execution with no arguments
+    if len(sys.argv) == 1:
+        sys.stderr.write("pyani version: {0}\n".format(__version__))
+        return 0
 
     # Set up logging
-    logger = logging.getLogger("genbank_get_genomes_by_taxon.py")
-    logger.setLevel(logging.DEBUG)
-    err_handler = logging.StreamHandler(sys.stderr)
-    err_formatter = logging.Formatter("%(levelname)s: %(message)s")
-    err_handler.setFormatter(err_formatter)
-
-    # Was a logfile specified? If so, use it
-    if args.logfile is not None:
-        try:
-            logstream = open(args.logfile, "w")
-        except IOError:
-            logger.error("Could not open %s for logging", args.logfile)
-            sys.exit(1)
-        err_handler_file = logging.StreamHandler(logstream)
-        err_handler_file.setFormatter(err_formatter)
-        err_handler_file.setLevel(logging.INFO)
-        logger.addHandler(err_handler_file)
-
-    # Do we need verbosity?
-    if args.verbose:
-        err_handler.setLevel(logging.INFO)
-    else:
-        err_handler.setLevel(logging.WARNING)
-    logger.addHandler(err_handler)
-
-    # Report arguments, if verbose
-    logger.info("genbank_get_genomes_by_taxon.py: %s", time.asctime())
-    logger.info("command-line: %s", " ".join(sys.argv))
-    logger.info(args)
+    if logger is None:
+        logger = build_logger("genbank_get_genomes_by_taxon.py", args)
 
     # Have we got an email address? If not, exit.
     if args.email is None:
         logger.error("No email contact address provided (exiting)")
         sys.exit(1)
-    set_ncbi_email()
+    set_ncbi_email(args, logger)
 
     # Have we got an output directory? If not, exit.
     if args.outdirname is None:
         logger.error("No output directory name (exiting)")
         sys.exit(1)
-    make_outdir()
+    make_outdir(args, logger)
     logger.info("Output directory: %s", args.outdirname)
 
     # We might have more than one taxon in a comma-separated list
@@ -651,7 +653,7 @@ if __name__ == "__main__":  # noqa: C901
     # Get all NCBI assemblies for each taxon UID
     asm_dict = defaultdict(set)
     for tid in taxon_ids:
-        asm_dict[tid] = get_asm_uids(tid)
+        asm_dict[tid] = get_asm_uids(args, logger, tid)
     for tid, asm_uids in list(asm_dict.items()):
         logger.info("Taxon %s: %d assemblies", tid, len(asm_uids))
 
@@ -664,7 +666,7 @@ if __name__ == "__main__":  # noqa: C901
     for tid, asm_uids in list(asm_dict.items()):
         for uid in asm_uids:
             (fastafilename, classtxt, labeltxt, accession) = get_ncbi_asm(
-                uid, args.format
+                args, logger, uid, args.format
             )
             # fastafilename is None if there was an error thrown
             if fastafilename is not None:
@@ -698,7 +700,7 @@ if __name__ == "__main__":  # noqa: C901
             logger.warning("\tUID: %s - accession: %s", uid, acc)
             # Has another version of this genome been successfully dl'ed
             logger.warning("\tAccession %s has versions:", acc.split(".")[0])
-            logreport_downloaded(acc, skippedlist, accessiondict, uidaccdict)
+            logreport_downloaded(acc, skippedlist, accessiondict, uidaccdict, logger)
             url = "http://www.ncbi.nlm.nih.gov/assembly/%s" % uid
             # Is this a GenBank sequence with no RefSeq counterpart?
             # e.g. http://www.ncbi.nlm.nih.gov/assembly/196191/
@@ -711,7 +713,7 @@ if __name__ == "__main__":  # noqa: C901
                     "\tAlternative RefSeq candidate accession: %s", rsacc.split(".")[0]
                 )
                 logger.warning("\tWere alternative assemblies downloaded?")
-                logreport_downloaded(rsacc, skippedlist, accessiondict, uidaccdict)
+                logreport_downloaded(rsacc, skippedlist, accessiondict, uidaccdict, logger)
             # Is this a suppressed RefSeq sequence?
             if acc.startswith("GCF"):
                 logger.warning("\tAccession is RefSeq: is it suppressed?")
@@ -722,9 +724,12 @@ if __name__ == "__main__":  # noqa: C901
                     "\tAlternative GenBank candidate accession: %s", gbacc.split(".")[0]
                 )
                 logger.warning("\tWere alternative assemblies downloaded?")
-                logreport_downloaded(gbacc, skippedlist, accessiondict, uidaccdict)
+                logreport_downloaded(gbacc, skippedlist, accessiondict, uidaccdict, logger)
     logger.info("Skipped assembly UIDs: %s", skippedlist)
 
     # Let the user know we're done
     logger.info(time.asctime())
     logger.info("Done.")
+
+    # Exit
+    return 0

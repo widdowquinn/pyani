@@ -42,7 +42,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import os
 import sys
 import re
 import setuptools
@@ -93,12 +92,15 @@ setuptools.setup(
     platforms="Posix; MacOS X",
     url="http://widdowquinn.github.io/pyani/",  # project home page
     download_url="https://github.com/widdowquinn/pyani/releases",
-    scripts=[
-        os.path.join("bin", "average_nucleotide_identity.py"),
-        os.path.join("bin", "delta_filter_wrapper.py"),
-        os.path.join("bin", "genbank_get_genomes_by_taxon.py"),
-    ],
-    entry_points={"console_scripts": ["pyani = pyani.scripts.pyani_script:run_main"]},
+    scripts=[],
+    entry_points={
+        "console_scripts": [
+            "pyani = pyani.scripts.pyani_script:run_main",
+            "average_nucleotide_identity.py = pyani.scripts.average_nucleotide_identity:run_main",
+            "delta_filter_wrapper.py = pyani.scripts.delta_filter_wrapper:run_main",
+            "genbank_get_genomes_by_taxon.py = pyani.scripts.genbank_get_genomes_by_taxon:run_main",
+        ]
+    },
     packages=setuptools.find_packages(),
     package_data={"pyani": ["tests/test_JSpecies/*.tab"]},
     include_package_date=True,
