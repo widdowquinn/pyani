@@ -41,11 +41,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from collections import namedtuple
+
 import pandas as pd
 
 from Bio import SeqIO
 
 from . import pyani_config, download
+
+# Convenience struct for matrix data returned by ORM
+MatrixData = namedtuple("MatrixData", "name data graphic_args")
 
 
 # CLASSES
@@ -232,4 +237,3 @@ def label_results_matrix(matrix, labels):
     matrix.columns = [f"{labels.get(_, _)}:{_}" for _ in matrix.columns]
     matrix.index = [f"{labels.get(_, _)}:{_}" for _ in matrix.index]
     return matrix
-

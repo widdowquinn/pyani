@@ -61,11 +61,7 @@ from pyani.pyani_orm import (
     get_matrix_labels_for_run,
     rungenome,
 )
-from pyani.pyani_tools import label_results_matrix
-
-
-# Convenience struct for matrix data
-MatrixData = namedtuple("MatrixData", "name data graphic_args")
+from pyani.pyani_tools import label_results_matrix, MatrixData
 
 # Convenience struct for report query/header data
 ReportParams = namedtuple("ReportParams", "name statement headers")
