@@ -111,7 +111,7 @@ def analyse_cliques(graph):
     """Return Cliquesinfo namedtuple describing clique data for a graph."""
     cliques = list(nx.find_cliques(graph))
     tot_clique_members = sum([len(c) for c in cliques])
-    subgraphs = list(nx.connected_component_subgraphs(graph))
+    subgraphs = [graph.subgraph(_).copy() for _ in nx.connected_components(graph)]
     return Cliquesinfo(
         len(graph),
         len(subgraphs),
