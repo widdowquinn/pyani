@@ -5,6 +5,7 @@ networkx
 numpy
 openpyxl
 pandas
+pillow
 pytest
 pytest-cov
 scipy
