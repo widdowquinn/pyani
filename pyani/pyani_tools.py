@@ -216,3 +216,20 @@ def get_genome_length(filename):
     """Return total length of all sequences in a FASTA file."""
     with open(filename, "r") as ifh:
         return sum([len(record) for record in SeqIO.parse(ifh, "fasta")])
+
+
+# Helper function to label results matrices from Run objects
+def label_results_matrix(matrix, labels):
+    """Return results matrix dataframe with labels
+
+    :param matrix:  results dataframe deriving from Run object
+    :param labels:  dictionary of genome labels
+        labels must be keyed by index/col values from matrix
+
+    Applies the labels from the dictionary to the dataframe in
+    matrix, and returns the result.
+    """
+    matrix.columns = [f"{labels.get(_, _)}:{_}" for _ in matrix.columns]
+    matrix.index = [f"{labels.get(_, _)}:{_}" for _ in matrix.index]
+    return matrix
+

@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 """Module providing subcommands for pyani scripts."""
 

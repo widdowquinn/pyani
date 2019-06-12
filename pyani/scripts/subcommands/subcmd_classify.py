@@ -42,25 +42,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from pyani import pyani_classify, pyani_db
+from pyani import pyani_classify, pyani_orm
 
 
 def subcmd_classify(args, logger):
     """Generate classifications for an analysis."""
     # Tell the user what's going on
-    logger.info("Generating classification for ANI run: %s", args.run_id)
-    logger.info("Writing output to: %s", args.outdir)
-    logger.info("Coverage threshold: %s", args.cov_min)
-    logger.info("Initial minimum identity threshold: %s", args.id_min)
+    logger.info(f"Generating classification for ANI run: {args.run_id}")
+    logger.info(f"\tWriting output to: {args.outdir}")
+    logger.info(f"\tCoverage threshold: {args.cov_min}")
+    logger.info(f"\tInitial minimum identity threshold: {args.id_min}")
 
     # Get results data for the specified run
-    logger.info("Acquiring results for run: %s", args.run_id)
-    results = pyani_db.ANIResults(args.dbpath, args.run_id)
+    logger.info(f"Acquiring results for run: {args.run_id}")
+    logger.info(f"Connecting to database: {args.dbpath}")
+    session = pyani_orm.get_session(args.dbpath)
+    logger.info("Retrieving results matrices")
+    results = (
+        session.query(pyani_orm.Run).filter(pyani_orm.Run.run_id == args.run_id).first()
+    )
+    result_label_dict = pyani_orm.get_matrix_labels_for_run(session, args.run_id)
 
     # Generate initial graph on basis of results
     logger.info("Constructing graph from results.")
     initgraph = pyani_classify.build_graph_from_results(
-        results, args.cov_min, args.id_min
+        results, result_label_dict, args.cov_min, args.id_min
     )
     logger.info(
         "Returned graph has %d nodes:\n\t%s",

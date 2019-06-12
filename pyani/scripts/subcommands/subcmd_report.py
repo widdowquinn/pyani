@@ -53,7 +53,15 @@ from sqlalchemy import and_
 from sqlalchemy.orm import aliased
 
 from pyani import pyani_orm, pyani_report
-from pyani.pyani_orm import Run, Genome, Comparison, Label, rungenome
+from pyani.pyani_orm import (
+    Run,
+    Genome,
+    Comparison,
+    Label,
+    get_matrix_labels_for_run,
+    rungenome,
+)
+from pyani.pyani_tools import label_results_matrix
 
 
 # Convenience struct for matrix data
@@ -261,20 +269,7 @@ def subcmd_report(args, logger):
         for run_id in [run_id.strip() for run_id in args.run_matrices.split(",")]:
             logger.info(f"Extracting matrices for run {run_id}")
             run = session.query(Run).filter(Run.run_id == run_id).first()
-            # Make dictionary of labels for each genome, keyed by genome ID
-            results = (
-                session.query(Genome.genome_id, Label.label)
-                .join(rungenome, Run)
-                .join(
-                    Label,
-                    and_(
-                        Genome.genome_id == Label.genome_id, Run.run_id == Label.run_id
-                    ),
-                )
-                .filter(Run.run_id == run_id)
-                .all()
-            )
-            label_dict = {_.genome_id: _.label for _ in results}
+            matlabel_dict = get_matrix_labels_for_run(session, run_id)
             for matdata in [
                 MatrixData(*_)
                 for _ in [
@@ -289,8 +284,7 @@ def subcmd_report(args, logger):
                 matrix = pd.read_json(matdata.data)
                 # Matrix rows and columns are labelled if there's a label dictionary,
                 # and take the dataframe index otherwise
-                matrix.columns = [f"{label_dict.get(_, _)}:{_}" for _ in matrix.columns]
-                matrix.index = [f"{label_dict.get(_, _)}:{_}" for _ in matrix.index]
+                matrix = label_results_matrix(matrix, matlabel_dict)
                 pyani_report.write_dbtable(
                     matrix,
                     "_".join(

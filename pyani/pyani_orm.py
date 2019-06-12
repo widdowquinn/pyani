@@ -49,6 +49,7 @@ from collections import namedtuple
 import numpy as np
 import pandas as pd
 
+from sqlalchemy import and_
 from sqlalchemy import UniqueConstraint, create_engine, Table
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Boolean
 from sqlalchemy.ext.declarative import declarative_base
@@ -306,6 +307,27 @@ def get_comparison_dict(session):
         (_.query_id, _.subject_id, _.program, _.version, _.fragsize, _.maxmatch): _
         for _ in session.query(Comparison).all()
     }
+
+
+def get_matrix_labels_for_run(session, run_id):
+    """Return dictionary of genome labels, keyed by row/column ID
+
+    :param session:  live SQLAlchemy session
+    :param run_id:  the Run.run_id value for matrices
+
+    The labels should be valid for identity, coverage and other complete
+    matrix results accessed via the .df_* attributes of a run
+    """
+    results = (
+        session.query(Genome.genome_id, Label.label)
+        .join(rungenome, Run)
+        .join(
+            Label, and_(Genome.genome_id == Label.genome_id, Run.run_id == Label.run_id)
+        )
+        .filter(Run.run_id == run_id)
+        .all()
+    )
+    return {_.genome_id: _.label for _ in results}
 
 
 def filter_existing_comparisons(

@@ -46,6 +46,8 @@ from collections import namedtuple
 import networkx as nx
 import pandas as pd
 
+from pyani.pyani_tools import label_results_matrix
+
 # Holds summary information about a graph's cliques
 Cliquesinfo = namedtuple(
     "Cliquesinfo", "n_nodes n_subgraphs n_cliques " + "n_cliquenodes confused"
@@ -53,19 +55,25 @@ Cliquesinfo = namedtuple(
 
 
 # Build an undirected graph from an ANIResults object
-def build_graph_from_results(results, cov_min, id_min):
+def build_graph_from_results(results, label_dict, cov_min, id_min):
     """Return undirected graph representing the passed ANIResults object.
 
     The passed ANIResults object is converted to an undirected graph where
     nodes on the graph represent genomes, and edges represent pairwise
     comparisons having the minimum coverage and identity indicated.
 
-    results     - ANIResults object with result of ANI analysis
-    cov_min     - minimum coverage for an edge
-    id_min      - minimum identity for an edge
+    :param results:     - Run object from pyani_orm
+    :param label_dict:  dictionary of genome labels for result matrices
+        the dict is keyed by the index/column values for the results
+        matrices
+    :param cov_min:     - minimum coverage for an edge
+    :param id_min:      - minimum identity for an edge
     """
-    # Generate reordered data as dataframe
-    node_names = results.coverage.columns
+    # Parse identity and coverage matrices
+    mat_identity = label_results_matrix(pd.read_json(results.df_identity), label_dict)
+    mat_coverage = label_results_matrix(pd.read_json(results.df_coverage), label_dict)
+
+    node_names = mat_coverage.columns
     rows = []
     for idx, node_from in enumerate(node_names[:-1]):
         for node_to in node_names[idx + 1 :]:
@@ -73,17 +81,16 @@ def build_graph_from_results(results, cov_min, id_min):
                 "from": node_from,
                 "to": node_to,
                 "coverage": min(
-                    results.coverage[node_from][node_to],
-                    results.coverage[node_to][node_from],
+                    mat_coverage[node_from][node_to], mat_coverage[node_to][node_from]
                 ),
-                "identity": results.identity[node_from][node_to],
+                "identity": mat_identity[node_from][node_to],
             }
             rows.append(datadict)
     node_data = pd.DataFrame(rows, columns=["from", "to", "coverage", "identity"])
 
     # Convert reordered data to undirected graph and return
-    G = nx.from_pandas_edgelist(node_data, "from", "to", ["coverage", "identity"])
-    return G
+    graph = nx.from_pandas_edgelist(node_data, "from", "to", ["coverage", "identity"])
+    return graph
 
 
 # Report clique info for a graph
@@ -102,7 +109,7 @@ def analyse_cliques(graph):
 
 
 # Generate a list of graphs from lowest to highest pairwise identity threshold
-def trimmed_graph_sequence(G, attribute="identity"):
+def trimmed_graph_sequence(ingraph, attribute="identity"):
     """Return graphs trimmed from lowest to highest attribute value
 
     A generator which, starting from the initial graph, yields in sequence a
@@ -111,12 +118,12 @@ def trimmed_graph_sequence(G, attribute="identity"):
 
     (threshold, graph, analyse_cliques(graph))
 
-    G          - the initial graph to work from
+    ingraph          - the initial graph to work from
     attribute  - string describing the attribute to work on
 
     This will be slow with moderate-large graphs
     """
-    graph = G.copy()
+    graph = ingraph.copy()
     edgelist = sorted(graph.edges(data=attribute), key=lambda x: x[-1])
     while len(edgelist) > 1:
         threshold = edgelist[0][-1]
@@ -130,19 +137,19 @@ def trimmed_graph_sequence(G, attribute="identity"):
 
 
 # Generate a list of graphs with no clique confusion
-def unconfused_graphs(G, attribute="identity"):
+def unconfused_graphs(ingraph, attribute="identity"):
     """Return graphs having no clique-confused nodes
 
     A generator which, starting from the initial graph, yields in sequence
     a series of graphs from lowest to highest threshold edge where no node
     in the graph participates in more than one clique.
 
-    G         - the initial graph to start from
+    ingraph         - the initial graph to start from
     attribute  - the attribute to use for thresholds
 
     This will be slow with moderate-large graphs
     """
-    graph = G.copy()
+    graph = ingraph.copy()
     for subgraph in trimmed_graph_sequence(graph, attribute):
         if subgraph[-1].confused:
             continue
