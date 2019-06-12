@@ -48,23 +48,25 @@ THE SOFTWARE.
 #            generating-a-png-with-matplotlib-when-display-is-undefined
 # This needs to be done before importing pyplot
 
-from . import pyani_config
+import warnings
 
 from math import floor, log10
-import warnings
+
+import numpy as np
+import scipy.cluster.hierarchy as sch
+import scipy.spatial.distance as distance
+import seaborn as sns
+import pandas as pd
+
+from . import pyani_config
 
 # Specify matplotlib backend. This *must* be done before pyplot import, but
 # raises errors with flake8 etc. So we comment out the specific error
-import matplotlib
+import matplotlib  # pylint: disable=C0411
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-import matplotlib.gridspec as gridspec  # noqa: E402
-import numpy as np  # noqa: E402
-import scipy.cluster.hierarchy as sch  # noqa: E402
-import scipy.spatial.distance as distance  # noqa: E402
-import seaborn as sns  # noqa: E402
-import pandas as pd  # noqa: E402
+import matplotlib.pyplot as plt  # noqa: E402 # pylint: disable=wrong-import-position,wrong-import-order
+import matplotlib.gridspec as gridspec  # noqa: E402 # pylint: disable=wrong-import-position,wrong-import-order
 
 
 # Register Matplotlib colourmaps
@@ -74,7 +76,7 @@ plt.register_cmap(cmap=pyani_config.CMAP_BURD)
 
 
 # Convenience class to hold heatmap graphics parameters
-class Params(object):  # pylint: disable=too-few-public-methods
+class Params:  # pylint: disable=too-few-public-methods
     """Convenience class to hold heatmap rendering parameters."""
 
     def __init__(self, params, labels=None, classes=None):

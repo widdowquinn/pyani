@@ -5,7 +5,7 @@
 
 Provides the plot subcommand for pyani
 
-(c) The James Hutton Institute 2017-18
+(c) The James Hutton Institute 2017-2019
 
 Author: Leighton Pritchard
 Contact: leighton.pritchard@hutton.ac.uk
@@ -22,7 +22,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017-18 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,9 @@ from pyani.pyani_tools import MatrixData
 
 def subcmd_plot(args, logger):
     """Produce graphical output for an analysis.
+
+    :param args:  Namespace of command-line arguments
+    :param logger:  logging object
 
     This is graphical output for representing the ANI analysis results, and
     takes the form of a heatmap, or heatmap with dendrogram.
@@ -90,7 +93,7 @@ def subcmd_plot(args, logger):
         outfmts = args.formats.split(",")
         logger.info(f"Requested output formats: {outfmts}")
 
-        # Write heatmaps for each results matrix
+        # Write heatmap for each results matrix
         for matdata in [
             MatrixData(*_)
             for _ in [

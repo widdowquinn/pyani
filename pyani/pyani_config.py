@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Configuration settings for the pyani package.
 
-(c) The James Hutton Institute 2010-2017
+(c) The James Hutton Institute 2010-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -19,7 +19,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2010-2017 The James Hutton Institute
+Copyright (c) 2010-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -148,28 +148,28 @@ CMAP_BURD = LinearSegmentedColormap("BuRd", cdict_BuRd)
 
 # Graphics parameters for each output file. Note that this should be
 # in sync with the output file stems above
-def params_mpl(df):
+def params_mpl(dfm):
     """Return dict of matplotlib parameters, dependent on dataframe.
 
     DEPRECATED FROM v0.3 onwards
     """
     return {
-        "ANIb_alignment_lengths": ("afmhot", df.values.min(), df.values.max()),
+        "ANIb_alignment_lengths": ("afmhot", dfm.values.min(), dfm.values.max()),
         "ANIb_percentage_identity": ("spbnd_BuRd", 0, 1),
         "ANIb_alignment_coverage": ("BuRd", 0, 1),
         "ANIb_hadamard": ("hadamard_BuRd", 0, 1),
-        "ANIb_similarity_errors": ("afmhot", df.values.min(), df.values.max()),
-        "ANIm_alignment_lengths": ("afmhot", df.values.min(), df.values.max()),
+        "ANIb_similarity_errors": ("afmhot", dfm.values.min(), dfm.values.max()),
+        "ANIm_alignment_lengths": ("afmhot", dfm.values.min(), dfm.values.max()),
         "ANIm_percentage_identity": ("spbnd_BuRd", 0, 1),
         "ANIm_alignment_coverage": ("BuRd", 0, 1),
         "ANIm_hadamard": ("hadamard_BuRd", 0, 1),
-        "ANIm_similarity_errors": ("afmhot", df.values.min(), df.values.max()),
+        "ANIm_similarity_errors": ("afmhot", dfm.values.min(), dfm.values.max()),
         "TETRA_correlations": ("spbnd_BuRd", 0, 1),
-        "ANIblastall_alignment_lengths": ("afmhot", df.values.min(), df.values.max()),
+        "ANIblastall_alignment_lengths": ("afmhot", dfm.values.min(), dfm.values.max()),
         "ANIblastall_percentage_identity": ("spbnd_BuRd", 0, 1),
         "ANIblastall_alignment_coverage": ("BuRd", 0, 1),
         "ANIblastall_hadamard": ("hadamard_BuRd", 0, 1),
-        "ANIblastall_similarity_errors": ("afmhot", df.values.min(), df.values.max()),
+        "ANIblastall_similarity_errors": ("afmhot", dfm.values.min(), dfm.values.max()),
     }
 
 
