@@ -52,10 +52,10 @@ from itertools import combinations
 from tqdm import tqdm
 
 from pyani import (
+    PyaniException,
     anim,
     pyani_config,
     pyani_jobs,
-    pyani_tools,
     run_sge,
     run_multiprocessing as run_mp,
 )
@@ -68,7 +68,6 @@ from pyani.pyani_orm import (
     get_session,
     update_comparison_matrices,
 )
-from pyani.pyani_tools import last_exception
 
 
 # Convenience struct describing a pairwise comparison job for the SQLAlchemy
@@ -177,8 +176,7 @@ def subcmd_anim(args, logger):
     try:
         os.makedirs(deltadir, exist_ok=True)
     except IOError:
-        logger.error("Could not create output directory (exiting)")
-        logger.error(last_exception())
+        logger.error("Could not create output directory (exiting)", exc_info=True)
         raise SystemError(1)
 
     # Get list of genome IDs for this analysis from the database
@@ -309,7 +307,7 @@ def run_anim_jobs(joblist, args, logger):
                 "At least one NUCmer comparison failed. "
                 + "Please investigate (exiting)"
             )
-            raise pyani_tools.PyaniException("Multiprocessing run " + "failed in ANIm")
+            raise PyaniException("Multiprocessing run failed in ANIm")
         logger.info("Multiprocessing run completed without error")
     else:
         logger.info("Running jobs with SGE")

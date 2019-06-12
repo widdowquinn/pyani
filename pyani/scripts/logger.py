@@ -37,18 +37,15 @@ import os
 import sys
 import time
 
-from ..pyani_tools import (last_exception, )
-
 
 def build_logger(name, args):
     """Return a logger for this script.
     Instantiates a logger for the script, and adds basic info.
     """
-    logger = logging.getLogger('{}: {}'.format(name,
-                                               time.asctime))
+    logger = logging.getLogger("{}: {}".format(name, time.asctime))
     logger.setLevel(logging.DEBUG)
     err_handler = logging.StreamHandler(sys.stderr)
-    err_formatter = logging.Formatter('%(levelname)s: %(message)s')
+    err_formatter = logging.Formatter("%(levelname)s: %(message)s")
     err_handler.setFormatter(err_formatter)
 
     # Verbose output?
@@ -62,22 +59,22 @@ def build_logger(name, args):
     if args.logfile is not None:
         logdir = os.path.split(args.logfile)[:-1]
         try:
-            if logdir[0] != '':
-                os.makedirs(os.path.join(*os.path.split(args.logfile)[:-1]),
-                            exist_ok=True)
-            logstream = open(args.logfile, 'w')
+            if logdir[0] != "":
+                os.makedirs(
+                    os.path.join(*os.path.split(args.logfile)[:-1]), exist_ok=True
+                )
+            logstream = open(args.logfile, "w")
         except OSError:
-            logger.error('Could not open %s for logging', args.logfile)
-            logger.error(last_exception())
-            sys.exit(1)
+            logger.error("Could not open %s for logging", args.logfile, exc_info=True)
+            raise SystemExit(1)
         err_handler_file = logging.StreamHandler(logstream)
         err_handler_file.setFormatter(err_formatter)
         err_handler_file.setLevel(logging.INFO)
         logger.addHandler(err_handler_file)
 
     # Report arguments
-    args.cmdline = ' '.join(sys.argv)
-    logger.info('Processed arguments: %s', args)
-    logger.info('command-line: %s', args.cmdline)
+    args.cmdline = " ".join(sys.argv)
+    logger.info("Processed arguments: %s", args)
+    logger.info("command-line: %s", args.cmdline)
 
     return logger

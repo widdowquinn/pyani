@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Code to support pyani.
 
-(c) The James Hutton Institute 2013-2018
+(c) The James Hutton Institute 2013-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -41,40 +41,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import sys
-import traceback
-
 import pandas as pd
-from . import pyani_config, pyani_db, download
 
 from Bio import SeqIO
 
-# EXCEPTIONS
-# ==========
-
-# General exception for scripts
-
-
-class PyaniException(Exception):
-    """General exception for pyani."""
-
-    def __init__(self, msg="Error in pyani module"):
-        """Instantiate class."""
-        Exception.__init__(self, msg)
-
-
-# Report last exception as string
-def last_exception():
-    """Return last exception as a string, or use in logging."""
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+from . import pyani_config, download
 
 
 # CLASSES
 # =======
 
 # Class to hold ANI dataframe results
-class ANIResults(object):
+class ANIResults:
     """Holds ANI dataframe results."""
 
     def __init__(self, labels, mode):
@@ -147,7 +125,7 @@ class ANIResults(object):
 
 
 # Class to hold BLAST functions
-class BLASTfunctions(object):
+class BLASTfunctions:
     """Class to hold BLAST functions."""
 
     def __init__(self, db_func, blastn_func):
@@ -157,7 +135,7 @@ class BLASTfunctions(object):
 
 
 # Class to hold BLAST executables
-class BLASTexes(object):
+class BLASTexes:
     """Class to hold BLAST functions."""
 
     def __init__(self, format_exe, blast_exe):
@@ -167,7 +145,7 @@ class BLASTexes(object):
 
 
 # Class to hold/build BLAST commands
-class BLASTcmds(object):
+class BLASTcmds:
     """Class for construction of BLASTN and database formatting commands."""
 
     def __init__(self, funcs, exes, prefix, outdir):
@@ -238,69 +216,3 @@ def get_genome_length(filename):
     """Return total length of all sequences in a FASTA file."""
     with open(filename, "r") as ifh:
         return sum([len(record) for record in SeqIO.parse(ifh, "fasta")])
-
-
-# Add the contents of a labels file to the pyani database for a given run
-def add_dblabels(dbpath, run_id, labelspath):
-    """Add the contents of a labels file to the pyani database.
-
-    - dbpath       path to the pyani database
-    - run_id       the ID of this run (for the database)
-    - labelspath   path to the file with labels inforamtion
-
-    The expected format of the labels file is: <HASH>\t<FILESTEM>\t<LABEL>,
-    where <HASH> is the MD5 hash of the genome data (this is not checked);
-    <FILESTEM> is the path to the genome file (this is intended to be a
-    record for humans to audit, it's not needed for the database interaction;
-    and <LABEL> is the label associated with that genome.
-
-    If the genome referred to in the label file is not present in the database,
-    that line is skipped.
-
-    Returns a list of IDs for each label
-    """
-    label_ids = []
-    with open(labelspath, "r") as lfh:
-        for line in lfh.readlines():
-            genomehash, _, label = line.strip().split("\t")
-            try:
-                genome_id = pyani_db.get_genome(dbpath, genomehash)[0][0]
-            except IndexError:
-                continue
-            label_ids.append(
-                pyani_db.add_genome_label(dbpath, genome_id, run_id, label)
-            )
-    return label_ids
-
-
-# Add the contents of a classes file to the pyani database for a given run
-def add_dbclasses(dbpath, run_id, classespath):
-    """Add the contents of a classes file to the pyani database.
-
-    - dbpath       path to the pyani database
-    - run_id       the ID of this run (for the database)
-    - classespath  path to the file with classes inforamtion
-
-    The expected format of the classes file is: <HASH>\t<FILESTEM>\t<CLASS>,
-    where <HASH> is the MD5 hash of the genome data (this is not checked);
-    <FILESTEM> is the path to the genome file (this is intended to be a
-    record for humans to audit, it's not needed for the database interaction;
-    and <CLASS> is the class associated with that genome.
-
-    If the genome referred to in the label file is not present in the database,
-    that line is skipped.
-
-    Returns a list of IDs for each class
-    """
-    class_ids = []
-    with open(classespath, "r") as lfh:
-        for line in lfh.readlines():
-            genomehash, _, gclass = line.strip().split("\t")
-            try:
-                genome_id = pyani_db.get_genome(dbpath, genomehash)[0][0]
-            except IndexError:
-                continue
-            class_ids.append(
-                pyani_db.add_genome_class(dbpath, genome_id, run_id, gclass)
-            )
-    return class_ids

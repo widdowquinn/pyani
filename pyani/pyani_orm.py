@@ -279,7 +279,10 @@ class Comparison(Base):
 
 
 def create_db(dbpath):
-    """Create an empty pyani SQLite3 database at the passed path"""
+    """Create an empty pyani SQLite3 database at the passed path
+
+    :param dbpath:  path to pyan database
+    """
     engine = create_engine("sqlite:///{}".format(dbpath), echo=False)
     Base.metadata.create_all(engine)
 
@@ -294,7 +297,7 @@ def get_session(dbpath):
 def get_comparison_dict(session):
     """Return a dictionary of comparisons in the session database
 
-    session      live SQLAlchemy session of pyani database
+    :param session:      live SQLAlchemy session of pyani database
 
     Returns Comparison objects, keyed by (_.query_id, _.subject_id,
     _.program, _.version, _.fragsize, _.maxmatch) tuple
@@ -310,13 +313,13 @@ def filter_existing_comparisons(
 ):
     """Filter list of (Genome, Genome) comparisons for those not in the session db.
 
-    session       live SQLAlchemy session of pyani database
-    run           Run object describing parent pyani run
-    comparisons   list of (Genome, Genome) query vs subject comparisons
-    program       program used for comparison
-    version       version of program for comparison
-    fragsize      fragment size for BLAST databases
-    maxmatch      maxmatch used with nucmer comparison
+    :param session:       live SQLAlchemy session of pyani database
+    :param run:           Run object describing parent pyani run
+    :param comparisons:   list of (Genome, Genome) query vs subject comparisons
+    :param program:       program used for comparison
+    :param version:       version of program for comparison
+    :param fragsize:      fragment size for BLAST databases
+    :param maxmatch:      maxmatch used with nucmer comparison
 
     When passed a list of (Genome, Genome) comparisons as comparisons, check whether
     the comparison exists in the database and, if so, associate it with the passed run.
@@ -349,11 +352,11 @@ def filter_existing_comparisons(
 def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
     """Add genomes for a run to the database
 
-    session       live SQLAlchemy session of pyani database
-    run           Run object describing the parent pyani run
-    indir         path to the directory containing genomes
-    classpath     path to the file containing class information for each genome
-    labelpath     path to the file containing class information for each genome
+    :param session:       live SQLAlchemy session of pyani database
+    :param run:           Run object describing the parent pyani run
+    :param indir:         path to the directory containing genomes
+    :param classpath:     path to the file containing class information for each genome
+    :param labelpath:     path to the file containing class information for each genome
 
     This function expects a single directory (indir) containing all FASTA files
     for a run, and optional paths to plain text files that contain information
@@ -438,8 +441,8 @@ def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
 def update_comparison_matrices(session, run):
     """Update the Run table with summary matrices for the analysis.
 
-    session       active pyanidb session via ORM
-    run           Run ORM object for the current ANIm run
+    :param session:       active pyanidb session via ORM
+    :param run:           Run ORM object for the current ANIm run
     """
     # Create dataframes for storing in the Run table
     # Rows and columns are the (ordered) list of genome IDs
