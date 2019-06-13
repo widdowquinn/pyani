@@ -9,14 +9,9 @@ The test suite is intended to be run from the repository root using:
 
 pytest -v
 
-Each command CMD available at the command line as pyani <CMD> is
-tested in its own class as a subclass of unittest.TestCase, where
-setUp() defines input/output files, a null logger (which is also
-picked up by nosetests), and a dictionary of command lines, keyed
-by test name, with values representing command-line options.
-
-For each test, command line options are defined in a Namespace and
-passed as the sole argument to the appropriate subcommand.
+The two legacy scripts download genomes, then carry out ANI analysis. The
+pytest ordering plug-in is used to guarantee that the download script
+tests are conducted first.
 
 (c) The James Hutton Institute 2019
 
@@ -68,6 +63,7 @@ import pytest
 
 from pyani.scripts import average_nucleotide_identity, genbank_get_genomes_by_taxon
 
+from tools import modify_namespace
 
 # Convenience struct for executables
 Executables = namedtuple(
@@ -87,58 +83,78 @@ class TestLegacyScripts(unittest.TestCase):
             "nucmer", "delta-filter", "blastn", "blastall", "makeblastdb", "formatdb"
         )
 
+        # Base namespaces for each script
+        self.base_download = Namespace(
+            outdirname=self.dldir,
+            taxon="203804",
+            verbose=False,
+            force=True,
+            noclobber=False,
+            logfile=None,
+            format="fasta",
+            email="emailme@my.email.domain",
+            retries=20,
+            batchsize=10000,
+            timeout=10,
+        )
+        self.base_ani = Namespace(
+            outdirname=self.outdir / "ANIm_seaborn",
+            indirname=self.dldir,
+            verbose=False,
+            force=True,
+            fragsize=1020,
+            logfile="test_ANIm.log",
+            skip_nucmer=False,
+            skip_blastn=False,
+            noclobber=False,
+            nocompress=False,
+            graphics=True,
+            gformat="pdf,png",
+            gmethod="seaborn",
+            labels=None,
+            classes=None,
+            method="ANIm",
+            scheduler="multiprocessing",
+            workers=None,
+            sgeargs=None,
+            sgegroupsize=10000,
+            maxmatch=False,
+            nucmer_exe=self.exes.nucmer,
+            filter_exe=self.exes.filter,
+            blastn_exe=self.exes.blastn,
+            blastall_exe=self.exes.blastall,
+            makeblastdb_exe=self.exes.makeblastdb,
+            formatdb_exe=self.exes.formatdb,
+            write_excel=False,
+            rerender=False,
+            subsample=None,
+            seed=None,
+            jobprefix="ANI",
+        )
+
         # Null logger instance
         self.logger = logging.getLogger("TestLegacyScripts logger")
         self.logger.addHandler(logging.NullHandler())
 
         # Command-line namespaces
         self.argsdict = {
-            "download": Namespace(
-                outdirname=self.dldir,
-                taxon="203804",
-                verbose=False,
-                force=True,
-                noclobber=False,
-                logfile=None,
-                format="fasta",
-                email="emailme@my.email.domain",
-                retries=20,
-                batchsize=10000,
-                timeout=10,
+            "download": self.base_download,
+            "anim_seaborn": self.base_ani,
+            "anim_mpl": modify_namespace(
+                self.base_ani,
+                {"outdirname": self.outdir / "ANIm_mpl", "gmethod": "mpl"},
             ),
-            "anim_seaborn": Namespace(
-                outdirname=self.outdir / "ANIm_output",
-                indirname=self.dldir,
-                verbose=False,
-                force=True,
-                fragsize=1020,
-                logfile="test_ANIm.log",
-                skip_nucmer=False,
-                skip_blastn=False,
-                noclobber=False,
-                nocompress=False,
-                graphics=True,
-                gformat="pdf,png",
-                gmethod="seaborn",
-                labels=None,
-                classes=None,
-                method="ANIm",
-                scheduler="multiprocessing",
-                workers=None,
-                sgeargs=None,
-                sgegroupsize=10000,
-                maxmatch=False,
-                nucmer_exe=self.exes.nucmer,
-                filter_exe=self.exes.filter,
-                blastn_exe=self.exes.blastn,
-                blastall_exe=self.exes.blastall,
-                makeblastdb_exe=self.exes.makeblastdb,
-                formatdb_exe=self.exes.formatdb,
-                write_excel=False,
-                rerender=False,
-                subsample=None,
-                seed=None,
-                jobprefix="ANI",
+            "anib_seaborn": modify_namespace(
+                self.base_ani,
+                {"outdirname": self.outdir / "ANIb_seaborn", "method": "ANIb"},
+            ),
+            "anib_mpl": modify_namespace(
+                self.base_ani,
+                {
+                    "outdirname": self.outdir / "ANIb_mpl",
+                    "gmethod": "mpl",
+                    "method": "ANIb",
+                },
             ),
         }
 
@@ -149,5 +165,20 @@ class TestLegacyScripts(unittest.TestCase):
 
     @pytest.mark.run(order=2)
     def test_legacy_anim_seaborn(self):
-        """Uue legacy script to run ANIm"""
+        """Uue legacy script to run ANIm (seaborn output)"""
         average_nucleotide_identity.run_main(self.argsdict["anim_seaborn"], self.logger)
+
+    @pytest.mark.run(order=2)
+    def test_legacy_anim_mpl(self):
+        """Uue legacy script to run ANIm (mpl output)"""
+        average_nucleotide_identity.run_main(self.argsdict["anim_mpl"], self.logger)
+
+    @pytest.mark.run(order=2)
+    def test_legacy_anib_seaborn(self):
+        """Uue legacy script to run ANIb (seaborn output)"""
+        average_nucleotide_identity.run_main(self.argsdict["anib_seaborn"], self.logger)
+
+    @pytest.mark.run(order=2)
+    def test_legacy_anib_mpl(self):
+        """Uue legacy script to run ANIb (mpl output)"""
+        average_nucleotide_identity.run_main(self.argsdict["anib_mpl"], self.logger)
