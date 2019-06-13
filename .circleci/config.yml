@@ -52,14 +52,8 @@ jobs:
           command: |
             curl -o legacy_blast.tar.gz ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy.NOTSUPPORTED/2.2.26/blast-2.2.26-x64-linux.tar.gz
             tar -zxf legacy_blast.tar.gz
-
-      - run: 
-          name: update $PATH
-          command: |
             echo 'export PATH=$PWD/blast-2.2.26/bin:$PATH' >> $BASH_ENV
             source $BASH_ENV
-            echo $PATH
-            echo `ls $PWD/blast-2.2.26/bin`
 
       # Install Python code/dependencies
       - run:
@@ -92,7 +86,7 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            pytest -v --cov=pyani --cov-report xml:.coverage.xml tests/test_dependencies.py
+            pytest -v --cov=pyani --cov-report xml:.coverage.xml
 
       - store_artifacts:
           path: test-reports
