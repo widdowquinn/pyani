@@ -56,7 +56,8 @@ jobs:
       - run: 
           name: update $PATH
           command: |
-            echo 'export PATH=$HOME/blast-2.2.26/bin:$PATH' >> $BASH_ENV                        
+            echo 'export PATH=$HOME/blast-2.2.26/bin:$PATH' >> $BASH_ENV
+            source $BASH_ENV
 
       # Install Python code/dependencies
       - run:
