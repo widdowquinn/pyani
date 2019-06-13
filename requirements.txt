@@ -1,5 +1,6 @@
 biopython
 matplotlib
+namedlist
 networkx
 numpy
 openpyxl
