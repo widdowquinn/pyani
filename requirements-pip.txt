@@ -1,3 +1,4 @@
+namedlist
 pre-commit
 pytest-ordering
 sphinx-rtd-theme
