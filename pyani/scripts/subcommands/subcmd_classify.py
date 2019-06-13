@@ -88,14 +88,3 @@ def subcmd_classify(args, logger):
             ]
         ),
     )
-
-    # Report 'natural breaks' in the identity subgraphs
-    logger.info(
-        "Identifying 'natural breaks' with no clique-confusion:\n\t%s",
-        "\n\t".join(
-            [
-                "\t".join([str(gdata[0]), str(gdata[2])])
-                for gdata in pyani_classify.unconfused_graphs(initgraph)
-            ]
-        ),
-    )

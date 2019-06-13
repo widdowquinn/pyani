@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Module providing functions to generate clusters/species hypotheses.
 
-(c) The James Hutton Institute 2016-2018
+(c) The James Hutton Institute 2016-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -20,7 +20,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2016-2018 The James Hutton Institute
+Copyright (c) 2016-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -49,9 +49,7 @@ import pandas as pd
 from pyani.pyani_tools import label_results_matrix
 
 # Holds summary information about a graph's cliques
-Cliquesinfo = namedtuple(
-    "Cliquesinfo", "n_nodes n_subgraphs n_cliques n_cliquenodes confused"
-)
+Cliquesinfo = namedtuple("Cliquesinfo", "n_nodes n_subgraphs all_k_complete")
 
 
 # Build an undirected graph from an ANIResults object
@@ -108,17 +106,39 @@ def build_graph_from_results(results, label_dict, cov_min=0, id_min=0):
 
 # Report clique info for a graph
 def analyse_cliques(graph):
-    """Return Cliquesinfo namedtuple describing clique data for a graph."""
-    cliques = list(nx.find_cliques(graph))
-    tot_clique_members = sum([len(c) for c in cliques])
+    """Return Cliquesinfo namedtuple describing clique data for a graph.
+
+    :param graph:  NetworkX Graph object
+    """
     subgraphs = [graph.subgraph(_).copy() for _ in nx.connected_components(graph)]
-    return Cliquesinfo(
-        len(graph),
-        len(subgraphs),
-        len(cliques),
-        tot_clique_members,
-        tot_clique_members - len(graph),
-    )
+    return Cliquesinfo(len(graph), len(subgraphs), all_components_k_complete(graph))
+
+
+def all_components_k_complete(graph):
+    """Returns True if all components in passed graph are k-complete
+
+    :param graph:  NetworkX Graph object
+    """
+    return all(k_complete_component_status(graph))
+
+
+def k_complete_component_status(graph):
+    """Returns list of Booleans of whether connected components of the graph are k-complete
+
+    :param graph:  NetworkX Graph object
+
+    For each component in the passed graph, a list of Booleans is calculated,
+    representing whether each node has property P: the degree of the node
+    is equal to the number of nodes in that component, minus 1.
+
+    The all() gives a Boolean indicating whether all nodes in that
+    component have property P.
+    """
+    node_degrees = {key: val for key, val in graph.degree}
+    return [
+        all([(node_degrees[n] == len(c) - 1) for n in c])
+        for c in nx.connected_components(graph)
+    ]
 
 
 # Generate a list of graphs from lowest to highest pairwise identity threshold
@@ -147,23 +167,3 @@ def trimmed_graph_sequence(ingraph, attribute="identity"):
     # For last edge/graph
     threshold = edgelist[0][-1]
     yield (threshold, graph, analyse_cliques(graph))
-
-
-# Generate a list of graphs with no clique confusion
-def unconfused_graphs(ingraph, attribute="identity"):
-    """Return graphs having no clique-confused nodes
-
-    A generator which, starting from the initial graph, yields in sequence
-    a series of graphs from lowest to highest threshold edge where no node
-    in the graph participates in more than one clique.
-
-    ingraph         - the initial graph to start from
-    attribute  - the attribute to use for thresholds
-
-    This will be slow with moderate-large graphs
-    """
-    graph = ingraph.copy()
-    for subgraph in trimmed_graph_sequence(graph, attribute):
-        if subgraph[-1].confused:
-            continue
-        yield subgraph
