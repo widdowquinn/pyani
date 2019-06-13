@@ -13,7 +13,7 @@ pytest -v
 print() statements will be caught by nosetests unless there is an
 error. They can also be recovered with the -s option.
 
-(c) The James Hutton Institute 2017-2018
+(c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -31,7 +31,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017-2018 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -100,14 +100,17 @@ class TestDependencyExecutables(unittest.TestCase):
         print(result.stdout)
         self.assertEqual(result.stdout[:6], b"blastn")
 
-    @pytest.mark.skip(reason="Deprecate legacy BLAST")
     def test_run_blastall(self):
         """Test that legacy BLAST is runnable."""
         blastall_exe = pyani_config.BLASTALL_DEFAULT
         cmd = blastall_exe
         # Can't use check=True, as blastall without arguments returns 1!
         result = subprocess.run(
-            cmd, shell=False, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            cmd,
+            shell=False,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
         print(result.stdout)
         self.assertEqual(result.stdout[1:9], b"blastall")

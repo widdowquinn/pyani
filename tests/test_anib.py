@@ -8,7 +8,7 @@ These tests are intended to be run from the repository root using:
 
 pytest -v
 
-(c) The James Hutton Institute 2017-2018
+(c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -26,7 +26,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017-2018 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -287,7 +287,6 @@ class TestBLASTCmdline(unittest.TestCase):
         os.makedirs(self.fmtdboutdir, exist_ok=True)
         os.makedirs(self.makeblastdbdir, exist_ok=True)
 
-    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_formatdb_generation(self):
         """generate formatdb command-line."""
         cmd = anib.construct_formatdb_cmd(
@@ -312,7 +311,6 @@ class TestBLASTCmdline(unittest.TestCase):
         )
         self.assertEqual(cmds, self.blastdbtgt)
 
-    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_legacy_blastdb_commands(self):
         """generate legacy BLAST db creation commands"""
         cmds = anib.generate_blastdb_commands(
@@ -327,7 +325,6 @@ class TestBLASTCmdline(unittest.TestCase):
         )
         self.assertEqual(cmd, self.blastncmd)
 
-    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_blastall_generation(self):
         """generate legacy BLASTN command-line."""
         cmd = anib.construct_blastall_cmdline(
@@ -343,7 +340,6 @@ class TestBLASTCmdline(unittest.TestCase):
         )
         self.assertEqual(cmds, self.blastntgt)
 
-    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_legacy_blastn_commands(self):
         """generate legacy BLASTN commands"""
         cmds = anib.generate_blastn_commands(
@@ -351,7 +347,6 @@ class TestBLASTCmdline(unittest.TestCase):
         )
         self.assertEqual(cmds, self.blastalltgt)
 
-    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_blastall_dbjobdict(self):
         """generate dictionary of legacy BLASTN database jobs."""
         blastcmds = anib.make_blastcmd_builder("ANIblastall", self.outdir)
@@ -383,7 +378,6 @@ class TestBLASTCmdline(unittest.TestCase):
             if not dep.script.startswith("makeblastdb"):
                 raise AssertionError()
 
-    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_blastall_graph(self):
         """create jobgraph for legacy BLASTN jobs."""
         fragresult = anib.fragment_fasta_files(self.infiles, self.outdir, self.fraglen)
@@ -503,7 +497,6 @@ class TestParsing(unittest.TestCase):
         result = anib.parse_blast_tab(self.fname, fragdata, mode="ANIb")
         self.assertEqual(result, (4016551, 93, 99.997693577050029))
 
-    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_parse_legacy_blasttab(self):
         """parses legacy .blast_tab output"""
         # ANIblastall output
@@ -522,7 +515,6 @@ class TestParsing(unittest.TestCase):
             self.anibtgt.sort_index(1).sort_index(),
         )
 
-    @pytest.mark.skip(reason="Deprecating legacy BLAST")
     def test_legacy_blastdir_processing(self):
         """parses directory of legacy .blast_tab output"""
         orglengths = pyani_files.get_sequence_lengths(self.infnames)

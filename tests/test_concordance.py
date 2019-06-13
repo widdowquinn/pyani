@@ -11,7 +11,7 @@ pytest -v
 print() statements will be caught by nosetests unless there is an
 error. They can also be recovered with the -s option.
 
-(c) The James Hutton Institute 2017-2018
+(c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -29,7 +29,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017-2018 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -204,7 +204,6 @@ class TestConcordance(unittest.TestCase):
         self.assertLess(lo_diff.abs().values.max(), self.tolerance["ANIb_lo"])
         self.assertLess(hi_diff.abs().values.max(), self.tolerance["ANIb_hi"])
 
-    @pytest.mark.skip(reason="Deprecate legacy BLAST")
     def test_aniblastall_concordance(self):
         """ANIblastall results concordant with JSpecies."""
         # Perform ANIblastall on the input directory contents
