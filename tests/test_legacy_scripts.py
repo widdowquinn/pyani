@@ -156,6 +156,18 @@ class TestLegacyScripts(unittest.TestCase):
                     "method": "ANIb",
                 },
             ),
+            "tetra_seaborn": modify_namespace(
+                self.base_ani,
+                {"outdirname": self.outdir / "TETRA_seaborn", "method": "TETRA"},
+            ),
+            "tetra_mpl": modify_namespace(
+                self.base_ani,
+                {
+                    "outdirname": self.outdir / "TETRA_mpl",
+                    "gmethod": "mpl",
+                    "method": "TETRA",
+                },
+            ),
         }
 
     @pytest.mark.run(order=1)
@@ -182,3 +194,15 @@ class TestLegacyScripts(unittest.TestCase):
     def test_legacy_anib_mpl(self):
         """Uue legacy script to run ANIb (mpl output)"""
         average_nucleotide_identity.run_main(self.argsdict["anib_mpl"], self.logger)
+
+    @pytest.mark.run(order=2)
+    def test_legacy_tetra_seaborn(self):
+        """Uue legacy script to run TETRA (seaborn output)"""
+        average_nucleotide_identity.run_main(
+            self.argsdict["tetra_seaborn"], self.logger
+        )
+
+    @pytest.mark.run(order=2)
+    def test_legacy_tetra_mpl(self):
+        """Uue legacy script to run TETRA (mpl output)"""
+        average_nucleotide_identity.run_main(self.argsdict["tetra_mpl"], self.logger)
