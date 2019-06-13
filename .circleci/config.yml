@@ -58,6 +58,7 @@ jobs:
           command: |
             echo 'export PATH=$HOME/blast-2.2.26/bin:$PATH' >> $BASH_ENV
             source $BASH_ENV
+            echo $PATH
 
       # Install Python code/dependencies
       - run:
