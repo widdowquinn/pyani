@@ -39,8 +39,20 @@ jobs:
             - pyani-dependencies-
 
       # Install required third-party packages
-      - run: sudo apt-get update
-      - run: sudo apt-get install csh mummer ncbi-blast+
+      - run:
+          name: update apt-get
+          command: |
+            sudo apt-get update
+      - run:
+          name: install third-party tools
+          command: |
+            sudo apt-get install csh mummer ncbi-blast+
+      - run:
+          name: install legacy BLAST
+          command: |
+            curl -o legacy_blast.tar.gz ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy.NOTSUPPORTED/2.2.26/blast-2.2.26-x64-linux.tar.gz
+            tar -zxf legacy_blast.tar.gz
+            export PATH=$PATH:blast-2.2.26/bin
 
       # Install Python code/dependencies
       - run:
