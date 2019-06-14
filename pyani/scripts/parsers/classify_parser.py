@@ -93,11 +93,37 @@ def build(subps, parents=None):
         help="minimum %%identity for an edge",
     )
     parser.add_argument(
+        "--min_id",
+        dest="min_id",
+        action="store",
+        type=float,
+        default=None,
+        help="minimum identity threshold to test",
+    )
+    parser.add_argument(
+        "--max_id",
+        dest="max_id",
+        action="store",
+        type=float,
+        default=None,
+        help="maximum identity threshold to test",
+    )
+    parser.add_argument(
         "--resolution",
         dest="resolution",
         action="store",
-        type=int,
-        default=1500,
+        type=float,
+        default=1e-4,
         help="number of identity thresholds to test",
+    )
+    parser.add_argument(
+        "--show_all",
+        dest="show_all",
+        action="store_true",
+        default=False,
+        help=(
+            "report all intervals in log (default: "
+            "only intervals where all subgraphs are k-complete"
+        ),
     )
     parser.set_defaults(func=subcommands.subcmd_classify)

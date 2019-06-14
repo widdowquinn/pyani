@@ -141,29 +141,16 @@ def k_complete_component_status(graph):
     ]
 
 
-# Generate a list of graphs from lowest to highest pairwise identity threshold
-def trimmed_graph_sequence(ingraph, attribute="identity"):
-    """Return graphs trimmed from lowest to highest attribute value
+def remove_low_weight_edges(graph, threshold, attribute="identity"):
+    """Return graph and edgelist where edges having weight < threshold are removed
 
-    A generator which, starting from the initial graph, yields in sequence a
-    series of graphs from which the edge(s) with the lowest threshold value
-    attribute were removed. The generator returns a tuple of:
-
-    (threshold, graph, analyse_cliques(graph))
-
-    ingraph          - the initial graph to work from
-    attribute  - string describing the attribute to work on
-
-    This will be slow with moderate-large graphs
+    :param graph:  NetworkX Graph
+    :param threshold:  float, minimum edge weight
+    :param attribute:  String, attribute to use as weight
     """
-    graph = ingraph.copy()
     edgelist = sorted(graph.edges(data=attribute), key=lambda x: x[-1])
-    while len(edgelist) > 1:
-        threshold = edgelist[0][-1]
-        yield (threshold, graph, analyse_cliques(graph))
-        while edgelist[0][-1] <= threshold:
-            edge = edgelist.pop(0)
-            graph.remove_edge(edge[0], edge[1])
-    # For last edge/graph
-    threshold = edgelist[0][-1]
-    yield (threshold, graph, analyse_cliques(graph))
+    threshold = threshold or edgelist[0][-1]
+    while edgelist and edgelist[0][-1] <= threshold:
+        edge = edgelist.pop(0)
+        graph.remove_edge(edge[0], edge[1])
+    return graph, edgelist

@@ -93,7 +93,11 @@ class TestClassifySubcommand(unittest.TestCase):
                 dbpath=self.dbpath,
                 cov_min=0.5,
                 id_min=0.8,
-                resolution=1500,
+                min_id=None,
+                max_id=None,
+                resolution=0.001,
+                show_all=False,
+                disable_tqdm=True,
             ),
             "no_threshold": Namespace(
                 outdir=self.outdir / "no_threshold",
@@ -101,7 +105,11 @@ class TestClassifySubcommand(unittest.TestCase):
                 dbpath=self.dbpath,
                 cov_min=0,
                 id_min=0,
-                resolution=1500,
+                min_id=None,
+                max_id=None,
+                resolution=0.001,
+                show_all=False,
+                disable_tqdm=True,
             ),
         }
 

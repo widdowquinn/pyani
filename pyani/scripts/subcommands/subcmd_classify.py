@@ -42,7 +42,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import time
+
+from collections import namedtuple
+
+import numpy as np
+
+from tqdm import tqdm
+
 from pyani import pyani_classify, pyani_orm
+
+
+# Convenience struct for subgraph result
+SubgraphData = namedtuple("SubgraphData", "interval graph cliqueinfo")
 
 
 def subcmd_classify(args, logger):
@@ -78,13 +90,54 @@ def subcmd_classify(args, logger):
         pyani_classify.analyse_cliques(initgraph),
     )
 
-    # Report all subgraphs, thresholding by identity
+    # Obtain all subgraph splits, thresholding by identity
+    subgraphs = trimmed_graph_sequence(initgraph, args)
+    special_intervals = [_ for _ in subgraphs if _.cliqueinfo.all_k_complete]
+    outstr = "\n\t".join([f"{_.interval}\t{_.cliqueinfo}" for _ in special_intervals])
     logger.info(
-        "Summarising cliques at all identity thresholds:\n\t%s",
-        "\n\t".join(
-            [
-                "\t".join([str(gdata[0]), str(gdata[2])])
-                for gdata in pyani_classify.trimmed_graph_sequence(initgraph)
-            ]
-        ),
+        f"{len(special_intervals)} intervals with special property:\n\t{outstr}"
+    )
+    if args.show_all:
+        outstr = "\n\t".join([f"{_.interval}\t{_.cliqueinfo}" for _ in subgraphs])
+        logger.info(f"Subgraphs at all identity thresholds:\n\t{outstr}")
+
+
+# Generate a list of graphs from lowest to highest pairwise identity threshold
+def trimmed_graph_sequence(ingraph, args, attribute="identity"):
+    """Return graphs trimmed from lowest to highest attribute value
+
+    A generator which, starting from the initial graph, yields in sequence a
+    series of graphs from which the edge(s) with the lowest threshold value
+    attribute were removed. The generator returns a tuple of:
+
+    (threshold, graph, analyse_cliques(graph))
+
+    ingraph          - the initial graph to work from
+    attribute  - string describing the attribute to work on
+
+    This will be slow with moderate-large graphs
+    """
+    graph = ingraph.copy()
+    # Trim the graph now
+    graph, edgelist = pyani_classify.remove_low_weight_edges(
+        graph, args.min_id, attribute
+    )
+    #  There's no sense resolving to small intervals if there would be more
+    # of these than there are edges to remove from the graph
+    if len(edgelist) < 1 / args.resolution:
+        breaks = [_[-1] for _ in edgelist]
+    else:
+        breaks = np.arange(
+            args.min_id or edgelist[0][-1], args.max_id or 1, args.resolution
+        )
+    for threshold in tqdm(breaks, disable=args.disable_tqdm):
+        yield SubgraphData(threshold, graph, pyani_classify.analyse_cliques(graph))
+        while edgelist and edgelist[0][-1] <= threshold:
+            edge = edgelist.pop(0)
+            graph.remove_edge(edge[0], edge[1])
+    # For last edge/graph (identity)
+    yield SubgraphData(
+        1,
+        pyani_classify.remove_low_weight_edges(graph, 1, attribute)[0],
+        pyani_classify.analyse_cliques(graph),
     )

@@ -168,7 +168,7 @@ class PyaniTestCase(PyaniFileEqualityTests, unittest.TestCase):
                 ext = os.path.splitext(fpath)[-1]
                 fname1 = os.path.join(dir1, fpath)
                 fname2 = os.path.join(dir2, fpath)
-                if ext.lower() in (".gz", ".pdf"):  # skip these files
+                if ext.lower() in (".gz", ".pdf", ".png"):  # skip these files
                     continue
                 elif ext.lower() == ".json":  # Compare JSON files
                     self.assertJsonEqual(fname1, fname2)
@@ -179,8 +179,8 @@ class PyaniTestCase(PyaniFileEqualityTests, unittest.TestCase):
                     ".filter",
                 ):  # Compare nucmer/delta-filter output
                     self.assertNucmerEqual(fname1, fname2)
-                elif ext.lower() in (".png",):  # Compare binary files
-                    self.assertBinaryEqual(fname1, fname2)
+                # elif ext.lower() in (".png",):  # Compare binary files
+                #     self.assertBinaryEqual(fname1, fname2)
                 else:  # Compare standard files
                     self.assertFilesEqual(fname1, fname2)
 
