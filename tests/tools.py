@@ -137,9 +137,9 @@ class PyaniFileEqualityTests(unittest.TestCase):
         and columns, then compare.
         """
         df1 = pd.read_csv(fname1, sep="\t", index_col=0)
-        df1.reindex(columns=sorted(df1.columns)).reindex(index=sorted(df1.index))
+        df1 = df1.reindex(columns=sorted(df1.columns)).reindex(index=sorted(df1.index))
         df2 = pd.read_csv(fname2, sep="\t", index_col=0)
-        df2.reindex(columns=sorted(df2.columns)).reindex(index=sorted(df2.index))
+        df2 = df2.reindex(columns=sorted(df2.columns)).reindex(index=sorted(df2.index))
         if not df1.equals(df2):
             raise AssertionError(
                 f"Dataframes {fname1} and {fname2} are not equal.\n{df1}\n{df2}"
