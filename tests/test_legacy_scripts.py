@@ -54,7 +54,6 @@ THE SOFTWARE.
 import logging
 import os
 import shutil
-import unittest
 
 from argparse import Namespace
 from collections import namedtuple
@@ -71,24 +70,28 @@ Executables = namedtuple(
     "Executables", "nucmer filter blastn blastall makeblastdb formatdb"
 )
 
+# Convenience struct for test directories
+TestDirs = namedtuple("TestDirs", "outdir tgtdir dldir")
+
 
 class TestLegacyScripts(PyaniTestCase):
     """Class defining tests of the pyani download subcommand."""
 
     def setUp(self):
         """Configure parameters for tests."""
-        self.outdir = Path("tests/test_output/legacy_scripts")
-        shutil.rmtree(self.outdir)  # Clean before running
-        self.tgtdir = Path("tests/test_targets/legacy_scripts")
-        self.dldir = self.outdir / "C_blochmannia"
-        os.makedirs(self.outdir, exist_ok=True)
+        self.testdirs = TestDirs(
+            Path("tests/test_output/legacy_scripts"),
+            Path("tests/test_targets/legacy_scripts"),
+            Path("tests/test_output/legacy_scripts/C_blochmannia"),
+        )
+        os.makedirs(self.testdirs.outdir, exist_ok=True)
         self.exes = Executables(
             "nucmer", "delta-filter", "blastn", "blastall", "makeblastdb", "formatdb"
         )
 
         # Base namespaces for each script
         self.base_download = Namespace(
-            outdirname=self.dldir,
+            outdirname=self.testdirs.dldir,
             taxon="203804",
             verbose=False,
             force=True,
@@ -101,8 +104,8 @@ class TestLegacyScripts(PyaniTestCase):
             timeout=10,
         )
         self.base_ani = Namespace(
-            outdirname=self.outdir / "ANIm_seaborn",
-            indirname=self.dldir,
+            outdirname=self.testdirs.outdir / "ANIm_seaborn",
+            indirname=self.testdirs.dldir,
             verbose=False,
             force=True,
             fragsize=1020,
@@ -145,28 +148,31 @@ class TestLegacyScripts(PyaniTestCase):
             "anim_seaborn": self.base_ani,
             "anim_mpl": modify_namespace(
                 self.base_ani,
-                {"outdirname": self.outdir / "ANIm_mpl", "gmethod": "mpl"},
+                {"outdirname": self.testdirs.outdir / "ANIm_mpl", "gmethod": "mpl"},
             ),
             "anib_seaborn": modify_namespace(
                 self.base_ani,
-                {"outdirname": self.outdir / "ANIb_seaborn", "method": "ANIb"},
+                {"outdirname": self.testdirs.outdir / "ANIb_seaborn", "method": "ANIb"},
             ),
             "anib_mpl": modify_namespace(
                 self.base_ani,
                 {
-                    "outdirname": self.outdir / "ANIb_mpl",
+                    "outdirname": self.testdirs.outdir / "ANIb_mpl",
                     "gmethod": "mpl",
                     "method": "ANIb",
                 },
             ),
             "tetra_seaborn": modify_namespace(
                 self.base_ani,
-                {"outdirname": self.outdir / "TETRA_seaborn", "method": "TETRA"},
+                {
+                    "outdirname": self.testdirs.outdir / "TETRA_seaborn",
+                    "method": "TETRA",
+                },
             ),
             "tetra_mpl": modify_namespace(
                 self.base_ani,
                 {
-                    "outdirname": self.outdir / "TETRA_mpl",
+                    "outdirname": self.testdirs.outdir / "TETRA_mpl",
                     "gmethod": "mpl",
                     "method": "TETRA",
                 },
@@ -175,38 +181,64 @@ class TestLegacyScripts(PyaniTestCase):
 
     @pytest.mark.run(order=1)
     def test_legacy_genome_downloads(self):
-        """Uue legacy script to download genomes"""
+        """Use legacy script to download genomes"""
+        shutil.rmtree(self.testdirs.outdir)  # Clean before running
         genbank_get_genomes_by_taxon.run_main(self.argsdict["download"], self.logger)
-        self.assertDirsEqual(self.dldir, self.tgtdir / "C_blochmannia")
+        self.assertDirsEqual(
+            self.testdirs.dldir, self.testdirs.tgtdir / "C_blochmannia"
+        )
 
     @pytest.mark.run(order=2)
     def test_legacy_anim_seaborn(self):
-        """Uue legacy script to run ANIm (seaborn output)"""
-        average_nucleotide_identity.run_main(self.argsdict["anim_seaborn"], self.logger)
+        """Use legacy script to run ANIm (seaborn output)"""
+        args = self.argsdict["anim_seaborn"]
+        average_nucleotide_identity.run_main(args, self.logger)
+        self.assertDirsEqual(
+            args.outdirname,  # pylint: disable=no-member
+            self.testdirs.tgtdir / args.outdirname.name,  # pylint: disable=no-member
+        )
 
     @pytest.mark.run(order=2)
     def test_legacy_anim_mpl(self):
-        """Uue legacy script to run ANIm (mpl output)"""
-        average_nucleotide_identity.run_main(self.argsdict["anim_mpl"], self.logger)
+        """Use legacy script to run ANIm (mpl output)"""
+        args = self.argsdict["anim_mpl"]
+        average_nucleotide_identity.run_main(args, self.logger)
+        self.assertDirsEqual(
+            args.outdirname, self.testdirs.tgtdir / args.outdirname.name
+        )
 
     @pytest.mark.run(order=2)
     def test_legacy_anib_seaborn(self):
-        """Uue legacy script to run ANIb (seaborn output)"""
-        average_nucleotide_identity.run_main(self.argsdict["anib_seaborn"], self.logger)
+        """Use legacy script to run ANIb (seaborn output)"""
+        args = self.argsdict["anib_seaborn"]
+        average_nucleotide_identity.run_main(args, self.logger)
+        self.assertDirsEqual(
+            args.outdirname, self.testdirs.tgtdir / args.outdirname.name
+        )
 
     @pytest.mark.run(order=2)
     def test_legacy_anib_mpl(self):
-        """Uue legacy script to run ANIb (mpl output)"""
-        average_nucleotide_identity.run_main(self.argsdict["anib_mpl"], self.logger)
+        """Use legacy script to run ANIb (mpl output)"""
+        args = self.argsdict["anib_mpl"]
+        average_nucleotide_identity.run_main(args, self.logger)
+        self.assertDirsEqual(
+            args.outdirname, self.testdirs.tgtdir / args.outdirname.name
+        )
 
     @pytest.mark.run(order=2)
     def test_legacy_tetra_seaborn(self):
-        """Uue legacy script to run TETRA (seaborn output)"""
-        average_nucleotide_identity.run_main(
-            self.argsdict["tetra_seaborn"], self.logger
+        """Use legacy script to run TETRA (seaborn output)"""
+        args = self.argsdict["tetra_seaborn"]
+        average_nucleotide_identity.run_main(args, self.logger)
+        self.assertDirsEqual(
+            args.outdirname, self.testdirs.tgtdir / args.outdirname.name
         )
 
     @pytest.mark.run(order=2)
     def test_legacy_tetra_mpl(self):
-        """Uue legacy script to run TETRA (mpl output)"""
-        average_nucleotide_identity.run_main(self.argsdict["tetra_mpl"], self.logger)
+        """Use legacy script to run TETRA (mpl output)"""
+        args = self.argsdict["tetra_mpl"]
+        average_nucleotide_identity.run_main(args, self.logger)
+        self.assertDirsEqual(
+            args.outdirname, self.testdirs.tgtdir / args.outdirname.name
+        )
