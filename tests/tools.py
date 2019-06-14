@@ -142,7 +142,7 @@ class PyaniFileEqualityTests(unittest.TestCase):
         df2 = df2.reindex(columns=sorted(df2.columns)).reindex(index=sorted(df2.index))
         # The assert_frame_equal function, counterintuitively, returns None
         # when dataframes are equal
-        if pd.testing.assert_frame_equal(df1, df2):
+        if pd.testing.assert_frame_equal(df1, df2, check_less_precise=True):
             raise AssertionError(
                 f"Dataframes {fname1} and {fname2} are not equal.\n{df1}\n{df2}"
             )
