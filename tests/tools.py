@@ -4,6 +4,9 @@
 
 Provides tools to support tests in the pyani package
 
+The pylint error C0103 is disabled as we follow the camelCase example
+of unittest for our tests, rather than maintaining snakecase.
+
 (c) The James Hutton Institute 2019
 Author: Leighton Pritchard
 
@@ -47,6 +50,8 @@ import copy
 import json
 import os
 import unittest
+
+import pandas as pd
 
 from pyani import blast, nucmer
 
@@ -125,6 +130,19 @@ class PyaniFileEqualityTests(unittest.TestCase):
                     ),
                 )
 
+    def assertTabEqual(self, fname1, fname2):  # pylint: disable=C0103
+        """Assert that two tabular files are essentially equal
+
+        To do this, we need to load each .tab file as a dataframe, order rows
+        and columns, then compare.
+        """
+        df1 = pd.read_csv(fname1, sep="\t", index_col=0)
+        df1.reindex(columns=sorted(df1.columns)).reindex(index=sorted(df1.index))
+        df2 = pd.read_csv(fname2, sep="\t", index_col=0)
+        df2.reindex(columns=sorted(df2.columns)).reindex(index=sorted(df2.index))
+        if not df1.equals(df2):
+            raise AssertionError(f"Dataframes {fname1} and {fname2} are not equal.")
+
 
 class PyaniTestCase(PyaniFileEqualityTests, unittest.TestCase):
     """Specific pyani unit tests."""
@@ -170,6 +188,8 @@ class PyaniTestCase(PyaniFileEqualityTests, unittest.TestCase):
                 fname2 = os.path.join(dir2, fpath)
                 if ext.lower() in (".gz", ".pdf", ".png"):  # skip these files
                     continue
+                elif ext.lower() == ".tab":  # Compare tab-separated tabular files
+                    self.assertTabEqual(fname1, fname2)
                 elif ext.lower() == ".json":  # Compare JSON files
                     self.assertJsonEqual(fname1, fname2)
                 elif ext.lower() == ".blasttab":  # Compare BLAST+ .tab output
