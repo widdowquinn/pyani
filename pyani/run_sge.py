@@ -4,7 +4,7 @@
 For parallelisation on multi-node system, we use some custom code to submit
 jobs.
 
-(c) The James Hutton Institute 2013-2017
+(c) The James Hutton Institute 2013-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -22,7 +22,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2013-2017 The James Hutton Institute
+Copyright (c) 2013-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -272,7 +272,8 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
         if sgeargs is not None:
             qsubcmd = "%s %s" % (qsubcmd, sgeargs)
         # We've considered Bandit warnings B404,B603 and silence
-        subprocess.call(qsubcmd, shell=False)  # nosec
+        #subprocess.call(qsubcmd, shell=False)  # nosec
+        os.system(qsubcmd)
         job.submitted = True  # Set the job's submitted flag to True
 
 
