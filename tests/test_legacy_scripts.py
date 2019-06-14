@@ -53,6 +53,7 @@ THE SOFTWARE.
 
 import logging
 import os
+import shutil
 import unittest
 
 from argparse import Namespace
@@ -63,7 +64,7 @@ import pytest
 
 from pyani.scripts import average_nucleotide_identity, genbank_get_genomes_by_taxon
 
-from tools import modify_namespace
+from tools import modify_namespace, PyaniTestCase
 
 # Convenience struct for executables
 Executables = namedtuple(
@@ -71,12 +72,14 @@ Executables = namedtuple(
 )
 
 
-class TestLegacyScripts(unittest.TestCase):
+class TestLegacyScripts(PyaniTestCase):
     """Class defining tests of the pyani download subcommand."""
 
     def setUp(self):
         """Configure parameters for tests."""
         self.outdir = Path("tests/test_output/legacy_scripts")
+        shutil.rmtree(self.outdir)  # Clean before running
+        self.tgtdir = Path("tests/test_targets/legacy_scripts")
         self.dldir = self.outdir / "C_blochmannia"
         os.makedirs(self.outdir, exist_ok=True)
         self.exes = Executables(
@@ -174,6 +177,7 @@ class TestLegacyScripts(unittest.TestCase):
     def test_legacy_genome_downloads(self):
         """Uue legacy script to download genomes"""
         genbank_get_genomes_by_taxon.run_main(self.argsdict["download"], self.logger)
+        self.assertDirsEqual(self.dldir, self.tgtdir / "C_blochmannia")
 
     @pytest.mark.run(order=2)
     def test_legacy_anim_seaborn(self):

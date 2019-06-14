@@ -200,15 +200,14 @@ def make_outdir(args, logger):
                 args.outdirname,
             )
             raise SystemExit(1)
+        logger.info("--force output directory use")
+        if args.noclobber:
+            logger.warning("--noclobber: existing output directory kept")
         else:
-            logger.info("--force output directory use")
-            if args.noclobber:
-                logger.warning("--noclobber: existing output directory kept")
-            else:
-                logger.info(
-                    "Removing directory %s and everything below it", args.outdirname
-                )
-                shutil.rmtree(args.outdirname)
+            logger.info(
+                "Removing directory %s and everything below it", args.outdirname
+            )
+            shutil.rmtree(args.outdirname)
     logger.info("Creating directory %s", args.outdirname)
     try:
         os.makedirs(args.outdirname)  # We make the directory recursively
@@ -273,7 +272,7 @@ def entrez_batch_webhistory(
             webenv=record["WebEnv"],
             query_key=record["QueryKey"],
             *fnargs,
-            **fnkwargs
+            **fnkwargs,
         )
         batch_record = Entrez.read(batch_handle, validate=False)
         results.extend(batch_record)
@@ -443,40 +442,45 @@ def retrieve_asm_contigs(
         suffix = "genomic.gbff.gz"
 
     # Compile URL
-    gc, aa, _ = tuple(filestem.split("_", 2))
-    aaval = aa.split(".")[0]
-    subdirs = "/".join([aa[i : i + 3] for i in range(0, len(aaval), 3)])
+    fnameparts = tuple(filestem.split("_", 2))  # three elements: GC*, AA, discard
+    subdirs = "/".join(
+        [
+            fnameparts[1][i : i + 3]
+            for i in range(0, len(fnameparts[1].split(".")[0]), 3)
+        ]
+    )
 
-    asmurl = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gc, subdirs, filestem, suffix)
+    asmurl = "{0}/{1}/{2}/{3}/{3}_{4}".format(
+        ftpstem, fnameparts[0], subdirs, filestem, suffix
+    )
     logger.info("Using URL: %s", asmurl)
 
     # Get data info
     try:
         response = urlopen(asmurl, timeout=args.timeout)
     except HTTPError:
-        logger.error("Download failed for URL: %s\n%s", asmurl, last_exception())
+        logger.error(f"Download failed for URL: {asmurl}", exc_info=True)
         raise NCBIDownloadException()
     except URLError as err:
         if isinstance(err.reason, timeout):
-            logger.error("Download timed out for URL: %s\n%s", asmurl, last_exception())
+            logger.error(f"Download timed out for URL: {asmurl}", exc_info=True)
         else:
-            logger.error("Download failed for URL: %s\n%s", asmurl, last_exception())
+            logger.error(f"Download failed for URL: {asmurl}", exc_info=True)
         raise NCBIDownloadException()
     except timeout:
         # TODO: Does this ever happen?
-        logger.error("Download timed out for URL: %s\n%s", asmurl, last_exception())
+        logger.error(f"Download timed out for URL: {asmurl}", exc_info=True)
         raise NCBIDownloadException()
-    else:
-        fsize = int(response.info().get("Content-length"))
-        logger.info("Opened URL and parsed metadata.")
+    fsize = int(response.info().get("Content-length"))
+    logger.info("Opened URL and parsed metadata.")
 
     # Download data
     outfname = os.path.join(args.outdirname, "_".join([filestem, suffix]))
     if os.path.exists(outfname):
-        logger.warning("Output file %s exists, not downloading", outfname)
+        logger.warning(f"Output file {outfname} exists, not downloading")
     else:
-        logger.info("Downloading %s (%d bytes)", asmurl, fsize)
-        bsize = 1048576  # buffer size
+        logger.info(f"Downloading {asmurl} ({fsize} bytes)")
+        bsize = 1_048_576  # buffer size
         fsize_dl = 0  # bytes downloaded
         try:
             with open(outfname, "wb") as outfh:
@@ -493,21 +497,29 @@ def retrieve_asm_contigs(
             logger.error(last_exception())
             raise NCBIDownloadException()
 
+        # Extract gzip archive and return path to extracted file
+        return extract_archive(outfname, logger)
+
+
+def extract_archive(archivepath, logger):
+    """Return path to extracted gzip file
+
+    :param archivepath:  path to gzipped file
+    """
     # Extract data
-    ename = os.path.splitext(outfname)[0]  # Strips only .gz from filename
+    ename = os.path.splitext(archivepath)[0]  # Strips only .gz from filename
     if os.path.exists(ename):
-        logger.warning("Output file %s exists, not extracting", ename)
+        logger.warning(f"Output file {ename} exists, not extracting", ename)
     else:
-        logger.info("Extracting archive %s to %s", outfname, ename)
+        logger.info(f"Extracting archive {archivepath} to {ename}")
         try:
             with open(ename, "w") as efh:
                 subprocess.call(
-                    ["gunzip", "-c", outfname], stdout=efh
+                    ["gunzip", "-c", archivepath], stdout=efh
                 )  # can be subprocess.run in Py3.5
-                logger.info("Archive extracted to %s", ename)
+                logger.info(f"Archive extracted to {ename}")
         except IOError:
-            logger.error("Extracting archive %s failed", outfname)
-            logger.error(last_exception())
+            logger.error(f"Extracting archive {archivepath} failed", exc_info=True)
             raise NCBIDownloadException()
 
     return ename

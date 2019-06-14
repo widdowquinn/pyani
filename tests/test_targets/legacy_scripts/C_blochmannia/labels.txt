@@ -1,0 +1,7 @@
+GCF_000331065.1_ASM33106v1_genomic	C. Blochmannia chromaiodes 640
+GCF_000185985.2_ASM18598v2_genomic	C. Blochmannia vafer BVAF
+GCF_000973545.1_ASM97354v1_genomic	B. endosymbiont of Camponotus (Colobopsis) obliquus 757
+GCF_000973505.1_ASM97350v1_genomic	B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675
+GCF_000185985.1_ASM18598v1_genomic	C. Blochmannia vafer BVAF
+GCF_000043285.1_ASM4328v1_genomic	C. Blochmannia floridanus 
+GCF_000011745.1_ASM1174v1_genomic	C. Blochmannia pennsylvanicus BPEN

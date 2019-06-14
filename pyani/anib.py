@@ -114,19 +114,19 @@ def fragment_fasta_files(infiles, outdirname, fragsize):
     outfnames = []
     for fname in infiles:
         outstem, outext = os.path.splitext(os.path.split(fname)[-1])
-        outfname = os.path.join(outdirname, outstem) + '-fragments' + outext
+        outfname = os.path.join(outdirname, outstem) + "-fragments" + outext
         outseqs = []
         count = 0
-        for seq in SeqIO.parse(fname, 'fasta'):
+        for seq in SeqIO.parse(fname, "fasta"):
             idx = 0
             while idx < len(seq):
                 count += 1
-                newseq = seq[idx:idx + fragsize]
+                newseq = seq[idx : idx + fragsize]
                 newseq.id = "frag%05d" % count
                 outseqs.append(newseq)
                 idx += fragsize
         outfnames.append(outfname)
-        SeqIO.write(outseqs, outfname, 'fasta')
+        SeqIO.write(outseqs, outfname, "fasta")
     return outfnames, get_fraglength_dict(outfnames)
 
 
@@ -142,7 +142,7 @@ def get_fraglength_dict(fastafiles):
     """
     fraglength_dict = {}
     for filename in fastafiles:
-        qname = os.path.split(filename)[-1].split('-fragments')[0]
+        qname = os.path.split(filename)[-1].split("-fragments")[0]
         fraglength_dict[qname] = get_fragment_lengths(filename)
     return fraglength_dict
 
@@ -157,7 +157,7 @@ def get_fragment_lengths(fastafile):
     NOTE: ambiguity symbols are not discounted.
     """
     fraglengths = {}
-    for seq in SeqIO.parse(fastafile, 'fasta'):
+    for seq in SeqIO.parse(fastafile, "fasta"):
         fraglengths[seq.id] = len(seq)
     return fraglengths
 
@@ -169,31 +169,36 @@ def build_db_jobs(infiles, blastcmds):
     # Create dictionary of database building jobs, keyed by db name
     # defining jobnum for later use as last job index used
     for idx, fname in enumerate(infiles):
-        dbjobdict[blastcmds.get_db_name(fname)] = \
-            pyani_jobs.Job("%s_db_%06d" % (blastcmds.prefix, idx),
-                           blastcmds.build_db_cmd(fname))
+        dbjobdict[blastcmds.get_db_name(fname)] = pyani_jobs.Job(
+            "%s_db_%06d" % (blastcmds.prefix, idx), blastcmds.build_db_cmd(fname)
+        )
     return dbjobdict
 
 
-def make_blastcmd_builder(mode, outdir, format_exe=None, blast_exe=None,
-                          prefix="ANIBLAST"):
+def make_blastcmd_builder(
+    mode, outdir, format_exe=None, blast_exe=None, prefix="ANIBLAST"
+):
     """Return BLASTcmds object for construction of BLAST commands."""
     if mode == "ANIb":  # BLAST/formatting executable depends on mode
-        blastcmds = BLASTcmds(BLASTfunctions(construct_makeblastdb_cmd,
-                                             construct_blastn_cmdline),
-                              BLASTexes(format_exe or
-                                        pyani_config.MAKEBLASTDB_DEFAULT,
-                                        blast_exe or
-                                        pyani_config.BLASTN_DEFAULT),
-                              prefix, outdir)
+        blastcmds = BLASTcmds(
+            BLASTfunctions(construct_makeblastdb_cmd, construct_blastn_cmdline),
+            BLASTexes(
+                format_exe or pyani_config.MAKEBLASTDB_DEFAULT,
+                blast_exe or pyani_config.BLASTN_DEFAULT,
+            ),
+            prefix,
+            outdir,
+        )
     else:
-        blastcmds = BLASTcmds(BLASTfunctions(construct_formatdb_cmd,
-                                             construct_blastall_cmdline),
-                              BLASTexes(format_exe or
-                                        pyani_config.FORMATDB_DEFAULT,
-                                        blast_exe or
-                                        pyani_config.BLASTALL_DEFAULT),
-                              prefix, outdir)
+        blastcmds = BLASTcmds(
+            BLASTfunctions(construct_formatdb_cmd, construct_blastall_cmdline),
+            BLASTexes(
+                format_exe or pyani_config.FORMATDB_DEFAULT,
+                blast_exe or pyani_config.BLASTALL_DEFAULT,
+            ),
+            prefix,
+            outdir,
+        )
     return blastcmds
 
 
@@ -213,7 +218,7 @@ def make_job_graph(infiles, fragfiles, blastcmds):
     How those jobs are scheduled depends on the scheduler (see
     run_multiprocessing.py, run_sge.py)
     """
-    joblist = []    # Holds list of job dependency graphs
+    joblist = []  # Holds list of job dependency graphs
 
     # Get dictionary of database-building jobs
     dbjobdict = build_db_jobs(infiles, blastcmds)
@@ -221,21 +226,20 @@ def make_job_graph(infiles, fragfiles, blastcmds):
     # Create list of BLAST executable jobs, with dependencies
     jobnum = len(dbjobdict)
     for idx, fname1 in enumerate(fragfiles[:-1]):
-        for fname2 in fragfiles[idx + 1:]:
+        for fname2 in fragfiles[idx + 1 :]:
             jobnum += 1
-            jobs = \
-                [pyani_jobs.Job("%s_exe_%06d_a" %
-                                (blastcmds.prefix, jobnum),
-                                blastcmds.build_blast_cmd(fname1,
-                                                          fname2.replace
-                                                          ('-fragments', ''))),
-                 pyani_jobs.Job("%s_exe_%06d_b" %
-                                (blastcmds.prefix, jobnum),
-                                blastcmds.build_blast_cmd(fname2,
-                                                          fname1.replace
-                                                          ('-fragments', '')))]
-            jobs[0].add_dependency(dbjobdict[fname1.replace('-fragments', '')])
-            jobs[1].add_dependency(dbjobdict[fname2.replace('-fragments', '')])
+            jobs = [
+                pyani_jobs.Job(
+                    "%s_exe_%06d_a" % (blastcmds.prefix, jobnum),
+                    blastcmds.build_blast_cmd(fname1, fname2.replace("-fragments", "")),
+                ),
+                pyani_jobs.Job(
+                    "%s_exe_%06d_b" % (blastcmds.prefix, jobnum),
+                    blastcmds.build_blast_cmd(fname2, fname1.replace("-fragments", "")),
+                ),
+            ]
+            jobs[0].add_dependency(dbjobdict[fname1.replace("-fragments", "")])
+            jobs[1].add_dependency(dbjobdict[fname2.replace("-fragments", "")])
             joblist.extend(jobs)
 
     # Return the dependency graph
@@ -256,17 +260,18 @@ def generate_blastdb_commands(filenames, outdir, blastdb_exe=None, mode="ANIb"):
     else:
         construct_db_cmdline = construct_formatdb_cmd
     if blastdb_exe is None:
-        cmdlines = [construct_db_cmdline(fname, outdir) for
-                    fname in filenames]
+        cmdlines = [construct_db_cmdline(fname, outdir) for fname in filenames]
     else:
-        cmdlines = [construct_db_cmdline(fname, outdir, blastdb_exe) for
-                    fname in filenames]
+        cmdlines = [
+            construct_db_cmdline(fname, outdir, blastdb_exe) for fname in filenames
+        ]
     return cmdlines
 
 
 # Generate single makeblastdb command line
-def construct_makeblastdb_cmd(filename, outdir,
-                              blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT):
+def construct_makeblastdb_cmd(
+    filename, outdir, blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT
+):
     """Return single makeblastdb command.
 
     - filename - input filename
@@ -274,16 +279,16 @@ def construct_makeblastdb_cmd(filename, outdir,
     """
     title = os.path.splitext(os.path.split(filename)[-1])[0]
     outfilename = os.path.join(outdir, os.path.split(filename)[-1])
-    return ("{0} -dbtype nucl -in {1} -title {2} -out {3}".format(blastdb_exe,
-                                                                  filename,
-                                                                  title,
-                                                                  outfilename),
-            outfilename)
+    return (
+        "{0} -dbtype nucl -in {1} -title {2} -out {3}".format(
+            blastdb_exe, filename, title, outfilename
+        ),
+        outfilename,
+    )
 
 
 # Generate single makeblastdb command line
-def construct_formatdb_cmd(filename, outdir,
-                           blastdb_exe=pyani_config.FORMATDB_DEFAULT):
+def construct_formatdb_cmd(filename, outdir, blastdb_exe=pyani_config.FORMATDB_DEFAULT):
     """Return single formatdb command.
 
     - filename - input filename
@@ -292,8 +297,10 @@ def construct_formatdb_cmd(filename, outdir,
     title = os.path.splitext(os.path.split(filename)[-1])[0]
     newfilename = os.path.join(outdir, os.path.split(filename)[-1])
     shutil.copy(filename, newfilename)
-    return ("{0} -p F -i {1} -t {2}".format(blastdb_exe, newfilename, title),
-            newfilename)
+    return (
+        "{0} -p F -i {1} -t {2}".format(blastdb_exe, newfilename, title),
+        newfilename,
+    )
 
 
 # Generate list of BLASTN command lines from passed filenames
@@ -315,25 +322,26 @@ def generate_blastn_commands(filenames, outdir, blast_exe=None, mode="ANIb"):
         construct_blast_cmdline = construct_blastall_cmdline
     cmdlines = []
     for idx, fname1 in enumerate(filenames[:-1]):
-        dbname1 = fname1.replace('-fragments', '')
-        for fname2 in filenames[idx + 1:]:
-            dbname2 = fname2.replace('-fragments', '')
+        dbname1 = fname1.replace("-fragments", "")
+        for fname2 in filenames[idx + 1 :]:
+            dbname2 = fname2.replace("-fragments", "")
             if blast_exe is None:
-                cmdlines.append(construct_blast_cmdline(fname1, dbname2,
-                                                        outdir))
-                cmdlines.append(construct_blast_cmdline(fname2, dbname1,
-                                                        outdir))
+                cmdlines.append(construct_blast_cmdline(fname1, dbname2, outdir))
+                cmdlines.append(construct_blast_cmdline(fname2, dbname1, outdir))
             else:
-                cmdlines.append(construct_blast_cmdline(fname1, dbname2,
-                                                        outdir, blast_exe))
-                cmdlines.append(construct_blast_cmdline(fname2, dbname1,
-                                                        outdir, blast_exe))
+                cmdlines.append(
+                    construct_blast_cmdline(fname1, dbname2, outdir, blast_exe)
+                )
+                cmdlines.append(
+                    construct_blast_cmdline(fname2, dbname1, outdir, blast_exe)
+                )
     return cmdlines
 
 
 # Generate single BLASTN command line
-def construct_blastn_cmdline(fname1, fname2, outdir,
-                             blastn_exe=pyani_config.BLASTN_DEFAULT):
+def construct_blastn_cmdline(
+    fname1, fname2, outdir, blastn_exe=pyani_config.BLASTN_DEFAULT
+):
     """Return a single blastn command.
 
     - filename - input filename
@@ -341,36 +349,40 @@ def construct_blastn_cmdline(fname1, fname2, outdir,
     """
     fstem1 = os.path.splitext(os.path.split(fname1)[-1])[0]
     fstem2 = os.path.splitext(os.path.split(fname2)[-1])[0]
-    fstem1 = fstem1.replace('-fragments', '')
+    fstem1 = fstem1.replace("-fragments", "")
     prefix = os.path.join(outdir, "%s_vs_%s" % (fstem1, fstem2))
-    cmd = "{0} -out {1}.blast_tab -query {2} -db {3} " +\
-        "-xdrop_gap_final 150 -dust no -evalue 1e-15 " +\
-        "-max_target_seqs 1 -outfmt '6 qseqid sseqid length mismatch " +\
-        "pident nident qlen slen qstart qend sstart send positive " +\
-        "ppos gaps' -task blastn"
+    cmd = (
+        "{0} -out {1}.blast_tab -query {2} -db {3} "
+        + "-xdrop_gap_final 150 -dust no -evalue 1e-15 "
+        + "-max_target_seqs 1 -outfmt '6 qseqid sseqid length mismatch "
+        + "pident nident qlen slen qstart qend sstart send positive "
+        + "ppos gaps' -task blastn"
+    )
     return cmd.format(blastn_exe, prefix, fname1, fname2)
 
 
 # Generate single BLASTALL command line
-def construct_blastall_cmdline(fname1, fname2, outdir,
-                               blastall_exe=pyani_config.BLASTALL_DEFAULT):
+def construct_blastall_cmdline(
+    fname1, fname2, outdir, blastall_exe=pyani_config.BLASTALL_DEFAULT
+):
     """Return single blastall command.
 
     - blastall_exe - path to BLASTALL executable
     """
     fstem1 = os.path.splitext(os.path.split(fname1)[-1])[0]
     fstem2 = os.path.splitext(os.path.split(fname2)[-1])[0]
-    fstem1 = fstem1.replace('-fragments', '')
+    fstem1 = fstem1.replace("-fragments", "")
     prefix = os.path.join(outdir, "%s_vs_%s" % (fstem1, fstem2))
-    cmd = "{0} -p blastn -o {1}.blast_tab -i {2} -d {3} " +\
-        "-X 150 -q -1 -F F -e 1e-15 " +\
-        "-b 1 -v 1 -m 8"
+    cmd = (
+        "{0} -p blastn -o {1}.blast_tab -i {2} -d {3} "
+        + "-X 150 -q -1 -F F -e 1e-15 "
+        + "-b 1 -v 1 -m 8"
+    )
     return cmd.format(blastall_exe, prefix, fname1, fname2)
 
 
 # Process pairwise BLASTN output
-def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
-                  logger=None):
+def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb", logger=None):
     """Return tuple of ANIb results for .blast_tab files in the output dir.
 
     - blast_dir - path to the directory containing .blast_tab files
@@ -392,7 +404,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
     very distant sequence was included in the analysis.
     """
     # Process directory to identify input files
-    blastfiles = pyani_files.get_input_files(blast_dir, '.blast_tab')
+    blastfiles = pyani_files.get_input_files(blast_dir, ".blast_tab")
     # Hold data in ANIResults object
     results = ANIResults(list(org_lengths.keys()), mode)
 
@@ -403,20 +415,23 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb",
     # Process .blast_tab files assuming that the filename format holds:
     # org1_vs_org2.blast_tab:
     for blastfile in blastfiles:
-        qname, sname = \
-            os.path.splitext(os.path.split(blastfile)[-1])[0].split('_vs_')
+        qname, sname = os.path.splitext(os.path.split(blastfile)[-1])[0].split("_vs_")
 
         # We may have BLAST files from other analyses in the same directory
         # If this occurs, we raise a warning, and skip the file
         if qname not in list(org_lengths.keys()):
             if logger:
-                logger.warning("Query name %s not in input " % qname +
-                               "sequence list, skipping %s" % blastfile)
+                logger.warning(
+                    "Query name %s not in input " % qname
+                    + "sequence list, skipping %s" % blastfile
+                )
             continue
         if sname not in list(org_lengths.keys()):
             if logger:
-                logger.warning("Subject name %s not in input " % sname +
-                               "sequence list, skipping %s" % blastfile)
+                logger.warning(
+                    "Subject name %s not in input " % sname
+                    + "sequence list, skipping %s" % blastfile
+                )
             continue
         resultvals = parse_blast_tab(blastfile, fraglengths, mode)
         query_cover = float(resultvals[0]) / org_lengths[qname]
@@ -449,39 +464,62 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     '''
     """
     # Assuming that the filename format holds org1_vs_org2.blast_tab:
-    qname = os.path.splitext(os.path.split(filename)[-1])[0].split('_vs_')[0]
+    qname = os.path.splitext(os.path.split(filename)[-1])[0].split("_vs_")[0]
     # Load output as dataframe
     if mode == "ANIblastall":
         qfraglengths = fraglengths[qname]
-        columns = ['sid', 'blast_pid', 'blast_alnlen', 'blast_mismatch',
-                   'blast_gaps', 'q_start', 'q_end', 's_start', 's_end',
-                   'e_Value', 'bit_score']
+        columns = [
+            "sid",
+            "blast_pid",
+            "blast_alnlen",
+            "blast_mismatch",
+            "blast_gaps",
+            "q_start",
+            "q_end",
+            "s_start",
+            "s_end",
+            "e_Value",
+            "bit_score",
+        ]
     else:
-        columns = ['sbjct_id', 'blast_alnlen', 'blast_mismatch',
-                   'blast_pid', 'blast_identities', 'qlen', 'slen',
-                   'q_start', 'q_end', 's_start', 's_end', 'blast_pos',
-                   'ppos', 'blast_gaps']
+        columns = [
+            "sbjct_id",
+            "blast_alnlen",
+            "blast_mismatch",
+            "blast_pid",
+            "blast_identities",
+            "qlen",
+            "slen",
+            "q_start",
+            "q_end",
+            "s_start",
+            "s_end",
+            "blast_pos",
+            "ppos",
+            "blast_gaps",
+        ]
     # We may receive an empty BLASTN output file, if there are no significant
     # regions of homology. This causes pandas to throw an error on CSV import.
     # To get past this, we create an empty dataframe with the appropriate
     # columns.
     try:
-        data = pd.read_csv(filename, header=None, sep='\t', index_col=0)
+        data = pd.read_csv(filename, header=None, sep="\t", index_col=0)
         data.columns = columns
     except pd.io.common.EmptyDataError:
         data = pd.DataFrame(columns=columns)
     # Add new column for fragment length, only for BLASTALL
     if mode == "ANIblastall":
-        data['qlen'] = pd.Series([qfraglengths[idx] for idx in data.index],
-                                 index=data.index)
+        data["qlen"] = pd.Series(
+            [qfraglengths[idx] for idx in data.index], index=data.index
+        )
     # Add new columns for recalculated alignment length, proportion, and
     # percentage identity
-    data['ani_alnlen'] = data['blast_alnlen'] - data['blast_gaps']
-    data['ani_alnids'] = data['ani_alnlen'] - data['blast_mismatch']
-    data['ani_coverage'] = data['ani_alnlen'] / data['qlen']
-    data['ani_pid'] = data['ani_alnids'] / data['qlen']
+    data["ani_alnlen"] = data["blast_alnlen"] - data["blast_gaps"]
+    data["ani_alnids"] = data["ani_alnlen"] - data["blast_mismatch"]
+    data["ani_coverage"] = data["ani_alnlen"] / data["qlen"]
+    data["ani_pid"] = data["ani_alnids"] / data["qlen"]
     # Filter rows on 'ani_coverage' > 0.7, 'ani_pid' > 0.3
-    filtered = data[(data['ani_coverage'] > 0.7) & (data['ani_pid'] > 0.3)]
+    filtered = data[(data["ani_coverage"] > 0.7) & (data["ani_pid"] > 0.3)]
     # Dedupe query hits, so we only take the best hit
     filtered = filtered.groupby(filtered.index).first()
     # Replace NaNs with zero
@@ -496,11 +534,10 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     # of rounding differences (e.g. coverage being close to 70%).
     # NOTE: If there are no hits, then ani_pid will be nan - we replace this
     # with zero if that happens
-    ani_pid = filtered['blast_pid'].mean()
+    ani_pid = filtered["blast_pid"].mean()
     if pd.isnull(ani_pid):  # Happens if there are no matches in ANIb
         ani_pid = 0
-    aln_length = filtered['ani_alnlen'].sum()
-    sim_errors = filtered['blast_mismatch'].sum() +\
-        filtered['blast_gaps'].sum()
-    filtered.to_csv(filename + '.dataframe', sep="\t")
+    aln_length = filtered["ani_alnlen"].sum()
+    sim_errors = filtered["blast_mismatch"].sum() + filtered["blast_gaps"].sum()
+    filtered.to_csv(filename + ".dataframe", sep="\t")
     return aln_length, sim_errors, ani_pid
