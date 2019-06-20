@@ -181,7 +181,13 @@ class TestLegacyScripts(PyaniTestCase):
 
     @pytest.mark.run(order=1)
     def test_legacy_genome_downloads(self):
-        """Use legacy script to download genomes"""
+        """Use legacy script to download genomes
+        
+        genbank_get_genomes_by_taxon.py \
+            -o tests/test_output/legacy_scripts/C_blochmannia \
+            --email emailme@my.email.domain \
+            -t 203804 -f
+        """
         shutil.rmtree(self.testdirs.outdir)  # Clean before running
         genbank_get_genomes_by_taxon.run_main(self.argsdict["download"], self.logger)
         self.assertDirsEqual(
