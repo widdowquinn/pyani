@@ -26,8 +26,8 @@ jobs:
 
       - restore_cache:
           keys:
-            - pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
-            # - pyani-dependencies-
+            - pyani-dependencies-pip-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
+            - pyani-dependencies-pip-
 
       - run:
           name: update apt-get
@@ -58,7 +58,7 @@ jobs:
       - save_cache:
           paths:
             - ./venv
-          key: pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
+          key: pyani-dependencies-pip-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
 
       - run:
           name: install pyani
