@@ -118,6 +118,7 @@ jobs:
     docker:
       - image: circleci/python:3.6.8
 
+    steps:      
       - run:
           name: set up conda
           command : |
