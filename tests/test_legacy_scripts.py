@@ -182,7 +182,7 @@ class TestLegacyScripts(PyaniTestCase):
     @pytest.mark.run(order=1)
     def test_legacy_genome_downloads(self):
         """Use legacy script to download genomes
-        
+
         genbank_get_genomes_by_taxon.py \
             -o tests/test_output/legacy_scripts/C_blochmannia \
             --email emailme@my.email.domain \
