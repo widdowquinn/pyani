@@ -417,50 +417,34 @@ def last_exception():
 
 
 # Create output directory if it doesn't exist
-def make_outdir(args, logger):
+def make_outdirs(args, logger):
     """Make the output directory, if required.
 
-    This is a little involved.  If the output directory already exists,
-    we take the safe option by default, and stop with an error.  We can,
-    however, choose to force the program to go on, in which case we can
-    either clobber the existing directory, or not.  The options turn out
-    as the following, if the directory exists:
+    :param args:  Namespace of command-line options
+    :param logger:  logging object
 
-    DEFAULT: stop and report the collision
-    FORCE: continue, and remove the existing output directory
-    NOCLOBBER+FORCE: continue, but do not remove the existing output
+    If the output directory already exists and args.force is not set
+    True, stop with an error.
+
+    If args.force is set...
+        If args.noclobber is not set True, delete the output directory tree
+        If args.noclobber is set True, use the existing output directory,
+        and keep any existing output
     """
     if os.path.exists(args.outdirname):
-        if not args.force:
-            logger.error(
-                "Output directory %s would overwrite existing files (exiting)",
-                args.outdirname,
-            )
-            sys.exit(1)
-        elif args.noclobber:
-            logger.warning(
-                "NOCLOBBER: not actually deleting directory %s", args.outdirname
-            )
-        else:
-            logger.info(
-                "Removing directory %s and everything below it", args.outdirname
-            )
+        if not args.force:  # crash out if directory exists
+            logger.error(f"Output directory {args.outdirname} exists (exiting)")
+            raise SystemExit(1)
+        if args.noclobber:  # args.force and args.noclobber are True - reuse
+            logger.warning(f"reusing {args.outdirname}, NOCLOBBER and FORCE set")
+        else:  # args.force only is set - delete
+            logger.info(f"FORCE set, removing existing {args.outdirname}")
             shutil.rmtree(args.outdirname)
-    logger.info("Creating directory %s", args.outdirname)
-    try:
-        os.makedirs(args.outdirname)  # We make the directory recursively
-        # Depending on the choice of method, a subdirectory will be made for
-        # alignment output files
-        if args.method != "TETRA":
-            os.makedirs(os.path.join(args.outdirname, ALIGNDIR[args.method]))
-    except OSError:
-        # This gets thrown if the directory exists. If we've forced overwrite/
-        # delete and we're not clobbering, we let things slide
-        if args.noclobber and args.force:
-            logger.info("NOCLOBBER+FORCE: not creating directory")
-        else:
-            logger.error(last_exception)
-            sys.exit(1)
+    os.makedirs(args.outdirname, exist_ok=True)
+
+    # TETRA needs directories for alignment output files
+    if args.method != "TETRA":
+        os.makedirs(os.path.join(args.outdirname, ALIGNDIR[args.method]), exist_ok=True)
 
 
 # Compress output directory and delete it
@@ -546,17 +530,15 @@ def calculate_anim(args, logger, infiles, org_lengths):
         if not args.skip_nucmer and args.scheduler == "multiprocessing":
             if cumval > 0:
                 logger.error(
-                    "This has possibly been a NUCmer run failure, please investigate"
+                    "This has possibly been a NUCmer run failure, please investigate",
+                    exc_info=True,
                 )
-                logger.error(last_exception())
-                sys.exit(1)
-            else:
-                logger.error(
-                    "This is possibly due to a NUCmer comparison being too distant for use. Please consider using the --maxmatch option."
-                )
-                logger.error(
-                    "This is alternatively due to NUCmer run failure, analysis will continue, but please investigate."
-                )
+                raise SystemExit(1)
+            logger.error(
+                "This is possibly due to:\n\t(i) a NUCmer comparison being too distant "
+                "for use (please consider using the --maxmatch option)\n\t(ii) NUCmer run "
+                "failure (analysis will continue, but please investigate)"
+            )
     if not args.nocompress:
         logger.info("Compressing/deleting %s", deltadir)
         compress_delete_outdir(deltadir, logger)
@@ -598,12 +580,89 @@ def calculate_tetra(args, logger, infiles):
     return tetra_correlations
 
 
+def make_sequence_fragments(args, logger, infiles, blastdir):
+    """Return tuple of fragment files, and fragment sizes
+
+    :param args:  Namespace of command-line arguments
+    :param logger:  logging object
+    :param infiles:  iterable of sequence files to fragment
+    :param blastdir:  path of directory to place BLASTN databases
+        of fragments
+
+    Splits input FASTA sequence files into the fragments (a requirement
+    for ANIb methods), and writes BLAST databases of these fragments,
+    and fragment lengths of sequences, to local files.
+    """
+    fragfiles, fraglengths = anib.fragment_fasta_files(infiles, blastdir, args.fragsize)
+    # Export fragment lengths as JSON, in case we re-run with --skip_blastn
+    fragpath = os.path.join(blastdir, "fraglengths.json")
+    logger.info(f"Writing cache of fragment lengths to {fragpath}")
+    with open(fragpath, "w") as ofh:
+        json.dump(fraglengths, ofh)
+    return fragfiles, fraglengths
+
+
+def run_blast(args, logger, infiles, blastdir):
+    """Run BLAST commands for ANIb methods
+
+    :param args:  Namespace of command-line options
+    :param logger:  logging object
+    :param infiles:  iterable of sequence files to compare
+    :param blastdir:  path of directory to fragment BLASTN databases
+
+    Runs BLAST database creation and comparisons, returning the cumulative
+    return values of the BLAST tool subprocesses, and the fragment sizes for
+    each input file
+    """
+    if not args.skip_blastn:
+        logger.info("Fragmenting input files, and writing to %s", args.outdirname)
+        fragfiles, fraglengths = make_sequence_fragments(
+            args, logger, infiles, blastdir
+        )
+
+        # Run BLAST database-building and executables from a jobgraph
+        logger.info("Creating job dependency graph")
+        jobgraph = anib.make_job_graph(
+            infiles, fragfiles, anib.make_blastcmd_builder(args.method, blastdir)
+        )
+        if args.scheduler == "multiprocessing":
+            logger.info("Running dependency graph with multiprocessing")
+            cumval = run_mp.run_dependency_graph(jobgraph, logger=logger)
+            if cumval > 0:
+                logger.warning(
+                    f"At least one BLAST run failed. {args.method} may fail. Please investigate."
+                )
+            else:
+                logger.info("All multiprocessing jobs complete.")
+        elif args.scheduler == "SGE":
+            logger.info("Running dependency graph with SGE")
+            run_sge.run_dependency_graph(jobgraph, logger=logger)
+        else:
+            logger.error(f"Scheduler {args.scheduler} not recognised (exiting)")
+            raise SystemError(1)
+    else:
+        logger.warning("Skipping BLASTN runs (as instructed)!")
+        # Import fragment lengths from JSON
+        if args.method == "ANIblastall":
+            fragpath = os.path.join(blastdir, "fraglengths.json")
+            logger.info(f"Loading sequence fragments from {fragpath}")
+            with open(fragpath, "rU") as ifh:
+                fraglengths = json.load(ifh)
+        else:
+            fraglengths = None
+
+    return cumval, fraglengths
+
+
 # Calculate ANIb for input
 def unified_anib(args, logger, infiles, org_lengths):
     """Calculate ANIb for files in input directory.
 
-    - infiles - paths to each input file
-    - org_lengths - dictionary of input sequence lengths, keyed by sequence
+    :param args:  Namespace of command-line options
+    :param logger:  logging object
+    :param infiles:  iterable of paths to each input file
+    :param org_lengths:  dict of input sequence lengths
+        keyed by sequence name
 
     Calculates ANI by the ANIb method, as described in Goris et al. (2007)
     Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0. There are
@@ -634,44 +693,9 @@ def unified_anib(args, logger, infiles, org_lengths):
     logger.info("Running %s", args.method)
     blastdir = os.path.join(args.outdirname, ALIGNDIR[args.method])
     logger.info("Writing BLAST output to %s", blastdir)
-    # Build BLAST databases and run pairwise BLASTN
-    if not args.skip_blastn:
-        # Make sequence fragments
-        logger.info("Fragmenting input files, and writing to %s", args.outdirname)
-        # Fraglengths does not get reused with BLASTN
-        fragfiles, fraglengths = anib.fragment_fasta_files(
-            infiles, blastdir, args.fragsize
-        )
-        # Export fragment lengths as JSON, in case we re-run with --skip_blastn
-        with open(os.path.join(blastdir, "fraglengths.json"), "w") as outfile:
-            json.dump(fraglengths, outfile)
 
-        # Run BLAST database-building and executables from a jobgraph
-        logger.info("Creating job dependency graph")
-        jobgraph = anib.make_job_graph(
-            infiles, fragfiles, anib.make_blastcmd_builder(args.method, blastdir)
-        )
-        if args.scheduler == "multiprocessing":
-            logger.info("Running jobs with multiprocessing")
-            logger.info("Running job dependency graph")
-            cumval = run_mp.run_dependency_graph(jobgraph, logger=logger)
-            if cumval > 0:
-                logger.warning(
-                    "At least one BLAST run failed. %s may fail.", args.method
-                )
-            else:
-                logger.info("All multiprocessing jobs complete.")
-        else:
-            run_sge.run_dependency_graph(jobgraph, logger=logger)
-            logger.info("Running jobs with SGE")
-    else:
-        # Import fragment lengths from JSON
-        if args.method == "ANIblastall":
-            with open(os.path.join(blastdir, "fraglengths.json"), "rU") as infile:
-                fraglengths = json.load(infile)
-        else:
-            fraglengths = None
-        logger.warning("Skipping BLASTN runs (as instructed)!")
+    # Build BLAST databases and run pairwise BLASTN
+    cumval, fraglengths = run_blast(args, logger, infiles, blastdir)
 
     # Process pairwise BLASTN output
     logger.info("Processing pairwise %s BLAST output.", args.method)
@@ -684,13 +708,14 @@ def unified_anib(args, logger, infiles, org_lengths):
         if not args.skip_blastn:
             if cumval > 0:
                 logger.error(
-                    "This is possibly due to BLASTN run failure, please investigate"
+                    "This is possibly due to BLASTN run failure, please investigate",
+                    exc_info=True,
                 )
             else:
                 logger.error(
-                    "This is possibly due to a BLASTN comparison being too distant for use."
+                    "This is possibly due to a BLASTN comparison being too distant for use.",
+                    exc_info=True,
                 )
-        logger.error(last_exception())
     if not args.nocompress:
         logger.info("Compressing/deleting %s", blastdir)
         compress_delete_outdir(blastdir, logger)
@@ -815,7 +840,7 @@ def run_main(args=None, logger=None):
         sys.exit(1)
     if args.rerender:  # Rerendering, we want to overwrite graphics
         args.force, args.noclobber = True, True
-    make_outdir(args, logger)
+    make_outdirs(args, logger)
     logger.info("Output directory: %s", args.outdirname)
 
     # Check for the presence of space characters in any of the input filenames
