@@ -115,9 +115,6 @@ jobs:
 
   test-3_6:
     <<: *test-template
-    docker:
-      - image: circleci/python:3.6.8
-
     steps:      
       - run:
           name: set up conda
