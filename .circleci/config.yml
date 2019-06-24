@@ -89,8 +89,8 @@ jobs:
             pytest -v --cov=pyani --cov-report xml:.coverage.xml
 
       - store_artifacts:
-          path: test-reports
-          destination: test-reports
+          path: tests/test_output
+          destination: tests/test_output
       - store_artifacts:
           path: .coverage.xml
           destination: .coverage.xml
