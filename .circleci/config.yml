@@ -27,7 +27,7 @@ jobs:
       - restore_cache:
           keys:
             - pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
-            - pyani-dependencies-
+            # - pyani-dependencies-
 
       - run:
           name: update apt-get
