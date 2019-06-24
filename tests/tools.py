@@ -130,11 +130,18 @@ class PyaniFileEqualityTests(unittest.TestCase):
                     ),
                 )
 
-    def assertTabEqual(self, fname1, fname2):  # pylint: disable=C0103
+    @staticmethod
+    def assertTabEqual(fname1, fname2):  # pylint: disable=C0103
         """Assert that two tabular files are essentially equal
+
+        :param fname1:
+        :param fname2:
 
         To do this, we need to load each .tab file as a dataframe, order rows
         and columns, then compare.
+
+        This is a static method as we use the Pandas assert_frame_equal()
+        function, and don't need to use any class/instance reference
         """
         df1 = pd.read_csv(fname1, sep="\t", index_col=0)
         df1 = (
