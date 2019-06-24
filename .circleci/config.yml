@@ -17,33 +17,27 @@ workflows:
 jobs:
   test-3_7: &test-template
     docker:
-      - image: continuumio/miniconda3
+      - image: circleci/python:3.7.3
 
     working_directory: ~/repo
 
     steps:
       - checkout
 
+      # Download and cache dependencies
       - restore_cache:
           keys:
-            - pyani-dependencies-3.7-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
-            # fallback to using the latest cache if no exact match is found
-            - pyani-dependencies-3.7-
+            - pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
+            - pyani-dependencies-
 
       - run:
-          name: set up conda
-          command : |
-            conda config --set always_yes yes --set changeps1 no
-            conda update -q conda
-            conda create -q -n pyani python=3.7
-            source activate pyani
-            python --version
-            which python
-            conda config --add channels defaults
-            conda config --add channels bioconda
-            conda config --add channels conda-forge
-            conda info -a
-
+          name: update apt-get
+          command: |
+            sudo apt-get update
+      - run:
+          name: install third-party tools
+          command: |
+            sudo apt-get install csh mummer ncbi-blast+
       - run:
           name: install legacy BLAST
           command: |
@@ -55,27 +49,28 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            source activate pyani
-            conda install --file requirements.txt
-            conda install --file requirements-dev.txt
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install --upgrade pip setuptools virtualenv
+            pip install -r requirements.txt
+            pip install -r requirements-dev.txt
             pip install -r requirements-pip.txt
-            conda install --file requirements-thirdparty.txt
 
       - save_cache:
           paths:
-            - /opt/conda/envs/pyani
-          key: pyani-dependencies-3.7-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
+            - ./venv
+          key: pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
 
       - run:
           name: install pyani
           command: |
-            source activate pyani
+            . venv/bin/activate
             pip install -e .  # Install the repo as a package
 
       - run:
           name: run tests
           command: |
-            source activate pyani
+            . venv/bin/activate
             pytest -v --cov=pyani --cov-report xml:.coverage.xml tests/test_legacy_scripts.py
 
       - store_artifacts:
@@ -90,69 +85,6 @@ jobs:
 
 
   test-3_6:
+    <<: *test-template
     docker:
-      - image: continuumio/miniconda3
-
-    working_directory: ~/repo
-
-    steps:
-      - checkout
-
-      - restore_cache:
-          keys:
-            - pyani-dependencies-3.6-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
-            # fallback to using the latest cache if no exact match is found
-            - pyani-dependencies-3.6-
-
-      - run:
-          name: set up conda
-          command : |
-            conda config --set always_yes yes --set changeps1 no
-            conda update -q conda
-            conda create -q -n pyani python=3.6
-            source activate pyani
-            python --version
-            which python
-            conda config --add channels defaults
-            conda config --add channels bioconda
-            conda config --add channels conda-forge
-            conda info -a
-
-      - run:
-          name: install legacy BLAST
-          command: |
-            curl -o legacy_blast.tar.gz ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy.NOTSUPPORTED/2.2.26/blast-2.2.26-x64-linux.tar.gz
-            tar -zxf legacy_blast.tar.gz
-            echo 'export PATH=$PWD/blast-2.2.26/bin:$PATH' >> $BASH_ENV
-            source $BASH_ENV
-
-      - run:
-          name: install dependencies
-          command: |
-            source activate pyani
-            conda install --file requirements.txt
-            conda install --file requirements-dev.txt
-            pip install -r requirements-pip.txt
-            conda install --file requirements-thirdparty.txt
-
-      - save_cache:
-          paths:
-            - /opt/conda/envs/pyani
-          key: pyani-dependencies-3.6-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
-
-      - run:
-          name: install pyani
-          command: |
-            source activate pyani
-            pip install -e .  # Install the repo as a package
-
-      # run tests!
-      - run:
-          name: run tests
-          command: |
-            source activate pyani
-            pytest -v --cov=pyani --cov-report xml:.coverage.xml tests/test_legacy_scripts.py
-
-      - store_artifacts:
-          path: tests/test_output
-          destination: tests/test_output
+      - image: circleci/python:3.6.8
