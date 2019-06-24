@@ -54,6 +54,7 @@ THE SOFTWARE.
 """
 
 import os
+import platform
 import re
 import subprocess
 
@@ -82,16 +83,21 @@ def get_fasta_files(dirname=None):
 def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
     """Return NUCmer package version as a string.
 
+    :param nucmer_exe:  path to NUCmer executable
+
     We expect NUCmer to return a string on STDERR as
 
     nucmer
     NUCmer (NUCleotide MUMmer) version 3.1
+
+    we concatenate this with the OS name.
     """
     cmdline = [nucmer_exe, "-V"]
     result = subprocess.run(
         cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
     )
-    return re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8")).group()
+    version = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8")).group()
+    return f"{platform.system()}_{version}"
 
 
 # Generate list of Job objects, one per NUCmer run

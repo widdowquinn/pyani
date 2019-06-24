@@ -61,6 +61,7 @@ from pathlib import Path
 
 import pytest
 
+from pyani import anim
 from pyani.scripts import average_nucleotide_identity, genbank_get_genomes_by_taxon
 
 from tools import modify_namespace, PyaniTestCase
@@ -104,7 +105,7 @@ class TestLegacyScripts(PyaniTestCase):
             timeout=10,
         )
         self.base_ani = Namespace(
-            outdirname=self.testdirs.outdir / "ANIm_seaborn",
+            outdirname=self.testdirs.outdir / f"ANIm_seaborn_{anim.get_version()}",
             indirname=self.testdirs.dldir,
             verbose=False,
             force=True,
@@ -145,10 +146,14 @@ class TestLegacyScripts(PyaniTestCase):
         # Command-line namespaces
         self.argsdict = {
             "download": self.base_download,
-            "anim_seaborn": self.base_ani,
+            "anim_seaborn": self.base_ani,  #  Baseline namespace
             "anim_mpl": modify_namespace(
                 self.base_ani,
-                {"outdirname": self.testdirs.outdir / "ANIm_mpl", "gmethod": "mpl"},
+                {
+                    "outdirname": self.testdirs.outdir
+                    / f"ANIm_mpl_{anim.get_version()}",
+                    "gmethod": "mpl",
+                },
             ),
             "anib_seaborn": modify_namespace(
                 self.base_ani,
@@ -199,19 +204,19 @@ class TestLegacyScripts(PyaniTestCase):
         """Use legacy script to run ANIm (seaborn output)"""
         args = self.argsdict["anim_seaborn"]
         average_nucleotide_identity.run_main(args, self.logger)
-        # self.assertDirsEqual(
-        #     args.outdirname,  # pylint: disable=no-member
-        #     self.testdirs.tgtdir / args.outdirname.name,  # pylint: disable=no-member
-        # )
+        self.assertDirsEqual(
+            args.outdirname,  # pylint: disable=no-member
+            self.testdirs.tgtdir / args.outdirname.name,  # pylint: disable=no-member
+        )
 
     @pytest.mark.run(order=2)
     def test_legacy_anim_mpl(self):
         """Use legacy script to run ANIm (mpl output)"""
         args = self.argsdict["anim_mpl"]
         average_nucleotide_identity.run_main(args, self.logger)
-        # self.assertDirsEqual(
-        #     args.outdirname, self.testdirs.tgtdir / args.outdirname.name
-        # )
+        self.assertDirsEqual(
+            args.outdirname, self.testdirs.tgtdir / args.outdirname.name
+        )
 
     @pytest.mark.run(order=2)
     def test_legacy_anib_seaborn(self):

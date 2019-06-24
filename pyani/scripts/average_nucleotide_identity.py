@@ -150,8 +150,6 @@ from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
 from pyani.pyani_config import params_mpl, ALIGNDIR, FRAGSIZE, TETRA_FILESTEMS
 
-from .logger import build_logger
-
 
 # Process command-line arguments
 def parse_cmdline(argv=None):
@@ -813,56 +811,86 @@ def subsample_input(args, logger, infiles):
     return random.sample(infiles, k)
 
 
-# Main function
-def run_main(args=None, logger=None):
-    """Run main process for average_nucleotide_identity.py script."""
-    # If we need to (i.e. a namespace isn't passed), parse the command-line
-    if args is None:
-        args = parse_cmdline()
+def process_arguments(args):
+    """Initial processing of command-line arguments
 
+    :param args:  Namespace of command-line arguments
+
+    Either returns parsed arguments or - if only the script name is used,
+    shows the version and exits.
+    """
     # Catch execution with no arguments
     if len(sys.argv) == 1:
         sys.stderr.write("pyani version: {0}\n".format(__version__))
-        return 0
+        raise SystemExit(0)
 
-    # Set up logging
-    time0 = time.time()
+    # If we need to (i.e. a namespace isn't passed), parse the command-line
+    if args is None:
+        return parse_cmdline()
+    return args
+
+
+def build_logger(args, logger):
+    """Return a logging object for the script
+
+    :param args:  Namespace of command-line arguments
+    :param logger:  Expected to be None, but may be logging object
+    """
     if logger is None:
         logger = build_logger("average_nucleotide_identity.py", args)
 
     # Have we got an input and output directory? If not, exit.
     if args.indirname is None:
         logger.error("No input directory name (exiting)")
-        sys.exit(1)
-    logger.info("Input directory: %s", args.indirname)
+        raise SystemExit(1)
+    logger.info(f"Input directory: {args.indirname}")
     if args.outdirname is None:
         logger.error("No output directory name (exiting)")
-        sys.exit(1)
+        raise SystemExit(1)
     if args.rerender:  # Rerendering, we want to overwrite graphics
         args.force, args.noclobber = True, True
     make_outdirs(args, logger)
-    logger.info("Output directory: %s", args.outdirname)
+    logger.info(f"Output directory: {args.outdirname}")
 
     # Check for the presence of space characters in any of the input filenames
     # or output directory. If we have any, abort here and now.
     filenames = [args.outdirname] + os.listdir(args.indirname)
     for fname in filenames:
         if " " in os.path.abspath(fname):
-            logger.error("File or directory '%s' contains whitespace", fname)
-            logger.error("This will cause issues with MUMmer and BLAST")
-            logger.error("(exiting)")
-            sys.exit(1)
+            logger.error(
+                f"File or directory '{fname}' contains whitespace. "
+                "This will cause issues with MUMmer and BLAST (exiting)."
+            )
+            raise SystemExit(1)
 
+    return logger
+
+
+def test_class_label_paths(args, logger):
+    """Tests if label and class files exist
+
+    :param args:  Namespace of command-line arguments
+    :param logger:  logging object
+
+    Exits if class and label files are not found
+    """
     if args.labels and not os.path.isfile(args.labels):
-        logger.error("Missing labels file: %s", args.labels)
-        sys.exit(1)
+        logger.error(f"Missing labels file: {args.labels}")
+        raise SystemExit(1)
     if args.classes and not os.path.isfile(args.classes):
-        logger.error("Missing classes file: %s", args.classes)
-        sys.exit(1)
+        logger.error(f"Missing classes file: {args.classes}")
+        raise SystemExit(1)
 
-    # Have we got a valid method choice?
-    # Dictionary below defines analysis function, and output presentation
-    # functions/settings, dependent on selected method.
+
+def get_method(args, logger):
+    """Returns function and config for the chosen method
+
+    :param args:  Namespace of command-line arguments
+    :param logger:  logging object
+
+    The dictionary defines pairs of method function and configurations,
+    keyed by method name.
+    """
     methods = {
         "ANIm": (calculate_anim, pyani_config.ANIM_FILESTEMS),
         "ANIb": (unified_anib, pyani_config.ANIB_FILESTEMS),
@@ -870,25 +898,55 @@ def run_main(args=None, logger=None):
         "ANIblastall": (unified_anib, pyani_config.ANIBLASTALL_FILESTEMS),
     }
     if args.method not in methods:
-        logger.error("ANI method %s not recognised (exiting)", args.method)
-        logger.error("Valid methods are: %s", list(methods.keys()))
-        sys.exit(1)
-    logger.info("Using ANI method: %s", args.method)
+        logger.error(
+            f"ANI method {args.method} not recognised (exiting).\n"
+            f"Valid methods are: {list(methods.keys())}"
+        )
+        raise SystemExit(1)
+    logger.info(f"Using ANI method: {args.method}")
+
+    return methods[args.method]
+
+
+def test_scheduler(args, logger):
+    """Tests if the specified scheduler can be used
+
+    :param args:  Namespace of command-line arguments
+    :param logger:  logging object
+
+    Exits if the scheduler is invalid
+    """
+    schedulers = ["multiprocessing", "SGE"]
+    if args.scheduler not in schedulers:
+        logger.error(
+            f"Valid schedulers are: {'; '.join(schedulers)}\n"
+            f"scheduler {args.scheduler} not recognised (exiting)"
+        )
+        raise SystemExit(1)
+    logger.info(f"Using scheduler method: {args.scheduler}")
+
+
+# Main function
+def run_main(args=None, logger=None):
+    """Run main process for average_nucleotide_identity.py script."""
+    time0 = time.time()
+
+    # Process command-line and build logger
+    args = process_arguments(args)
+    logger = build_logger(args, logger)
+
+    # Ensure argument validity and get method function/config
+    test_class_label_paths(args, logger)
+    test_scheduler(args, logger)
+    method_function, method_config = get_method(args, logger)
 
     # Skip calculations (or not) depending on rerender option
     if args.rerender:
-        logger.warning("--rerender option used")
-        logger.warning("Producing graphics with no new recalculations")
+        logger.warning(
+            "--rerender option used. Producing graphics with no new recalculations"
+        )
     else:
-        # Have we got a valid scheduler choice?
-        schedulers = ["multiprocessing", "SGE"]
-        if args.scheduler not in schedulers:
-            logger.error("scheduler %s not recognised (exiting)", args.scheduler)
-            logger.error("Valid schedulers are: %s", "; ".join(schedulers))
-            sys.exit(1)
-        logger.info("Using scheduler method: %s", args.scheduler)
-
-        # Get input files
+        # Run ANI comparisons
         logger.info("Identifying FASTA files in %s", args.indirname)
         infiles = pyani_files.get_fasta_files(args.indirname)
         logger.info("Input files:\n\t%s", "\n\t".join(infiles))
@@ -910,9 +968,9 @@ def run_main(args=None, logger=None):
         # and write out corresponding results.
         logger.info("Carrying out %s analysis", args.method)
         if args.method == "TETRA":
-            results = methods[args.method][0](args, logger, infiles)
+            results = method_function(args, logger, infiles)
         else:
-            results = methods[args.method][0](args, logger, infiles, org_lengths)
+            results = method_function(args, logger, infiles, org_lengths)
         write(args, logger, results)
 
     # Do we want graphical output?
@@ -922,7 +980,7 @@ def run_main(args=None, logger=None):
         for gfmt in args.gformat.split(","):
             logger.info("Graphics format: %s", gfmt)
             logger.info("Graphics method: %s", args.gmethod)
-            draw(args, logger, methods[args.method][1], gfmt)
+            draw(args, logger, method_config, gfmt)
 
     # Close any open matplotlib figures
     plt.close("all")
