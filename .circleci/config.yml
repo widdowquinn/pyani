@@ -26,9 +26,9 @@ jobs:
 
       - restore_cache:
           keys:
-            - pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
+            - pyani-dependencies-3.7-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
             # fallback to using the latest cache if no exact match is found
-            - pyani-dependencies-
+            - pyani-dependencies-3.7-
 
       - run:
           name: set up conda
@@ -64,7 +64,7 @@ jobs:
       - save_cache:
           paths:
             - /opt/conda/envs/pyani
-          key: pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
+          key: pyani-dependencies-3.7-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
 
       - run:
           name: install pyani
@@ -102,7 +102,7 @@ jobs:
           keys:
             - pyani-dependencies-3.6-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
             # fallback to using the latest cache if no exact match is found
-            - pyani-dependencies-
+            - pyani-dependencies-3.6-
 
       - run:
           name: set up conda

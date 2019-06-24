@@ -158,6 +158,7 @@ def generate_nucmer_commands(
     pairwise comparison.
     """
     nucmer_cmdlines, delta_filter_cmdlines = [], []
+    filenames = sorted(filenames)  # enforce ordering of filenames
     for idx, fname1 in enumerate(filenames[:-1]):
         for fname2 in filenames[idx + 1 :]:
             ncmd, dcmd = construct_nucmer_cmdline(
