@@ -24,11 +24,10 @@ jobs:
     steps:
       - checkout
 
-      # Download and cache dependencies
-      # - restore_cache:
-      #     keys:
-      #       - pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
-      #       - pyani-dependencies-
+      - restore_cache:
+          keys:
+            - pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
+            - pyani-dependencies-
 
       - run:
           name: update apt-get
