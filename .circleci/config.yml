@@ -86,7 +86,7 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            pytest -v --cov=pyani --cov-report xml:.coverage.xml
+            pytest -v --cov=pyani --cov-report xml:.coverage.xml tests/test_legacy_scripts.py
 
       - store_artifacts:
           path: tests/test_output
