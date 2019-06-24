@@ -17,37 +17,19 @@ workflows:
 jobs:
   test-3_7: &test-template
     docker:
-      # specify the version you desire here
-      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
-      #- image: circleci/python:3.7.3
       - image: continuumio/miniconda3
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
 
     working_directory: ~/repo
 
     steps:
       - checkout
 
-      # Download and cache dependencies
       - restore_cache:
           keys:
             - pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
             # fallback to using the latest cache if no exact match is found
             - pyani-dependencies-
 
-      # Install required third-party packages
-      # - run:
-      #     name: update apt-get
-      #     command: |
-      #       sudo apt-get update
-      # - run:
-      #     name: install third-party tools
-      #     command: |
-      #       sudo apt-get install csh mummer ncbi-blast+
       - run:
           name: set up conda
           command : |
@@ -70,7 +52,6 @@ jobs:
             echo 'export PATH=$PWD/blast-2.2.26/bin:$PATH' >> $BASH_ENV
             source $BASH_ENV
 
-      # Install Python code/dependencies
       - run:
           name: install dependencies
           command: |
@@ -85,17 +66,12 @@ jobs:
             - /opt/conda/envs/pyani
           key: pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
 
-      # Install pyani
       - run:
           name: install pyani
           command: |
             source activate pyani
             pip install -e .  # Install the repo as a package
 
-      # run tests!
-      # common Python testing frameworks include pytest and nose
-      # https://pytest.org
-      # https://nose.readthedocs.io
       - run:
           name: run tests
           command: |
@@ -114,8 +90,20 @@ jobs:
 
 
   test-3_6:
-    <<: *test-template
-    steps:      
+    docker:
+      - image: continuumio/miniconda3
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - pyani-dependencies-3.6-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - pyani-dependencies-
+
       - run:
           name: set up conda
           command : |
@@ -124,7 +112,47 @@ jobs:
             conda create -q -n pyani python=3.6
             source activate pyani
             python --version
+            which python
             conda config --add channels defaults
             conda config --add channels bioconda
             conda config --add channels conda-forge
             conda info -a
+
+      - run:
+          name: install legacy BLAST
+          command: |
+            curl -o legacy_blast.tar.gz ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy.NOTSUPPORTED/2.2.26/blast-2.2.26-x64-linux.tar.gz
+            tar -zxf legacy_blast.tar.gz
+            echo 'export PATH=$PWD/blast-2.2.26/bin:$PATH' >> $BASH_ENV
+            source $BASH_ENV
+
+      - run:
+          name: install dependencies
+          command: |
+            source activate pyani
+            conda install --file requirements.txt
+            conda install --file requirements-dev.txt
+            pip install -r requirements-pip.txt
+            conda install --file requirements-thirdparty.txt
+
+      - save_cache:
+          paths:
+            - /opt/conda/envs/pyani
+          key: pyani-dependencies-3.6-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
+
+      - run:
+          name: install pyani
+          command: |
+            source activate pyani
+            pip install -e .  # Install the repo as a package
+
+      # run tests!
+      - run:
+          name: run tests
+          command: |
+            source activate pyani
+            pytest -v --cov=pyani --cov-report xml:.coverage.xml tests/test_legacy_scripts.py
+
+      - store_artifacts:
+          path: tests/test_output
+          destination: tests/test_output
