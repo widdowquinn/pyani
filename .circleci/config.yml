@@ -35,7 +35,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
+            - pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
             # fallback to using the latest cache if no exact match is found
             - pyani-dependencies-
 
@@ -77,13 +77,13 @@ jobs:
             source activate pyani
             conda install --file requirements.txt
             conda install --file requirements-dev.txt
-            conda install --file requirements-pip.txt
+            pip install -r requirements-pip.txt
             conda install --file requirements-thirdparty.txt
 
-      # - save_cache:
-      #     paths:
-      #       - ./venv
-      #     key: pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
+      - save_cache:
+          paths:
+            - /opt/conda/envs/pyani
+          key: pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}
 
       # Install pyani
       - run:
