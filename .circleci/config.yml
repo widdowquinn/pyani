@@ -19,7 +19,8 @@ jobs:
     docker:
       # specify the version you desire here
       # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
-      - image: circleci/python:3.7.3
+      #- image: circleci/python:3.7.3
+      - image: continuumio/miniconda3
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -39,14 +40,28 @@ jobs:
             - pyani-dependencies-
 
       # Install required third-party packages
+      # - run:
+      #     name: update apt-get
+      #     command: |
+      #       sudo apt-get update
+      # - run:
+      #     name: install third-party tools
+      #     command: |
+      #       sudo apt-get install csh mummer ncbi-blast+
       - run:
-          name: update apt-get
-          command: |
-            sudo apt-get update
-      - run:
-          name: install third-party tools
-          command: |
-            sudo apt-get install csh mummer ncbi-blast+
+          name: set up conda
+          command : |
+            conda config --set always_yes yes --set changeps1 no
+            conda update -q conda
+            conda create -q -n pyani python=3.7
+            source activate pyani
+            python --version
+            which python
+            conda config --add channels defaults
+            conda config --add channels bioconda
+            conda config --add channels conda-forge
+            conda info -a
+
       - run:
           name: install legacy BLAST
           command: |
@@ -59,23 +74,22 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install --upgrade pip setuptools virtualenv
-            pip install -r requirements.txt
-            pip install -r requirements-dev.txt
-            pip install -r requirements-pip.txt
+            source activate pyani
+            conda install --file requirements.txt
+            conda install --file requirements-dev.txt
+            conda install --file requirements-pip.txt
+            conda install --file requirements-thirdparty.txt
 
-      - save_cache:
-          paths:
-            - ./venv
-          key: pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
+      # - save_cache:
+      #     paths:
+      #       - ./venv
+      #     key: pyani-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
 
       # Install pyani
       - run:
           name: install pyani
           command: |
-            . venv/bin/activate
+            source activate pyani
             pip install -e .  # Install the repo as a package
 
       # run tests!
@@ -85,7 +99,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            . venv/bin/activate
+            source activate pyani
             pytest -v --cov=pyani --cov-report xml:.coverage.xml tests/test_legacy_scripts.py
 
       - store_artifacts:
@@ -103,3 +117,16 @@ jobs:
     <<: *test-template
     docker:
       - image: circleci/python:3.6.8
+
+      - run:
+          name: set up conda
+          command : |
+            conda config --set always_yes yes --set changeps1 no
+            conda update -q conda
+            conda create -q -n pyani python=3.6
+            source activate pyani
+            python --version
+            conda config --add channels defaults
+            conda config --add channels bioconda
+            conda config --add channels conda-forge
+            conda info -a
