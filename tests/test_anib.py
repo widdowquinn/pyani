@@ -50,6 +50,8 @@ THE SOFTWARE.
 import os
 import unittest
 
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
@@ -67,222 +69,125 @@ class TestBLASTCmdline(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.indir = os.path.join("tests", "test_input", "anib")
-        self.outdir = os.path.join("tests", "test_output", "anib")
-        self.seqdir = os.path.join("tests", "test_input", "sequences")
-        self.infiles = [
-            os.path.join(self.seqdir, fname) for fname in os.listdir(self.seqdir)
-        ]
+        self.indir = Path("tests/test_input/anib")
+        self.outdir = Path("tests/test_output/anib")
+        self.seqdir = Path("tests/test_input/sequences")
+        self.infiles = list(self.seqdir.iterdir())
         self.fraglen = 1000
-        self.fmtdboutdir = os.path.join(self.outdir, "formatdb")
-        self.fmtdbcmd = " ".join(
-            [
-                "formatdb -p F -i",
-                "tests/test_output/anib/formatdb/NC_002696.fna",
-                "-t NC_002696",
-            ]
+        self.fmtdboutdir = self.outdir / "formatdb"
+        self.fmtdbcmd = (
+            f"formatdb -p F -i {self.fmtdboutdir / 'NC_002696.fna'} -t NC_002696"
         )
-        self.makeblastdbdir = os.path.join(self.outdir, "makeblastdb")
-        self.makeblastdbcmd = " ".join(
-            [
-                "makeblastdb -dbtype nucl -in",
-                "tests/test_input/sequences/NC_002696.fna",
-                "-title NC_002696 -out",
-                os.path.join(
-                    "tests", "test_output", "anib", "makeblastdb", "NC_002696.fna"
-                ),
-            ]
-        )
+        self.makeblastdbdir = self.outdir / "makeblastdb"
+        self.makeblastdbcmd = f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} -title NC_002696 -out {self.makeblastdbdir / 'NC_002696.fna'}"
         self.blastdbfnames = [
-            os.path.join(self.seqdir, fname)
-            for fname in ("NC_002696.fna", "NC_010338.fna")
+            self.seqdir / fname for fname in ("NC_002696.fna", "NC_010338.fna")
         ]
         self.blastdbtgt = [
             (
-                " ".join(
-                    [
-                        "makeblastdb -dbtype nucl -in",
-                        "tests/test_input/sequences/NC_002696.fna",
-                        "-title NC_002696 -out",
-                        "tests/test_output/anib/NC_002696.fna",
-                    ]
-                ),
-                "tests/test_output/anib/NC_002696.fna",
+                f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} -title NC_002696 -out {self.outdir / 'NC_002696.fna'}",
+                str(self.outdir / "NC_002696.fna"),
             ),
             (
-                " ".join(
-                    [
-                        "makeblastdb -dbtype nucl -in",
-                        "tests/test_input/sequences/NC_010338.fna",
-                        "-title NC_010338 -out",
-                        "tests/test_output/anib/NC_010338.fna",
-                    ]
-                ),
-                "tests/test_output/anib/NC_010338.fna",
+                f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_010338.fna'} -title NC_010338 -out {self.outdir / 'NC_010338.fna'}",
+                str(self.outdir / "NC_010338.fna"),
             ),
         ]
         self.blastdbtgtlegacy = [
             (
-                " ".join(
-                    [
-                        "formatdb -p F -i",
-                        "tests/test_output/anib/NC_002696.fna",
-                        "-t NC_002696",
-                    ]
-                ),
-                "tests/test_output/anib/NC_002696.fna",
+                f"formatdb -p F -i {self.outdir / 'NC_002696.fna'} -t NC_002696",
+                str(self.outdir / "NC_002696.fna"),
             ),
             (
-                " ".join(
-                    [
-                        "formatdb -p F -i",
-                        "tests/test_output/anib/NC_010338.fna",
-                        "-t NC_010338",
-                    ]
-                ),
-                "tests/test_output/anib/NC_010338.fna",
+                f"formatdb -p F -i {self.outdir / 'NC_010338.fna'} -t NC_010338",
+                str(self.outdir / "NC_010338.fna"),
             ),
         ]
-        self.blastncmd = " ".join(
-            [
-                "blastn -out",
-                os.path.join(
-                    "tests", "test_output", "anib", "NC_002696_vs_NC_010338.blast_tab"
-                ),
-                "-query tests/test_input/sequences/NC_002696.fna",
-                "-db tests/test_input/sequences/NC_010338.fna",
-                "-xdrop_gap_final 150 -dust no -evalue 1e-15",
-                "-max_target_seqs 1 -outfmt '6 qseqid sseqid",
-                "length mismatch pident nident qlen slen qstart",
-                "qend sstart send positive ppos gaps' -task blastn",
-            ]
+        self.blastncmd = (
+            f"blastn -out {self.outdir / 'NC_002696_vs_NC_010338.blast_tab'} "
+            f"-query {self.seqdir / 'NC_002696.fna'} "
+            f"-db {self.seqdir / 'NC_010338.fna'} "
+            "-xdrop_gap_final 150 -dust no -evalue 1e-15 -max_target_seqs 1 "
+            "-outfmt '6 qseqid sseqid length mismatch pident nident qlen slen qstart qend sstart send positive ppos gaps' "
+            "-task blastn"
         )
-        self.blastallcmd = " ".join(
-            [
-                "blastall -p blastn -o",
-                os.path.join(
-                    "tests", "test_output", "anib", "NC_002696_vs_NC_010338.blast_tab"
-                ),
-                "-i tests/test_input/sequences/NC_002696.fna",
-                "-d tests/test_input/sequences/NC_010338.fna",
-                "-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8",
-            ]
+        self.blastallcmd = (
+            f"blastall -p blastn -o {self.outdir / 'NC_002696_vs_NC_010338.blast_tab'} "
+            f"-i {self.seqdir / 'NC_002696.fna'} "
+            f"-d {self.seqdir / 'NC_010338.fna'} "
+            "-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8"
         )
         self.blastntgt = [
-            " ".join(
-                [
-                    "blastn -out",
-                    os.path.join(
-                        "tests",
-                        "test_output",
-                        "anib",
-                        "NC_002696_vs_NC_010338.blast_tab",
-                    ),
-                    "-query tests/test_input/sequences/NC_002696.fna",
-                    "-db tests/test_input/sequences/NC_010338.fna",
-                    "-xdrop_gap_final 150 -dust no -evalue 1e-15",
-                    "-max_target_seqs 1 -outfmt '6 qseqid sseqid",
-                    "length mismatch pident nident qlen slen qstart",
-                    "qend sstart send positive ppos gaps' -task blastn",
-                ]
+            (
+                f"blastn -out {self.outdir / 'NC_002696_vs_NC_010338.blast_tab'} "
+                f"-query {self.seqdir / 'NC_002696.fna'} "
+                f"-db {self.seqdir / 'NC_010338.fna'} "
+                "-xdrop_gap_final 150 -dust no -evalue 1e-15 "
+                "-max_target_seqs 1 -outfmt '6 qseqid sseqid "
+                "length mismatch pident nident qlen slen qstart "
+                "qend sstart send positive ppos gaps' -task blastn"
             ),
-            " ".join(
-                [
-                    "blastn -out",
-                    os.path.join(
-                        "tests",
-                        "test_output",
-                        "anib",
-                        "NC_010338_vs_NC_002696.blast_tab",
-                    ),
-                    "-query tests/test_input/sequences/NC_010338.fna",
-                    "-db tests/test_input/sequences/NC_002696.fna",
-                    "-xdrop_gap_final 150 -dust no -evalue 1e-15",
-                    "-max_target_seqs 1 -outfmt '6 qseqid sseqid length",
-                    "mismatch pident nident qlen slen qstart qend",
-                    "sstart send positive ppos gaps' -task blastn",
-                ]
+            (
+                f"blastn -out {self.outdir / 'NC_010338_vs_NC_002696.blast_tab'} "
+                f"-query {self.seqdir / 'NC_010338.fna'} "
+                f"-db {self.seqdir / 'NC_002696.fna'} "
+                "-xdrop_gap_final 150 -dust no -evalue 1e-15 "
+                "-max_target_seqs 1 -outfmt '6 qseqid sseqid length "
+                "mismatch pident nident qlen slen qstart qend "
+                "sstart send positive ppos gaps' -task blastn"
             ),
         ]
         self.blastalltgt = [
-            " ".join(
-                [
-                    "blastall -p blastn -o",
-                    os.path.join(
-                        "tests",
-                        "test_output",
-                        "anib",
-                        "NC_002696_vs_NC_010338.blast_tab",
-                    ),
-                    "-i tests/test_input/sequences/NC_002696.fna",
-                    "-d tests/test_input/sequences/NC_010338.fna",
-                    "-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8",
-                ]
+            (
+                f"blastall -p blastn -o {self.outdir / 'NC_002696_vs_NC_010338.blast_tab'} "
+                f"-i {self.seqdir / 'NC_002696.fna'} "
+                f"-d {self.seqdir / 'NC_010338.fna'} "
+                "-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8"
             ),
-            " ".join(
-                [
-                    "blastall -p blastn -o",
-                    os.path.join(
-                        "tests",
-                        "test_output",
-                        "anib",
-                        "NC_010338_vs_NC_002696.blast_tab",
-                    ),
-                    "-i tests/test_input/sequences/NC_010338.fna",
-                    "-d tests/test_input/sequences/NC_002696.fna",
-                    "-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8",
-                ]
+            (
+                f"blastall -p blastn -o {self.outdir / 'NC_010338_vs_NC_002696.blast_tab'} "
+                f"-i {self.seqdir / 'NC_010338.fna'} "
+                f"-d {self.seqdir / 'NC_002696.fna'} "
+                "-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8"
             ),
         ]
         self.blastnjobdict = sorted(
             [
                 (
-                    "tests/test_output/anib/NC_002696.fna",
-                    "makeblastdb -dbtype nucl "
-                    + "-in tests/test_input/sequences/NC_002696.fna "
-                    + "-title NC_002696 -out tests/test_output/anib/NC_002696.fna",
+                    str(self.outdir / "NC_002696.fna"),
+                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} -title NC_002696 -out {self.outdir / 'NC_002696.fna'}",
                 ),
                 (
-                    "tests/test_output/anib/NC_010338.fna",
-                    "makeblastdb -dbtype nucl "
-                    + "-in tests/test_input/sequences/NC_010338.fna "
-                    + "-title NC_010338 -out tests/test_output/anib/NC_010338.fna",
+                    str(self.outdir / "NC_010338.fna"),
+                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_010338.fna'} -title NC_010338 -out {self.outdir / 'NC_010338.fna'}",
                 ),
                 (
-                    "tests/test_output/anib/NC_011916.fna",
-                    "makeblastdb -dbtype nucl "
-                    + "-in tests/test_input/sequences/NC_011916.fna "
-                    + "-title NC_011916 -out tests/test_output/anib/NC_011916.fna",
+                    str(self.outdir / "NC_011916.fna"),
+                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_011916.fna'} -title NC_011916 -out {self.outdir / 'NC_011916.fna'}",
                 ),
                 (
-                    "tests/test_output/anib/NC_014100.fna",
-                    "makeblastdb -dbtype nucl "
-                    + "-in tests/test_input/sequences/NC_014100.fna "
-                    + "-title NC_014100 -out tests/test_output/anib/NC_014100.fna",
+                    str(self.outdir / "NC_014100.fna"),
+                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_014100.fna'} -title NC_014100 -out {self.outdir / 'NC_014100.fna'}",
                 ),
             ]
         )
         self.blastalljobdict = sorted(
             [
                 (
-                    "tests/test_output/anib/NC_002696.fna",
-                    "formatdb -p F -i tests/test_output/anib/NC_002696.fna "
-                    + "-t NC_002696",
+                    str(self.outdir / "NC_002696.fna"),
+                    f"formatdb -p F -i {self.outdir / 'NC_002696.fna'} -t NC_002696",
                 ),
                 (
-                    "tests/test_output/anib/NC_010338.fna",
-                    "formatdb -p F -i tests/test_output/anib/NC_010338.fna "
-                    + "-t NC_010338",
+                    str(self.outdir / "NC_010338.fna"),
+                    f"formatdb -p F -i {self.outdir / 'NC_010338.fna'} -t NC_010338",
                 ),
                 (
-                    "tests/test_output/anib/NC_011916.fna",
-                    "formatdb -p F -i tests/test_output/anib/NC_011916.fna "
-                    + "-t NC_011916",
+                    str(self.outdir / "NC_011916.fna"),
+                    f"formatdb -p F -i {self.outdir / 'NC_011916.fna'} -t NC_011916",
                 ),
                 (
-                    "tests/test_output/anib/NC_014100.fna",
-                    "formatdb -p F -i tests/test_output/anib/NC_014100.fna "
-                    + "-t NC_014100",
+                    str(self.outdir / "NC_014100.fna"),
+                    f"formatdb -p F -i {self.outdir / 'NC_014100.fna '}-t NC_014100",
                 ),
             ]
         )
@@ -293,16 +198,16 @@ class TestBLASTCmdline(unittest.TestCase):
     def test_formatdb_generation(self):
         """generate formatdb command-line."""
         cmd = anib.construct_formatdb_cmd(
-            os.path.join(self.seqdir, "NC_002696.fna"), self.fmtdboutdir
+            self.seqdir / "NC_002696.fna", self.fmtdboutdir
         )
         self.assertEqual(cmd[0], self.fmtdbcmd)  # correct command
-        if not os.path.isfile(cmd[1]):  # creates new file
+        if not self.fmtdboutdir.is_dir():  # creates new file
             raise AssertionError()
 
     def test_makeblastdb_generation(self):
         """generate makeblastdb command-line."""
         cmd = anib.construct_makeblastdb_cmd(
-            os.path.join(self.seqdir, "NC_002696.fna"), self.makeblastdbdir
+            self.seqdir / "NC_002696.fna", self.makeblastdbdir
         )
         self.assertEqual(cmd[0], self.makeblastdbcmd)  # correct command
 
@@ -341,6 +246,8 @@ class TestBLASTCmdline(unittest.TestCase):
         cmds = anib.generate_blastn_commands(
             self.blastdbfnames, self.outdir, mode="ANIb"
         )
+        print(cmds)
+        print(self.blastntgt)
         self.assertEqual(cmds, self.blastntgt)
 
     def test_legacy_blastn_commands(self):
@@ -362,6 +269,8 @@ class TestBLASTCmdline(unittest.TestCase):
         """generate dictionary of BLASTN+ database jobs."""
         blastcmds = anib.make_blastcmd_builder("ANIb", self.outdir)
         jobdict = anib.build_db_jobs(self.infiles, blastcmds)
+        print(sorted([(k, v.script) for (k, v) in jobdict.items()]))
+        print(self.blastnjobdict)
         self.assertEqual(
             sorted([(k, v.script) for (k, v) in jobdict.items()]), self.blastnjobdict
         )
@@ -403,10 +312,10 @@ class TestFragments(unittest.TestCase):
 
     def setUp(self):
         """Initialise parameters for tests."""
-        self.outdir = os.path.join("tests", "test_output", "anib")
-        self.seqdir = os.path.join("tests", "test_input", "sequences")
+        self.outdir = Path("tests/test_output/anib")
+        self.seqdir = Path("tests/test_input/sequences")
         self.infnames = [
-            os.path.join(self.seqdir, fname)
+            self.seqdir / fname
             for fname in (
                 "NC_002696.fna",
                 "NC_010338.fna",
@@ -415,7 +324,7 @@ class TestFragments(unittest.TestCase):
             )
         ]
         self.outfnames = [
-            os.path.join(self.outdir, fname)
+            self.outdir / fname
             for fname in (
                 "NC_002696-fragments.fna",
                 "NC_010338-fragments.fna",
@@ -431,7 +340,7 @@ class TestFragments(unittest.TestCase):
         result = anib.fragment_fasta_files(self.infnames, self.outdir, self.fraglen)
         # Are files created?
         for outfname in self.outfnames:
-            if not os.path.isfile(outfname):
+            if not outfname.is_file():
                 raise AssertionError()
 
         # Test fragment lengths
@@ -446,17 +355,17 @@ class TestParsing(unittest.TestCase):
     """Class defining tests of BLAST output parsing."""
 
     def setUp(self):
-        self.indir = os.path.join("tests", "test_input", "anib")
-        self.seqdir = os.path.join("tests", "test_input", "sequences")
-        self.fragdir = os.path.join("tests", "test_input", "anib", "fragfiles")
-        self.anibdir = os.path.join("tests", "test_input", "anib", "blastn")
-        self.aniblastalldir = os.path.join("tests", "test_input", "anib", "blastall")
-        self.fname_legacy = os.path.join(self.indir, "NC_002696_vs_NC_010338.blast_tab")
-        self.fname = os.path.join(self.indir, "NC_002696_vs_NC_011916.blast_tab")
-        self.fragfname = os.path.join(self.indir, "NC_002696-fragments.fna")
+        self.indir = Path("tests/test_input/anib")
+        self.seqdir = Path("tests/test_input/sequences")
+        self.fragdir = Path("tests/test_input/anib/fragfiles")
+        self.anibdir = Path("tests/test_input/anib/blastn")
+        self.aniblastalldir = Path("tests/test_input/anib/blastall")
+        self.fname_legacy = self.indir / "NC_002696_vs_NC_010338.blast_tab"
+        self.fname = self.indir / "NC_002696_vs_NC_011916.blast_tab"
+        self.fragfname = self.indir / "NC_002696-fragments.fna"
         self.fraglens = 1000
         self.infnames = [
-            os.path.join(self.seqdir, fname)
+            self.seqdir / fname
             for fname in (
                 "NC_002696.fna",
                 "NC_010338.fna",
@@ -465,7 +374,7 @@ class TestParsing(unittest.TestCase):
             )
         ]
         self.fragfiles = [
-            os.path.join(self.fragdir, fname)
+            self.fragdir / fname
             for fname in (
                 "NC_002696-fragments.fna",
                 "NC_010338-fragments.fna",
@@ -475,20 +384,20 @@ class TestParsing(unittest.TestCase):
         ]
         self.anibtgt = pd.DataFrame(
             [
-                [1.000000, 0.796974, 0.999977, 0.837285],
-                [0.795958, 1.000000, 0.795917, 0.798250],
-                [0.999922, 0.795392, 1.000000, 0.837633],
-                [0.836780, 0.798704, 0.836823, 1.000000],
+                [1.000_000, 0.796_974, 0.999_977, 0.837_285],
+                [0.795_958, 1.000_000, 0.795_917, 0.798_250],
+                [0.999_922, 0.795_392, 1.000_000, 0.837_633],
+                [0.836_780, 0.798_704, 0.836_823, 1.000_000],
             ],
             columns=["NC_002696", "NC_010338", "NC_011916", "NC_014100"],
             index=["NC_002696", "NC_010338", "NC_011916", "NC_014100"],
         )
         self.aniblastalltgt = pd.DataFrame(
             [
-                [1.000000, 0.785790, 0.999977, 0.830641],
-                [0.781319, 1.000000, 0.781281, 0.782723],
-                [0.999937, 0.782968, 1.000000, 0.830431],
-                [0.828919, 0.784533, 0.828853, 1.000000],
+                [1.000_000, 0.785_790, 0.999_977, 0.830_641],
+                [0.781_319, 1.000_000, 0.781_281, 0.782_723],
+                [0.999_937, 0.782_968, 1.000_000, 0.830_431],
+                [0.828_919, 0.784_533, 0.828_853, 1.000_000],
             ],
             columns=["NC_002696", "NC_010338", "NC_011916", "NC_014100"],
             index=["NC_002696", "NC_010338", "NC_011916", "NC_014100"],
@@ -498,14 +407,14 @@ class TestParsing(unittest.TestCase):
         """parses ANIb .blast_tab output."""
         fragdata = anib.get_fraglength_dict([self.fragfname])
         result = anib.parse_blast_tab(self.fname, fragdata, mode="ANIb")
-        self.assertEqual(result, (4016551, 93, 99.997693577050029))
+        self.assertEqual(result, (4_016_551, 93, 99.997_693_577_050_029))
 
     def test_parse_legacy_blasttab(self):
         """parses legacy .blast_tab output"""
         # ANIblastall output
         fragdata = anib.get_fraglength_dict([self.fragfname])
         result = anib.parse_blast_tab(self.fname_legacy, fragdata, mode="ANIblastall")
-        self.assertEqual(result, (1966922, 406104, 78.578978313253018))
+        self.assertEqual(result, (1_966_922, 406_104, 78.578_978_313_253_018))
 
     def test_blastdir_processing(self):
         """parses directory of .blast_tab output."""

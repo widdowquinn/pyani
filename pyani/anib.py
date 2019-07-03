@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Code to implement the ANIb average nucleotide identity method.
+"""anib.py
+
+Code to implement the ANIb average nucleotide identity method.
 
 Calculates ANI by the ANIb method, as described in Goris et al. (2007)
 Int J Syst Evol Micr 57: 81-91. doi:10.1099/ijs.0.64483-0.
@@ -44,7 +46,7 @@ Goris et al. We persist with their definition, however.  Only these
 qualifying matches contribute to the total aligned length, and total
 aligned sequence identity used to calculate ANI.
 
-(c) The James Hutton Institute 2016-2017
+(c) The James Hutton Institute 2016-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -62,7 +64,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2016-2017 The James Hutton Institute
+Copyright (c) 2016-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -85,6 +87,8 @@ THE SOFTWARE.
 
 import os
 import shutil
+
+from pathlib import Path
 
 import pandas as pd
 
@@ -322,9 +326,9 @@ def generate_blastn_commands(filenames, outdir, blast_exe=None, mode="ANIb"):
         construct_blast_cmdline = construct_blastall_cmdline
     cmdlines = []
     for idx, fname1 in enumerate(filenames[:-1]):
-        dbname1 = fname1.replace("-fragments", "")
+        dbname1 = Path(str(fname1).replace("-fragments", ""))
         for fname2 in filenames[idx + 1 :]:
-            dbname2 = fname2.replace("-fragments", "")
+            dbname2 = Path(str(fname2).replace("-fragments", ""))
             if blast_exe is None:
                 cmdlines.append(construct_blast_cmdline(fname1, dbname2, outdir))
                 cmdlines.append(construct_blast_cmdline(fname2, dbname1, outdir))
@@ -350,15 +354,9 @@ def construct_blastn_cmdline(
     fstem1 = os.path.splitext(os.path.split(fname1)[-1])[0]
     fstem2 = os.path.splitext(os.path.split(fname2)[-1])[0]
     fstem1 = fstem1.replace("-fragments", "")
-    prefix = os.path.join(outdir, "%s_vs_%s" % (fstem1, fstem2))
-    cmd = (
-        "{0} -out {1}.blast_tab -query {2} -db {3} "
-        + "-xdrop_gap_final 150 -dust no -evalue 1e-15 "
-        + "-max_target_seqs 1 -outfmt '6 qseqid sseqid length mismatch "
-        + "pident nident qlen slen qstart qend sstart send positive "
-        + "ppos gaps' -task blastn"
-    )
-    return cmd.format(blastn_exe, prefix, fname1, fname2)
+    prefix = os.path.join(outdir, f"{fstem1}_vs_{fstem2}")
+    cmd = f"{blastn_exe} -out {prefix}.blast_tab -query {fname1} -db {fname2} -xdrop_gap_final 150 -dust no -evalue 1e-15 -max_target_seqs 1 -outfmt '6 qseqid sseqid length mismatch pident nident qlen slen qstart qend sstart send positive ppos gaps' -task blastn"
+    return cmd
 
 
 # Generate single BLASTALL command line
@@ -539,5 +537,7 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
         ani_pid = 0
     aln_length = filtered["ani_alnlen"].sum()
     sim_errors = filtered["blast_mismatch"].sum() + filtered["blast_gaps"].sum()
-    filtered.to_csv(filename + ".dataframe", sep="\t")
+    print(filename)
+    print(type(filename))
+    filtered.to_csv(Path(filename).with_suffix(".blast_tab.dataframe"), sep="\t")
     return aln_length, sim_errors, ani_pid
