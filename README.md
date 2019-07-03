@@ -15,6 +15,8 @@
 
 - [Overview](#overview)
 - [Installation](#installation)
+    - [`pip3`](#pip3)
+    - [`bioconda`](#bioconda)
 - [Citing `pyani`](#citing-pyani)
 - [Documentation](#documentation)
 - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
@@ -47,7 +49,9 @@
 
 ## Installation
 
-The easiest way to install `pyani` is to use `pip3`:
+The easiest way to install `pyani` is to use `pip3` or `bioconda`:
+
+### `pip3`
 
 ```bash
 pip3 install pyani
@@ -57,6 +61,23 @@ From version 0.1.3.2 onwards, this should also install all the required Python p
 
 ```bash
 pip3 install -r requirements.txt
+pip3 install -r requirements-pip.txt
+```
+
+### `bioconda`
+
+With a working `anaconda` installation, install the `bioconda` and `conda-forge` channels:
+
+```bash
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+```
+
+Then install `pyani`:
+
+```bash
+conda install pyani
 ```
 
 ## Citing `pyani`
@@ -500,7 +521,8 @@ If graphical output is chosen, the output directory will also contain PDF, PNG a
 
 Unless otherwise indicated, all code is subject to the following agreement:
 
-    (c) The James Hutton Institute 2014-2018
+```text
+    (c) The James Hutton Institute 2014-2019
     Author: Leighton Pritchard
 
     Contact: leighton.pritchard@hutton.ac.uk
@@ -518,7 +540,7 @@ Unless otherwise indicated, all code is subject to the following agreement:
 
 The MIT License
 
-Copyright (c) 2014-2018 The James Hutton Institute
+Copyright (c) 2014-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -537,3 +559,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+```
