@@ -61,7 +61,7 @@ from pathlib import Path
 
 import pytest
 
-from pyani import anim
+from pyani import anim, pyani_tools
 from pyani.scripts import average_nucleotide_identity, genbank_get_genomes_by_taxon
 
 from tools import modify_namespace, PyaniTestCase
@@ -200,8 +200,20 @@ class TestLegacyScripts(PyaniTestCase):
         )
 
     @pytest.mark.run(order=2)
+    @pytest.mark.skipif(
+        not pyani_tools.has_dependencies().mummer,
+        reason="nucmer executable not available",
+    )
     def test_legacy_anim_seaborn(self):
-        """Use legacy script to run ANIm (seaborn output)"""
+        """Use legacy script to run ANIm (seaborn output)
+
+        average_nucleotide_identity.py \
+            -l test_ANIm.log \
+            -i tests/test_output/legacy_scripts/C_blochmannia \
+            -o tests/test_output/legacy_scripts/ANIm_seaborn \
+            -g --gmethod seaborn --gformat pdf,png \
+            -f --jobprefix ANI
+        """
         args = self.argsdict["anim_seaborn"]
         average_nucleotide_identity.run_main(args, self.logger)
         self.assertDirsEqual(
@@ -210,8 +222,20 @@ class TestLegacyScripts(PyaniTestCase):
         )
 
     @pytest.mark.run(order=2)
+    @pytest.mark.skipif(
+        not pyani_tools.has_dependencies().mummer,
+        reason="nucmer executable not available",
+    )
     def test_legacy_anim_mpl(self):
-        """Use legacy script to run ANIm (mpl output)"""
+        """Use legacy script to run ANIm (mpl output)
+
+        average_nucleotide_identity.py \
+            -l test_ANIm.log \
+            -i tests/test_output/legacy_scripts/C_blochmannia \
+            -o tests/test_output/legacy_scripts/ANIm_mpl \
+            -g --gmethod mpl --gformat pdf,png \
+            -f --jobprefix ANI
+        """
         args = self.argsdict["anim_mpl"]
         average_nucleotide_identity.run_main(args, self.logger)
         self.assertDirsEqual(
@@ -219,8 +243,20 @@ class TestLegacyScripts(PyaniTestCase):
         )
 
     @pytest.mark.run(order=2)
+    @pytest.mark.skipif(
+        not pyani_tools.has_dependencies().blast,
+        reason="blastn executable not available",
+    )
     def test_legacy_anib_seaborn(self):
-        """Use legacy script to run ANIb (seaborn output)"""
+        """Use legacy script to run ANIb (seaborn output)
+
+        average_nucleotide_identity.py \
+            -l test_ANIb.log \
+            -i tests/test_output/legacy_scripts/C_blochmannia \
+            -o tests/test_output/legacy_scripts/ANIb_seaborn \
+            -g --gmethod seaborn --gformat pdf,png \
+            -f --jobprefix ANI
+        """
         args = self.argsdict["anib_seaborn"]
         average_nucleotide_identity.run_main(args, self.logger)
         self.assertDirsEqual(
@@ -228,8 +264,20 @@ class TestLegacyScripts(PyaniTestCase):
         )
 
     @pytest.mark.run(order=2)
+    @pytest.mark.skipif(
+        not pyani_tools.has_dependencies().blast,
+        reason="blastn executable not available",
+    )
     def test_legacy_anib_mpl(self):
-        """Use legacy script to run ANIb (mpl output)"""
+        """Use legacy script to run ANIb (mpl output)
+
+        average_nucleotide_identity.py \
+            -l test_ANIb.log \
+            -i tests/test_output/legacy_scripts/C_blochmannia \
+            -o tests/test_output/legacy_scripts/ANIb_mpl \
+            -g --gmethod mpl --gformat pdf,png \
+            -f --jobprefix ANI
+        """
         args = self.argsdict["anib_mpl"]
         average_nucleotide_identity.run_main(args, self.logger)
         self.assertDirsEqual(

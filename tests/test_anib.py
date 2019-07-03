@@ -55,9 +55,12 @@ import pytest
 
 from pandas.util.testing import assert_frame_equal
 
-from pyani import anib, pyani_files
+from pyani import anib, pyani_files, pyani_tools
 
 
+@pytest.mark.skipif(
+    not pyani_tools.has_dependencies().blast, reason="BLASTN executable not found"
+)
 class TestBLASTCmdline(unittest.TestCase):
 
     """Class defining tests of BLAST command-line generation."""

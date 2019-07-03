@@ -150,6 +150,8 @@ from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
 from pyani.pyani_config import params_mpl, ALIGNDIR, FRAGSIZE, TETRA_FILESTEMS
 
+from pyani.scripts import logger as pyani_logger
+
 
 # Process command-line arguments
 def parse_cmdline(argv=None):
@@ -837,7 +839,7 @@ def build_logger(args, logger):
     :param logger:  Expected to be None, but may be logging object
     """
     if logger is None:
-        logger = build_logger("average_nucleotide_identity.py", args)
+        logger = pyani_logger.build_logger("average_nucleotide_identity.py", args)
 
     # Have we got an input and output directory? If not, exit.
     if args.indirname is None:

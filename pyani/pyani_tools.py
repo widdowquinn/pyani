@@ -20,7 +20,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2013-2018 The James Hutton Institute
+Copyright (c) 2013-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import shutil
+
 from collections import namedtuple
+from functools import lru_cache
 
 import pandas as pd
 
@@ -51,6 +54,9 @@ from . import pyani_config, download
 
 # Convenience struct for matrix data returned by ORM
 MatrixData = namedtuple("MatrixData", "name data graphic_args")
+
+# Convenience struct for third-party dependency presence
+Dependencies = namedtuple("Dependencies", "blast legacy_blast mummer")
 
 
 # CLASSES
@@ -237,3 +243,16 @@ def label_results_matrix(matrix, labels):
     matrix.columns = [f"{labels.get(_, _)}:{_}" for _ in matrix.columns]
     matrix.index = [f"{labels.get(_, _)}:{_}" for _ in matrix.index]
     return matrix
+
+
+# Helper function that establishes whether dependencies are present
+# This caches the most recent result
+def has_dependencies():
+    """Returns a namedtuple indicating whether third-party dependencies
+    are available.
+
+    An LRU cache stores the last set of test results, for convenience
+    """
+    return Dependencies(
+        shutil.which("blastn"), shutil.which("blastall"), shutil.which("nucmer")
+    )

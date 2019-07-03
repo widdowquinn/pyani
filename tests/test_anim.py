@@ -8,7 +8,7 @@ These tests are intended to be run from the repository root using:
 
 pytest -v
 
-(c) The James Hutton Institute 2017-2018
+(c) The James Hutton Institute 2017-2019
 Author: Leighton Pritchard
 
 Contact:
@@ -26,7 +26,7 @@ UK
 
 The MIT License
 
-Copyright (c) 2017-2018 The James Hutton Institute
+Copyright (c) 2017-2019 The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -51,12 +51,16 @@ import os
 import unittest
 
 import pandas as pd
+import pytest
 
 from pandas.util.testing import assert_frame_equal
 
-from pyani import anim, pyani_files
+from pyani import anim, pyani_files, pyani_tools
 
 
+@pytest.mark.skipif(
+    not pyani_tools.has_dependencies().mummer, reason="nucmer executable not available"
+)
 class TestNUCmerCmdline(unittest.TestCase):
 
     """Class defining tests of NUCmer command-line generation."""
