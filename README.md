@@ -17,6 +17,7 @@
 - [Installation](#installation)
     - [`pip3`](#pip3)
     - [`bioconda`](#bioconda)
+    - [Installing legacy BLAST](#installing-legacy-blast)
 - [Citing `pyani`](#citing-pyani)
 - [Documentation](#documentation)
 - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
@@ -79,6 +80,12 @@ Then install `pyani`:
 ```bash
 conda install pyani
 ```
+
+### Installing legacy BLAST
+
+The NCBI legacy `BLAST` package is deprecated and not recommended. However, if you wish to use `pyani blastall` or the `ANIblastall` method with the legacy `pyani` interface, you will require a locally-installed copy of this package.
+
+- [`FTP` site for legacy `BLAST` download](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy.NOTSUPPORTED/)
 
 ## Citing `pyani`
 
