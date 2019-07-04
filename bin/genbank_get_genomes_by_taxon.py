@@ -122,6 +122,13 @@ def parse_cmdline():
         default=10,
         type=int,
         help="Timeout for URL connection (s)")
+    parser.add_argument(
+        "-s",
+        "--subfolders",
+        dest="subfolders",
+        action="store_true",
+        default=False,
+        help="Create a subfolder for each species in a genus")
     return parser.parse_args()
 
 
@@ -309,6 +316,12 @@ def get_ncbi_asm(asm_uid, fmt='fasta'):
 
     # Get class and label text
     organism = data['SpeciesName']
+    
+    speciesfolder = None
+
+    if args.subfolders:
+        speciesfolder = organism.lower().replace(" ", "_")
+
     try:
         strain = data['Biosource']['InfraspeciesList'][0]['Sub_value']
     except (KeyError, IndexError):
@@ -325,7 +338,7 @@ def get_ncbi_asm(asm_uid, fmt='fasta'):
 
     # Download and extract genome assembly
     try:
-        fastafilename = retrieve_asm_contigs(filestem, fmt=fmt)
+        fastafilename = retrieve_asm_contigs(filestem, fmt=fmt, speciesfolder=speciesfolder)
     except NCBIDownloadException:
         # This is a little hacky. Sometimes, RefSeq assemblies are
         # suppressed (presumably because they are non-redundant),
@@ -337,7 +350,7 @@ def get_ncbi_asm(asm_uid, fmt='fasta'):
         logger.warning("Could not download %s, trying %s", filestem,
                        gbfilestem)
         try:
-            fastafilename = retrieve_asm_contigs(gbfilestem, fmt=fmt)
+            fastafilename = retrieve_asm_contigs(gbfilestem, fmt=fmt, speciesfolder=speciesfolder)
         except NCBIDownloadException:
             fastafilename = None
 
@@ -347,7 +360,8 @@ def get_ncbi_asm(asm_uid, fmt='fasta'):
 # Download and extract an NCBI assembly file, given a filestem
 def retrieve_asm_contigs(filestem,
                          ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all",
-                         fmt='fasta'):
+                         fmt='fasta',
+                         speciesfolder=None):
     """Downloads an assembly sequence to a local directory.
 
     The filestem corresponds to <AA>_<AN>, where <AA> and <AN> are
@@ -423,7 +437,14 @@ def retrieve_asm_contigs(filestem,
         logger.info("Parsed file content size: %d.", fsize)
 
     # Download data
-    outfname = os.path.join(args.outdirname, '_'.join([filestem, suffix]))
+    if speciesfolder:
+        fullpath = "%s/%s" % (args.outdirname, speciesfolder)
+        if not os.path.exists(fullpath):
+            os.makedirs(fullpath)
+        outfname = os.path.join(fullpath, '_'.join([filestem, suffix]))
+    else:
+        outfname = os.path.join(args.outdirname, '_'.join([filestem, suffix]))
+
     if os.path.exists(outfname):
         logger.warning("Output file %s exists, not downloading", outfname)
     else:
