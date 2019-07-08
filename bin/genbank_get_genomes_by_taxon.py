@@ -25,6 +25,7 @@ import subprocess
 import sys
 import time
 import traceback
+import json
 
 from argparse import ArgumentParser
 from collections import defaultdict
@@ -129,6 +130,20 @@ def parse_cmdline():
         action="store_true",
         default=False,
         help="Create a subfolder for each species in a genus")
+    parser.add_argument(
+        "-w",
+        "--writesummary",
+        dest="writesummary",
+        action="store_true",
+        default=False,
+        help="Write out NCBI summary file as JSON document")
+    parser.add_argument(
+        "-d",
+        "--dryrun",
+        dest="dryrun",
+        action="store_true",
+        default=False,
+        help="Dry run mode. Do not download any data. Will still download summaries if -w is used")
     return parser.parse_args()
 
 
@@ -322,6 +337,21 @@ def get_ncbi_asm(asm_uid, fmt='fasta'):
     if args.subfolders:
         speciesfolder = organism.lower().replace(" ", "_")
 
+    if args.writesummary:
+        summaryfile = '%s-summary.txt' % data['AssemblyAccession']
+        if speciesfolder:
+            fullpath = "%s/%s" % (args.outdirname, speciesfolder)
+            if not os.path.exists(fullpath):
+                os.makedirs(fullpath)
+            summaryfile = fullpath + "/" + summaryfile
+        else:
+            summaryfile = args.outdirname + "/" + summaryfile
+
+        with open(summaryfile, 'w') as outfile:
+            json.dump(summary, outfile, sort_keys=True, indent=4, separators=(',', ': '))
+        if args.dryrun:
+            return (None, None, None, data['AssemblyAccession'])
+
     try:
         strain = data['Biosource']['InfraspeciesList'][0]['Sub_value']
     except (KeyError, IndexError):
@@ -336,26 +366,29 @@ def get_ncbi_asm(asm_uid, fmt='fasta'):
     logger.info("\tLabel: %s", labeltxt)
     logger.info("\tClass: %s", classtxt)
 
-    # Download and extract genome assembly
-    try:
-        fastafilename = retrieve_asm_contigs(filestem, fmt=fmt, speciesfolder=speciesfolder)
-    except NCBIDownloadException:
-        # This is a little hacky. Sometimes, RefSeq assemblies are
-        # suppressed (presumably because they are non-redundant),
-        # but the GenBank assembly persists. In those cases, we
-        # *assume* (because it may not be true) that the corresponding
-        # genbank sequence shares the same accession number, except
-        # that GCF is replaced by GCA
-        gbfilestem = re.sub('^GCF_', 'GCA_', filestem)
-        logger.warning("Could not download %s, trying %s", filestem,
-                       gbfilestem)
+    if not args.dryrun:
+        # Download and extract genome assembly
         try:
-            fastafilename = retrieve_asm_contigs(gbfilestem, fmt=fmt, speciesfolder=speciesfolder)
+            fastafilename = retrieve_asm_contigs(filestem, fmt=fmt, speciesfolder=speciesfolder)
         except NCBIDownloadException:
-            fastafilename = None
+            # This is a little hacky. Sometimes, RefSeq assemblies are
+            # suppressed (presumably because they are non-redundant),
+            # but the GenBank assembly persists. In those cases, we
+            # *assume* (because it may not be true) that the corresponding
+            # genbank sequence shares the same accession number, except
+            # that GCF is replaced by GCA
+            gbfilestem = re.sub('^GCF_', 'GCA_', filestem)
+            logger.warning("Could not download %s, trying %s", filestem,
+                           gbfilestem)
+            try:
+                fastafilename = retrieve_asm_contigs(gbfilestem, fmt=fmt, speciesfolder=speciesfolder)
+            except NCBIDownloadException:
+                fastafilename = None
 
-    return (fastafilename, classtxt, labeltxt, data['AssemblyAccession'])
-
+        return (fastafilename, classtxt, labeltxt, data['AssemblyAccession'])
+    else:
+        logger.info("Dry run mode.")
+        return (None, None, None, data['AssemblyAccession'])
 
 # Download and extract an NCBI assembly file, given a filestem
 def retrieve_asm_contigs(filestem,
