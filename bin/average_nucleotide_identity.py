@@ -940,7 +940,8 @@ if __name__ == "__main__":
 
         # Get input files
         logger.info("Identifying FASTA files in %s", args.indirname)
-        infiles = pyani_files.get_fasta_files(args.indirname)
+        infiles = pyani_files.get_fasta_files(args.indirname, recurse=True)
+        print(f"infiles: {infiles}")
         logger.info("Input files:\n\t%s", "\n\t".join(infiles))
 
         # Are we subsampling? If so, make the selection here
