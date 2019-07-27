@@ -28,6 +28,7 @@ Additional branches may also be found on GitHub, with bug fixes and or new featu
     - [Testing](#testing)
     - [Local Testing](#local-testing)
     - [Continuous Integration](#continuous-integration)
+- [Versioning](#versioning)
 
 <!-- /TOC -->
 
@@ -201,3 +202,7 @@ pytest --cov-report=html --cov=pyani -v tests/
 When you submit a pull request on GitHub, automated tests will be run, and results reported on the pull request. **All tests must pass before a pull request will be merged.**
 
 We currently use [TravisCI](https://travis-ci.org/widdowquinn/pyani) to run tests. The configuration file can be foudn in the repository as `.travis.yml`
+
+## Versioning
+
+We aim to comply with [`PEP440`](https://www.python.org/dev/peps/pep-0440/) and [semantic versioning](https://semver.org/).
