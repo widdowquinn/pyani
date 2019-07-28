@@ -17,7 +17,7 @@ test:
 	@pytest --cov-report=html --cov=pyani -v tests/ && open htmlcov/index.html
 
 # Build and display documentation
-docs:
+docs: clean_docs
 	@cd docs && make html && open _build/html/index.html
 
 # Clean up test, walkthrough, and coverage output
@@ -25,6 +25,9 @@ clean: clean_walkthrough clean_tests clean_coverage
 
 clean_coverage:
 	@rm -rf htmlcov
+
+clean_docs:
+	@rm -rf docs/_build/html
 
 clean_tests:
 	@rm -rf tests/test_output/*

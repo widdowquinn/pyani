@@ -11,38 +11,42 @@ Welcome to ``pyani``'s documentation!
 Build information
 -----------------
 
-.. image:: https://img.shields.io/travis/widdowquinn/pyani.svg?style=flat-square
-   :target: https://travis-ci.org/widdowquinn/pyani
+.. image:: https://circleci.com/gh/widdowquinn/pyani/tree/development.svg?style=shield
+    :target: https://circleci.com/gh/widdowquinn/pyani/tree/development
 .. image:: https://img.shields.io/codecov/c/github/widdowquinn/pyani.svg?style=flat-square
-   :target: https://codecov.org/widdowquinn/pyani
+    :target: https://codecov.org/widdowquinn/pyani
 .. image:: https://readthedocs.org/projects/pyani/badge/?version=latest
-   :target: https://pyani.readthedocs.io/en/latest/?badge=latest
+    :target: https://pyani.readthedocs.io/en/latest/?badge=latest
 .. image:: https://api.codacy.com/project/badge/Grade/f3e56b2bf118471aabf09514a3e6af75
     :target: https://www.codacy.com/app/widdowquinn/pyani?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/pyani&amp;utm_campaign=Badge_Grade
-    
+.. image:: https://img.shields.io/librariesio/sourcerank/pypi/pyani.svg?logo=koding&logoColor=white
+    :target: https://libraries.io/pypi/pyani
+
 ------------------------------
 ``PyPI`` version and Licensing
 ------------------------------
 
 .. image:: https://img.shields.io/pypi/v/pyani.svg?style=flat-square
-   :target: https://pypi.python.org/pypi/pyani
+    :target: https://pypi.python.org/pypi/pyani
 .. image:: https://img.shields.io/pypi/l/pyani.svg?style=flat-square
-   :target: https://pypi.python.org/pypi/pyani
+    :target: https://pypi.python.org/pypi/pyani
+.. image:: https://img.shields.io/pypi/dm/pyani.svg?label=pypi%20downloads&logo=python&logoColor=white
+    :target: https://pypi.org/project/pyani/
 
 -----------------
 ``conda`` version
 -----------------
 
 .. image:: https://anaconda.org/bioconda/pyani/badges/version.svg?style=flat-square
-   :target: https://anaconda.org/bioconda/pyani
+    :target: https://anaconda.org/bioconda/pyani
 .. image:: https://anaconda.org/bioconda/pyani/badges/latest_release_date.svg?style=flat-square
-   :target: https://anaconda.org/bioconda/pyani
+     :target: https://anaconda.org/bioconda/pyani
 .. image:: https://anaconda.org/bioconda/pyani/badges/installer/conda.svg?style=flat-square
-   :target: https://conda.anaconda.org/bioconda
+     :target: https://conda.anaconda.org/bioconda
 .. image:: https://anaconda.org/bioconda/pyani/badges/downloads.svg?style=flat-square
-   :target: https://anaconda.org/bioconda/pyani
+     :target: https://anaconda.org/bioconda/pyani
 .. image:: https://anaconda.org/bioconda/pyani/badges/platforms.svg?style=flat-square
-   :target: https://anaconda.org/bioconda/pyani
+     :target: https://anaconda.org/bioconda/pyani
 
 If you're feeling impatient, please head over to the :ref:`QuickStart Guide <pyani-quickstart>`
 
