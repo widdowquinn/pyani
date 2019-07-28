@@ -73,6 +73,14 @@ To set up a local development environment with these tools configured for `pyani
 conda create --yes --name pyani_dev python=3.7 && conda activate pyani_dev
 ```
 
+then set up `conda` channels for the required dependencies:
+
+```bash
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+```
+
 and then use the command
 
 ```bash
