@@ -6,7 +6,7 @@ Requirements
 
 The ``pyani`` package requires several other programs, packages and tools to run and develop. Many of these are automatically installed alongside ``pyani``, but some packages and tools must be installed separately.
 
-This page describes the requirements for ``pyani`` and how/why they are used.
+This page describes requirements for ``pyani`` and how/why they are used.
 
 .. TIP::
     For more information about installation of specific packages, please see the :ref:`pyani-installation` page.
