@@ -32,7 +32,7 @@ To use ``pyani`` you will need to install it on a local machine (your laptop, de
     pip install pyani
 
 .. TIP::
-    ``pyani`` can also be installed directly from source. More detailed, and alternative, installation instructions can be found on the :ref:`pyani-installation` page.
+    ``pyani`` can also be installed directly from source, or run as a ``Docker`` image. More detailed, and alternative, installation instructions can be found on the :ref:`pyani-installation` page.
 
 
 ---------------------
