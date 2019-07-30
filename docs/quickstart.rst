@@ -43,7 +43,7 @@ The general procedure for any ``pyani`` analysis is:
 
 1. Collect genomes for analysis
 2. Create a database to hold genome data and analysis results
-3. Perform ANIm analysis
+3. Perform ANI/TETRA/etc. analysis
 4. Report and visualise analysis results
 5. Generate species hypotheses (classify the input genomes) using the analysis results
 

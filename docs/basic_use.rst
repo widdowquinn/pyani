@@ -11,4 +11,5 @@ Basic Use
     download
     indexing
     createdb
+    run_anim
 

@@ -85,6 +85,7 @@ If you'd like to fix a bug or make an improvement yourself, contributions are we
    testing
    contributing
    licensing
+   api/pyani
 
 Indices and tables
 ==================
