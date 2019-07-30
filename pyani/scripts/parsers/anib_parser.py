@@ -44,6 +44,7 @@ THE SOFTWARE.
 
 from argparse import ArgumentDefaultsHelpFormatter
 
+from pyani import pyani_config
 from pyani.scripts import subcommands
 
 
@@ -51,5 +52,30 @@ def build(subps, parents=None):
     """Return a command-line parser for the anib subcommand."""
     parser = subps.add_parser(
         "anib", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
+    )
+    # Required positional arguments: input and output directories
+    parser.add_argument(
+        action="store", dest="indir", default=None, help="input genome directory"
+    )
+    parser.add_argument(
+        action="store",
+        dest="outdir",
+        default=None,
+        help="output analysis results directory",
+    )
+    # Optional arguments
+    parser.add_argument(
+        "--dbpath",
+        action="store",
+        dest="dbpath",
+        default=".pyani/pyanidb",
+        help="path to pyani database",
+    )
+    parser.add_argument(
+        "--nucmer_exe",
+        dest="nucmer_exe",
+        action="store",
+        default=pyani_config.NUCMER_DEFAULT,
+        help="path to NUCmer executable",
     )
     parser.set_defaults(func=subcommands.subcmd_anib)
