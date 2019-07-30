@@ -30,7 +30,7 @@ This instructs ``pyani`` to create a new, empty database for analysis at the def
 
 For example:
 
-.. code-block::
+.. code-block:: bash
 
     $ls .pyani
     ls: .pyani: No such file or directory
@@ -47,13 +47,13 @@ Create an empty ``pyani`` database at a specific location
 
 The following command can be used to specify the location of the newly-created ``pyani`` database:
 
-.. code-bash::
+.. code-block:: bash
 
     pyani createdb --dbpath <PATH_TO_DATABASE>
 
 where ``<PATH_TO_DATABASE>`` is the intended location of the database. For instance, to create a new database specific for an analysis we'll call ``multitaxa``, we could use the command:
 
-.. code-bash::
+.. code-block:: bash
 
     $ ls .pyani
     pyanidb
