@@ -95,6 +95,8 @@ Each genome is downloaded in compressed format (``.fna.gz`` files) and expanded 
     9b9719eb78bf7cf6dd0146a3f9426f60	GCF_000806415.1_ASM80641v1_genomic	P. flexibilis JCM 14085
     2bdfffd867d843f970e4dfd388d5332a	GCF_000802425.1_ASM80242v1_genomic	P. flexibilis ATCC 29606
 
+These files are used to associate labels and classes to the genome files in the ``pyani`` database, specific to the analysis run.
+
 Both ``classes.txt`` and ``labels.txt`` can be edited to suit the user's classification and labelling scheme.
 
 ---------------------------------------

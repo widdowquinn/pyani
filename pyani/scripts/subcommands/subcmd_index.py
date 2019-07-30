@@ -53,10 +53,13 @@ from pyani import download, pyani_files
 def subcmd_index(args, logger):
     """Generate a file with the MD5 hash for each genome in an input directory.
 
+    :param args:  Namespace, received command-line arguments
+    :param logger:  logging object
+
     Identify the genome files in the input directory, and generate a single
     MD5 for each so that <genome>.fna produces <genome>.md5
 
-    Genome files are identified from the file extension.
+    Genome files (FASTA) are identified from the file extension.
     """
     # Get list of FASTA files in the input directory
     logger.info("Scanning directory %s for FASTA files", args.indir)
