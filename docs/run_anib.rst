@@ -11,7 +11,7 @@ In brief, the analysis proceeds as follows for a set of input prokaryotic genome
 1. Each input genome is fragmented into consecutive sequences of a given size (default: 1020bp)
 2. A new ``BLAST+`` database is built from each input genome sequence
 3. `NCBI-BLAST+`_ is used to perform pairwise comparisons of each input genome fragment set against the databases for each other input genome, to identify homologous (alignable) regions.
-2. For each comparison, the alignment output is parsed, and the following values are calculated:
+4. For each comparison, the alignment output is parsed, and the following values are calculated:
 
     - total number of aligned bases on each genome
     - fraction of each genome that is aligned (the *coverage*)
@@ -22,31 +22,31 @@ In brief, the analysis proceeds as follows for a set of input prokaryotic genome
 The output values are recorded in the ``pyani`` database.
 
 .. NOTE::
-    A single ``MUMmer`` comparison is performed between each pair of genomes. Input genomes are sorted into alphabetical order by filename, and the query sequence is the genome that occurs earliest in the list; the subject sequence is the genome that occurs latest in the list.
+    The `NCBI-BLAST+` comparisons are asymmetric, and performed in both directions for a pair of genomes (i.e. "fragmented A vs complete B" and "fragmented B vs complete A").
 
 .. TIP::
-    The ``MUMmer`` comparisons are embarrasingly parallel, and can be distributed across cores on an `Open Grid Scheduler`_-compatible cluster, using the ``--scheduler SGE`` option.
+    The `NCBI-BLAST+` comparisons are embarrasingly parallel, and can be distributed across cores on an `Open Grid Scheduler`_-compatible cluster, using the ``--scheduler SGE`` option.
 
 .. ATTENTION::
-    ``pyani anim`` requires that a working copy of `MUMmer3` is available. Please see :ref:`pyani-installation` for information about installing this package.
+    ``pyani anib`` requires that a working copy of `NCBI-BLAST+` is available. Please see :ref:`pyani-installation` for information about installing this package.
 
-For more information about the ``pyani anim`` subcommand, please see the :ref:`pyani-subcmd-anim` page, or issue the command ``pyani anim -h`` to see the inline help.
+For more information about the ``pyani anib`` subcommand, please see the :ref:`pyani-subcmd-anib` page, or issue the command ``pyani anib -h`` to see the inline help.
 
 ---------------------
-Perform ANIm analysis
+Perform ANIb analysis
 ---------------------
 
 The basic form of the command is:
 
 .. code-block:: bash
 
-    pyani anim <INPUT_DIRECTORY> <OUTPUT_DIRECTORY>
+    pyani anib <INPUT_DIRECTORY> <OUTPUT_DIRECTORY>
 
-This instructs ``pyani`` to perform ANIm on the genome FASTA files in ``<INPUT_DIRECTORY>``, and write any output files to ``<OUTPUT_DIRECTORY>``. For example, the following command performs ANIm on genomes in the directory ``genomes`` and writes output to a new directory ``genomes_ANIm``:
+This instructs ``pyani`` to perform ANIb on the genome FASTA files in ``<INPUT_DIRECTORY>``, and write any output files to ``<OUTPUT_DIRECTORY>``. For example, the following command performs ANIb on genomes in the directory ``genomes`` and writes output to a new directory ``genomes_ANIb``:
 
 .. code-block:: bash
 
-    pyani anim genomes genomes_ANIm
+    pyani anib genomes genomes_ANIb
 
 .. NOTE::
     While running, ``pyani anim`` will show progress bars unless these are disabled with the option ``--disable_tqdm``
