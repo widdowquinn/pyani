@@ -1,45 +1,44 @@
 # -*- coding: utf-8 -*-
+# (c) The James Hutton Institute 2016-2019
+# Author: Leighton Pritchard
+#
+# Contact:
+# leighton.pritchard@hutton.ac.uk
+#
+# Leighton Pritchard,
+# Information and Computing Sciences,
+# James Hutton Institute,
+# Errol Road,
+# Invergowrie,
+# Dundee,
+# DD2 5DA,
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2016-2019 The James Hutton Institute
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 """anib_parser.py
 
 Provides parser for anib subcommand
-
-(c) The James Hutton Institute 2016-2019
-Author: Leighton Pritchard
-
-Contact:
-leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2016-2019 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
 """
 
 from argparse import ArgumentDefaultsHelpFormatter
@@ -49,7 +48,15 @@ from pyani.scripts import subcommands
 
 
 def build(subps, parents=None):
-    """Return a command-line parser for the anib subcommand."""
+    """Return a command-line parser for the anib subcommand.
+
+    :param subps:  collection of subparsers in main parser
+    :param parents:  parsers from which arguments are inherited
+
+    The terminology may be confusing, but in practice the main parser collects
+    command-line arguments that are then available to this parser, which inherits
+    options from the parsers in `parents` in addition to those defined below.
+    """
     parser = subps.add_parser(
         "anib", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
@@ -72,10 +79,10 @@ def build(subps, parents=None):
         help="path to pyani database",
     )
     parser.add_argument(
-        "--nucmer_exe",
-        dest="nucmer_exe",
+        "--blastn_exe",
+        dest="blastn_exe",
         action="store",
-        default=pyani_config.NUCMER_DEFAULT,
-        help="path to NUCmer executable",
+        default=pyani_config.BLASTN_DEFAULT,
+        help="path to blastn executable",
     )
     parser.set_defaults(func=subcommands.subcmd_anib)
