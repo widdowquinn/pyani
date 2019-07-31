@@ -130,10 +130,10 @@ class BlastDB(Base):
     Each genome and run combination can be assigned a single BLAST database
     for the comparisons
 
-    fragpath      path to fragmented genome (query in ANIb)
-    dbpath        path to source genome database (subject in ANIb)
-    size          number of fragment sequences in query file
-    dbcmd         command used to generate database
+    - fragpath      path to fragmented genome (query in ANIb)
+    - dbpath        path to source genome database (subject in ANIb)
+    - fragsizes     JSONified dict of fragment sizes
+    - dbcmd         command used to generate database
     """
 
     __tablename__ = "blastdbs"
@@ -143,7 +143,7 @@ class BlastDB(Base):
     run_id = Column(Integer, ForeignKey("runs.run_id"))
     fragpath = Column(String)
     dbpath = Column(String)
-    size = Column(Integer)
+    fragsizes = Column(String)
     dbcmd = Column(String)
 
     genome = relationship("Genome", back_populates="blastdbs")
@@ -164,7 +164,7 @@ class BlastDB(Base):
 
 class Genome(Base):
     """Describes an input genome for a pyani run
-    
+
     - genome_id
         primary key
     - genome_hash
@@ -421,10 +421,11 @@ def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
     for a run, and optional paths to plain text files that contain information
     on class and label strings for each genome.
 
-    The function will attempt to associate new Genome objects with the passed
-    Run object.
+    If the genome already exists in the database, then a Genome object is recovered
+    from the database. Otherwise, a new Genome object is created. All Genome objects
+    will be associated with the passed Run object.
 
-    The session changes are committed once genomes and labels are added to the
+    The session changes are committed once all genomes and labels are added to the
     database without error, as a single transaction.
     """
     # Get list of genome files and paths to class and labels files

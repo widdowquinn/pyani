@@ -42,9 +42,14 @@ Provides the anib subcommand for pyani
 """
 
 import datetime
+import json
 import os
 
 from itertools import permutations
+from pathlib import Path
+
+from Bio import SeqIO
+from tqdm import tqdm
 
 from pyani import anib
 from pyani.pyani_files import collect_existing_output
@@ -54,8 +59,8 @@ from pyani.pyani_orm import (
     add_run_genomes,
     filter_existing_comparisons,
     get_session,
+    update_comparison_matrices,
 )
-from tqdm import tqdm
 
 
 def subcmd_anib(args, logger):
@@ -132,7 +137,13 @@ def subcmd_anib(args, logger):
         )
     logger.info(f"\t...added genome IDs: {genome_ids}")
 
-    # Create output directory
+    # Get list of genomes for this analysis from the database
+    logger.info("Compiling genomes for comparison")
+    genomes = run.genomes.all()
+    logger.info(f"\tCollected {len(genomes)} genomes for this run")
+
+    # Create output directories. We create the main parent directory (args.outdir), but
+    # also subdirectories for the BLAST databases,
     logger.info(f"Creating output directory {args.outdir}")
     try:
         os.makedirs(args.outdir, exist_ok=True)
@@ -141,11 +152,25 @@ def subcmd_anib(args, logger):
             f"Could not create output directory {args.outdir} (exiting)", exc_info=True
         )
         raise SystemError(1)
+    fragdir = Path(str(args.outdir)) / "fragments"
+    blastdbdir = Path(str(args.outdir)) / "blastdbs"
+    logger.info(f"\t...creating subdirectories")
+    os.makedirs(fragdir, exist_ok=True)
+    os.makedirs(blastdbdir, exist_ok=True)
 
-    # Get list of genome IDs for this analysis from the database
-    logger.info("Compiling genomes for comparison")
-    genomes = run.genomes.all()
-    logger.info(f"\tCollected {len(genomes)} genomes for this run")
+    # Create a new sequence fragment file and a new BLAST+ database for each input genome,
+    # and add this data to the database as a row in BlastDB
+    logger.info("Creating input sequence fragment files...")
+    for genome in genomes:
+        fragpath, fraglengths = fragment_fasta_file(
+            Path(str(genome.path)), Path(str(fragdir)), args.fragsize
+        )
+        print(fragpath, len(fraglengths))
+        # blastdb = add_blastdb(
+        #     session, genome, run, fragpath, dbpath, fraglengths, dbcmd
+        # )
+
+    raise NotImplementedError
 
     # Generate all pair permutations of genome IDs as a list of (Genome, Genome) tuples
     logger.info(
@@ -190,7 +215,69 @@ def subcmd_anib(args, logger):
         existingfiles = None
         logger.info(f"\tIdentified no existing output files")
 
+    # Split the input genome files into contiguous fragments of the specified size,
+    # as described in Goris et al. We create a new directory to hold sequence
+    # fragments, away from the main genomes
+    logger.info(f"Splitting input genome files into {args.fragsize}nt fragments...")
+    fragdir = Path(args.outdir) / "fragments"
+    os.makedirs(fragdir, exist_ok=True)
+    fragfiles, fraglens = anib.fragment_fasta_files(
+        [Path(str(_.path)) for _ in genomes],
+        Path(args.outdir) / "fragments",
+        args.fragsize,
+    )
+    logger.info(f"...wrote {len(fragfiles)} fragment files to {fragdir}")
+
     # Create list of BLASTN jobs for each comparison still to be performed
     logger.info("Creating blastn jobs for ANIb...")
+    joblist = generate_joblist(
+        comparisons_to_run, existingfiles, fragfiles, fraglens, args, logger
+    )
+    logger.info(f"...created {len(joblist)} blastn jobs")
 
     raise NotImplementedError
+
+
+def generate_joblist(comparisons, existingfiles, fragfiles, fraglens, args, logger):
+    """Returns list of ComparisonJobs
+
+    :param comparisons:  list of (Genome, Genome) tuples for which comparisons are needed
+    :param existingfiles:  list of pre-existing BLASTN+ outputs
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    """
+    raise NotImplementedError
+
+
+def fragment_fasta_file(inpath, outdir, fragsize):
+    """Return path to fragmented sequence file and JSON of fragment lengths
+
+    :param inpath:  Path to genome file
+    :param outdir:  Path to directory to hold fragmented files
+    :param fragsize:  size of genome fragments
+
+    Returns a tuple of ``(path, json)`` where ``path`` is the path to the fragment
+    file and ``json`` is a JSON-ified dictionary of fragment lengths, keyed by
+    fragment sequence ID.
+    """
+    # Generate fragments for the input sequence, looping over each contig/
+    # chromosome in the input file and breaking into sections of length
+    # fragsize
+    sizedict = {}
+    outseqs = []
+    count = 0
+    for seq in SeqIO.parse(inpath, "fasta"):
+        idx = 0
+        while idx < len(seq):
+            count += 1
+            newseq = seq[idx : idx + fragsize]
+            newseq.id = f"frag{count:05d}"
+            outseqs.append(newseq)
+            sizedict[newseq.id] = len(newseq)
+            idx += fragsize
+
+    # Write fragments to output file
+    fragpath = outdir / f"{inpath.stem}-fragments.fasta"
+    SeqIO.write(outseqs, fragpath, "fasta")
+    return fragpath, json.dumps(sizedict)
+

@@ -131,16 +131,24 @@ def get_version(blast_exe=pyani_config.BLASTN_DEFAULT):
 def fragment_fasta_files(infiles, outdirname, fragsize):
     """Chop sequences of the passed files into fragments, return filenames.
 
-    - infiles - paths to each input sequence file
-    - outdirname - path to output directory
-    - fragsize - the size of sequence fragments
+    :param infiles:  collection of paths to each input sequence file
+    :param outdirname:  path to output directory
+    :param fragsize:  Int, the size of sequence fragments
 
     Takes every sequence from every file in infiles, and splits them into
     consecutive fragments of length fragsize, (with any trailing sequences
-    being included, even if shorter than fragsize), and writes the resulting
-    set of sequences to a file with the same name in the output directory.
+    being included, even if shorter than fragsize), writing the resulting
+    set of sequences to a file with the same name in the specified
+    output directory.
+    
     All fragments are named consecutively and uniquely (within a file) as
     fragNNNNN. Sequence description fields are retained.
+
+    Returns a tuple ``(filenames, fragment_lengths)`` where ``filenames`` is a
+    list of paths to the fragment sequence files, and ``fragment_lengths`` is
+    a dictionary of sequence fragment lengths, keyed by the sequence files,
+    with values being a dictionary of fragment lengths, keyed by fragment
+    IDs.
     """
     outfnames = []
     for fname in infiles:
@@ -165,7 +173,7 @@ def fragment_fasta_files(infiles, outdirname, fragsize):
 def get_fraglength_dict(fastafiles):
     """Return dictionary of sequence fragment lengths, keyed by query name.
 
-    - fastafiles - list of FASTA input whole sequence files
+    :param fastafiles:  list of paths to FASTA input whole sequence files
 
     Loops over input files and, for each, produces a dictionary with fragment
     lengths, keyed by sequence ID. These are returned as a dictionary with
