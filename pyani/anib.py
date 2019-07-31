@@ -86,7 +86,10 @@ THE SOFTWARE.
 """
 
 import os
+import platform
+import re
 import shutil
+import subprocess
 
 from pathlib import Path
 
@@ -98,6 +101,30 @@ from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
 from .pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
+
+
+def get_version(blast_exe=pyani_config.BLASTN_DEFAULT):
+    """Return BLAST+ blastn version as a string
+
+    :param blast_exe:  path to blastn executable
+
+    We expect blastn to return a string as, for example
+
+    .. code-block:: bash
+        $ blastn -version
+        blastn: 2.9.0+
+        Package: blast 2.9.0, build Jun 10 2019 09:40:53
+
+    This is concatenated with the OS name.
+    """
+    cmdline = [blast_exe, "-version"]
+    result = subprocess.run(
+        cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+    )
+    version = re.search(
+        r"(?<=blastn:\s)[0-9\.]*\+", str(result.stdout, "utf-8")
+    ).group()
+    return f"{platform.system()}_{version}"
 
 
 # Divide input FASTA sequences into fragments
@@ -174,7 +201,7 @@ def build_db_jobs(infiles, blastcmds):
     # defining jobnum for later use as last job index used
     for idx, fname in enumerate(infiles):
         dbjobdict[blastcmds.get_db_name(fname)] = pyani_jobs.Job(
-            "%s_db_%06d" % (blastcmds.prefix, idx), blastcmds.build_db_cmd(fname)
+            f"{blastcmds.prefix}_db_{idx:06}", blastcmds.build_db_cmd(fname)
         )
     return dbjobdict
 

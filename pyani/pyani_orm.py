@@ -1,45 +1,44 @@
 # -*- coding: utf-8 -*-
+# (c) The James Hutton Institute 2018-2019
+# Author: Leighton Pritchard
+#
+# Contact:
+# leighton.pritchard@hutton.ac.uk
+#
+# Leighton Pritchard,
+# Information and Computing Sciences,
+# James Hutton Institute,
+# Errol Road,
+# Invergowrie,
+# Dundee,
+# DD2 5DA,
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2018-2019 The James Hutton Institute
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 """Module providing useful functions for manipulating pyani's SQLite3 db.
 
 This SQLAlchemy-based ORM replaces the previous SQL-based module
-
-(c) The James Hutton Institute 2018-2019
-Author: Leighton Pritchard
-
-Contact:
-leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2018-2019 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
 """
 
 import os
@@ -371,6 +370,32 @@ def filter_existing_comparisons(
     return comparisons_to_run
 
 
+def add_run(session, method, cmdline, date, status, name):
+    """Create a new Run and add it to the session
+
+    :param session:      live SQLAlchemy session of pyani database
+    :param method:       string describing analysis run type
+    :param cmdline:      string describing pyani command-line for run
+    :param date:         datetime object describing analysis start time
+    :param status:       string describing status of analysis
+    :param name:         string - name given to the analysis run
+
+    Creates a new Run object with the passed parameters, and returns it.
+    """
+    try:
+        run = Run(method="ANIb", cmdline=cmdline, date=date, status=status, name=name)
+    except Exception:
+        raise PyaniORMException(
+            f"Could not create {method} run with command line: {cmdline}"
+        )
+    try:
+        session.add(run)
+        session.commit()
+    except Exception:
+        raise PyaniORMException(f"Could not add run {run} to the database")
+    return run
+
+
 def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
     """Add genomes for a run to the database
 
@@ -408,6 +433,7 @@ def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
 
     # Get hash and sequence description for each FASTA/hash pair, and add
     # to current session database
+    genome_ids = []
     for fastafile, hashfile in infiles:
         try:
             inhash, _ = read_hash_string(hashfile)
@@ -429,16 +455,14 @@ def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
                 )
                 session.add(genome)
             except Exception:
-                raise PyaniORMException(
-                    "Could not add genome {} to database".format(genome)
-                )
+                raise PyaniORMException(f"Could not add genome {genome} to database")
 
         # Associate this genome with the current run
         try:
             genome.runs.append(run)
         except Exception:
             raise PyaniORMException(
-                "Could not associate genome {} with run {}".format(genome, run)
+                f"Could not associate genome {genome} with run {run}"
             )
 
         # If there's an associated class or label for the genome, add it
@@ -453,11 +477,17 @@ def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
                     )
                 )
             except Exception:
-                raise PyaniORMException("Could not add new genome labels to database.")
-        try:
-            session.commit()
-        except Exception:
-            raise PyaniORMException("Could not commit new genomes in database.")
+                raise PyaniORMException(
+                    f"Could not add labels for {genome} to database."
+                )
+        genome_ids.append(genome.genome_id)
+
+    try:
+        session.commit()
+    except Exception:
+        raise PyaniORMException("Could not commit new genomes in database.")
+
+    return genome_ids
 
 
 def update_comparison_matrices(session, run):

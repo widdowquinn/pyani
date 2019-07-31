@@ -85,4 +85,19 @@ def build(subps, parents=None):
         default=pyani_config.BLASTN_DEFAULT,
         help="path to blastn executable",
     )
+    parser.add_argument(
+        "--format_exe",
+        dest="format_exe",
+        action="store",
+        default=pyani_config.MAKEBLASTDB_DEFAULT,
+        help="path to makeblastdb executable",
+    )
+    parser.add_argument(
+        "--fragsize",
+        dest="fragsize",
+        action="store",
+        type=int,
+        default=pyani_config.FRAGSIZE,
+        help="blastn query fragment size",
+    )
     parser.set_defaults(func=subcommands.subcmd_anib)
