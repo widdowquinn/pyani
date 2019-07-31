@@ -255,7 +255,7 @@ def subcmd_anim(args, logger):
 
 
 def generate_joblist(comparisons, existingfiles, args, logger):
-    """Returns tuple of ANIm jobs, and comparisons
+    """Returns list of ComparisonJobs
 
     :param comparisons:  list of (Genome, Genome) tuples
     :param existingfiles:  list of pre-existing nucmer output files
