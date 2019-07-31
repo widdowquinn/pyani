@@ -163,7 +163,19 @@ class BlastDB(Base):
 
 
 class Genome(Base):
-    """Describes an input genome for a pyani run"""
+    """Describes an input genome for a pyani run
+    
+    - genome_id
+        primary key
+    - genome_hash
+        MD5 hash of input genome file (in ``path``)
+    - path
+        path to FASTA genome file
+    - length
+        length of genome (total bases)
+    - description
+        genome description
+    """
 
     __tablename__ = "genomes"
     __table_args__ = (UniqueConstraint("genome_hash"),)
