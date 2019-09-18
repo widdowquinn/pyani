@@ -56,7 +56,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "pyani"
-copyright = "2017, Leighton Pritchard"
+copyright = "2017-2019, Leighton Pritchard"
 author = "Leighton Pritchard"
 
 # The version info for the project you're documenting, acts as replacement for
