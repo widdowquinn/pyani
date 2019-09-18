@@ -38,7 +38,14 @@ We would be grateful if you could please cite the following manuscript in your w
 
 .. TIP::
     When citing ``pyani`` in your text, please consider quoting the precise release version (if you are using a specific release), or the specific commit hash (if you are using the 'bleeding-edge' development verison), e.g.
-    ``"...using PYANI (v0.2.9)..."``
+
+    ``"...using PYANI (v0.3.0)..."``
+
     or
+
     ``"...using PYANI (commit bb1cb5c)..."``
+
     This will enable precise reproduction of this part of your work by others.
+
+
+.. _10.1039/C5AY02550H: https://dx.doi.org/10.1039/C5AY02550H

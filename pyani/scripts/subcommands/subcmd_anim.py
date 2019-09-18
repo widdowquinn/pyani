@@ -1,46 +1,44 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+# (c) The James Hutton Institute 2017-2019
+#
+# Author: Leighton Pritchard
+# Contact: leighton.pritchard@hutton.ac.uk
+#
+# Leighton Pritchard,
+# Information and Computing Sciences,
+# James Hutton Institute,
+# Errol Road,
+# Invergowrie,
+# Dundee,
+# DD6 9LH,
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2017-2019 The James Hutton Institute
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 """subcmd_anim.py
 
 Provides the anim subcommand for pyani
-
-(c) The James Hutton Institute 2017-2019
-
-Author: Leighton Pritchard
-Contact: leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD6 9LH,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2017-2019 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
 """
 
 import datetime
@@ -61,8 +59,9 @@ from pyani import (
 )
 from pyani.pyani_files import collect_existing_output
 from pyani.pyani_orm import (
-    Run,
     Comparison,
+    PyaniORMException,
+    add_run,
     add_run_genomes,
     filter_existing_comparisons,
     get_session,
@@ -96,6 +95,9 @@ ProgParams = namedtuple("ProgParams", "fragsize maxmatch")
 def subcmd_anim(args, logger):
     """Perform ANIm on all genome files in an input directory.
 
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+
     Finds ANI by the ANIm method, as described in Richter et al (2009)
     Proc Natl Acad Sci USA 106: 19126-19131 doi:10.1073/pnas.0906412106.
 
@@ -124,7 +126,7 @@ def subcmd_anim(args, logger):
 
     # Get current nucmer version
     nucmer_version = anim.get_version(args.nucmer_exe)
-    logger.info(f"Current nucmer version: {nucmer_version}")
+    logger.info(f"MUMMer nucmer version: {nucmer_version}")
 
     # Use the provided name or make one for the analysis
     start_time = datetime.datetime.now()
@@ -141,30 +143,34 @@ def subcmd_anim(args, logger):
         )
         raise SystemExit(1)
 
-    # Add run informatino to database
-    logger.info(f"Adding run info to database {args.dbpath}")
-    run = Run(
-        method="ANIm",
-        cmdline=args.cmdline,
-        date=start_time,
-        status="started",
-        name=name,
-    )
+    # Add information about this run to the database
+    logger.info(f"Adding run info to database {args.dbpath}...")
     try:
-        session.add(run)
-        session.commit()
-        logger.info(f"Added run ID: {run} to the database")
-    except Exception:
-        logger.error(f"Could not add run {run} to the database (exiting)")
+        run = add_run(
+            session,
+            method="ANIm",
+            cmdline=args.cmdline,
+            date=start_time,
+            status="started",
+            name=name,
+        )
+    except PyaniORMException:
+        logger.error(
+            f"Could not add run {run} to the database (exiting)", exc_info=True
+        )
         raise SystemExit(1)
+    logger.info(f"...added run ID: {run} to the database")
 
     # Identify input files for comparison, and populate the database
-    logger.info(f"Adding genomes for run {run} to database")
+    logger.info(f"Adding genomes for run {run} to database...")
     try:
-        add_run_genomes(session, run, args.indir, args.classes, args.labels)
-    except Exception:
+        genome_ids = add_run_genomes(
+            session, run, args.indir, args.classes, args.labels
+        )
+    except PyaniORMException:
         logger.error(f"Could not add genomes to database for run {run} (exiting)")
         raise SystemExit(1)
+    logger.info(f"\t...added genome IDs: {genome_ids}")
 
     # Generate commandlines for NUCmer analysis and output compression
     logger.info("Generating ANIm command-lines")
@@ -172,11 +178,13 @@ def subcmd_anim(args, logger):
     logger.info("NUCmer output will be written temporarily to %s", deltadir)
 
     # Create output directories
-    logger.info("Creating output directory %s", deltadir)
+    logger.info(f"Creating output directory {deltadir}")
     try:
         os.makedirs(deltadir, exist_ok=True)
     except IOError:
-        logger.error("Could not create output directory (exiting)", exc_info=True)
+        logger.error(
+            f"Could not create output directory {deltadir} (exiting)", exc_info=True
+        )
         raise SystemError(1)
 
     # Get list of genome IDs for this analysis from the database
@@ -186,10 +194,10 @@ def subcmd_anim(args, logger):
 
     # Generate all pair combinations of genome IDs as a list of (Genome, Genome) tuples
     logger.info(
-        "Compiling pairwise comparisons (this can take time for large datasets)"
+        "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
     comparisons = list(combinations(tqdm(genomes, disable=args.disable_tqdm), 2))
-    logger.info(f"Total parwise comparisons to be performed: {len(comparisons)}")
+    logger.info(f"\t...total parwise comparisons to be performed: {len(comparisons)}")
 
     # Check for existing comparisons; if one has been done (for the same
     # software package, version, and setting) we add the comparison to this run,
@@ -197,6 +205,9 @@ def subcmd_anim(args, logger):
     logger.info("Checking database for existing comparison data...")
     comparisons_to_run = filter_existing_comparisons(
         session, run, comparisons, "nucmer", nucmer_version, None, args.maxmatch
+    )
+    logger.info(
+        f"\t...after check, still need to run {len(comparisons_to_run)} comparisons"
     )
 
     # If there are no comparisons to run, update the Run matrices and exit
@@ -217,8 +228,12 @@ def subcmd_anim(args, logger):
             f"\tIn this mode, existing comparison output from {deltadir} is reused"
         )
         existingfiles = collect_existing_output(deltadir, "nucmer", args)
+        logger.info(
+            f"\tIdentified {len(existingfiles)} existing output files for reuse"
+        )
     else:
         existingfiles = None
+        logger.info(f"\tIdentified no existing output files")
 
     # Create list of NUCmer jobs for each comparison still to be performed
     logger.info("Creating NUCmer jobs for ANIm")
@@ -240,7 +255,7 @@ def subcmd_anim(args, logger):
 
 
 def generate_joblist(comparisons, existingfiles, args, logger):
-    """Returns tuple of ANIm jobs, and comparisons
+    """Returns list of ComparisonJobs
 
     :param comparisons:  list of (Genome, Genome) tuples
     :param existingfiles:  list of pre-existing nucmer output files

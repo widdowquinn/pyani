@@ -175,3 +175,21 @@ texinfo_documents = [
         "Miscellaneous",
     )
 ]
+
+# -- Magic to run sphinx-apidoc automatically -----------------------------
+
+# See https://github.com/rtfd/readthedocs.org/issues/1139
+# on which this is based.
+
+
+def run_apidoc(_):
+    """Call sphinx-apidoc on Bio and BioSQL modules."""
+    from sphinx.ext.apidoc import main as apidoc_main
+
+    apidoc_main(["-e", "-F", "-o", "api/", "../pyani"])
+    # os.remove("api/thapbi_pict.rst")  # replaced with index.rst
+
+
+def setup(app):
+    """Over-ride Sphinx setup to trigger sphinx-apidoc."""
+    app.connect("builder-inited", run_apidoc)

@@ -86,7 +86,10 @@ THE SOFTWARE.
 """
 
 import os
+import platform
+import re
 import shutil
+import subprocess
 
 from pathlib import Path
 
@@ -100,20 +103,52 @@ from . import pyani_jobs
 from .pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
 
 
+def get_version(blast_exe=pyani_config.BLASTN_DEFAULT):
+    """Return BLAST+ blastn version as a string
+
+    :param blast_exe:  path to blastn executable
+
+    We expect blastn to return a string as, for example
+
+    .. code-block:: bash
+        $ blastn -version
+        blastn: 2.9.0+
+        Package: blast 2.9.0, build Jun 10 2019 09:40:53
+
+    This is concatenated with the OS name.
+    """
+    cmdline = [blast_exe, "-version"]
+    result = subprocess.run(
+        cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+    )
+    version = re.search(
+        r"(?<=blastn:\s)[0-9\.]*\+", str(result.stdout, "utf-8")
+    ).group()
+    return f"{platform.system()}_{version}"
+
+
 # Divide input FASTA sequences into fragments
 def fragment_fasta_files(infiles, outdirname, fragsize):
     """Chop sequences of the passed files into fragments, return filenames.
 
-    - infiles - paths to each input sequence file
-    - outdirname - path to output directory
-    - fragsize - the size of sequence fragments
+    :param infiles:  collection of paths to each input sequence file
+    :param outdirname:  path to output directory
+    :param fragsize:  Int, the size of sequence fragments
 
     Takes every sequence from every file in infiles, and splits them into
     consecutive fragments of length fragsize, (with any trailing sequences
-    being included, even if shorter than fragsize), and writes the resulting
-    set of sequences to a file with the same name in the output directory.
+    being included, even if shorter than fragsize), writing the resulting
+    set of sequences to a file with the same name in the specified
+    output directory.
+    
     All fragments are named consecutively and uniquely (within a file) as
     fragNNNNN. Sequence description fields are retained.
+
+    Returns a tuple ``(filenames, fragment_lengths)`` where ``filenames`` is a
+    list of paths to the fragment sequence files, and ``fragment_lengths`` is
+    a dictionary of sequence fragment lengths, keyed by the sequence files,
+    with values being a dictionary of fragment lengths, keyed by fragment
+    IDs.
     """
     outfnames = []
     for fname in infiles:
@@ -138,7 +173,7 @@ def fragment_fasta_files(infiles, outdirname, fragsize):
 def get_fraglength_dict(fastafiles):
     """Return dictionary of sequence fragment lengths, keyed by query name.
 
-    - fastafiles - list of FASTA input whole sequence files
+    :param fastafiles:  list of paths to FASTA input whole sequence files
 
     Loops over input files and, for each, produces a dictionary with fragment
     lengths, keyed by sequence ID. These are returned as a dictionary with
@@ -174,7 +209,7 @@ def build_db_jobs(infiles, blastcmds):
     # defining jobnum for later use as last job index used
     for idx, fname in enumerate(infiles):
         dbjobdict[blastcmds.get_db_name(fname)] = pyani_jobs.Job(
-            "%s_db_%06d" % (blastcmds.prefix, idx), blastcmds.build_db_cmd(fname)
+            f"{blastcmds.prefix}_db_{idx:06}", blastcmds.build_db_cmd(fname)
         )
     return dbjobdict
 

@@ -10,6 +10,8 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f3e56b2bf118471aabf09514a3e6af75)](https://www.codacy.com/app/widdowquinn/pyani?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/pyani&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/widdowquinn/pyani/badge/development)](https://www.codefactor.io/repository/github/widdowquinn/pyani/overview/development)
+[![pyani sourcerank](https://img.shields.io/librariesio/sourcerank/pypi/pyani.svg?logo=koding&logoColor=white)](https://libraries.io/pypi/pyani)
+
 
 <!-- TOC -->
 

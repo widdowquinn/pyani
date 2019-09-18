@@ -6,8 +6,6 @@ numpy
 openpyxl
 pandas
 pillow
-pytest
-pytest-cov
 scipy
 seaborn
 sqlalchemy==1.2.18

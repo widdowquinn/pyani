@@ -46,6 +46,7 @@ output/
 
 # Coverage test output
 cover/
+htmlcov/
 .coverage
 .coverage.*
 
