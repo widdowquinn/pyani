@@ -4,7 +4,7 @@
 Citing ``pyani``
 ================
 
-Please cite the following manuscript in your work, if you have found PYANI useful:
+We would be grateful if you could please cite the following manuscript in your work if you have found ``pyani`` useful:
 
     Pritchard *et al.* (2016) "Genomics and taxonomy in diagnostics for food security: soft-rotting enterobacterial plant pathogens" *Anal. Methods*, 2016, **8**, 12-24 DOI: 10.1039/C5AY02550H
 
@@ -37,11 +37,8 @@ Please cite the following manuscript in your work, if you have found PYANI usefu
 
 
 .. TIP::
-    When citing PYANI in your text, please consider quoting the precise release version (if you are using a specific release), or the specific commit hash (if you are using the 'bleeding-edge' development verison), e.g.
-    ``"...using PYANI (v0.2.7)..."``
+    When citing ``pyani`` in your text, please consider quoting the precise release version (if you are using a specific release), or the specific commit hash (if you are using the 'bleeding-edge' development verison), e.g.
+    ``"...using PYANI (v0.2.9)..."``
     or
     ``"...using PYANI (commit bb1cb5c)..."``
     This will enable precise reproduction of this part of your work by others.
-
-
-.. _10.1039/C5AY02550H: https://dx.doi.org/10.1039/C5AY02550H

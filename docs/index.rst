@@ -19,7 +19,7 @@ Build information
    :target: https://pyani.readthedocs.io/en/latest/?badge=latest
 .. image:: https://api.codacy.com/project/badge/Grade/f3e56b2bf118471aabf09514a3e6af75
     :target: https://www.codacy.com/app/widdowquinn/pyani?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/pyani&amp;utm_campaign=Badge_Grade
-    
+
 ------------------------------
 ``PyPI`` version and Licensing
 ------------------------------
@@ -52,7 +52,7 @@ Description
 
 ``pyani`` is a program and Python package that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and for rendering relevant graphical and tabular summary output. Where available, it natively takes advantage of multicore systems, and can integrate with `SGE or OGE-compatible`_ job schedulers to manage the computationally-heavy sequence comparisons.
 
-Installing the ``pyani`` package also installs the program ``pyani``, which enables command-line based analysis of genomes. Results are stored in a private `SQLite3`_ database local to the machine, which permits addition of genomes to a previous analysis without the need to recalculate all previously-performed comparisons, facilitating additional downstream analysis and visualisation, and incremental maintenance of results for a taxonomic group as new genome sequences become available.
+Installing the ``pyani`` Python package also installs the program ``pyani``, which enables command-line based analysis of genomes. Results are stored in a private `SQLite3`_ database local to the machine, which permits addition of genomes to a previous analysis without having to recalculate all previously-performed comparisons, facilitating incremental  analysis and visualisation, and enabling incremental maintenance of results for a taxonomic group as new genome sequences become available.
 
 
 ----------------------------------------------
