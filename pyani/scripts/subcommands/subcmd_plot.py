@@ -89,6 +89,7 @@ def subcmd_plot(args, logger):
             .first()
         )
         result_label_dict = pyani_orm.get_matrix_labels_for_run(session, args.run_id)
+        result_class_dict = pyani_orm.get_matrix_classes_for_run(session, args.run_id)
 
         # Parse output formats
         outfmts = args.formats.split(",")
@@ -113,7 +114,7 @@ def subcmd_plot(args, logger):
                 )
                 logger.info(f"Writing graphics to {outfname}")
                 params = pyani_graphics.Params(
-                    cmap, result_label_dict, result_label_dict
+                    cmap, result_label_dict, result_class_dict
                 )
                 # Draw figure
                 gmethod[args.method](

@@ -1,23 +1,24 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2018-2019
+# (c) The University of Strathclyde 2019
 # Author: Leighton Pritchard
 #
 # Contact:
-# leighton.pritchard@hutton.ac.uk
+# leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
-# Information and Computing Sciences,
-# James Hutton Institute,
-# Errol Road,
-# Invergowrie,
-# Dundee,
-# DD2 5DA,
+# Strathclyde Institute of Pharmacy and Biomedical Sciences
+# University of Strathclyde
+# Cathedral Street
+#  Glasgow
 # Scotland,
+# G1 1XQ
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2018-2019 The James Hutton Institute
+# Copyright (c) 2019 The University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -324,7 +325,7 @@ def get_matrix_labels_for_run(session, run_id):
     """Return dictionary of genome labels, keyed by row/column ID
 
     :param session:  live SQLAlchemy session
-    :param run_id:  the Run.run_id value for matrices
+    :param run_id:   the Run.run_id value for matrices
 
     The labels should be valid for identity, coverage and other complete
     matrix results accessed via the .df_* attributes of a run
@@ -339,6 +340,27 @@ def get_matrix_labels_for_run(session, run_id):
         .all()
     )
     return {_.genome_id: _.label for _ in results}
+
+
+def get_matrix_classes_for_run(session, run_id):
+    """Return dictionary of genome classes, keyed by row/column ID
+
+    :param session:  live SQLAlchemy session
+    :param run_id:   the Run.run_id value for matrices
+
+    The class labels should be valid for identity, coverage and other complete
+    matrix results accessed via the .df_* attributes of a run
+    """
+    results = (
+        session.query(Genome.genome_id, Label.class_label)
+        .join(rungenome, Run)
+        .join(
+            Label, and_(Genome.genome_id == Label.genome_id, Run.run_id == Label.run_id)
+        )
+        .filter(Run.run_id == run_id)
+        .all()
+    )
+    return {_.genome_id: _.class_label for _ in results}
 
 
 def filter_existing_comparisons(

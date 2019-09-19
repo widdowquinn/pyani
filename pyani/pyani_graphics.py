@@ -1,45 +1,44 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Code to implement graphics output for ANI analyses.
-
-(c) The James Hutton Institute 2017-2018
-Author: Leighton Pritchard
-
-Contact:
-leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2017-2018 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-"""
+# (c) The James Hutton Institute 2017-2019
+# (c) The University of Strathclude 2019
+# Author: Leighton Pritchard
+#
+# Contact:
+# leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute of Pharmaceutical and Biomedical Sciences
+# The University of Strathclyde
+#  Cathedral Street
+# Glasgow
+#  G1 1XQ
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2017-2018 The James Hutton Institute
+# (c) The University of Strathclude 2019
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+"""Code to implement graphics output for ANI analyses."""
 
 # Force matplotlib NOT to use an Xwindows backend on *nix, so that
 # _tkinter.TclError is avoided when there is no $DISPLAY env: this can occur
@@ -132,12 +131,17 @@ def get_seaborn_colorbar(dfr, classes):
     return col_cb
 
 
-# Get safe Seaborn labels
-def get_safe_seaborn_labels(dfr, labels):
-    """Return labels guaranteed to correspond to the dataframe."""
-    if labels is not None:
-        return [labels.get(i, i) for i in dfr.index]
-    return [i for i in dfr.index]
+def add_seaborn_labels(fig, params):
+    """Add genome ticklabels to Seaborn heatmap"""
+    xticklabels = [
+        params.labels[int(_._text)] for _ in fig.ax_heatmap.get_xticklabels()
+    ]
+    yticklabels = [
+        params.labels[int(_._text)] for _ in fig.ax_heatmap.get_yticklabels()
+    ]
+    fig.ax_heatmap.set_xticklabels(xticklabels, rotation=90)
+    fig.ax_heatmap.set_yticklabels(yticklabels, rotation=0)
+    return fig
 
 
 # Return a clustermap
@@ -152,17 +156,15 @@ def get_seaborn_clustermap(dfr, params, title=None, annot=True):
         row_colors=params.colorbar,
         figsize=(params.figsize, params.figsize),
         linewidths=params.linewidths,
-        xticklabels=params.labels,
-        yticklabels=params.labels,
         annot=annot,
     )
+
+    # add labels for each of the input genomes
+    add_seaborn_labels(fig, params)
+
     fig.cax.yaxis.set_label_position("left")
     if title:
         fig.cax.set_ylabel(title)
-
-    # Rotate ticklabels
-    fig.ax_heatmap.set_xticklabels(fig.ax_heatmap.get_xticklabels(), rotation=90)
-    fig.ax_heatmap.set_yticklabels(fig.ax_heatmap.get_yticklabels(), rotation=0)
 
     # Return clustermap
     return fig
@@ -191,10 +193,6 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
     else:
         col_cb = get_seaborn_colorbar(dfr, params.classes)
 
-    # Labels are defined before we build the clustering
-    # If a label mapping is missing, use the key text as fall back
-    params.labels = get_safe_seaborn_labels(dfr, params.labels)
-
     # Add attributes to parameter object, and draw heatmap
     params.colorbar = col_cb
     params.figsize = figsize
@@ -210,11 +208,14 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
 
 
 # Add dendrogram and axes to passed figure
-def add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation="col"):
+def add_mpl_dendrogram(dfr, fig, params, heatmap_gs, orientation="col"):
     """Return a dendrogram and corresponding gridspec, attached to the fig.
 
     Modifies the fig in-place. Orientation is either 'row' or 'col' and
     determines location and orientation of the rendered dendrogram.
+
+    We expect that the row/column index values should be ordered
+    identically. If they are not, the dendrogram will not match labels
     """
     # Row or column axes?
     if orientation == "row":
@@ -244,8 +245,11 @@ def add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation="col"):
         sch.linkage(distance.squareform(dists), method="complete"),
         color_threshold=np.inf,
         orientation=orient,
+        labels=list(params.labels.values()),
+        get_leaves=True,
     )
     clean_axis(dend_axes)
+
     return {"dendrogram": dend, "gridspec": gspec}
 
 
@@ -264,10 +268,6 @@ def get_mpl_heatmap_axes(dfr, fig, heatmap_gs):
 
 def add_mpl_colorbar(dfr, fig, dend, params, orientation="row"):
     """Add class colorbars to Matplotlib heatmap."""
-    for name in dfr.index[dend["dendrogram"]["leaves"]]:
-        if name not in params.classes:
-            params.classes[name] = name
-
     # Assign a numerical value to each class, for mpl
     classdict = {cls: idx for (idx, cls) in enumerate(params.classes.values())}
 
@@ -354,6 +354,13 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
     - classes - dictionary of sequence classes, keyed by default sequence
                 labels
     """
+    # Sort rows by index - this ensures that labels match the dendrogram.
+    # When recovering dataframes from the database, we get row
+    # indexes/labels as integers, but out of order, resulting in a
+    # mismatch of labels to leaves in the dendrogram. This line remedies
+    # that.
+    dfr = dfr.sort_index()
+
     # Layout figure grid and add title
     # Set figure size by the number of rows in the dataframe
     figsize = max(8, dfr.shape[0] * 0.175)
@@ -365,8 +372,8 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
     )
 
     # Add column and row dendrograms/axes to figure
-    coldend = add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation="col")
-    rowdend = add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation="row")
+    coldend = add_mpl_dendrogram(dfr, fig, params, heatmap_gs, orientation="col")
+    rowdend = add_mpl_dendrogram(dfr, fig, params, heatmap_gs, orientation="row")
 
     # Add heatmap axes to figure, with rows/columns as in the dendrograms
     heatmap_axes = get_mpl_heatmap_axes(dfr, fig, heatmap_gs)
@@ -387,10 +394,7 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
 
     # Add heatmap labels
     add_mpl_labels(
-        heatmap_axes,
-        dfr.index[rowdend["dendrogram"]["leaves"]],
-        dfr.index[coldend["dendrogram"]["leaves"]],
-        params,
+        heatmap_axes, rowdend["dendrogram"]["ivl"], coldend["dendrogram"]["ivl"], params
     )
 
     # Add colour scale
