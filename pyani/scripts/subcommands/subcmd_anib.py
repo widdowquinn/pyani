@@ -36,10 +36,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""subcmd_anib.py
-
-Provides the anib subcommand for pyani
-"""
+"""Provides the anib subcommand for pyani."""
 
 import datetime
 import json
@@ -239,7 +236,7 @@ def subcmd_anib(args, logger):
 
 
 def generate_joblist(comparisons, existingfiles, fragfiles, fraglens, args, logger):
-    """Returns list of ComparisonJobs
+    """Return list of ComparisonJobs.
 
     :param comparisons:  list of (Genome, Genome) tuples for which comparisons are needed
     :param existingfiles:  list of pre-existing BLASTN+ outputs
@@ -250,7 +247,7 @@ def generate_joblist(comparisons, existingfiles, fragfiles, fraglens, args, logg
 
 
 def fragment_fasta_file(inpath, outdir, fragsize):
-    """Return path to fragmented sequence file and JSON of fragment lengths
+    """Return path to fragmented sequence file and JSON of fragment lengths.
 
     :param inpath:  Path to genome file
     :param outdir:  Path to directory to hold fragmented files
@@ -280,4 +277,3 @@ def fragment_fasta_file(inpath, outdir, fragsize):
     fragpath = outdir / f"{inpath.stem}-fragments.fasta"
     SeqIO.write(outseqs, fragpath, "fasta")
     return fragpath, json.dumps(sizedict)
-

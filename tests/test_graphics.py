@@ -90,30 +90,30 @@ def draw_format_method(fmt, mth):
 
 
 def test_png_mpl():
-    """Write .png graphics with mpl"""
+    """Write .png graphics with mpl."""
     draw_format_method("png", "mpl")
 
 
 def test_svg_mpl():
-    """Write .svg graphics with mpl"""
+    """Write .svg graphics with mpl."""
     draw_format_method("svg", "mpl")
 
 
 def test_pdf_mpl():
-    """Write .pdf graphics with mpl"""
+    """Write .pdf graphics with mpl."""
     draw_format_method("pdf", "mpl")
 
 
 def test_png_seaborn():
-    """Write .png graphics with seaborn"""
+    """Write .png graphics with seaborn."""
     draw_format_method("png", "seaborn")
 
 
 def test_svg_seaborn():
-    """Write .svg graphics with seaborn"""
+    """Write .svg graphics with seaborn."""
     draw_format_method("svg", "seaborn")
 
 
 def test_pdf_seaborn():
-    """Write .pdf graphics with seaborn"""
+    """Write .pdf graphics with seaborn."""
     draw_format_method("pdf", "seaborn")

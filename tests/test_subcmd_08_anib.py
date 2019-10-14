@@ -36,9 +36,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""test_subcmd_04a_anib.py
-
-Test anib subcommand for pyani
+"""Test anib subcommand for pyani.
 
 The test suite is intended to be run from the repository root using:
 
@@ -121,5 +119,5 @@ class TestANIbsubcommand(unittest.TestCase):
         }
 
     def test_anib(self):
-        """test anib run"""
+        """Test anib run."""
         subcommands.subcmd_anib(self.argsdict["anib"], self.logger)
