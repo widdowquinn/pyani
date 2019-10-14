@@ -8,12 +8,13 @@ The ``download`` subcommand controls download of genome files from the `NCBI Ass
 
 .. code-block:: text
 
-    usage: pyani download [-h] [-l LOGFILE] [-v] [--disable_tqdm] -t TAXON
-                            --email EMAIL [--retries RETRIES]
-                            [--batchsize BATCHSIZE] [--timeout TIMEOUT] [-f]
-                            [--noclobber] [--labels LABELFNAME]
-                            [--classes CLASSFNAME] [--kraken] [--dry-run]
-                            outdir
+    usage: pyani.py download [-h] [-l LOGFILE] [-v] [--disable_tqdm] -t TAXON
+                         --email EMAIL [--api_key API_KEYPATH]
+                         [--retries RETRIES] [--batchsize BATCHSIZE]
+                         [--timeout TIMEOUT] [-f] [--noclobber]
+                         [--labels LABELFNAME] [--classes CLASSFNAME]
+                         [--kraken] [--dry-run]
+                         outdir
 
 --------------------
 Positional arguments
@@ -25,6 +26,9 @@ Positional arguments
 -----------------
 Flagged arguments
 -----------------
+
+``--api_key PATH_TO_API_KEY``
+    The program will attempt to use an NCBI API key located at ``PATH_TO_API_KEY``. Default: ``~/.ncbi/api_key``
 
 ``--batchsize BATCHSIZE``
     The download process will attempt to download assemblies in multiples of ``BATCHSIZE``. Default: 10000
