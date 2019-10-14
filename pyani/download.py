@@ -1,44 +1,42 @@
 # -*- coding: utf-8 -*-
-"""Module providing functions useful for downloading genomes from NCBI.
-
-(c) The James Hutton Institute 2016-2019
-Author: Leighton Pritchard
-
-Contact:
-leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2016-2019 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-"""
+# (c) The James Hutton Institute 2016-2019
+# (c) University of Strathclyde 2019
+# Author: Leighton Pritchard
+#
+# Contact:
+# leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# Cathedral Street,
+# Glasgow,
+# G1 1XQ
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2019 University of Strathclyde
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+"""Module providing functions useful for downloading genomes from NCBI."""
 
 import hashlib
 import os
@@ -88,6 +86,17 @@ def set_ncbi_email(email):
     """Set contact email for NCBI."""
     Entrez.email = email
     Entrez.tool = "pyani.py"
+
+
+def parse_api_key(api_path):
+    """Parse the contents of the file for NCBI API key.
+
+    This function expects that the indicated file contains a single line
+    (perhaps with a newline) containing no data other than an NCBI API key.
+    """
+    with api_path.open() as ifh:
+        api_key = ifh.readline().strip()
+    return api_key
 
 
 # Get results from NCBI web history, in batches
@@ -192,12 +201,12 @@ def extract_filestem(esummary):
 
 
 # Get eSummary data for a single assembly UID
-def get_ncbi_esummary(asm_uid, retries):
+def get_ncbi_esummary(asm_uid, retries, api_key=None):
     """Obtain full eSummary info for the passed assembly UID."""
     # Obtain full eSummary data for the assembly
     summary = Entrez.read(
         entrez_retry(
-            Entrez.esummary, retries, db="assembly", id=asm_uid, report="full"
+            Entrez.esummary, retries, db="assembly", id=asm_uid, report="full", api_key=api_key
         ),
         validate=False,
     )
@@ -253,7 +262,7 @@ def compile_url(filestem, suffix, ftpstem):
     """
     gcstem, acc, _ = tuple(filestem.split("_", 2))
     aaval = acc.split(".")[0]
-    subdirs = "/".join([acc[i : i + 3] for i in range(0, len(aaval), 3)])
+    subdirs = "/".join([acc[i:i + 3] for i in range(0, len(aaval), 3)])
 
     url = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gcstem, subdirs, filestem, suffix)
     hashurl = "{0}/{1}/{2}/{3}/{4}".format(
@@ -354,7 +363,7 @@ def extract_contigs(fname, ename):
 
 # Using a genomes UID, create class and label text files
 def create_labels(classification, filestem, genomehash):
-    """Return class and label text from UID classification.
+    r"""Return class and label text from UID classification.
 
     - classification  Classification named tuple (org, genus, species, strain)
     - filestem        filestem of input genome file
