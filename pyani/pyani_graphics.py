@@ -133,14 +133,14 @@ def get_seaborn_colorbar(dfr, classes):
 
 def add_seaborn_labels(fig, params):
     """Add genome ticklabels to Seaborn heatmap"""
-    xticklabels = [
-        params.labels[int(_._text)] for _ in fig.ax_heatmap.get_xticklabels()
-    ]
-    yticklabels = [
-        params.labels[int(_._text)] for _ in fig.ax_heatmap.get_yticklabels()
-    ]
-    fig.ax_heatmap.set_xticklabels(xticklabels, rotation=90)
-    fig.ax_heatmap.set_yticklabels(yticklabels, rotation=0)
+    # xticklabels = [
+    #     params.labels[int(_._text)] for _ in fig.ax_heatmap.get_xticklabels()
+    # ]
+    # yticklabels = [
+    #     params.labels[int(_._text)] for _ in fig.ax_heatmap.get_yticklabels()
+    # ]
+    fig.ax_heatmap.set_xticklabels(fig.ax_heatmap.get_xticklabels(), rotation=90)
+    fig.ax_heatmap.set_yticklabels(fig.ax_heatmap.get_yticklabels(), rotation=0)
     return fig
 
 

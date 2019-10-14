@@ -1,8 +1,43 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""test_graphics.py
-
-Tests for pyani graphics
+# (c) The James Hutton Institute 2016-2019
+# (c) University of Strathclyde 2019
+# Author: Leighton Pritchard
+#
+# Contact:
+# leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# Cathedral Street,
+# Glasgow,
+# G1 1XQ
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2019 University of Strathclyde
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+"""Tests for pyani graphics.
 
 These tests are intended to be run from the repository root using:
 
@@ -10,44 +45,6 @@ pytest -v
 
 print() statements will be caught by nosetests unless there is an
 error. They can also be recovered with the -s option.
-
-(c) The James Hutton Institute 2017-2018
-Author: Leighton Pritchard
-
-Contact:
-leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2017-2018 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
 """
 
 import os
@@ -89,7 +86,7 @@ def draw_format_method(fmt, mth):
     method_params = pyani_graphics.Params(
         params[mth](df)[stem], inputs["labels"], inputs["classes"]
     )
-    fn[mth](df, outfilename, title="%s:%s test" % (mth, fmt), params=method_params)
+    fn[mth](df, outfilename, title=f"{mth}:{fmt} test", params=method_params)
 
 
 def test_png_mpl():
