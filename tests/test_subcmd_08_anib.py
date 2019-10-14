@@ -58,10 +58,11 @@ import logging
 import os
 import unittest
 
+from argparse import Namespace
 from collections import namedtuple
 from pathlib import Path
 
-from argparse import Namespace
+import pytest
 
 from pyani.scripts import subcommands
 
@@ -76,6 +77,7 @@ DirPaths = namedtuple("DirPaths", "indir outdir")
 LabelPaths = namedtuple("LabelPaths", "classes labels")
 
 
+@pytest.mark.xfail(reason="ANIb is not currently fully implemented")
 class TestANIbsubcommand(unittest.TestCase):
     """Class defining tests of the pyani anib subcommand."""
 
