@@ -71,7 +71,8 @@ Executables = namedtuple(
 # Convenience struct for test directories
 TestDirs = namedtuple("TestDirs", "outdir tgtdir dldir")
 
-@pytest.mark.skip(reason="legacy scripts not ready for test")
+
+@pytest.mark.xfail(reason="legacy scripts not yet ready for test")
 class TestLegacyScripts(PyaniTestCase):
     """Class defining tests of the pyani download subcommand."""
 
@@ -147,8 +148,7 @@ class TestLegacyScripts(PyaniTestCase):
             "anim_mpl": modify_namespace(
                 self.base_ani,
                 {
-                    "outdirname": self.testdirs.outdir
-                    / f"ANIm_mpl_{anim.get_version()}",
+                    "outdirname": self.testdirs.outdir / f"ANIm_mpl_{anim.get_version()}",
                     "gmethod": "mpl",
                 },
             ),
@@ -183,7 +183,7 @@ class TestLegacyScripts(PyaniTestCase):
 
     @pytest.mark.run(order=1)
     def test_legacy_genome_downloads(self):
-        """Use legacy script to download genomes
+        r"""Use legacy script to download genomes.
 
         genbank_get_genomes_by_taxon.py \
             -o tests/test_output/legacy_scripts/C_blochmannia \
@@ -202,7 +202,7 @@ class TestLegacyScripts(PyaniTestCase):
         reason="nucmer executable not available",
     )
     def test_legacy_anim_seaborn(self):
-        """Use legacy script to run ANIm (seaborn output)
+        r"""Use legacy script to run ANIm (seaborn output).
 
         average_nucleotide_identity.py \
             -l test_ANIm.log \
@@ -224,7 +224,7 @@ class TestLegacyScripts(PyaniTestCase):
         reason="nucmer executable not available",
     )
     def test_legacy_anim_mpl(self):
-        """Use legacy script to run ANIm (mpl output)
+        r"""Use legacy script to run ANIm (mpl output).
 
         average_nucleotide_identity.py \
             -l test_ANIm.log \
@@ -245,7 +245,7 @@ class TestLegacyScripts(PyaniTestCase):
         reason="blastn executable not available",
     )
     def test_legacy_anib_seaborn(self):
-        """Use legacy script to run ANIb (seaborn output)
+        r"""Use legacy script to run ANIb (seaborn output).
 
         average_nucleotide_identity.py \
             -l test_ANIb.log \
@@ -266,7 +266,7 @@ class TestLegacyScripts(PyaniTestCase):
         reason="blastn executable not available",
     )
     def test_legacy_anib_mpl(self):
-        """Use legacy script to run ANIb (mpl output)
+        r"""Use legacy script to run ANIb (mpl output).
 
         average_nucleotide_identity.py \
             -l test_ANIb.log \
@@ -283,7 +283,7 @@ class TestLegacyScripts(PyaniTestCase):
 
     @pytest.mark.run(order=2)
     def test_legacy_tetra_seaborn(self):
-        """Use legacy script to run TETRA (seaborn output)"""
+        r"""Use legacy script to run TETRA (seaborn output)."""
         args = self.argsdict["tetra_seaborn"]
         average_nucleotide_identity.run_main(args, self.logger)
         self.assertDirsEqual(
@@ -292,7 +292,7 @@ class TestLegacyScripts(PyaniTestCase):
 
     @pytest.mark.run(order=2)
     def test_legacy_tetra_mpl(self):
-        """Use legacy script to run TETRA (mpl output)"""
+        r"""Use legacy script to run TETRA (mpl output)."""
         args = self.argsdict["tetra_mpl"]
         average_nucleotide_identity.run_main(args, self.logger)
         self.assertDirsEqual(

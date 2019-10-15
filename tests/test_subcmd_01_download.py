@@ -129,13 +129,13 @@ class TestDownloadSubcommand(unittest.TestCase):
         }
 
     def test_download_dry_run(self):
-        """dry run of C. blochmannia download"""
+        """Dry run of C. blochmannia download."""
         subcommands.subcmd_download(self.argsdict["dry_run"], self.logger)
 
     def test_download_c_blochmannia(self):
-        """test C. blochmannia download"""
+        """Test C. blochmannia download."""
         subcommands.subcmd_download(self.argsdict["C_blochmannia"], self.logger)
 
     def test_download_kraken(self):
-        """C. blochmannia download in Kraken format"""
+        """C. blochmannia download in Kraken format."""
         subcommands.subcmd_download(self.argsdict["kraken"], self.logger)
