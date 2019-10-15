@@ -28,7 +28,7 @@ Flagged arguments
 -----------------
 
 ``--api_key PATH_TO_API_KEY``
-    The program will attempt to use an NCBI API key located at ``PATH_TO_API_KEY``. Default: ``~/.ncbi/api_key``
+    The program will attempt to use an NCBI API key (see `here <https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/>`_) located at ``PATH_TO_API_KEY``. Default: ``~/.ncbi/api_key``
 
 ``--batchsize BATCHSIZE``
     The download process will attempt to download assemblies in multiples of ``BATCHSIZE``. Default: 10000
