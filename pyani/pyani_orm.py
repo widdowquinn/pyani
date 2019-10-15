@@ -328,7 +328,10 @@ def get_matrix_labels_for_run(session, run_id):
     :param run_id:   the Run.run_id value for matrices
 
     The labels should be valid for identity, coverage and other complete
-    matrix results accessed via the .df_* attributes of a run
+    matrix results accessed via the .df_* attributes of a run.
+
+    Labels are returned keyed by the string of the genome ID, for compatibility with
+    matplotlib.
     """
     results = (
         session.query(Genome.genome_id, Label.label)
@@ -339,7 +342,7 @@ def get_matrix_labels_for_run(session, run_id):
         .filter(Run.run_id == run_id)
         .all()
     )
-    return {_.genome_id: _.label for _ in results}
+    return {str(_.genome_id): _.label for _ in results}
 
 
 def get_matrix_classes_for_run(session, run_id):
@@ -350,6 +353,9 @@ def get_matrix_classes_for_run(session, run_id):
 
     The class labels should be valid for identity, coverage and other complete
     matrix results accessed via the .df_* attributes of a run
+
+    Labels are returned keyed by the string of the genome ID, for compatibility with
+    matplotlib.
     """
     results = (
         session.query(Genome.genome_id, Label.class_label)
@@ -360,7 +366,7 @@ def get_matrix_classes_for_run(session, run_id):
         .filter(Run.run_id == run_id)
         .all()
     )
-    return {_.genome_id: _.class_label for _ in results}
+    return {str(_.genome_id): _.class_label for _ in results}
 
 
 def filter_existing_comparisons(

@@ -1,50 +1,44 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""tools.py
-
-Provides tools to support tests in the pyani package
-
-The pylint error C0103 is disabled as we follow the camelCase example
-of unittest for our tests, rather than maintaining snakecase.
-
-(c) The James Hutton Institute 2019
-Author: Leighton Pritchard
-
-Contact:
-leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2019 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-"""
+# (c) The James Hutton Institute 2019
+# (c) The University of Strathclude 2019
+# Author: Leighton Pritchard
+#
+# Contact:
+# leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute of Pharmaceutical and Biomedical Sciences
+# The University of Strathclyde
+#  Cathedral Street
+# Glasgow
+#  G1 1XQ
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2017-2018 The James Hutton Institute
+# (c) The University of Strathclude 2019
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+"""Provides tools to support tests in the pyani package."""
 
 import copy
 import json
@@ -65,8 +59,10 @@ class PyaniFileEqualityTests(unittest.TestCase):
 
     def assertJsonEqual(self, json1, json2):  # pylint: disable=C0103
         """Assert that two passed JSON files are equal.
+
         :param json1:  path to reference JSON file
         :param json2:  path to comparator JSON file
+
         As we can't always be sure that JSON elements are in the same order in otherwise
         equal files, we compare ordered components.
         """
@@ -82,8 +78,10 @@ class PyaniFileEqualityTests(unittest.TestCase):
 
     def assertNucmerEqual(self, fname1, fname2):  # pylint: disable=C0103
         """Assert that two passed nucmer output files are equal.
+
         :param fname1:  path to reference .delta/.filter file
         :param fname2:  path to comparator .delta/.filter file
+
         This is a standard file comparison, skipping the first line.
         """
         with open(fname1, "r") as fh1:
@@ -100,6 +98,7 @@ class PyaniFileEqualityTests(unittest.TestCase):
 
     def assertBlasttabEqual(self, fname1, fname2):  # pylint: disable=C0103
         """Assert that two passed BLAST+ .tab output files contain the same data.
+
         This is not a simple comparison, as we can't rely on the same ordering,
         so we parse the files and compare objects.
         """
@@ -111,7 +110,7 @@ class PyaniFileEqualityTests(unittest.TestCase):
                     self.assertEqual(line1, line2)
 
     def assertBinaryEqual(self, fname1, fname2):  # pylint: disable=C0103
-        """Assert that two passed binary files contain the same data"""
+        """Assert that two passed binary files contain the same data."""
         with open(fname1, "rb") as fh1:
             with open(fname2, "rb") as fh2:
                 data1 = bytearray(fh1.read())
@@ -132,7 +131,7 @@ class PyaniFileEqualityTests(unittest.TestCase):
 
     @staticmethod
     def assertTabEqual(fname1, fname2):  # pylint: disable=C0103
-        """Assert that two tabular files are essentially equal
+        """Assert that two tabular files are essentially equal.
 
         :param fname1:
         :param fname2:
@@ -220,7 +219,8 @@ class PyaniTestCase(PyaniFileEqualityTests, unittest.TestCase):
 
 
 def ordered(obj):
-    """Return ordered version of the passed object
+    """Return ordered version of the passed object.
+
     Dictionaries are not ordered in all Python versions, and the
     implementation of sort_keys() in the the JSON library seems
     erratic in terms of effect

@@ -73,6 +73,8 @@ plt.register_cmap(cmap=pyani_config.CMAP_SPBND_BURD)
 plt.register_cmap(cmap=pyani_config.CMAP_HADAMARD_BURD)
 plt.register_cmap(cmap=pyani_config.CMAP_BURD)
 
+# Matplotlib version dictates bug fixes
+MPLVERSION = matplotlib.__version__
 
 # Convenience class to hold heatmap graphics parameters
 class Params:  # pylint: disable=too-few-public-methods
@@ -123,7 +125,8 @@ def get_seaborn_colorbar(dfr, classes):
         )
     }
     lvl_pal = {cls: paldict[lvl] for (cls, lvl) in list(classes.items())}
-    col_cb = pd.Series(dfr.index).map(lvl_pal)
+    # Have to use string conversion of the dataframe index, here
+    col_cb = pd.Series([str(_) for _ in dfr.index]).map(lvl_pal)
     # The col_cb Series index now has to match the dfr.index, but
     # we don't create the Series with this (and if we try, it
     # fails) - so change it with this line
@@ -131,14 +134,19 @@ def get_seaborn_colorbar(dfr, classes):
     return col_cb
 
 
+# Add labels to the seaborn heatmap axes
 def add_seaborn_labels(fig, params):
-    """Add genome ticklabels to Seaborn heatmap"""
-    # xticklabels = [
-    #     params.labels[int(_._text)] for _ in fig.ax_heatmap.get_xticklabels()
-    # ]
-    # yticklabels = [
-    #     params.labels[int(_._text)] for _ in fig.ax_heatmap.get_yticklabels()
-    # ]
+    """Add labels to Seaborn heatmap axes, in-place."""
+    if params.labels:
+        # If a label mapping is missing, use the key text as fall back
+        [
+            _.set_text(params.labels.get(_.get_text(), _.get_text()))
+            for _ in fig.ax_heatmap.get_yticklabels()
+        ]
+        [
+            _.set_text(params.labels.get(_.get_text(), _.get_text()))
+            for _ in fig.ax_heatmap.get_xticklabels()
+        ]
     fig.ax_heatmap.set_xticklabels(fig.ax_heatmap.get_xticklabels(), rotation=90)
     fig.ax_heatmap.set_yticklabels(fig.ax_heatmap.get_yticklabels(), rotation=0)
     return fig
@@ -146,7 +154,7 @@ def add_seaborn_labels(fig, params):
 
 # Return a clustermap
 def get_seaborn_clustermap(dfr, params, title=None, annot=True):
-    """Return a Seaborn clustermap."""
+    """Return a Seaborn clustermap for the passed dataframe."""
     fig = sns.clustermap(
         dfr,
         cmap=params.cmap,
@@ -273,7 +281,7 @@ def add_mpl_colorbar(dfr, fig, dend, params, orientation="row"):
 
     # colourbar
     cblist = []
-    for name in dfr.index[dend["dendrogram"]["leaves"]]:
+    for name in [str(_) for _ in dfr.index[dend["dendrogram"]["leaves"]]]:
         try:
             cblist.append(classdict[params.classes[name]])
         except KeyError:
