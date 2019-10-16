@@ -57,6 +57,8 @@ import scipy.spatial.distance as distance
 import seaborn as sns
 import pandas as pd
 
+from scipy.stats import gaussian_kde
+
 from . import pyani_config
 
 # Specify matplotlib backend. This *must* be done before pyplot import, but
@@ -75,6 +77,7 @@ plt.register_cmap(cmap=pyani_config.CMAP_BURD)
 
 # Matplotlib version dictates bug fixes
 MPLVERSION = matplotlib.__version__
+
 
 # Convenience class to hold heatmap graphics parameters
 class Params:  # pylint: disable=too-few-public-methods
@@ -125,7 +128,7 @@ def get_seaborn_colorbar(dfr, classes):
         )
     }
     lvl_pal = {cls: paldict[lvl] for (cls, lvl) in list(classes.items())}
-    # Have to use string conversion of the dataframe index, here
+    # Have to use string conversion of the dataframe index, here
     col_cb = pd.Series([str(_) for _ in dfr.index]).map(lvl_pal)
     # The col_cb Series index now has to match the dfr.index, but
     # we don't create the Series with this (and if we try, it
@@ -215,6 +218,43 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
     return fig
 
 
+def distribution_seaborn(dfr, outfilename, matname, title=None):
+    """Return seaborn distribution plot for matrix.
+
+    :param drf:  DataFrame with results matrix
+    :param outfilename:  Path to output file for writing
+    :param matname:  str, type of matrix being plotted
+    :param title:  str, optional title
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(15, 5))
+    fig.suptitle(title)
+    sns.distplot(
+        dfr.values.flatten(), kde=False, rug=False, ax=axes[0], norm_hist=False
+    )
+    sns.distplot(
+        dfr.values.flatten(), hist=False, rug=True, ax=axes[1], norm_hist=False
+    )
+
+    # Modify axes after data is plotted
+    for ax in axes:
+        if matname == "sim_errors":
+            ax.set_xlim(0, ax.get_xlim()[1])
+        elif matname in ["hadamard", "coverage"]:
+            ax.set_xlim(0, 1.01)
+        elif matname == "identity":
+            ax.set_xlim(ax.get_xlim()[0], 1.01)
+
+    # Tidy figure
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+    if outfilename:
+        # For some reason seaborn gives us an AxesSubPlot with
+        # sns.distplot, rather than a Figure, so we need this hack
+        fig.savefig(outfilename)
+
+    return fig
+
+
 # Add dendrogram and axes to passed figure
 def add_mpl_dendrogram(dfr, fig, params, heatmap_gs, orientation="col"):
     """Return a dendrogram and corresponding gridspec, attached to the fig.
@@ -259,6 +299,45 @@ def add_mpl_dendrogram(dfr, fig, params, heatmap_gs, orientation="col"):
     clean_axis(dend_axes)
 
     return {"dendrogram": dend, "gridspec": gspec}
+
+
+def distribution_mpl(dfr, outfilename, matname, title=None):
+    """Return matplotlib distribution plot for matrix.
+
+    :param drf:  DataFrame with results matrix
+    :param outfilename:  Path to output file for writing
+    :param matname:  str, type of matrix being plotted
+    :param title:  str, optional title
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(15, 5))
+    fig.suptitle(title)
+    data = dfr.values.flatten()
+    xs = np.linspace(min(data), max(data), 200)
+    # Plot histogram
+    axes[0].hist(data, bins=50)
+    # Plot density
+    density = gaussian_kde(data)
+    density._compute_covariance()
+    axes[1].plot(xs, density(xs))
+
+    # Modify axes after data is plotted
+    for ax in axes:
+        if matname == "sim_errors":
+            ax.set_xlim(0, ax.get_xlim()[1])
+        elif matname in ["hadamard", "coverage"]:
+            ax.set_xlim(0, 1.01)
+        elif matname == "identity":
+            ax.set_xlim(ax.get_xlim()[0], 1.01)
+
+    # Tidy figure
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+    if outfilename:
+        # For some reason seaborn gives us an AxesSubPlot with
+        # sns.distplot, rather than a Figure, so we need this hack
+        fig.savefig(outfilename)
+
+    return fig
 
 
 # Create heatmap axes for Matplotlib output

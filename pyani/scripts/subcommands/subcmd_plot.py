@@ -42,6 +42,8 @@
 
 import os
 
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -49,10 +51,15 @@ from pyani import pyani_config, pyani_orm, pyani_graphics
 from pyani.pyani_tools import MatrixData
 
 
-# Distribution dictionary of graphics methods
+# Distribution dictionary of matrix graphics methods
 GMETHODS = {
     "mpl": pyani_graphics.heatmap_mpl,
     "seaborn": pyani_graphics.heatmap_seaborn,
+}
+# Distribution dictionary of distribution graphics methods
+DISTMETHODS = {
+    "mpl": pyani_graphics.distribution_mpl,
+    "seaborn": pyani_graphics.distribution_seaborn,
 }
 
 
@@ -99,9 +106,7 @@ def write_run_heatmaps(run_id, session, outfmts, args, logger):
     logger.info(f"Acquiring results for run {run_id}")
     logger.info("\t...retrieving results matrices")
     results = (
-        session.query(pyani_orm.Run)
-        .filter(pyani_orm.Run.run_id == args.run_id)
-        .first()
+        session.query(pyani_orm.Run).filter(pyani_orm.Run.run_id == args.run_id).first()
     )
     result_label_dict = pyani_orm.get_matrix_labels_for_run(session, args.run_id)
     result_class_dict = pyani_orm.get_matrix_classes_for_run(session, args.run_id)
@@ -110,17 +115,43 @@ def write_run_heatmaps(run_id, session, outfmts, args, logger):
     for matdata in [
         MatrixData(*_)
         for _ in [
-            ("identity", results.df_identity, {}),
-            ("coverage", results.df_coverage, {}),
-            ("aln_lengths", results.df_alnlength, {}),
-            ("sim_errors", results.df_simerrors, {}),
-            ("hadamard", results.df_hadamard, {}),
+            ("identity", pd.read_json(results.df_identity), {}),
+            ("coverage", pd.read_json(results.df_coverage), {}),
+            ("aln_lengths", pd.read_json(results.df_alnlength), {}),
+            ("sim_errors", pd.read_json(results.df_simerrors), {}),
+            ("hadamard", pd.read_json(results.df_hadamard), {}),
         ]
     ]:
-        write_heatmap(run_id, matdata, result_label_dict, result_class_dict, outfmts, args, logger)
+        write_heatmap(
+            run_id, matdata, result_label_dict, result_class_dict, outfmts, args, logger
+        )
+        write_distribution(run_id, matdata, outfmts, args, logger)
 
 
-def write_heatmap(run_id, matdata, result_labels, result_classes, outfmts, args, logger):
+def write_distribution(run_id, matdata, outfmts, args, logger):
+    """Write distribution plots for each matrix type.
+
+    :param run_id:  int, run_id for this run
+    :param matdata:  MatrixData object for this distribution plot
+    :param args:  Namespace for command-line arguments
+    :param outfmts:  list of output formats for files
+    :param logger:  logging object
+    """
+    logger.info(f"Writing distribution plot for {matdata.name} matrix")
+    for fmt in outfmts:
+        outfname = Path(args.outdir) / f"distribution_{matdata.name}_run{run_id}.{fmt}"
+        logger.info(f"\tWriting graphics to {outfname}")
+        DISTMETHODS[args.method](
+            matdata.data,
+            outfname,
+            matdata.name,
+            title=f"matrix_{matdata.name}_run{run_id}",
+        )
+
+
+def write_heatmap(
+    run_id, matdata, result_labels, result_classes, outfmts, args, logger
+):
     """Write a single heatmap for a pyani run.
 
     :param run_id:  int, run_id for this run
@@ -132,19 +163,14 @@ def write_heatmap(run_id, matdata, result_labels, result_classes, outfmts, args,
     :param logger:  logging object
     """
     logger.info(f"Writing {matdata.name} matrix heatmaps")
-    dfm = pd.read_json(matdata.data)
-    cmap = pyani_config.get_colormap(dfm, matdata.name)
+    cmap = pyani_config.get_colormap(matdata.data, matdata.name)
     for fmt in outfmts:
-        outfname = os.path.join(
-            args.outdir, f"matrix_{matdata.name}_run{run_id}.{fmt}"
-        )
+        outfname = Path(args.outdir) / f"matrix_{matdata.name}_run{run_id}.{fmt}"
         logger.info(f"\tWriting graphics to {outfname}")
-        params = pyani_graphics.Params(
-            cmap, result_labels, result_classes
-        )
-        # Draw figure
+        params = pyani_graphics.Params(cmap, result_labels, result_classes)
+        # Draw heatmap
         GMETHODS[args.method](
-            dfm,
+            matdata.data,
             outfname,
             title=f"matrix_{matdata.name}_run{run_id}",
             params=params,
