@@ -2,7 +2,6 @@
 
 ## v0.3.0-alpha
 
-- legacy BLAST tests are deprecated as executables are no longer available from NCBI
 - major changes to the command-line API
   - the new API now uses a subcommand system: `pyani <cmd> <arguments>`
 - major changes to result storage
@@ -12,7 +11,9 @@
 - more output formats
   - tabular output is available as HTML tables, as well as plain text
 - new documentation
-  - documentation is now available at [ReadTheDocs](https://pyani.readthedocs.io/en/classify/ )
+  - documentation is now available at [ReadTheDocs](https://pyani.readthedocs.io/en/development/)
+  - papers citing or referring to `pyani` are now listed
+- `pyani download` (replacing `genbank_get_genomes_by_taxon.py`) allows use of an NCBI API key for faster/more stable downloads
 
 ## v0.2.7.dev
 
