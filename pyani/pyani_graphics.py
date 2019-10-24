@@ -10,9 +10,9 @@
 # Leighton Pritchard,
 # Strathclyde Institute of Pharmaceutical and Biomedical Sciences
 # The University of Strathclyde
-#  Cathedral Street
+# Cathedral Street
 # Glasgow
-#  G1 1XQ
+# G1 1XQ
 # Scotland,
 # UK
 #
@@ -242,7 +242,7 @@ def distribution_seaborn(dfr, outfilename, matname, title=None):
         elif matname in ["hadamard", "coverage"]:
             ax.set_xlim(0, 1.01)
         elif matname == "identity":
-            ax.set_xlim(ax.get_xlim()[0], 1.01)
+            ax.set_xlim(0.75, 1.01)
 
     # Tidy figure
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
