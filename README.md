@@ -12,35 +12,37 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/widdowquinn/pyani/badge/development)](https://www.codefactor.io/repository/github/widdowquinn/pyani/overview/development)
 [![pyani sourcerank](https://img.shields.io/librariesio/sourcerank/pypi/pyani.svg?logo=koding&logoColor=white)](https://libraries.io/pypi/pyani)
 
-
 <!-- TOC -->
 
-- [Overview](#overview)
-- [Installation](#installation)
-    - [`pip3`](#pip3)
-    - [`bioconda`](#bioconda)
-    - [Installing legacy BLAST](#installing-legacy-blast)
-- [Citing `pyani`](#citing-pyani)
-- [Documentation](#documentation)
-- [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
-- [Contributing](#contributing)
-- [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
-    - [1. Download genome data](#1-download-genome-data)
-    - [2. Create an analysis database](#2-create-an-analysis-database)
-    - [3. Conduct ANI analysis](#3-conduct-ani-analysis)
-    - [4. Reporting Analyses and Analysis Results](#4-reporting-analyses-and-analysis-results)
-    - [5. Generating graphical output for ANI](#5-generating-graphical-output-for-ani)
-    - [6. Classifying Genomes from Analysis Results](#6-classifying-genomes-from-analysis-results)
-- [Testing `pyani`](#testing-pyani)
-- [Running `pyani`](#running-pyani)
-    - [Script: `average_nucleotide_identity.py`](#script-average_nucleotide_identitypy)
-    - [Script: `genbank_get_genomes_by_taxon.py`](#script-genbank_get_genomes_by_taxonpy)
-- [DEPENDENCIES](#dependencies)
-    - [For ANI analysis](#for-ani-analysis)
-    - [For graphical output](#for-graphical-output)
-- [Method and Output Description](#method-and-output-description)
-    - [Average Nucleotide Identity (ANI)](#average-nucleotide-identity-ani)
-- [Licensing](#licensing)
+- [README.md (pyani)](#readmemd-pyani)
+    - [Overview](#overview)
+    - [Installation](#installation)
+        - [`pip3`](#pip3)
+        - [`bioconda`](#bioconda)
+        - [Installing legacy BLAST](#installing-legacy-blast)
+    - [Citing `pyani`](#citing-pyani)
+    - [Documentation](#documentation)
+    - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
+    - [Contributing](#contributing)
+    - [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
+        - [1. Download genome data](#1-download-genome-data)
+        - [2. Create an analysis database](#2-create-an-analysis-database)
+        - [3. Conduct ANI analysis](#3-conduct-ani-analysis)
+            - [Rerunning the same analysis](#rerunning-the-same-analysis)
+        - [4. Reporting Analyses and Analysis Results](#4-reporting-analyses-and-analysis-results)
+        - [5. Generating graphical output for ANI](#5-generating-graphical-output-for-ani)
+        - [6. Classifying Genomes from Analysis Results](#6-classifying-genomes-from-analysis-results)
+    - [Testing `pyani`](#testing-pyani)
+    - [Running `pyani`](#running-pyani)
+        - [Script: `average_nucleotide_identity.py`](#script-average_nucleotide_identitypy)
+        - [Script: `genbank_get_genomes_by_taxon.py`](#script-genbank_get_genomes_by_taxonpy)
+    - [DEPENDENCIES](#dependencies)
+        - [For ANI analysis](#for-ani-analysis)
+            - [Alignment tools](#alignment-tools)
+        - [For graphical output](#for-graphical-output)
+    - [Method and Output Description](#method-and-output-description)
+        - [Average Nucleotide Identity (ANI)](#average-nucleotide-identity-ani)
+    - [Licensing](#licensing)
 
 <!-- /TOC -->
 
@@ -85,9 +87,7 @@ conda install pyani
 
 ### Installing legacy BLAST
 
-The NCBI legacy `BLAST` package is deprecated and not recommended. However, if you wish to use `pyani blastall` or the `ANIblastall` method with the legacy `pyani` interface, you will require a locally-installed copy of this package.
-
-- [`FTP` site for legacy `BLAST` download](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy.NOTSUPPORTED/)
+The NCBI legacy `BLAST` package is deprecated and not recommended. However, if you wish to use `pyani blastall` or the `ANIblastall` method with the legacy `pyani` interface, you will require a locally-installed copy of this package. This is one of the packages linked in the `requirements-thirdparty.txt` file.
 
 ## Citing `pyani`
 
@@ -95,7 +95,7 @@ A guide to citing `pyani` is included in the file [`CITATIONS`](CITATIONS)
 
 ## Documentation
 
-This `README.md` file provides a quick overview and walkthrough for `pyani`, but full documentation can be found at the link below:
+This `README.md` file provides a quick overview and walkthrough for **THE DEVELOPMENT VERSION OF `pyani`**, but full documentation can be found at the link below:
 
 - [`pyani` Documentation](https://readthedocs.org/projects/pyani/)
 
@@ -239,10 +239,10 @@ WARNING: Genome already in database with this hash and path!
 WARNING: Using existing genome from database, row 1
 […]
 INFO: Complete pairwise comparison list:
-	[(1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (2, 3), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 6), (4, 5), (4, 6), (5, 6)]
+    [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (2, 3), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 6), (4, 5), (4, 6), (5, 6)]
 INFO: Excluding pre-calculated comparisons
 INFO: Comparisons still to be performed:
-	[]
+    []
 INFO: All comparison results already present in database (skipping comparisons)
 INFO: Completed. Time taken: 0.211
 ```
@@ -532,18 +532,17 @@ Unless otherwise indicated, all code is subject to the following agreement:
 
 ```text
     (c) The James Hutton Institute 2014-2019
+    (c) The University of Strathclyde 2019
     Author: Leighton Pritchard
 
-    Contact: leighton.pritchard@hutton.ac.uk
+    Contact: leighton.pritchard@strath.ac.uk
 
     Address:
     Leighton Pritchard,
-    Information and Computational Sciences,
-    James Hutton Institute,
-    Errol Road,
-    Invergowrie,
-    Dundee,
-    DD6 9LH,
+    Strathclyde Institute of Pharmacy and Biomedical Sciences
+    161 Cathedral Street
+    Glasgow
+    G4 0RE,
     Scotland,
     UK
 
