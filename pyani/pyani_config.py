@@ -116,24 +116,24 @@ cdict_spbnd_BuRd = {
 CMAP_SPBND_BURD = LinearSegmentedColormap("spbnd_BuRd", cdict_spbnd_BuRd)
 
 # 1b) Map for species boundaries (95%: 0.95), blue for values at
-# 0.9 or below, red for values at 1.0; white at 0.9.
-# Also, anything below 0.8 is 70% grey
+# 0.64 (0.8 * 0.8) or below, red for values at 1.0; white at 0.9.
+# Also, anything below 0.25 (0.5 * 0.5) is 70% grey
 cdict_hadamard_BuRd = {
     "red": (
         (0.0, 0.0, 0.7),
-        (0.8, 0.7, 0.0),
-        (0.9, 0.0, 0.0),
-        (0.9, 1.0, 1.0),
+        (0.25, 0.7, 0.0),
+        (0.64, 0.0, 0.0),
+        (0.64, 1.0, 1.0),
         (1.0, 1.0, 1.0),
     ),
     "green": (
         (0.0, 0.0, 0.7),
-        (0.8, 0.7, 0.0),
-        (0.9, 0.0, 0.0),
-        (0.9, 1.0, 1.0),
+        (0.25, 0.7, 0.0),
+        (0.64, 0.0, 0.0),
+        (0.64, 1.0, 1.0),
         (1.0, 0.0, 0.0),
     ),
-    "blue": ((0.0, 0.0, 0.7), (0.8, 0.7, 1.0), (0.9, 1.0, 1.0), (1.0, 0.0, 0.0)),
+    "blue": ((0.0, 0.0, 0.7), (0.25, 0.7, 1.0), (0.64, 1.0, 1.0), (1.0, 0.0, 0.0)),
 }
 CMAP_HADAMARD_BURD = LinearSegmentedColormap("hadamard_BuRd", cdict_hadamard_BuRd)
 
