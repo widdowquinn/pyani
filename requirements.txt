@@ -8,5 +8,5 @@ pandas
 pillow
 scipy
 seaborn
-sqlalchemy==1.2.18
+sqlalchemy
 tqdm

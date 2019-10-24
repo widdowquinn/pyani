@@ -125,7 +125,7 @@ def subcmd_report(args, logger):
                 Label.label,
                 Label.class_label,
             )
-            .join(rungenome, Genome)
+            .join(rungenome, Genome.genome_id == rungenome.c.genome_id)
             .join(
                 Label,
                 and_(Genome.genome_id == Label.genome_id, Run.run_id == Label.run_id),
@@ -168,7 +168,7 @@ def subcmd_report(args, logger):
                 Run.method,
                 Run.date,
             )
-            .join(rungenome, Run)
+            .join(rungenome, Run.run_id == rungenome.c.run_id)
             .join(
                 Label,
                 and_(Genome.genome_id == Label.genome_id, Run.run_id == Label.run_id),
