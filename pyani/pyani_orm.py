@@ -96,7 +96,7 @@ LabelTuple = namedtuple("LabelTuple", "label class_label")
 
 
 class Label(Base):
-    """Describes relationship between genome, run and genome label
+    """Describes relationship between genome, run and genome label.
 
     Each genome and run combination can be assigned a single label
     """
@@ -113,6 +113,7 @@ class Label(Base):
     run = relationship("Run", back_populates="labels")
 
     def __str__(self):
+        """Return string representation of Label table row."""
         return str(
             "Genome ID: {}, Run ID: {}, Label ID: {}, Label: {}, Class: {}".format(
                 self.genome_id, self.run_id, self.label_id, self.label, self.class_label
@@ -120,13 +121,14 @@ class Label(Base):
         )
 
     def __repr__(self):
+        """Return string representation of Label table object."""
         return "<Label(key=({}, {}, {}))>".format(
             self.label_id, self.run_id, self.genome_id
         )
 
 
 class BlastDB(Base):
-    """Describes relationship between genome, run, source BLAST database and query fragments
+    """Describes relationship between genome, run, source BLAST database and query fragments.
 
     Each genome and run combination can be assigned a single BLAST database
     for the comparisons
@@ -151,20 +153,22 @@ class BlastDB(Base):
     run = relationship("Run", back_populates="blastdbs")
 
     def __str__(self):
+        """Return string representation of BlastDB table row."""
         return str(
-            "Genome ID: {}, Run ID: {}, Label ID: {}, Label: {}, Class: {}".format(
+            "BlastDB: {}, Run ID: {}, Label ID: {}, Label: {}, Class: {}".format(
                 self.genome_id, self.run_id, self.label_id, self.label, self.class_label
             )
         )
 
     def __repr__(self):
-        return "<Label(key=({}, {}, {}))>".format(
+        """Return string representation of BlastDB table object."""
+        return "<BlastDB(key=({}, {}, {}))>".format(
             self.label_id, self.run_id, self.genome_id
         )
 
 
 class Genome(Base):
-    """Describes an input genome for a pyani run
+    """Describes an input genome for a pyani run.
 
     - genome_id
         primary key
@@ -204,14 +208,16 @@ class Genome(Base):
     )
 
     def __str__(self):
+        """Return string representation of Genome table row."""
         return str("Genome {}: {}".format(self.genome_id, self.description))
 
     def __repr__(self):
+        """Return string representation of Genome table object."""
         return "<Genome(id='{}',desc='{}')>".format(self.genome_id, self.description)
 
 
 class Run(Base):
-    """Describes a single pyani run"""
+    """Describes a single pyani run."""
 
     __tablename__ = "runs"
 
@@ -237,14 +243,16 @@ class Run(Base):
     blastdbs = relationship("BlastDB", back_populates="run", lazy="dynamic")
 
     def __str__(self):
+        """Return string representation of Run table row."""
         return str("Run {}: {} ({})".format(self.run_id, self.name, self.date))
 
     def __repr__(self):
+        """Return string representation of Run table object."""
         return "<Run(run_id={})>".format(self.run_id)
 
 
 class Comparison(Base):
-    """Describes a single pairwise comparison between two genomes"""
+    """Describes a single pairwise comparison between two genomes."""
 
     __tablename__ = "comparisons"
     __table_args__ = (
@@ -277,6 +285,7 @@ class Comparison(Base):
     )
 
     def __str__(self):
+        """Return string representation of Comparison table row."""
         return str(
             "Query: {}, Subject: {}, %%ID={}, ({} {})".format(
                 self.query_id,
@@ -288,11 +297,12 @@ class Comparison(Base):
         )
 
     def __repr__(self):
+        """Return string representation of Comparison table object."""
         return "<Comparison(comparison_id={})>".format(self.comparison_id)
 
 
 def create_db(dbpath):
-    """Create an empty pyani SQLite3 database at the passed path
+    """Create an empty pyani SQLite3 database at the passed path.
 
     :param dbpath:  path to pyan database
     """
@@ -301,14 +311,14 @@ def create_db(dbpath):
 
 
 def get_session(dbpath):
-    """Connect to an existing pyani SQLite3 database and return a session"""
+    """Connect to an existing pyani SQLite3 database and return a session."""
     engine = create_engine("sqlite:///{}".format(dbpath), echo=False)
     Session.configure(bind=engine)
     return Session()
 
 
 def get_comparison_dict(session):
-    """Return a dictionary of comparisons in the session database
+    """Return a dictionary of comparisons in the session database.
 
     :param session:      live SQLAlchemy session of pyani database
 
@@ -322,7 +332,7 @@ def get_comparison_dict(session):
 
 
 def get_matrix_labels_for_run(session, run_id):
-    """Return dictionary of genome labels, keyed by row/column ID
+    """Return dictionary of genome labels, keyed by row/column ID.
 
     :param session:  live SQLAlchemy session
     :param run_id:   the Run.run_id value for matrices
@@ -346,7 +356,7 @@ def get_matrix_labels_for_run(session, run_id):
 
 
 def get_matrix_classes_for_run(session, run_id):
-    """Return dictionary of genome classes, keyed by row/column ID
+    """Return dictionary of genome classes, keyed by row/column ID.
 
     :param session:  live SQLAlchemy session
     :param run_id:   the Run.run_id value for matrices
@@ -411,7 +421,7 @@ def filter_existing_comparisons(
 
 
 def add_run(session, method, cmdline, date, status, name):
-    """Create a new Run and add it to the session
+    """Create a new Run and add it to the session.
 
     :param session:      live SQLAlchemy session of pyani database
     :param method:       string describing analysis run type
@@ -437,7 +447,7 @@ def add_run(session, method, cmdline, date, status, name):
 
 
 def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
-    """Add genomes for a run to the database
+    """Add genomes for a run to the database.
 
     :param session:       live SQLAlchemy session of pyani database
     :param run:           Run object describing the parent pyani run
