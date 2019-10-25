@@ -66,6 +66,7 @@ from pyani.pyani_tools import get_genome_length
 
 
 class PyaniORMException(PyaniException):
+
     """Exception raised when ORM or database interaction fails."""
 
 
@@ -96,6 +97,7 @@ LabelTuple = namedtuple("LabelTuple", "label class_label")
 
 
 class Label(Base):
+
     """Describes relationship between genome, run and genome label.
 
     Each genome and run combination can be assigned a single label
@@ -128,6 +130,7 @@ class Label(Base):
 
 
 class BlastDB(Base):
+
     """Describes relationship between genome, run, source BLAST database and query fragments.
 
     Each genome and run combination can be assigned a single BLAST database
@@ -168,6 +171,7 @@ class BlastDB(Base):
 
 
 class Genome(Base):
+
     """Describes an input genome for a pyani run.
 
     - genome_id
@@ -217,6 +221,7 @@ class Genome(Base):
 
 
 class Run(Base):
+
     """Describes a single pyani run."""
 
     __tablename__ = "runs"
@@ -252,6 +257,7 @@ class Run(Base):
 
 
 class Comparison(Base):
+
     """Describes a single pairwise comparison between two genomes."""
 
     __tablename__ = "comparisons"

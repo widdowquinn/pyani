@@ -63,6 +63,7 @@ Dependencies = namedtuple("Dependencies", "blast legacy_blast mummer")
 
 # Class to hold ANI dataframe results
 class ANIResults:
+
     """Holds ANI dataframe results."""
 
     def __init__(self, labels, mode):
@@ -136,6 +137,7 @@ class ANIResults:
 
 # Class to hold BLAST functions
 class BLASTfunctions:
+
     """Class to hold BLAST functions."""
 
     def __init__(self, db_func, blastn_func):
@@ -146,6 +148,7 @@ class BLASTfunctions:
 
 # Class to hold BLAST executables
 class BLASTexes:
+
     """Class to hold BLAST functions."""
 
     def __init__(self, format_exe, blast_exe):
@@ -156,6 +159,7 @@ class BLASTexes:
 
 # Class to hold/build BLAST commands
 class BLASTcmds:
+
     """Class for construction of BLASTN and database formatting commands."""
 
     def __init__(self, funcs, exes, prefix, outdir):

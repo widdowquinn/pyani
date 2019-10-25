@@ -1,4 +1,41 @@
 # -*- coding: utf-8 -*-
+# (c) The James Hutton Institute 2016-2019
+# (c) University of Strathclyde 2019
+# Author: Leighton Pritchard
+#
+# Contact:
+# leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# Cathedral Street,
+# Glasgow,
+# G1 1XQ
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2019 University of Strathclyde
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 """Code to implement the ANIm average nucleotide identity method.
 
 Calculates ANI by the ANIm method, as described in Richter et al (2009)
@@ -13,44 +50,6 @@ and similarity error count for every unique region alignment. These are
 processed to give matrices of aligned sequence lengths, similarity error
 counts, average nucleotide identity (ANI) percentages, and minimum aligned
 percentage (of whole genome) for each pairwise comparison.
-
-(c) The James Hutton Institute 2016-2019
-Author: Leighton Pritchard
-
-Contact:
-leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2016-2019 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
 """
 
 import os
@@ -180,7 +179,7 @@ def construct_nucmer_cmdline(
     filter_exe=pyani_config.FILTER_DEFAULT,
     maxmatch=False,
 ):
-    """Return a tuple of corresponding NUCmer and delta-filter commands
+    """Return a tuple of corresponding NUCmer and delta-filter commands.
 
     The split into a tuple was made necessary by changes to SGE/OGE.
     The delta-filter command must now be run as a dependency of the NUCmer

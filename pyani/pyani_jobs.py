@@ -1,4 +1,41 @@
 # -*- coding: utf-8 -*-
+# (c) The James Hutton Institute 2013-2019
+# (c) University of Strathclyde 2019
+# Author: Leighton Pritchard
+#
+# Contact:
+# leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# Cathedral Street,
+# Glasgow,
+# G1 1XQ
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2013-2019 The James Hutton Institute
+# Copyright (c) 2019 University of Strathclyde
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 """Code to manage jobs for pyani.
 
 In order to be a little more consistent behind the scenes for schedulers,
@@ -21,44 +58,6 @@ interleaved by the scheduler with no need for pools.
 
 This code is essentially a frozen and cut-down version of pysge
 (https://github.com/widdowquinn/pysge)
-
-(c) The James Hutton Institute 2013-2017
-Author: Leighton Pritchard
-
-Contact:
-leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2013-2017 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
 """
 
 import os
@@ -73,22 +72,23 @@ from .pyani_config import SGE_WAIT
 # The Job class describes a single command-line job, with dependencies (jobs
 # that must be run first.
 class Job:
+
     """Individual job to be run, with list of dependencies."""
 
     def __init__(self, name, command, queue=None):
         """Instantiate a Job object.
 
-        - name           String describing the job (uniquely)
-        - command        String, the valid shell command to run the job
-        - queue          String, the SGE queue under which the job shall run
+        :param name:           String describing the job (uniquely)
+        :param command:        String, the valid shell command to run the job
+        :param queue:          String, the SGE queue under which the job shall run
         """
-        self.name = name                 # Unique name for the job
-        self.queue = queue               # The SGE queue to run the job under
-        self.command = command           # Command line to run for this job
+        self.name = name  # Unique name for the job
+        self.queue = queue  # The SGE queue to run the job under
+        self.command = command  # Command line to run for this job
         self.script = command
-        self.scriptPath = None           # Will hold path to the script file
-        self.dependencies = []           # List of jobs to be completed first
-        self.submitted = False           # Flag: is job submitted?
+        self.scriptPath = None  # Will hold path to the script file
+        self.dependencies = []  # List of jobs to be completed first
+        self.submitted = False  # Flag: is job submitted?
         self.finished = False
 
     def add_dependency(self, job):
@@ -116,6 +116,7 @@ class Job:
 
 
 class JobGroup:
+
     """Class that stores a group of jobs, permitting parameter sweeps."""
 
     def __init__(self, name, command, queue=None, arguments=None):
@@ -139,22 +140,22 @@ class JobGroup:
         arguments='{'fooargs': ['1','2','3','4'],
                     'barargs': ['a','b','c','d']}
         """
-        self.name = name               # Set JobQueue name
-        self.queue = queue             # Set SGE queue to request
-        self.command = command         # Set command string
-        self.dependencies = []         # Create empty list for dependencies
-        self.submitted = False          # Set submitted Boolean
+        self.name = name  # Set JobQueue name
+        self.queue = queue  # Set SGE queue to request
+        self.command = command  # Set command string
+        self.dependencies = []  # Create empty list for dependencies
+        self.submitted = False  # Set submitted Boolean
         self.finished = False
         if arguments is not None:
             self.arguments = arguments  # Dictionary of arguments for command
         else:
             self.arguments = {}
-        self.generate_script()         # Make SGE script for sweep/array
+        self.generate_script()  # Make SGE script for sweep/array
 
     def generate_script(self):
         """Create the SGE script that will run the jobs in the JobGroup."""
-        self.script = ""        # Holds the script string
-        total = 1               # total number of jobs in this group
+        self.script = ""  # Holds the script string
+        total = 1  # total number of jobs in this group
 
         # for now, SGE_TASK_ID becomes TASK_ID, but we base it at zero
         self.script += """let "TASK_ID=$SGE_TASK_ID - 1"\n"""
@@ -163,7 +164,7 @@ class JobGroup:
         for key in sorted(self.arguments.keys()):
             # The keys are sorted for py3.5 compatibility with tests
             values = self.arguments[key]
-            line = ("%s_ARRAY=( " % (key))
+            line = "%s_ARRAY=( " % (key)
             for value in values:
                 line += value
                 line += " "

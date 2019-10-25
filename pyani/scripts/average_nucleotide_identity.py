@@ -1,5 +1,42 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# (c) The James Hutton Institute 2013-2019
+# (c) University of Strathclyde 2019
+# Author: Leighton Pritchard
+#
+# Contact:
+# leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# Cathedral Street,
+# Glasgow,
+# G1 1XQ
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2013-2019 The James Hutton Institute
+# Copyright (c) 2019 University of Strathclyde
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 """Script that calculates ANI measures for a directory of genomes.
 
 This script calculates Average Nucleotide Identity (ANI) according to one of
@@ -81,45 +118,6 @@ o R with shared libraries installed on the system, for graphical output
       (http://cran.r-project.org/)
 
 o Rpy2 (http://rpy.sourceforge.net/rpy2.html)
-
-
-(c) The James Hutton Institute 2013-2017
-Author: Leighton Pritchard
-
-Contact:
-leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2013-2017 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
 """
 
 import json
@@ -581,7 +579,7 @@ def calculate_tetra(args, logger, infiles):
 
 
 def make_sequence_fragments(args, logger, infiles, blastdir):
-    """Return tuple of fragment files, and fragment sizes
+    """Return tuple of fragment files, and fragment sizes.
 
     :param args:  Namespace of command-line arguments
     :param logger:  logging object
@@ -603,7 +601,7 @@ def make_sequence_fragments(args, logger, infiles, blastdir):
 
 
 def run_blast(args, logger, infiles, blastdir):
-    """Run BLAST commands for ANIb methods
+    """Run BLAST commands for ANIb methods.
 
     :param args:  Namespace of command-line options
     :param logger:  logging object
@@ -814,7 +812,7 @@ def subsample_input(args, logger, infiles):
 
 
 def process_arguments(args):
-    """Initial processing of command-line arguments
+    """Initial processing of command-line arguments.
 
     :param args:  Namespace of command-line arguments
 
@@ -833,7 +831,7 @@ def process_arguments(args):
 
 
 def build_logger(args, logger):
-    """Return a logging object for the script
+    """Return a logging object for the script.
 
     :param args:  Namespace of command-line arguments
     :param logger:  Expected to be None, but may be logging object
@@ -869,7 +867,7 @@ def build_logger(args, logger):
 
 
 def test_class_label_paths(args, logger):
-    """Tests if label and class files exist
+    """Test if label and class files exist.
 
     :param args:  Namespace of command-line arguments
     :param logger:  logging object
@@ -885,7 +883,7 @@ def test_class_label_paths(args, logger):
 
 
 def get_method(args, logger):
-    """Returns function and config for the chosen method
+    """Return function and config for the chosen method.
 
     :param args:  Namespace of command-line arguments
     :param logger:  logging object
@@ -911,7 +909,7 @@ def get_method(args, logger):
 
 
 def test_scheduler(args, logger):
-    """Tests if the specified scheduler can be used
+    """Test if the specified scheduler can be used.
 
     :param args:  Namespace of command-line arguments
     :param logger:  logging object

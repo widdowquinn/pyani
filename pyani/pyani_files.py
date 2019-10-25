@@ -1,44 +1,42 @@
 # -*- coding: utf-8 -*-
-"""Code to help handle files for average nucleotide identity calculations.
-
-(c) The James Hutton Institute 2013-2017
-Author: Leighton Pritchard
-
-Contact:
-leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2013-2017 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-"""
+# (c) The James Hutton Institute 2013-2019
+# (c) University of Strathclyde 2019
+# Author: Leighton Pritchard
+#
+# Contact:
+# leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# Cathedral Street,
+# Glasgow,
+# G1 1XQ
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2013-2019 The James Hutton Institute
+# Copyright (c) 2019 University of Strathclyde
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+"""Code to handle files for average nucleotide identity calculations."""
 
 import os
 
@@ -49,6 +47,7 @@ from pyani import PyaniException
 
 # General exception for scripts
 class PyaniFilesException(PyaniException):
+
     """Exception raised by pyani when file interaction goes bad."""
 
 
@@ -56,7 +55,7 @@ class PyaniFilesException(PyaniException):
 def get_fasta_files(dirname=None):
     """Return a list of FASTA files in the passed directory.
 
-    - dirname - path to input directory
+    :param dirname: - path to input directory
     """
     if dirname is None:
         dirname = "."
@@ -67,6 +66,9 @@ def get_fasta_files(dirname=None):
 # Return a list of paths to FASTA files in a directory
 def get_fasta_paths(dirname, extlist=None):
     """Return a list of paths to files matching a list of FASTA extensions.
+
+    :param dirname:
+    :param extlist:
 
     Returns the full path to each file.
     """
@@ -151,7 +153,7 @@ def read_fasta_description(filename):
 
 # Load class or label file as dictionary
 def load_classes_labels(path):
-    """Returns a dictionary of genome classes or labels keyed by hash
+    r"""Return a dictionary of genome classes or labels keyed by hash.
 
     :param path:  path to classes or labels file
 
@@ -172,9 +174,9 @@ def load_classes_labels(path):
 
 # Collect existing output files when in recovery mode
 def collect_existing_output(dirpath, program, args):
-    """Returns a list of existing output files at dirpath
+    """Return a list of existing output files at dirpath.
 
-    :param dirpath"       path to existing output directory
+    :param dirpath:       path to existing output directory
     :param args:          command-line arguments for the run
     """
     # Obtain collection of expected output files already present in directory

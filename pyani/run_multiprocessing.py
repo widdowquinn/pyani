@@ -1,10 +1,41 @@
-# Copyright 2013-2015, The James Hutton Insitute
+# -*- coding: utf-8 -*-
+# (c) The James Hutton Institute 2013-2019
+# (c) University of Strathclyde 2019
 # Author: Leighton Pritchard
 #
-# This code is part of the pyani package, and is governed by its licence.
-# Please see the LICENSE file that should have been included as part of
-# this package.
-
+# Contact:
+# leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# Cathedral Street,
+# Glasgow,
+# G1 1XQ
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2019 University of Strathclyde
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 """Code to run a set of command-line jobs using multiprocessing.
 
 For parallelisation on multi-core desktop/laptop systems, etc. we use
@@ -22,9 +53,9 @@ CUMRETVAL = 0
 def run_dependency_graph(jobgraph, workers=None, logger=None):
     """Create and run pools of jobs based on the passed jobgraph.
 
-    - jobgraph - list of jobs, which may have dependencies.
-    - verbose - flag for multiprocessing verbosity
-    - logger - a logger module logger (optional)
+    :param jobgraph:  list of jobs, which may have dependencies.
+    :param verbose:  flag for multiprocessing verbosity
+    :param logger: a logger module logger (optional)
 
     The strategy here is to loop over each job in the list of jobs (jobgraph),
     and create/populate a series of Sets of commands, to be run in

@@ -36,10 +36,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""subcmd_anim.py
-
-Provides the anim subcommand for pyani
-"""
+"""Provides the anim subcommand for pyani."""
 
 import datetime
 import os
@@ -255,7 +252,7 @@ def subcmd_anim(args, logger):
 
 
 def generate_joblist(comparisons, existingfiles, args, logger):
-    """Returns list of ComparisonJobs
+    """Return list of ComparisonJobs.
 
     :param comparisons:  list of (Genome, Genome) tuples
     :param existingfiles:  list of pre-existing nucmer output files
@@ -302,7 +299,7 @@ def generate_joblist(comparisons, existingfiles, args, logger):
 
 
 def run_anim_jobs(joblist, args, logger):
-    """Pass ANIm nucmer jobs to the scheduler
+    """Pass ANIm nucmer jobs to the scheduler.
 
     :param joblist:           list of ComparisonJob namedtuples
     :param args:              command-line arguments for the run
@@ -337,7 +334,7 @@ def run_anim_jobs(joblist, args, logger):
 
 
 def update_comparison_results(joblist, run, session, nucmer_version, args, logger):
-    """Update the Comparison table with the completed result set
+    """Update the Comparison table with the completed result set.
 
     :param joblist:         list of ComparisonJob namedtuples
     :param run:             Run ORM object for the current ANIm run

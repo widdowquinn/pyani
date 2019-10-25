@@ -37,10 +37,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""pyani_script.py
-
-Implements the pyani script for classifying prokaryotic genomes.
-"""
+"""Implements the pyani script for classifying prokaryotic genomes."""
 
 import sys
 import time

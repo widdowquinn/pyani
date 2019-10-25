@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""blast.py
-
-Helper code for handling BLAST output files
+"""Code for handling BLAST output files.
 
 (c) The James Hutton Institute 2019
 Author: Leighton Pritchard

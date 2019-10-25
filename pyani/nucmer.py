@@ -1,52 +1,50 @@
 # -*- coding: utf-8 -*-
-"""nucmer.py
-
-Helper code for handling NUCmer output files
-
-(c) The James Hutton Institute 2019
-Author: Leighton Pritchard
-
-Contact:
-leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2019 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-"""
+# (c) The James Hutton Institute 2019
+# (c) University of Strathclyde 2019
+# Author: Leighton Pritchard
+#
+# Contact:
+# leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# Cathedral Street,
+# Glasgow,
+# G1 1XQ
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2019 University of Strathclyde
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+"""Code for handling NUCmer output files."""
 
 import os
 
 
 class DeltaData:
-    """Class to hold MUMmer/nucmer output "delta" data
+
+    """Class to hold MUMmer/nucmer output "delta" data.
+
     This is required because the ordering within files differs depending on MUMmer
     build, for the same version (as evidenced by differences between OSX and Linux
     builds), and a means of testing for equality of outputs is necessary.
@@ -65,6 +63,11 @@ class DeltaData:
     """
 
     def __init__(self, name, handle=None):
+        """Initialise DeltaData object.
+
+        :param name:
+        :param handle:
+        """
         self.name = name
         self._metadata = None
         self._comparisons = []
@@ -72,7 +75,7 @@ class DeltaData:
             self.from_delta(handle)
 
     def from_delta(self, handle):
-        """Populate the object from the passed .delta or .filter filehandle"""
+        """Populate the object from the passed .delta or .filter filehandle."""
         parser = DeltaIterator(handle)
         for element in parser:
             if isinstance(element, DeltaMetadata):
@@ -82,27 +85,27 @@ class DeltaData:
 
     @property
     def comparisons(self):
-        """Comparisons in the .delta file"""
+        """Comparisons in the .delta file."""
         return self._comparisons
 
     @property
     def metadata(self):
-        """Metadata from the .delta file"""
+        """Metadata from the .delta file."""
         return self._metadata
 
     @property
     def reference(self):
-        """The reference file for the MUMmer comparison"""
+        """Reference file for the MUMmer comparison."""
         return self._metadata.reference
 
     @property
     def program(self):
-        """The MUMmer program used for the comparison"""
+        """The MUMmer program used for the comparison."""
         return self._metadata.program
 
     @property
     def query(self):
-        """The query file for the MUMmer comparison"""
+        """Query file for the MUMmer comparison."""
         return self._metadata.query
 
     def __eq__(self, other):
@@ -119,7 +122,7 @@ class DeltaData:
         return len(self._comparisons)
 
     def __str__(self):
-        """Return the object in .delta format output"""
+        """Return the object in .delta format output."""
         outstr = os.linesep.join(
             [str(self._metadata)] + [str(_) for _ in self._comparisons]
         )
@@ -127,9 +130,17 @@ class DeltaData:
 
 
 class DeltaHeader:
-    """Represents a single sequence comparison header from a MUMmer .delta file"""
+
+    """Represents a single sequence comparison header from a MUMmer .delta file."""
 
     def __init__(self, reference, query, reflen, querylen):
+        """Initialise DeltaHeader object.
+
+        :param reference:
+        :param query:
+        :param reflen:
+        :param querylen:
+        """
         self.reference = reference
         self.query = query
         self.referencelen = int(reflen)
@@ -152,9 +163,20 @@ class DeltaHeader:
 
 
 class DeltaAlignment:
-    """Represents a single alignment region and scores for a pairwise comparison"""
+
+    """Represents a single alignment region and scores for a pairwise comparison."""
 
     def __init__(self, refstart, refend, qrystart, qryend, errs, simerrs, stops):
+        """Initialise DeltaAlignment object.
+
+        :param refstart:
+        :param refend:
+        :param qrystart:
+        :param qryend:
+        :param errs:
+        :param simerrs:
+        :param stops:
+        """
         self.refstart = int(refstart)
         self.refend = int(refend)
         self.querystart = int(qrystart)
@@ -196,9 +218,11 @@ class DeltaAlignment:
 
 
 class DeltaMetadata:
-    """Represents the metadata header for a MUMmer .delta file"""
+
+    """Represents the metadata header for a MUMmer .delta file."""
 
     def __init__(self):
+        """Initialise DeltaMetadata object."""
         self.reference = None
         self.query = None
         self.program = None
@@ -217,14 +241,20 @@ class DeltaMetadata:
 
 
 class DeltaComparison:
-    """Represents a comparison between two sequences in a .delta file"""
+
+    """Represents a comparison between two sequences in a .delta file."""
 
     def __init__(self, header, alignments):
+        """Initialise DeltaComparison object.
+
+        :param header:
+        :param alignments:
+        """
         self.header = header
         self.alignments = alignments
 
     def add_alignment(self, aln):
-        """Add passed alignment to this object
+        """Add passed alignment to this object.
 
         :param aln:  DeltaAlignment object
         """
@@ -246,6 +276,7 @@ class DeltaComparison:
 
 
 class DeltaIterator:
+
     """Iterator for MUMmer .delta files.
 
     Returns a stream of DeltaMetadata, DeltaComparison and DeltaAlignment
@@ -256,18 +287,21 @@ class DeltaIterator:
     """
 
     def __init__(self, handle):
-        """Instantiate the class with the passed filehandle"""
+        """Instantiate DeltaIterator object with the passed filehandle.
+
+        :param handle:
+        """
         self._handle = handle
         self._metadata = None  # metadata for a .delta file
         self._header = None  # header information for a pairwise comparison
         self._comparison = None  # current comparison region
 
     def __iter__(self):
-        """Iterate over elements of the .delta file as DeltaHeader and DeltaAlignment objects"""
+        """Iterate over elements of the .delta file as DeltaHeader and DeltaAlignment objects."""
         return iter(self.__next__, None)
 
     def __next__(self):
-        """Parse the next element from the .delta file"""
+        """Parse the next element from the .delta file."""
         # Parse .delta file metadata
         if self._metadata is None:
             self._metadata = DeltaMetadata()

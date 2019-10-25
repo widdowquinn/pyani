@@ -81,10 +81,16 @@ MPLVERSION = matplotlib.__version__
 
 # Convenience class to hold heatmap graphics parameters
 class Params:  # pylint: disable=too-few-public-methods
+
     """Convenience class to hold heatmap rendering parameters."""
 
     def __init__(self, params, labels=None, classes=None):
-        """Instantiate class."""
+        """Instantiate class.
+
+        :param params:
+        :param labels:
+        :param classes:
+        """
         self.cmap = plt.get_cmap(params[0])
         self.vmin = params[1]
         self.vmax = params[2]
