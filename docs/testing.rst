@@ -4,10 +4,10 @@
 Testing
 =======
 
-We are currently writing tests formatted for the `nosetests`_ package, for testing ``pyani``.
+We are currently writing tests formatted for the `pytest`_ package, for testing ``pyani``.
 
 .. WARNING::
-    We are aware that ``nosetests`` is in maintenance mode and, while we have no timetable for the move, our plan is to change the test framework to use `pytest`_ at some future date
+    Some tests are still targeted at `nosetests`_, which is in maintenance mode and, although we are still in transition, our plan is to change the test framework completely to use `pytest`_.
 
 ------------------------
 Test directory structure

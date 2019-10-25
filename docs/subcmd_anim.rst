@@ -75,7 +75,7 @@ Flagged arguments
     Use existing ``NUCmer`` comparison output if available, e.g. if recovering from a failed job submission. Using this option will not generate a new comparison if the old output files exist.
 
 ``--scheduler {multiprocessing, SGE}``
-    Specify the job scheduler to be used when parallelising genome comparisons: one of ``multiprocessing`` (use many cores on the current machine)  or ``SGE`` (use an SGE or OGE job scheduler). Default: ``multiprocessing``. 
+    Specify the job scheduler to be used when parallelising genome comparisons: one of ``multiprocessing`` (use many cores on the current machine)  or ``SGE`` (use an SGE or OGE job scheduler). Default: ``multiprocessing``.
 
 ``--SGEargs SGEARGS``
     Pass additional arguments ``SGEARGS`` to ``qsub`` when running the SGE-distributed jobs.
