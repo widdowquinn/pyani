@@ -3,8 +3,7 @@
 # (c) University of Strathclyde 2019
 # Author: Leighton Pritchard
 #
-# Contact:
-# leighton.pritchard@strath.ac.uk
+# Contact: leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
