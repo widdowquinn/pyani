@@ -68,7 +68,7 @@ from .pyani_tools import ANIResults
 def get_fasta_files(dirname=None):
     """Return list of FASTA files in the passed directory.
 
-    - dirname - path to input directory
+    :param dirname:  str, path to input directory
     """
     if dirname is None:
         dirname = "."
@@ -112,10 +112,12 @@ def generate_nucmer_jobs(
 ):
     """Return list of Jobs describing NUCmer command-lines for ANIm.
 
-    - filenames - a list of paths to input FASTA files
-    - outdir - path to output directory
-    - nucmer_exe - location of the nucmer binary
-    - maxmatch - Boolean flag indicating to use NUCmer's -maxmatch option
+    :param filenames:  a list of paths to input FASTA files
+    :param outdir:  str, path to output directory
+    :param nucmer_exe:  str, location of the nucmer binary
+    :param filter_exe:
+    :param maxmatch:  Boolean flag indicating to use NUCmer's -maxmatch option
+    :param jobprefix:
 
     Loop over all FASTA files, generating Jobs describing NUCmer command lines
     for each pairwise comparison.
@@ -143,17 +145,17 @@ def generate_nucmer_commands(
 ):
     """Return list of NUCmer command-lines for ANIm.
 
+    :param filenames:  a list of paths to input FASTA files
+    :param outdir:  path to output directory
+    :param nucmer_exe:  location of the nucmer binary
+    :param maxmatch:  Boolean flag indicating to use NUCmer's -maxmatch option
+
     The first element returned is a list of NUCmer commands, and the
     second a corresponding list of delta_filter_wrapper.py commands.
     The NUCmer commands should each be run before the corresponding
     delta-filter command.
 
     TODO: This return value needs to be reworked as a collection.
-
-    - filenames - a list of paths to input FASTA files
-    - outdir - path to output directory
-    - nucmer_exe - location of the nucmer binary
-    - maxmatch - Boolean flag indicating to use NUCmer's -maxmatch option
 
     Loop over all FASTA files generating NUCmer command lines for each
     pairwise comparison.
@@ -182,18 +184,20 @@ def construct_nucmer_cmdline(
 ):
     """Return a tuple of corresponding NUCmer and delta-filter commands.
 
+    :param fname1:  query FASTA filepath
+    :param fname2:  subject FASTA filepath
+    :param outdir:  path to output directory
+    :param nucmer_exe:
+    :param filter_exe:
+    :param maxmatch:  Boolean flag indicating whether to use NUCmer's -maxmatch
+    option. If not, the -mum option is used instead
+
     The split into a tuple was made necessary by changes to SGE/OGE.
     The delta-filter command must now be run as a dependency of the NUCmer
     command, and be wrapped in a Python script to capture STDOUT.
 
     NOTE: This command-line writes output data to a subdirectory of the passed
     outdir, called "nucmer_output".
-
-    - fname1 - query FASTA filepath
-    - fname2 - subject FASTA filepath
-    - outdir - path to output directory
-    - maxmatch - Boolean flag indicating whether to use NUCmer's -maxmatch
-    option. If not, the -mum option is used instead
     """
     outsubdir = os.path.join(outdir, pyani_config.ALIGNDIR["ANIm"])
     outprefix = os.path.join(
@@ -221,7 +225,7 @@ def construct_nucmer_cmdline(
 def parse_delta(filename):
     """Return (alignment length, similarity errors) tuple from passed .delta.
 
-    - filename - path to the input .delta file
+    :param filename:  str, path to the input .delta file
 
     Extracts the aligned length and number of similarity errors for each
     aligned uniquely-matched region, and returns the cumulative total for
@@ -253,8 +257,8 @@ def parse_delta(filename):
 def process_deltadir(delta_dir, org_lengths, logger=None):
     """Return tuple of ANIm results for .deltas in passed directory.
 
-    - delta_dir - path to the directory containing .delta files
-    - org_lengths - dictionary of total sequence lengths, keyed by sequence
+    :param delta_dir:  str, path to the directory containing .delta files
+    :param org_lengths:  dictionary of total sequence lengths, keyed by sequence
 
     Returns the following pandas dataframes in an ANIResults object;
     query sequences are rows, subject sequences are columns:

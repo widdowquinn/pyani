@@ -85,7 +85,7 @@ def get_fasta_paths(dirname, extlist=None):
 def get_fasta_and_hash_paths(dirname="."):
     """Return a list of (FASTA file, hash file) tuples in passed directory.
 
-    - dirname             - path to input directory
+    :param dirname:  str, path to input directory
 
     Raises an IOError if the corresponding hash for a FASTA file does not exist
     """
@@ -103,8 +103,8 @@ def get_fasta_and_hash_paths(dirname="."):
 def get_input_files(dirname, *ext):
     """Return files in passed directory, filtered by extension.
 
-    - dirname - path to input directory
-    - *ext - list of arguments describing permitted file extensions
+    :param dirname:  str, path to input directory
+    :param *ext:  list of arguments describing permitted file extensions
     """
     filelist = [f for f in os.listdir(dirname) if os.path.splitext(f)[-1] in ext]
     return [os.path.join(dirname, f) for f in filelist]
@@ -113,6 +113,8 @@ def get_input_files(dirname, *ext):
 # Get lengths of input sequences
 def get_sequence_lengths(fastafilenames):
     """Return dictionary of sequence lengths, keyed by organism.
+
+    :param fastafilenames:  str, path to input FASTA file
 
     Biopython's SeqIO module is used to parse all sequences in the FASTA
     file corresponding to each organism, and the total base count in each
@@ -130,7 +132,10 @@ def get_sequence_lengths(fastafilenames):
 
 # Get hash string from hash file
 def read_hash_string(filename):
-    """Return the hash and file strings from the passed hash file."""
+    """Return the hash and file strings from the passed hash file.
+
+    :param filename:  str, path to file containing hash string
+    """
     try:
         with open(filename, "r") as ifh:
             data = ifh.read().strip().split()
@@ -144,7 +149,10 @@ def read_hash_string(filename):
 
 # Get description string from FASTA file
 def read_fasta_description(filename):
-    """Return the first description string from a FASTA file."""
+    """Return the first description string from a FASTA file.
+
+    :param filename:  str, path to FASTA file
+    """
     for data in SeqIO.parse(filename, "fasta"):
         if data.description:
             return data.description
@@ -155,7 +163,7 @@ def read_fasta_description(filename):
 def load_classes_labels(path):
     r"""Return a dictionary of genome classes or labels keyed by hash.
 
-    :param path:  path to classes or labels file
+    :param path:  str, path to classes or labels file
 
     The expected format of the classes and labels files is:
     <HASH>\t<FILESTEM>\t<CLASS>|<LABEL>,
@@ -176,8 +184,8 @@ def load_classes_labels(path):
 def collect_existing_output(dirpath, program, args):
     """Return a list of existing output files at dirpath.
 
-    :param dirpath:       path to existing output directory
-    :param args:          command-line arguments for the run
+    :param dirpath:  str, path to existing output directory
+    :param args:  Namespace, command-line arguments for the run
     """
     # Obtain collection of expected output files already present in directory
     if program == "nucmer":

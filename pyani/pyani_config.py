@@ -150,6 +150,8 @@ CMAP_BURD = LinearSegmentedColormap("BuRd", cdict_BuRd)
 def params_mpl(dfm):
     """Return dict of matplotlib parameters, dependent on dataframe.
 
+    :param dfm:
+
     DEPRECATED FROM v0.3 onwards
     """
     return {
@@ -174,6 +176,9 @@ def params_mpl(dfm):
 
 def get_colormap(dataframe, matname):
     """Return colormap parameters for a dataframe.
+
+    :param dataframe:
+    :param matname:
 
     The colormap is dependent on the type of analysis that was done.
     """

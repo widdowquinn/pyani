@@ -44,4 +44,5 @@ __version__ = "0.3.0-alpha"
 
 # General exception for scripts
 class PyaniException(Exception):
+
     """General exception for pyani."""

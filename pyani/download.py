@@ -61,6 +61,7 @@ TAXONREGEX = re.compile(r"([0-9]\,?){1,}")
 
 # Custom exceptions
 class NCBIDownloadException(Exception):
+
     """General exception for failed NCBI download."""
 
     def __init__(self, msg="Error downloading file from NCBI"):
@@ -69,6 +70,7 @@ class NCBIDownloadException(Exception):
 
 
 class FileExistsException(Exception):
+
     """A specified file exists."""
 
     def __init__(self, msg="Specified file exists"):
@@ -83,13 +85,18 @@ def last_exception():
 
 
 def set_ncbi_email(email):
-    """Set contact email for NCBI."""
+    """Set contact email for NCBI.
+
+    :param email:  str, email address to give to Entrez at NCBI
+    """
     Entrez.email = email
     Entrez.tool = "pyani.py"
 
 
 def parse_api_key(api_path):
     """Parse the contents of the file for NCBI API key.
+
+    :param api_path:  Path, location of NCBI API key
 
     This function expects that the indicated file contains a single line
     (perhaps with a newline) containing no data other than an NCBI API key.
@@ -103,14 +110,15 @@ def parse_api_key(api_path):
 def entrez_batch_webhistory(record, expected, batchsize, retries, *fnargs, **fnkwargs):
     """Recover the Entrez data from a prior NCBI webhistory search.
 
+    :param record:  Entrez webhistory record
+    :param expected:  number of expected search returns
+    :param batchsize:  how many search returns to retrieve in a batch
+    :param retries:  int
+    :param *fnargs:  arguments to Efetch
+    :param **fnkwargs:  keyword arguments to Efetch
+
     Recovers results in batches of defined size, using Efetch.
     Returns all results as a list.
-
-    - record: Entrez webhistory record
-    - expected: number of expected search returns
-    - batchsize: how many search returns to retrieve in a batch
-    - *fnargs: arguments to Efetch
-    - **fnkwargs: keyword arguments to Efetch
     """
     results = []
     for start in range(0, expected, batchsize):
@@ -131,7 +139,13 @@ def entrez_batch_webhistory(record, expected, batchsize, retries, *fnargs, **fnk
 
 # Retry an Entrez query a specified number of times
 def entrez_retry(func, retries, *fnargs, **fnkwargs):
-    """Retry the passed function up to the number of times specified."""
+    """Retry the passed function up to the number of times specified.
+
+    :param func:  function to be executed
+    :param retries:  int, number of times to retry function execution
+    :param *fnargs:  optional arguments to passed function
+    :param **fnkwargs:  optional keyword arguments to passed function
+    """
     tries, success = 0, False
     while not success and tries < retries:
         try:
@@ -148,6 +162,8 @@ def entrez_retry(func, retries, *fnargs, **fnkwargs):
 def split_taxa(taxa):
     """Return list of taxon ids from the passed comma-separated list.
 
+    :param taxa:  str, comma-separated list of valid NCBI taxonomy IDs
+
     The function checks the passed taxon argument against a regular expression
     that permits comma-separated numerical symbols only.
     """
@@ -161,6 +177,9 @@ def split_taxa(taxa):
 # Get assembly UIDs for the subtree rooted at the passed taxon
 def get_asm_uids(taxon_uid, retries):
     """Return set of NCBI UIDs associated with the passed taxon UID.
+
+    :param taxon_uid:
+    :param retries:
 
     This query at NCBI returns all assemblies for the taxon subtree
     rooted at the passed taxon_uid.
@@ -188,6 +207,8 @@ def get_asm_uids(taxon_uid, retries):
 def extract_filestem(esummary):
     """Extract filestem from Entrez eSummary data.
 
+    :param esummary:
+
     Function expects esummary['DocumentSummarySet']['DocumentSummary'][0]
 
     Some illegal characters may occur in AssemblyName - for these, a more
@@ -202,11 +223,21 @@ def extract_filestem(esummary):
 
 # Get eSummary data for a single assembly UID
 def get_ncbi_esummary(asm_uid, retries, api_key=None):
-    """Obtain full eSummary info for the passed assembly UID."""
+    """Obtain full eSummary info for the passed assembly UID.
+
+    :param asm_uid:
+    :param retries:
+    :param api_key:
+    """
     # Obtain full eSummary data for the assembly
     summary = Entrez.read(
         entrez_retry(
-            Entrez.esummary, retries, db="assembly", id=asm_uid, report="full", api_key=api_key
+            Entrez.esummary,
+            retries,
+            db="assembly",
+            id=asm_uid,
+            report="full",
+            api_key=api_key,
         ),
         validate=False,
     )
@@ -220,7 +251,10 @@ def get_ncbi_esummary(asm_uid, retries, api_key=None):
 
 # Get the taxonomic classification strings for eSummary data
 def get_ncbi_classification(esummary):
-    """Return organism, genus, species, strain info from eSummary data."""
+    """Return organism, genus, species, strain info from eSummary data.
+
+    :param esummary:
+    """
     Classification = namedtuple("Classsification", "organism genus species strain")
 
     # Extract species/strain info
@@ -238,6 +272,10 @@ def get_ncbi_classification(esummary):
 # Given a remote filestem, generate URIs for download
 def compile_url(filestem, suffix, ftpstem):
     """Compile download URLs given a passed filestem.
+
+    :param filestem:
+    :param suffix:
+    :param ftpstem:
 
     The filestem corresponds to <AA>_<AN>, where <AA> and <AN> are
     AssemblyAccession and AssemblyName: data fields in the eSummary record.
@@ -262,7 +300,7 @@ def compile_url(filestem, suffix, ftpstem):
     """
     gcstem, acc, _ = tuple(filestem.split("_", 2))
     aaval = acc.split(".")[0]
-    subdirs = "/".join([acc[i:i + 3] for i in range(0, len(aaval), 3)])
+    subdirs = "/".join([acc[i : i + 3] for i in range(0, len(aaval), 3)])
 
     url = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gcstem, subdirs, filestem, suffix)
     hashurl = "{0}/{1}/{2}/{3}/{4}".format(
@@ -274,6 +312,11 @@ def compile_url(filestem, suffix, ftpstem):
 # Download a remote file to the specified directory
 def download_url(url, outfname, timeout, disable_tqdm=False):
     """Download remote URL to a local directory.
+
+    :param url:
+    :param outfname:
+    :param timeout:
+    :param disable_tqdm:  Boolean, show tqdm progress bar?
 
     This function downloads the contents of the passed URL to the passed
     filename, in buffered chunks
@@ -303,7 +346,12 @@ def download_url(url, outfname, timeout, disable_tqdm=False):
 
 # Construct filepaths for downloaded files and their hashes
 def construct_output_paths(filestem, suffix, outdir):
-    """Construct paths to output files for genome and hash."""
+    """Construct paths to output files for genome and hash.
+
+    :param filestem:
+    :param suffix:
+    :param outdir:
+    """
     outfname = os.path.join(outdir, "_".join([filestem, suffix]))
     outfhash = os.path.join(outdir, "_".join([filestem, "hashes.txt"]))
     return (outfname, outfhash)
@@ -313,7 +361,15 @@ def construct_output_paths(filestem, suffix, outdir):
 def retrieve_genome_and_hash(
     filestem, suffix, ftpstem, outdir, timeout, disable_tqdm=False
 ):
-    """Download genome contigs and MD5 hash data from NCBI."""
+    """Download genome contigs and MD5 hash data from NCBI.
+
+    :param filestem:
+    :param suffix:
+    :param ftpstem:
+    :param outdir:
+    :param timeout:
+    :param disable_tqdm:  Boolean, show tqdm progress bar?
+    """
     DLStatus = namedlist("DLStatus", "url hashurl outfname outfhash skipped error")
     skipped = False  # Flag - set True if we skip download for existing file
     error = None  # Text of last-raised error
@@ -334,7 +390,11 @@ def retrieve_genome_and_hash(
 
 # Check the file hash against the downloaded hash
 def check_hash(fname, hashfile):
-    """Check MD5 of passed file against downloaded NCBI hash file."""
+    """Check MD5 of passed file against downloaded NCBI hash file.
+
+    :param fname:
+    :param hashfile:
+    """
     Hashstatus = namedtuple("Hashstatus", "passed localhash filehash")
     filehash = ""
     passed = False  # Flag - set to True if the hash matches
@@ -355,7 +415,11 @@ def check_hash(fname, hashfile):
 
 # Extract contigs from a compressed file, using gunzip
 def extract_contigs(fname, ename):
-    """Extract contents of fname to ename using gunzip."""
+    """Extract contents of fname to ename using gunzip.
+
+    :param fname:  str, path to input compressed file
+    :param ename:  str, path to output uncompressed file
+    """
     cmd = ["gunzip", "-c", shlex.quote(fname)]
     with open(ename, "w") as efh:
         subprocess.run(cmd, stdout=efh, check=True, shell=False)
@@ -365,9 +429,9 @@ def extract_contigs(fname, ename):
 def create_labels(classification, filestem, genomehash):
     r"""Return class and label text from UID classification.
 
-    - classification  Classification named tuple (org, genus, species, strain)
-    - filestem        filestem of input genome file
-    - genomehash            MD5 hash of genome data
+    :param classification:  Classification named tuple (org, genus, species, strain)
+    :param filestem:  filestem of input genome file
+    :param genomehash:  str, MD5 hash of genome data
 
     The 'class' data is the organism as provided in the passed Classification
     named tuple; the 'label' data is genus, species and strain information
@@ -414,8 +478,8 @@ def create_hash(fname):
 def extract_hash(hashfile, name):
     """Return MD5 hash from file of name:MD5 hashes.
 
-    - hashfile             path to file containing name:MD5 pairs
-    - name                 name asspcoated with hash
+    :param hashfile:  str, path to file containing name:MD5 pairs
+    :param name:  str, name asspcoated with hash
     """
     filehash = None
     with open(hashfile, "r") as hhandle:

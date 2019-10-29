@@ -94,21 +94,24 @@ class Job:
     def add_dependency(self, job):
         """Add passed job to the dependency list for this Job.
 
-        This Job should not execute until all dependent jobs are completed
+        :param job:  Job to be added to the Job's dependency list
 
-        - job     Job to be added to the Job's dependency list
+        This Job should not execute until all dependent jobs are completed.
         """
         self.dependencies.append(job)
 
     def remove_dependency(self, job):
         """Remove passed job from this Job's dependency list.
 
-        - job     Job to be removed from the Job's dependency list
+        :param job:     Job to be removed from the Job's dependency list
         """
         self.dependencies.remove(job)
 
     def wait(self, interval=SGE_WAIT):
-        """Wait until the job finishes, and poll SGE on its status."""
+        """Wait until the job finishes, and poll SGE on its status.
+
+        :param interval:  int, number of seconds to wait before polling SGE
+        """
         while not self.finished:
             time.sleep(interval)
             interval = min(2 * interval, 60)
@@ -125,13 +128,10 @@ class JobGroup:
         JobGroups allow for the use of combinatorial parameter sweeps by
         using the 'command' and 'arguments' arguments.
 
-        - name              String, the JobGroup name
-        - command           String, the command to be run, with arguments
-                                    specified
-        - queue             String, the queue for SGE to use
-        - arguments         Dictionary, the values for each parameter as
-                            lists of strings, keyed by an identifier for
-                            the command string
+        :param name:  str, the JobGroup name
+        :param command:  str, the command to be run, with arguments specified
+        :param queue:   str, , the queue for SGE to use
+        :param arguments:  dict, the values for each parameter as lists of strings, keyed by an identifier for the command string
 
         For example, to use a command 'my_cmd' with the arguments
         '-foo' and '-bar' having values 1, 2, 3, 4 and 'a', 'b', 'c', 'd' in
@@ -192,22 +192,25 @@ class JobGroup:
     def add_dependency(self, job):
         """Add the passed job to the dependency list for this JobGroup.
 
+        :param job:  Job, job to be added to the JobGroup's dependency list
+
         This JobGroup should not execute until all dependent jobs are
         completed
-
-        - job      Job, job to be added to the JobGroup's dependency list
         """
         self.dependencies.append(job)
 
     def remove_dependency(self, job):
         """Remove passed job from this JobGroup's dependency list.
 
-        - job      Job, job to be removed from the JobGroup's dependency list
+        :param job:  Job, job to be removed from the JobGroup's dependency list
         """
         self.dependencies.remove(job)
 
     def wait(self, interval=SGE_WAIT):
-        """Wait for a defined period, then poll SGE for job status."""
+        """Wait for a defined period, then poll SGE for job status.
+
+        :param interval:  int, seconds to wait before polling SGE
+        """
         while not self.finished:
             time.sleep(interval)
             interval = min(2 * interval, 60)

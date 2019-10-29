@@ -105,7 +105,10 @@ class Params:  # pylint: disable=too-few-public-methods
 
 # helper for cleaning up matplotlib axes by removing ticks etc.
 def clean_axis(axis):
-    """Remove ticks, tick labels, and frame from axis."""
+    """Remove ticks, tick labels, and frame from axis.
+
+    :param axis:
+    """
     axis.get_xaxis().set_ticks([])
     axis.get_yaxis().set_ticks([])
     for spine in list(axis.spines.values()):
@@ -115,6 +118,9 @@ def clean_axis(axis):
 # Add classes colorbar to Seaborn plot
 def get_seaborn_colorbar(dfr, classes):
     """Return a colorbar representing classes, for a Seaborn plot.
+
+    :param dfr:
+    :param classes:
 
     The aim is to get a pd.Series for the passed dataframe columns,
     in the form:
@@ -145,7 +151,11 @@ def get_seaborn_colorbar(dfr, classes):
 
 # Add labels to the seaborn heatmap axes
 def add_seaborn_labels(fig, params):
-    """Add labels to Seaborn heatmap axes, in-place."""
+    """Add labels to Seaborn heatmap axes, in-place.
+
+    :param fig:
+    :param params:
+    """
     if params.labels:
         # If a label mapping is missing, use the key text as fall back
         [
@@ -163,7 +173,13 @@ def add_seaborn_labels(fig, params):
 
 # Return a clustermap
 def get_seaborn_clustermap(dfr, params, title=None, annot=True):
-    """Return a Seaborn clustermap for the passed dataframe."""
+    """Return a Seaborn clustermap for the passed dataframe.
+
+    :param dfr:
+    :param params:
+    :param title:  str, plot title
+    :param annot:  Boolean, add text for cell values?
+    """
     fig = sns.clustermap(
         dfr,
         cmap=params.cmap,
@@ -191,8 +207,10 @@ def get_seaborn_clustermap(dfr, params, title=None, annot=True):
 def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
     """Return seaborn heatmap with cluster dendrograms.
 
-    - dfr - pandas DataFrame with relevant data
-    - outfilename - path to output file (indicates output format)
+    :param dfr:  pandas DataFrame with relevant data
+    :param outfilename:  path to output file (indicates output format)
+    :param title:
+    :param params:
     """
     # Decide on figure layout size: a minimum size is required for
     # aesthetics, and a maximum to avoid core dumps on rendering.
@@ -265,6 +283,12 @@ def distribution_seaborn(dfr, outfilename, matname, title=None):
 def add_mpl_dendrogram(dfr, fig, params, heatmap_gs, orientation="col"):
     """Return a dendrogram and corresponding gridspec, attached to the fig.
 
+    :param dfr:
+    :param fig:
+    :param params:
+    :param heatmap_gs:
+    :param orientation:
+
     Modifies the fig in-place. Orientation is either 'row' or 'col' and
     determines location and orientation of the rendered dendrogram.
 
@@ -310,7 +334,7 @@ def add_mpl_dendrogram(dfr, fig, params, heatmap_gs, orientation="col"):
 def distribution_mpl(dfr, outfilename, matname, title=None):
     """Return matplotlib distribution plot for matrix.
 
-    :param drf:  DataFrame with results matrix
+    :param dfr:  DataFrame with results matrix
     :param outfilename:  Path to output file for writing
     :param matname:  str, type of matrix being plotted
     :param title:  str, optional title
@@ -348,7 +372,12 @@ def distribution_mpl(dfr, outfilename, matname, title=None):
 
 # Create heatmap axes for Matplotlib output
 def get_mpl_heatmap_axes(dfr, fig, heatmap_gs):
-    """Return axis for Matplotlib heatmap."""
+    """Return axis for Matplotlib heatmap.
+
+    :param dfr:
+    :param fig:
+    :param heatmap_gs:
+    """
     # Create heatmap axis
     heatmap_axes = fig.add_subplot(heatmap_gs[1, 1])
     heatmap_axes.set_xticks(np.linspace(0, dfr.shape[0] - 1, dfr.shape[0]))
@@ -360,7 +389,14 @@ def get_mpl_heatmap_axes(dfr, fig, heatmap_gs):
 
 
 def add_mpl_colorbar(dfr, fig, dend, params, orientation="row"):
-    """Add class colorbars to Matplotlib heatmap."""
+    """Add class colorbars to Matplotlib heatmap.
+
+    :param dfr:
+    :param fig:
+    :param dent:
+    :param params:
+    :param orientation:
+    """
     # Assign a numerical value to each class, for mpl
     classdict = {cls: idx for (idx, cls) in enumerate(params.classes.values())}
 
@@ -398,7 +434,13 @@ def add_mpl_colorbar(dfr, fig, dend, params, orientation="row"):
 
 # Add labels to the heatmap axes
 def add_mpl_labels(heatmap_axes, rowlabels, collabels, params):
-    """Add labels to Matplotlib heatmap axes, in-place."""
+    """Add labels to Matplotlib heatmap axes, in-place.
+
+    :param heatmap_axes:
+    :param rowlabels:
+    :param collabels:
+    :param params:
+    """
     if params.labels:
         # If a label mapping is missing, use the key text as fall back
         rowlabels = [params.labels.get(lab, lab) for lab in rowlabels]
@@ -414,7 +456,14 @@ def add_mpl_labels(heatmap_axes, rowlabels, collabels, params):
 
 # Add colour scale to heatmap
 def add_mpl_colorscale(fig, heatmap_gs, ax_map, params, title=None):
-    """Add colour scale to heatmap."""
+    """Add colour scale to heatmap.
+
+    :param fig:
+    :param heatmap_gs:
+    :param ax_map:
+    :param params:
+    :param title:
+    """
     # Set tick intervals
     cbticks = [params.vmin + e * params.vdiff for e in (0, 0.25, 0.5, 0.75, 1)]
     if params.vmax > 10:
@@ -439,13 +488,11 @@ def add_mpl_colorscale(fig, heatmap_gs, ax_map, params, title=None):
 def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
     """Return matplotlib heatmap with cluster dendrograms.
 
-    - dfr - pandas DataFrame with relevant data
-    - outfilename - path to output file (indicates output format)
-    - params - a list of parameters for plotting: [colormap, vmin, vmax]
-    - labels - dictionary of alternative labels, keyed by default sequence
-               labels
-    - classes - dictionary of sequence classes, keyed by default sequence
-                labels
+    :param dfr:  pandas DataFrame with relevant data
+    :param outfilename:  path to output file (indicates output format)
+    :param params:  a list of parameters for plotting: [colormap, vmin, vmax]
+    :param labels:  dictionary of alternative labels, keyed by default sequence labels
+    :param classes:  dictionary of sequence classes, keyed by default sequence labels
     """
     # Sort rows by index - this ensures that labels match the dendrogram.
     # When recovering dataframes from the database, we get row
