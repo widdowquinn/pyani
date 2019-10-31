@@ -310,14 +310,17 @@ class Comparison(Base):
 def create_db(dbpath):
     """Create an empty pyani SQLite3 database at the passed path.
 
-    :param dbpath:  path to pyan database
+    :param dbpath:  path to pyani database
     """
     engine = create_engine("sqlite:///{}".format(dbpath), echo=False)
     Base.metadata.create_all(engine)
 
 
 def get_session(dbpath):
-    """Connect to an existing pyani SQLite3 database and return a session."""
+    """Connect to an existing pyani SQLite3 database and return a session.
+
+    :param dbpath: path to pyani database
+    """
     engine = create_engine("sqlite:///{}".format(dbpath), echo=False)
     Session.configure(bind=engine)
     return Session()

@@ -41,11 +41,18 @@
 import sys
 
 
-def colour_rows(series, even="#DDECF5", odd="#6CB6E4"):
-    """Colour rows in a dataframe."""
+def colour_rows(series, even_colour="#DDECF5", odd_colour="#6CB6E4"):
+    """Return alternating colours for rows in a dataframe.
+
+    :param series:  pd.Series
+    :param even_colour:  str, hex colour for even rows
+    :param odd_colour:  str, hex colour for odd rows
+    """
     is_odd = [idx % 2 for idx, row in enumerate(series.index)]
     return [
-        "background-color: %s" % odd if v else "background-color: %s" % even
+        "background-color: %s" % odd_colour
+        if v
+        else "background-color: %s" % even_colour
         for v in is_odd
     ]
 
@@ -56,7 +63,10 @@ def table_padding():
 
 
 def hover_highlight(hover_colour="#FFFF99"):
-    """Return HTML style to colour dataframe row when hovering."""
+    """Return HTML style to colour dataframe row when hovering.
+
+    :param hover_colour:  str, hex colour for hover highlight
+    """
     return dict(selector="tr:hover", props=[("background-color", "%s" % hover_colour)])
 
 
@@ -73,7 +83,12 @@ def header_font():
 
 
 def colour_identity(series, threshold=0.95, colour="#FF2222"):
-    """Highlight percentage identities over a threshold."""
+    """Highlight percentage identities over a threshold.
+
+    :param series:
+    :param threshold:  float, threshold for cell highlighting
+    :param colour:  str, hex colour for highlighted cells
+    """
     if series.name == "percentage identity":
         mask = series >= threshold
         return ["color: %s" % colour if v else "" for v in mask]
@@ -81,7 +96,12 @@ def colour_identity(series, threshold=0.95, colour="#FF2222"):
 
 
 def colour_coverage(series, threshold=0.95, colour="#FF2222"):
-    """Highlight percent coverage over a threshold."""
+    """Highlight percent coverage over a threshold.
+
+    :param series:
+    :param threshold:  float, threshold for cell highlighting
+    :param colour:  str, hex colour for highlighted cells
+    """
     if "coverage" in str(series.name):
         mask = series >= threshold
         return ["color: %s" % colour if v else "" for v in mask]
@@ -89,7 +109,12 @@ def colour_coverage(series, threshold=0.95, colour="#FF2222"):
 
 
 def colour_numeric(val, threshold=0.95, colour="#FF2222"):
-    """Highlight numeric values over a threshold."""
+    """Highlight numeric values over a threshold.
+
+    :param val:
+    :param threshold:  float, threshold for cell highlighting
+    :param colour:  str, hex colour for highlighted cell
+    """
     if val > threshold:
         colour = colour
     else:
@@ -135,8 +160,14 @@ def write_styled_html(path, dfm, index=None, colour_num=False):
 
 # Write a dataframe to STDOUT
 def write_to_stdout(stem, dfm, show_index=False, line_width=None):
-    """Write dataframe in tab-separated form to STDOUT."""
-    sys.stdout.write("TABLE: %s\n" % stem)
+    """Write dataframe in tab-separated form to STDOUT.
+
+    :param stem:  str
+    :param dfm:  pd.Dataframe
+    :param show_index:  Boolean, include index in output table
+    :param line_width:
+    """
+    sys.stdout.write(f"TABLE: {stem}\n")
     sys.stdout.write(dfm.to_string(index=show_index, line_width=line_width) + "\n\n")
 
 
@@ -146,8 +177,13 @@ def write_dbtable(
 ):
     """Write database result table to output file in named format.
 
-    :param colour_num:     use colours for values in HTML output
-        colours are used for identity/coverage tables
+    :param dfm:  pd.Dataframe
+    :param formats:  tuple of str, output file formats
+    :param index:  Boolean
+    :param show_index:  Boolean
+    :param colour_num:  use colours for values in HTML output
+
+    colours are used for identity/coverage tables
     """
     formatdict = {
         "tab": (dfm.to_csv, {"sep": "\t", "index": False}, ".tab"),

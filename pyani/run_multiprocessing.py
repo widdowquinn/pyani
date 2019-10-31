@@ -54,7 +54,7 @@ def run_dependency_graph(jobgraph, workers=None, logger=None):
     """Create and run pools of jobs based on the passed jobgraph.
 
     :param jobgraph:  list of jobs, which may have dependencies.
-    :param verbose:  flag for multiprocessing verbosity
+    :param workers:  int, number of workers to use with multiprocessing
     :param logger: a logger module logger (optional)
 
     The strategy here is to loop over each job in the list of jobs (jobgraph),
@@ -82,6 +82,10 @@ def run_dependency_graph(jobgraph, workers=None, logger=None):
 def populate_cmdsets(job, cmdsets, depth):
     """Create list of jobsets at different depths of dependency tree.
 
+    :param job:
+    :param cmdsets:
+    :param depth:
+
     This is a recursive function (is there something quicker in the itertools
     module?) that descends each 'root' job in turn, populating each
     """
@@ -104,7 +108,8 @@ def populate_cmdsets(job, cmdsets, depth):
 def multiprocessing_run(cmdlines, workers=None):
     """Distributes passed command-line jobs using multiprocessing.
 
-    - cmdlines - an iterable of command line strings
+    :param cmdlines:  iterable, command line strings
+    :param workers:  int, number of workers to use for multiprocessing
 
     Returns the sum of exit codes from each job that was run. If
     all goes well, this should be 0. Anything else and the calling

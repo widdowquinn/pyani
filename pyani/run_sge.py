@@ -53,7 +53,11 @@ from .pyani_jobs import JobGroup
 
 
 def split_seq(iterable, size):
-    """Split a passed iterable into chunks of a given size."""
+    """Split a passed iterable into chunks of a given size.
+
+    :param iterable:  iterable
+    :param size:  int, number of items to retun in each chunk
+    """
     elm = iter(iterable)
     item = list(itertools.islice(elm, size))
     while item:
@@ -63,7 +67,10 @@ def split_seq(iterable, size):
 
 # Build a list of SGE jobs from a graph
 def build_joblist(jobgraph):
-    """Return a list of jobs, from a passed jobgraph."""
+    """Return a list of jobs, from a passed jobgraph.
+
+    :param jobgraph:
+    """
     jobset = set()
     for job in jobgraph:
         jobset = populate_jobset(job, jobset, depth=1)
@@ -72,7 +79,12 @@ def build_joblist(jobgraph):
 
 # Convert joblist into jobgroups
 def compile_jobgroups_from_joblist(joblist, jgprefix, sgegroupsize):
-    """Return list of jobgroups, rather than list of jobs."""
+    """Return list of jobgroups, rather than list of jobs.
+
+    :param joblist:
+    :param jgprefix:  str, prefix for SGE jobgroup
+    :param sgegroupsize:  int, number of jobs in each SGE jobgroup
+    """
     jobcmds = defaultdict(list)
     for job in joblist:
         jobcmds[job.command.split(" ", 1)[0]].append(job.command)
@@ -100,12 +112,12 @@ def run_dependency_graph(
 ):
     """Create and runs SGE scripts for jobs based on passed jobgraph.
 
-    - jobgraph - list of jobs, which may have dependencies.
-    - verbose - flag for multiprocessing verbosity
-    - logger - a logger module logger (optional)
-    - jgprefix - a prefix for the submitted jobs, in the scheduler
-    - sgegroupsize - the maximum size for an array job submission
-    - sgeargs - additional arguments to qsub
+    :param jobgraph: list of jobs, which may have dependencies.
+    :param verbose: flag for multiprocessing verbosity
+    :param logger: a logger module logger (optional)
+    :param jgprefix: a prefix for the submitted jobs, in the scheduler
+    :param sgegroupsize: the maximum size for an array job submission
+    :param sgeargs: additional arguments to qsub
 
     The strategy here is to loop over each job in the dependency graph
     and, because we expect a single main delta-filter (wrapped) job,
@@ -165,6 +177,10 @@ def run_dependency_graph(
 def populate_jobset(job, jobset, depth):
     """Create set of jobs reflecting dependency tree.
 
+    :param job:
+    :param jobset:
+    :param depth:
+
     The set contains jobs at different depths of the dependency tree,
     retaining dependencies as strings, not Jobs.
     """
@@ -178,6 +194,8 @@ def populate_jobset(job, jobset, depth):
 
 def build_directories(root_dir):
     """Construct the subdirectories output, stderr, stdout, and jobs.
+
+    :param root_dir:  path of root directory in which to place output
 
     Subdirectories are created in the passed root directory. These
     subdirectories have the following roles:
@@ -205,7 +223,8 @@ def build_directories(root_dir):
 def build_job_scripts(root_dir, jobs):
     """Construct script for each passed Job in the jobs iterable.
 
-    - root_dir      Path to output directory
+    :param root_dir:  Path to output directory
+    :param jobs:
     """
     # Loop over the job list, creating each job script in turn, and then adding
     # scriptPath to the Job object
@@ -219,7 +238,7 @@ def build_job_scripts(root_dir, jobs):
 def extract_submittable_jobs(waiting):
     """Obtain list of jobs that are able to be submitted from pending list.
 
-    - waiting           List of Job objects
+    :param waiting:  list of Job objects
     """
     submittable = set()  # Holds jobs that are able to be submitted
     # Loop over each job, and check all the subjobs in that job's dependency
@@ -235,8 +254,9 @@ def extract_submittable_jobs(waiting):
 def submit_safe_jobs(root_dir, jobs, sgeargs=None):
     """Submit passed list of jobs to SGE server with dir as root for output.
 
-    - root_dir      Path to output directory
-    - jobs          Iterable of Job objects
+    :param root_dir:  path to output directory
+    :param jobs:  iterable of Job objects
+    :param sgeargs:  str, additional arguments for qsub
     """
     # Loop over each job, constructing SGE command-line based on job settings
     for job in jobs:
@@ -279,8 +299,9 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
 def submit_jobs(root_dir, jobs, sgeargs=None):
     """Submit passed jobs to SGE server with passed directory as root.
 
-    - root_dir       Path to output directory
-    - jobs           List of Job objects
+    :param root_dir:  path to output directory
+    :param jobs:  list of Job objects
+    :param sgeargs:  str, additional arguments for qsub
     """
     waiting = list(jobs)  # List of jobs still to be done
     # Loop over the list of pending jobs, while there still are any
@@ -297,11 +318,11 @@ def submit_jobs(root_dir, jobs, sgeargs=None):
 def build_and_submit_jobs(root_dir, jobs, sgeargs=None):
     """Submit passed iterable of Job objects to SGE.
 
-    This places SGE's output in the passed root directory
+    :param root_dir:  root directory for SGE and job output
+    :param jobs:  list of Job objects, describing each job to be submitted
+    :param sgeargs:  str, additional arguments to qsub
 
-    - root_dir   Root directory for SGE and job output
-    - jobs       List of Job objects, describing each job to be submitted
-    - sgeargs    Additional arguments to qsub
+    This places SGE's output in the passed root directory
     """
     # If the passed set of jobs is not a list, turn it into one. This makes the
     # use of a single JobGroup a little more intutitive

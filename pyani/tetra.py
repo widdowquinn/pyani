@@ -64,7 +64,7 @@ from Bio import SeqIO
 def calculate_tetra_zscores(infilenames):
     """Return dictionary of TETRA Z-scores for each input file.
 
-    - infilenames - collection of paths to sequence files
+    :param infilenames:  iterable of paths to input sequence files
     """
     org_tetraz = {}
     for filename in infilenames:
@@ -77,7 +77,7 @@ def calculate_tetra_zscores(infilenames):
 def calculate_tetra_zscore(filename):
     """Return TETRA Z-score for the sequence in the passed file.
 
-    - filename - path to sequence file
+    :param filename:  path to sequence file
 
     Calculates mono-, di-, tri- and tetranucleotide frequencies
     for each sequence, on each strand, and follows Teeling et al. (2004)
@@ -140,7 +140,9 @@ def calculate_tetra_zscore(filename):
 
 # Returns true if the passed string contains only A, C, G or T
 def tetra_clean(string):
-    """Check passed string contains only unambiguous IUPAC nucleotide symbols.
+    """Return True if string contains only unambiguous IUPAC nucleotide symbols.
+
+    :param string:  str, nucleotide sequence
 
     We are assuming that a low frequency of IUPAC ambiguity symbols doesn't
     affect our calculation.
@@ -155,7 +157,7 @@ def tetra_clean(string):
 def calculate_correlations(tetra_z):
     """Return dataframe of Pearson correlation coefficients.
 
-    - tetra_z - dictionary of Z-scores, keyed by sequence ID
+    :param tetra_z:  dict, Z-scores, keyed by sequence ID
 
     Calculates Pearson correlation coefficient from Z scores for each
     tetranucleotide. This is done longhand here, which is fast enough,

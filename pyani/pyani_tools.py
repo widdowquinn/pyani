@@ -67,7 +67,11 @@ class ANIResults:
     """Holds ANI dataframe results."""
 
     def __init__(self, labels, mode):
-        """Initialise with four empty, labelled dataframes."""
+        """Initialise with four empty, labelled dataframes.
+
+        :param labels:
+        :param mode:
+        """
         self.alignment_lengths = pd.DataFrame(index=labels, columns=labels, dtype=float)
         self.similarity_errors = pd.DataFrame(
             index=labels, columns=labels, dtype=float
@@ -82,25 +86,49 @@ class ANIResults:
         self.mode = mode
 
     def add_tot_length(self, qname, sname, value, sym=True):
-        """Add a total length value to self.alignment_lengths."""
+        """Add a total length value to self.alignment_lengths.
+
+        :param qname:
+        :param sname:
+        :param value:
+        :param sym:
+        """
         self.alignment_lengths.loc[qname, sname] = value
         if sym:
             self.alignment_lengths.loc[sname, qname] = value
 
     def add_sim_errors(self, qname, sname, value, sym=True):
-        """Add a similarity error value to self.similarity_errors."""
+        """Add a similarity error value to self.similarity_errors.
+
+        :param qname:
+        :param sname:
+        :param value:
+        :param sym:
+        """
         self.similarity_errors.loc[qname, sname] = value
         if sym:
             self.similarity_errors.loc[sname, qname] = value
 
     def add_pid(self, qname, sname, value, sym=True):
-        """Add a percentage identity value to self.percentage_identity."""
+        """Add a percentage identity value to self.percentage_identity.
+
+        :param qname:
+        :param sname:
+        :param value:
+        :param sym:
+        """
         self.percentage_identity.loc[qname, sname] = value
         if sym:
             self.percentage_identity.loc[sname, qname] = value
 
     def add_coverage(self, qname, sname, qcover, scover=None):
-        """Add percentage coverage values to self.alignment_coverage."""
+        """Add percentage coverage values to self.alignment_coverage.
+
+        :param qname:
+        :param sname:
+        :param value:
+        :param sym:
+        """
         self.alignment_coverage.loc[qname, sname] = qcover
         if scover:
             self.alignment_coverage.loc[sname, qname] = scover
@@ -163,22 +191,38 @@ class BLASTcmds:
     """Class for construction of BLASTN and database formatting commands."""
 
     def __init__(self, funcs, exes, prefix, outdir):
-        """Instantiate class."""
+        """Instantiate class.
+
+        :param funcs:
+        :param exes:
+        :param prefix:
+        :param outdir:
+        """
         self.funcs = funcs
         self.exes = exes
         self.prefix = prefix
         self.outdir = outdir
 
     def build_db_cmd(self, fname):
-        """Return database format/build command."""
+        """Return database format/build command.
+
+        :param fname:
+        """
         return self.funcs.db_func(fname, self.outdir, self.exes.format_exe)[0]
 
     def get_db_name(self, fname):
-        """Return database filename."""
+        """Return database filename.
+
+        :param fname:
+        """
         return self.funcs.db_func(fname, self.outdir, self.exes.format_exe)[1]
 
     def build_blast_cmd(self, fname, dbname):
-        """Return BLASTN command."""
+        """Return BLASTN command.
+
+        :param fname:
+        :param dbname:
+        """
         return self.funcs.blastn_func(fname, dbname, self.outdir, self.exes.blast_exe)
 
 
@@ -187,7 +231,11 @@ class BLASTcmds:
 
 # Make a dictionary of assembly download info
 def make_asm_dict(taxon_ids, retries):
-    """Return dict of assembly UIDs, keyed by each passed taxon ID."""
+    """Return dict of assembly UIDs, keyed by each passed taxon ID.
+
+    :param taxon_ids:
+    :param retries:
+    """
     asm_dict = dict()
 
     for tid in taxon_ids:
@@ -201,7 +249,9 @@ def make_asm_dict(taxon_ids, retries):
 def get_labels(filename, logger=None):
     r"""Return dictionary of alternative sequence labels, or None.
 
-    - filename - path to file containing tab-separated table of labels
+    :param filename:  path to file containing tab-separated table of labels
+    :param logger:  logging object
+
     Input files should be formatted as <key>\t<label>, one pair per line.
     """
     labeldict = {}
@@ -227,7 +277,10 @@ def get_labels(filename, logger=None):
 
 # Return the total length of sequences in a passed FASTA file
 def get_genome_length(filename):
-    """Return total length of all sequences in a FASTA file."""
+    """Return total length of all sequences in a FASTA file.
+
+    :param filename:  path to FASTA file
+    """
     with open(filename, "r") as ifh:
         return sum([len(record) for record in SeqIO.parse(ifh, "fasta")])
 
