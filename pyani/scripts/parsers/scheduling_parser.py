@@ -44,6 +44,9 @@ from argparse import ArgumentParser
 def build():
     """Return the common argument parser for job scheduling.
 
+    :param subps:  collection of subparsers in main parser
+    :param parents:  parsers from which arguments are inherited
+
     Common arguments are:
 
     """

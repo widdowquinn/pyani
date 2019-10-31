@@ -46,6 +46,9 @@ from pyani.scripts import subcommands
 def build(subps, parents=None):
     """Return a command-line parser for the classify subcommand.
 
+    :param subps:  collection of subparsers in main parser
+    :param parents:  parsers from which arguments are inherited
+
     The classify subcommand takes specific arguments:
 
     --cov_min       (minimum coverage threshold for an edge)

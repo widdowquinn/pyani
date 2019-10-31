@@ -46,9 +46,12 @@ from pyani.scripts import subcommands
 def build(subps, parents=None):
     """Return a command-line parser for the index subcommand.
 
+    :param subps:  collection of subparsers in main parser
+    :param parents:  parsers from which arguments are inherited
+
     The index subcommand takes a single positional argument:
 
-    indir           (directory containing input genome sequence files)
+    - indir           (directory containing input genome sequence files)
     """
     parser = subps.add_parser(
         "index", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter

@@ -44,7 +44,11 @@ from pyani.scripts import subcommands
 
 
 def build(subps, parents=None):
-    """Return a command-line parser for the aniblastall subcommand."""
+    """Return a command-line parser for the aniblastall subcommand.
+
+    :param subps:  collection of subparsers in main parser
+    :param parents:  parsers from which arguments are inherited
+    """
     parser = subps.add_parser(
         "aniblastall", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )

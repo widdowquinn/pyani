@@ -46,6 +46,9 @@ from pyani.scripts import subcommands
 def build(subps, parents=None):
     """Return a command-line parser for the plot subcommand.
 
+    :param subps:  collection of subparsers in main parser
+    :param parents:  parsers from which arguments are inherited
+
     The plot subcommand takes specific arguments:
 
     --method        (graphics method to use)
