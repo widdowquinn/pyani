@@ -64,12 +64,16 @@ class PyaniScriptException(Exception):
 def make_outdir(outdir, force, noclobber, logger):
     """Create output directory (allows for force and noclobber).
 
+    :param outdir:
+    :param force:
+    :param noclobber:
+    :param logger:
+
     The intended outcomes are:
     outdir doesn't exist: create outdir
     outdir exists: raise exception
     outdir exists, --force only: remove the directory tree
-    outdir exists, --force --noclobber: continue with existing directory tree
-                                        but do not overwrite files
+    outdir exists, --force --noclobber: continue with existing directory tree but do not overwrite files
 
     So long as the outdir is created with this function, we need only check
     for args.noclobber elsewhere to see how to proceed when a file exists.
@@ -97,7 +101,11 @@ def make_outdir(outdir, force, noclobber, logger):
 
 # Make a dictionary of assembly download info
 def make_asm_dict(taxon_ids, retries):
-    """Return a dict of assembly UIDs, keyed by each passed taxon ID."""
+    """Return a dict of assembly UIDs, keyed by each passed taxon ID.
+
+    :param taxon_ids:
+    :param retries:
+    """
     asm_dict = dict()
 
     for tid in taxon_ids:

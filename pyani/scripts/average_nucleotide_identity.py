@@ -57,10 +57,12 @@ typical percentage threshold for species boundary in the literature is 95%
 ANI (e.g. Richter et al. 2009).
 
 All ANI methods follow the basic algorithm:
+
 - Align the genome of organism 1 against that of organism 2, and identify
   the matching regions
 - Calculate the percentage nucleotide identity of the matching regions, as
   an average for all matching regions
+
 Methods differ on: (1) what alignment algorithm is used, and the choice of
 parameters (this affects the aligned region boundaries); (2) what the input
 is for alignment (typically either fragments of fixed size, or the most
@@ -153,7 +155,10 @@ from pyani.scripts import logger as pyani_logger
 
 # Process command-line arguments
 def parse_cmdline(argv=None):
-    """Parse command-line arguments for script."""
+    """Parse command-line arguments for script.
+
+    :param argv:  list of arguments from command-line
+    """
     parser = ArgumentParser(prog="average_nucleotide_identity.py")
     parser.add_argument(
         "--version", action="version", version="%(prog)s: pyani " + __version__
@@ -461,8 +466,10 @@ def compress_delete_outdir(outdir, logger):
 def calculate_anim(args, logger, infiles, org_lengths):
     """Return ANIm result dataframes for files in input directory.
 
-    - infiles - paths to each input file
-    - org_lengths - dictionary of input sequence lengths, keyed by sequence
+    :param args:  Namespace, command-line arguments
+    :param logger: logging object
+    :param infiles:  list of paths to each input file
+    :param org_lengths:  dict, input sequence lengths, keyed by sequence
 
     Finds ANI by the ANIm method, as described in Richter et al (2009)
     Proc Natl Acad Sci USA 106: 19126-19131 doi:10.1073/pnas.0906412106.
@@ -549,8 +556,10 @@ def calculate_anim(args, logger, infiles, org_lengths):
 def calculate_tetra(args, logger, infiles):
     """Calculate TETRA for files in input directory.
 
-    - infiles - paths to each input file
-    - org_lengths - dictionary of input sequence lengths, keyed by sequence
+    :param args: Namespace, command-line arguments
+    :param logger:  logging object
+    :param infiles:  list, paths to each input file
+    :param org_lengths:  dict, input sequence lengths, keyed by sequence
 
     Calculates TETRA correlation scores, as described in:
 
@@ -726,7 +735,9 @@ def unified_anib(args, logger, infiles, org_lengths):
 def write(args, logger, results):
     """Write ANIb/ANIm/TETRA results to output directory.
 
-    - results - results object from analysis
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    :param results:  Results object from analysis
 
     Each dataframe is written to an Excel-format file (if args.write_excel is
     True), and plain text tab-separated file in the output directory. The
@@ -753,8 +764,10 @@ def write(args, logger, results):
 def draw(args, logger, filestems, gformat):
     """Draw ANIb/ANIm/TETRA results.
 
-    - filestems - filestems for output files
-    - gformat - the format for output graphics
+    :param args:  Namespace, command-line arguments
+    :param logger: logging object
+    :param filestems: - filestems for output files
+    :param gformat: - the format for output graphics
     """
     # Draw heatmaps
     for filestem in filestems:
@@ -782,7 +795,9 @@ def draw(args, logger, filestems, gformat):
 def subsample_input(args, logger, infiles):
     """Return a random subsample of the passed input files.
 
-    - infiles: a list of input files for analysis
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    :param infiles:  list of input files for analysis
     """
     logger.info("--subsample: %s", args.subsample)
     try:
@@ -867,7 +882,7 @@ def build_logger(args, logger):
 
 
 def test_class_label_paths(args, logger):
-    """Test if label and class files exist.
+    """Raise error and exit if label and class files exist.
 
     :param args:  Namespace of command-line arguments
     :param logger:  logging object
@@ -928,7 +943,11 @@ def test_scheduler(args, logger):
 
 # Main function
 def run_main(args=None, logger=None):
-    """Run main process for average_nucleotide_identity.py script."""
+    """Run main process for average_nucleotide_identity.py script.
+
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    """
     time0 = time.time()
 
     # Process command-line and build logger

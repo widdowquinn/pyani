@@ -51,6 +51,7 @@ import time
 def build_logger(name, args):
     """Return a logger for this script.
 
+    :param name:
     :param args:
 
     Instantiates a logger for the script, and adds basic info.

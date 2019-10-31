@@ -77,7 +77,10 @@ class NCBIDownloadException(Exception):
 
 # Parse command-line
 def parse_cmdline(argv=None):
-    """Parse command-line arguments."""
+    """Parse command-line arguments.
+
+    :param argv:  list of command-line arguments
+    """
     parser = ArgumentParser(prog="genbank_get_genomes_by_taxon.py")
     parser.add_argument(
         "-o",
@@ -178,7 +181,11 @@ def last_exception():
 
 # Set contact email for NCBI
 def set_ncbi_email(args, logger):
-    """Set contact email for NCBI."""
+    """Set contact email for NCBI.
+
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    """
     Entrez.email = args.email
     logger.info("Set NCBI contact email to %s", args.email)
     Entrez.tool = "genbank_get_genomes_by_taxon.py"
@@ -187,6 +194,9 @@ def set_ncbi_email(args, logger):
 # Create output directory if it doesn't exist
 def make_outdir(args, logger):
     """Make the output directory, if required.
+
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
 
     This is a little involved.  If the output directory already exists,
     we take the safe option by default, and stop with an error.  We can,
@@ -227,7 +237,14 @@ def make_outdir(args, logger):
 
 # Retry Entrez requests (or any other function)
 def entrez_retry(args, logger, func, *fnargs, **fnkwargs):
-    """Retry the passed function a defined number of times."""
+    """Retry the passed function a defined number of times.
+
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    :param func:  func, Entrez function to attempt
+    :param *fnargs:  tuple, arguments to the Entrez function
+    :param **fnkwargs:  dict, keyword arguments to the Entrez function
+    """
     tries, success = 0, False
     while not success and tries < args.retries:
         try:
@@ -256,14 +273,16 @@ def entrez_batch_webhistory(
 ):
     """Recover Entrez data from a prior NCBI webhistory search.
 
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    :param record:  Entrez webhistory record
+    :param expected:  int, number of expected search returns
+    :param batchsize:  int, number of search returns to retrieve in each batch
+    :param *fnargs:  tuple, arguments to Efetch
+    :param **fnkwargs:  dict, keyword arguments to Efetch
+
     Recovery is performed in in batches of defined size, using Efetch.
     Returns all results as a list.
-
-    - record: Entrez webhistory record
-    - expected: number of expected search returns
-    - batchsize: how many search returns to retrieve in a batch
-    - *fnargs: arguments to Efetch
-    - **fnkwargs: keyword arguments to Efetch
     """
     results = []
     for start in range(0, expected, batchsize):
@@ -287,10 +306,14 @@ def entrez_batch_webhistory(
 def get_asm_uids(args, logger, taxon_uid):
     """Return a set of NCBI UIDs associated with the passed taxon.
 
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    :param taxon_uid:  str, NCBI taxon ID
+
     This query at NCBI returns all assemblies for the taxon subtree
     rooted at the passed taxon_uid.
     """
-    query = "txid%s[Organism:exp]" % taxon_uid
+    query = f"txid{taxon_uid}[Organism:exp]"
     logger.info("Entrez ESearch with query: %s", query)
 
     # Perform initial search for assembly UIDs with taxon ID as query.
@@ -320,6 +343,8 @@ def get_asm_uids(args, logger, taxon_uid):
 def extract_filestem(data):
     """Extract filestem from Entrez eSummary data.
 
+    :param data:  Entrez eSummary
+
     Function expects esummary['DocumentSummarySet']['DocumentSummary'][0]
 
     Some illegal characters may occur in AssemblyName - for these, a more
@@ -335,6 +360,11 @@ def extract_filestem(data):
 # Download NCBI assembly file for a passed Assembly UID
 def get_ncbi_asm(args, logger, asm_uid, fmt="fasta"):
     """Return the NCBI AssemblyAccession and AssemblyName for an assembly.
+
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    :param asm_uid:  NCBI assembly UID
+    :param fmt:  str, format to retrieve assembly information
 
     Returns organism data for class/label files also, as well
     as accession, so we can track whether downloads fail because only the
@@ -411,6 +441,12 @@ def retrieve_asm_contigs(
     fmt="fasta",
 ):
     """Download assembly sequence to a local directory.
+
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    :param filestem:  str, filestem for output file
+    :param ftpstem:  str, URI stem for NCBI FTP site
+    :param fmt:  str, format for output file
 
     The filestem corresponds to <AA>_<AN>, where <AA> and <AN> are
     AssemblyAccession and AssemblyName: data fields in the eSummary record.
@@ -508,6 +544,7 @@ def extract_archive(archivepath, logger):
     """Return path to extracted gzip file.
 
     :param archivepath:  path to gzipped file
+    :param logger:  logging object
     """
     # Extract data
     ename = os.path.splitext(archivepath)[0]  # Strips only .gz from filename
@@ -531,6 +568,12 @@ def extract_archive(archivepath, logger):
 # Write contigs for a single assembly out to file
 def write_contigs(args, logger, asm_uid, contig_uids, batchsize=10000):
     """Write assembly contigs to a single FASTA file.
+
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    :param asm_uid:  str, NCBI assembly UID
+    :param contig_uids:
+    :param batchsize:  int
 
     FASTA records are returned, as GenBank and even GenBankWithParts format
     records don't reliably give correct sequence in all cases.
@@ -625,7 +668,14 @@ def write_contigs(args, logger, asm_uid, contig_uids, batchsize=10000):
 
 # Function to report whether an accession has been downloaded
 def logreport_downloaded(accn, skiplist, accndict, uidaccndict, logger):
-    """Report to logger if alternative assemblies were downloaded."""
+    """Report to logger if alternative assemblies were downloaded.
+
+    :param accn:
+    :param skiplist:
+    :param accndict:
+    :param uidaccndict:
+    :param logger:  logging object
+    """
     for vid in accndict[accn.split(".")[0]]:
         if vid in skiplist:
             status = "NOT DOWNLOADED"
@@ -636,7 +686,11 @@ def logreport_downloaded(accn, skiplist, accndict, uidaccndict, logger):
 
 # Run as script
 def run_main(args=None, logger=None):
-    """Run main process for average_nucleotide_identity.py script."""
+    """Run main process for average_nucleotide_identity.py script.
+
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    """
     # If we need to (i.e. a namespace isn't passed), parse the command-line
     if args is None:
         args = parse_cmdline()

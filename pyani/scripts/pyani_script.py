@@ -49,7 +49,11 @@ from .. import __version__
 
 # Main function
 def run_main(argv=None, logger=None):
-    """Run main process for pyani.py script."""
+    """Run main process for pyani.py script.
+
+    :param argv:
+    :param logger:
+    """
     # If we need to (i.e. a namespace isn't passed), parse the command-line
     if argv is None:
         args = parse_cmdline()
