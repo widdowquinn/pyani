@@ -54,7 +54,11 @@ DLFileData = namedtuple("DLFileData", "filestem ftpstem suffix")
 
 
 def subcmd_download(args, logger):
-    """Download assembled genomes in subtree of passed NCBI taxon ID."""
+    """Download assembled genomes in subtree of passed NCBI taxon ID.
+
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    """
     # Create output directory, respecting force/noclobber
     if not args.dryrun:
         tools.make_outdir(args.outdir, args.force, args.noclobber, logger)
@@ -82,7 +86,7 @@ def subcmd_download(args, logger):
     asm_dict = tools.make_asm_dict(taxon_ids, args.retries)
     for tid, uids in asm_dict.items():
         logger.info(
-            f"Taxon ID summary\n\tQuery: {tid}\n\tasm count: {len(uids)}\n\tUIDs: {uids}",
+            f"Taxon ID summary\n\tQuery: {tid}\n\tasm count: {len(uids)}\n\tUIDs: {uids}"
         )
 
     # Compile outputs to write class and label files, and a list of
@@ -91,9 +95,7 @@ def subcmd_download(args, logger):
     classes = []
     labels = []
     skippedlist = []
-    Skipped = namedtuple(
-        "Skipped", "taxon_id accession organism strain url dltype"
-    )
+    Skipped = namedtuple("Skipped", "taxon_id accession organism strain url dltype")
 
     # Download contigs and hashes for each assembly UID in the list
     # On completion of this loop, each assembly in the list will either be
@@ -157,9 +159,7 @@ def subcmd_download(args, logger):
                         "RefSeq",
                     )
                 )
-                logger.warning(
-                    "RefSeq failed. Trying GenBank alternative assembly"
-                )
+                logger.warning("RefSeq failed. Trying GenBank alternative assembly")
                 # Try GenBank assembly
                 dlstatus = tools.download_genome_and_hash(
                     args,

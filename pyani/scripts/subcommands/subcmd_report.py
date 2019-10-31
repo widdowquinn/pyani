@@ -67,6 +67,9 @@ ReportParams = namedtuple("ReportParams", "name statement headers")
 def subcmd_report(args, logger):
     """Present report on ANI results and/or database contents.
 
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+
     The report subcommand takes any of several long options that do one of two
     things:
 

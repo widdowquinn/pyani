@@ -240,6 +240,8 @@ def generate_joblist(comparisons, existingfiles, fragfiles, fraglens, args, logg
 
     :param comparisons:  list of (Genome, Genome) tuples for which comparisons are needed
     :param existingfiles:  list of pre-existing BLASTN+ outputs
+    :param fragfiles:
+    :param fraglens:
     :param args:  Namespace, command-line arguments
     :param logger:  logging object
     """

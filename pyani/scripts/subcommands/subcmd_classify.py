@@ -55,7 +55,11 @@ SubgraphData = namedtuple("SubgraphData", "interval graph cliqueinfo")
 
 
 def subcmd_classify(args, logger):
-    """Generate classifications for an analysis."""
+    """Generate classifications for an analysis.
+
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    """
     # Tell the user what's going on
     logger.info(f"Generating classification for ANI run: {args.run_id}")
     logger.info(f"\tWriting output to: {args.outdir}")
@@ -102,6 +106,10 @@ def subcmd_classify(args, logger):
 # Generate a list of graphs from lowest to highest pairwise identity threshold
 def trimmed_graph_sequence(ingraph, args, attribute="identity"):
     """Return graphs trimmed from lowest to highest attribute value.
+
+    :param ingraph:
+    :param args:  Namespace, command-line arguments
+    :param attribute:
 
     A generator which, starting from the initial graph, yields in sequence a
     series of graphs from which the edge(s) with the lowest threshold value

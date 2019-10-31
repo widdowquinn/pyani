@@ -46,7 +46,11 @@ from pyani import pyani_orm
 
 
 def subcmd_createdb(args, logger):
-    """Create an empty pyani database."""
+    """Create an empty pyani database.
+
+    :param args:  Namespace, command-line arguments
+    :param logger:  logging object
+    """
     # If the database exists, raise an error rather than overwrite
     if os.path.isfile(args.dbpath):
         if not args.force:
