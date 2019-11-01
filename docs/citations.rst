@@ -76,6 +76,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Falagan *et al.* (2019) "Acidithiobacillus sulfuriphilus sp. nov.: an extremely acidophilic sulfur-oxidizing chemolithotroph isolated from a neutral pH environment" *Int. J. Syst. Evol. Micro.* `doi:0.1099/ijsem.0.003576 <https://doi.org/0.1099/ijsem.0.003576>`_
 * Faoro *et al.* (2019) "Genome comparison between clinical and environmental strains of *Herbaspirillum seropedicae* reveals a potential new emerging bacterium adapted to human hosts" *BMC Genomics* `doi:10.1186/s12864-019-5982-9 <https://doi.org/10.1186/s12864-019-5982-9>`_
 * Feng *et al.* (2019) "Complete genome sequence of *Hahella* sp. KA22, a prodigiosin-producing algicidal bacterium" *Marine Genomics* `doi:10.1016/j.margen.2019.04.003 <https://doi.org/10.1016/j.margen.2019.04.003>`_
+* Ghosh *et al.* (2019) "Reanalysis of *Lactobacillus paracasei* Lbs2 Strain and Large-Scale Comparative Genomics Places Many Strains into Their Correct Taxonomic Position" *Microorganisms* `doi:10.3390/microorganisms7110487 <https://doi.org/10.3390/microorganisms7110487>`_
 * Hollensteiner *et al.* (2019) "Complete Genome Sequence of *Marinobacter* sp. Strain JH2, Isolated from Seawater of the Kiel Fjord" *Micro. Res. Ann.* `doi:10.1128/MRA.00596-19 <https://doi.org/10.1128/MRA.00596-19>`_
 * Hornung *et al.* (2019) "An in silico survey of *Clostridioides difficile* extrachromosomal elements" *BioRxiv* `doi:10.1101/651539 <https://doi.org/10.1101/651539>`_
 * Huang *et al.* (2019) "Genomic differences within the phylum Marinimicrobia: From waters to sediments in the Mariana Trench" *Marine Genomics* `doi:10.1016/j.margen.2019.100699 <https://doi.org/10.1016/j.margen.2019.100699>`_
@@ -116,6 +117,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Zabel *et al.* (2019) "Novel Genes and Metabolite Trends in *Bifidobacterium longum* subsp. *infantis* Bi-26 Metabolism of Human Milk Oligosaccharide 2′-fucosyllactose" *Sci. Rep.* `doi:10.1038/s41598-019-43780-9 <https://doi.org/s41598-019-43780-9>`_
 * Zakham *et al.* (2019) "Molecular diagnosis and enrichment culture identified a septic pseudoarthrosis due to an infection with *Erysipelatoclostridium ramosum*" *Int. J. Inf. Dis.* `doi:10.1016/j.ijid.2019.02.001 <https://doi.org/10.1016/j.ijid.2019.02.001>`_
 * Zhu *et al.* (2019) "First Report of Integrative Conjugative Elements in *Riemerella anatipestifer* Isolates From Ducks in China" *Front. Vet. Sci.* `doi:10.3389/fvets.2019.00128 <https://doi.org/10.3389/fvets.2019.00128>`_
+* Zhu *et al.* (2019) "Pan-genome analysis of *Riemerella anatipestifer* reveals its genomic diversity and acquired antibiotic resistance associated with genomic islands" *Func. Int. Genom* `doi:10.1007/s10142-019-00715-x <https://doi.org/10.1007/s10142-019-00715-x>`_
 
 ^^^^
 2018
