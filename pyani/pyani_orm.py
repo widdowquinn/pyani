@@ -42,8 +42,6 @@
 This SQLAlchemy-based ORM replaces the previous SQL-based module
 """
 
-import os
-
 from collections import namedtuple
 
 import numpy as np
@@ -500,7 +498,7 @@ def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
             indesc = read_fasta_description(fastafile)
         except Exception:
             raise PyaniORMException("Could not read genome files for database import")
-        abspath = os.path.abspath(fastafile)
+        abspath = fastafile.resolve()
         genome_len = get_genome_length(abspath)
 
         # If the genome is not already in the database, add it as a Genome object
