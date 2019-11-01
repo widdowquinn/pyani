@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""test_anib.py
-
-Test anib.py module.
+"""Test anib.py module.
 
 These tests are intended to be run from the repository root using:
 
@@ -69,9 +67,10 @@ class TestBLASTCmdline(unittest.TestCase):
 
     def setUp(self):
         """Set parameters for tests."""
-        self.indir = Path("tests/test_input/anib")
-        self.outdir = Path("tests/test_output/anib")
-        self.seqdir = Path("tests/test_input/sequences")
+        testdir = Path("tests")
+        self.indir = testdir / "test_input" / "anib"
+        self.outdir = testdir / "test_output" / "anib"
+        self.seqdir = testdir / "test_input" / "sequences"
         self.infiles = list(self.seqdir.iterdir())
         self.fraglen = 1000
         self.fmtdboutdir = self.outdir / "formatdb"
@@ -191,12 +190,12 @@ class TestBLASTCmdline(unittest.TestCase):
                 ),
             ]
         )
-        os.makedirs(self.outdir, exist_ok=True)
-        os.makedirs(self.fmtdboutdir, exist_ok=True)
-        os.makedirs(self.makeblastdbdir, exist_ok=True)
+        self.outdir.mkdir(exist_ok=True)
+        self.fmtdboutdir.mkdir(exist_ok=True)
+        self.makeblastdbdir.mkdir(exist_ok=True)
 
     def test_formatdb_generation(self):
-        """generate formatdb command-line."""
+        """Generate formatdb command-line."""
         cmd = anib.construct_formatdb_cmd(
             self.seqdir / "NC_002696.fna", self.fmtdboutdir
         )
@@ -205,14 +204,14 @@ class TestBLASTCmdline(unittest.TestCase):
             raise AssertionError()
 
     def test_makeblastdb_generation(self):
-        """generate makeblastdb command-line."""
+        """Generate makeblastdb command-line."""
         cmd = anib.construct_makeblastdb_cmd(
             self.seqdir / "NC_002696.fna", self.makeblastdbdir
         )
         self.assertEqual(cmd[0], self.makeblastdbcmd)  # correct command
 
     def test_blastdb_commands(self):
-        """generate BLAST+ db commands."""
+        """Generate BLAST+ db commands."""
         # BLAST+
         cmds = anib.generate_blastdb_commands(
             self.blastdbfnames, self.outdir, mode="ANIb"
@@ -220,28 +219,28 @@ class TestBLASTCmdline(unittest.TestCase):
         self.assertEqual(cmds, self.blastdbtgt)
 
     def test_legacy_blastdb_commands(self):
-        """generate legacy BLAST db creation commands"""
+        """Generate legacy BLAST db creation commands."""
         cmds = anib.generate_blastdb_commands(
             self.blastdbfnames, self.outdir, mode="ANIblastall"
         )
         self.assertEqual(cmds, self.blastdbtgtlegacy)
 
     def test_blastn_generation(self):
-        """generate BLASTN+ command-line."""
+        """Generate BLASTN+ command-line."""
         cmd = anib.construct_blastn_cmdline(
             self.blastdbfnames[0], self.blastdbfnames[1], self.outdir
         )
         self.assertEqual(cmd, self.blastncmd)
 
     def test_blastall_generation(self):
-        """generate legacy BLASTN command-line."""
+        """Generate legacy BLASTN command-line."""
         cmd = anib.construct_blastall_cmdline(
             self.blastdbfnames[0], self.blastdbfnames[1], self.outdir
         )
         self.assertEqual(cmd, self.blastallcmd)
 
     def test_blastn_commands(self):
-        """generate BLASTN+ commands."""
+        """Generate BLASTN+ commands."""
         # BLAST+
         cmds = anib.generate_blastn_commands(
             self.blastdbfnames, self.outdir, mode="ANIb"
@@ -251,14 +250,14 @@ class TestBLASTCmdline(unittest.TestCase):
         self.assertEqual(cmds, self.blastntgt)
 
     def test_legacy_blastn_commands(self):
-        """generate legacy BLASTN commands"""
+        """Generate legacy BLASTN commands."""
         cmds = anib.generate_blastn_commands(
             self.blastdbfnames, self.outdir, mode="ANIblastall"
         )
         self.assertEqual(cmds, self.blastalltgt)
 
     def test_blastall_dbjobdict(self):
-        """generate dictionary of legacy BLASTN database jobs."""
+        """Generate dictionary of legacy BLASTN database jobs."""
         blastcmds = anib.make_blastcmd_builder("ANIblastall", self.outdir)
         jobdict = anib.build_db_jobs(self.infiles, blastcmds)
         self.assertEqual(
@@ -266,7 +265,7 @@ class TestBLASTCmdline(unittest.TestCase):
         )
 
     def test_blastn_dbjobdict(self):
-        """generate dictionary of BLASTN+ database jobs."""
+        """Generate dictionary of BLASTN+ database jobs."""
         blastcmds = anib.make_blastcmd_builder("ANIb", self.outdir)
         jobdict = anib.build_db_jobs(self.infiles, blastcmds)
         print(sorted([(k, v.script) for (k, v) in jobdict.items()]))
@@ -276,7 +275,7 @@ class TestBLASTCmdline(unittest.TestCase):
         )
 
     def test_blastn_graph(self):
-        """create jobgraph for BLASTN+ jobs."""
+        """Create jobgraph for BLASTN+ jobs."""
         fragresult = anib.fragment_fasta_files(self.infiles, self.outdir, self.fraglen)
         blastcmds = anib.make_blastcmd_builder("ANIb", self.outdir)
         jobgraph = anib.make_job_graph(self.infiles, fragresult[0], blastcmds)
@@ -291,7 +290,7 @@ class TestBLASTCmdline(unittest.TestCase):
                 raise AssertionError()
 
     def test_blastall_graph(self):
-        """create jobgraph for legacy BLASTN jobs."""
+        """Create jobgraph for legacy BLASTN jobs."""
         fragresult = anib.fragment_fasta_files(self.infiles, self.outdir, self.fraglen)
         blastcmds = anib.make_blastcmd_builder("ANIblastall", self.outdir)
         jobgraph = anib.make_job_graph(self.infiles, fragresult[0], blastcmds)
@@ -308,12 +307,13 @@ class TestBLASTCmdline(unittest.TestCase):
 
 class TestFragments(unittest.TestCase):
 
-    """Class defining tests of ANIb FASTA fragmentation"""
+    """Class defining tests of ANIb FASTA fragmentation."""
 
     def setUp(self):
         """Initialise parameters for tests."""
-        self.outdir = Path("tests/test_output/anib")
-        self.seqdir = Path("tests/test_input/sequences")
+        testdir = Path("tests")
+        self.outdir = testdir / "test_output" / "anib"
+        self.seqdir = testdir / "test_input" / "sequences"
         self.infnames = [
             self.seqdir / fname
             for fname in (
@@ -333,10 +333,10 @@ class TestFragments(unittest.TestCase):
             )
         ]
         self.fraglen = 1000
-        os.makedirs(self.outdir, exist_ok=True)
+        self.outdir.mkdir(exist_ok=True)
 
     def test_fragment_files(self):
-        """fragment files for ANIb/ANIblastall."""
+        """Fragment files for ANIb/ANIblastall."""
         result = anib.fragment_fasta_files(self.infnames, self.outdir, self.fraglen)
         # Are files created?
         for outfname in self.outfnames:
@@ -355,11 +355,13 @@ class TestParsing(unittest.TestCase):
     """Class defining tests of BLAST output parsing."""
 
     def setUp(self):
-        self.indir = Path("tests/test_input/anib")
-        self.seqdir = Path("tests/test_input/sequences")
-        self.fragdir = Path("tests/test_input/anib/fragfiles")
-        self.anibdir = Path("tests/test_input/anib/blastn")
-        self.aniblastalldir = Path("tests/test_input/anib/blastall")
+        """Set up test parameters."""
+        testdir = Path("tests")
+        self.indir = testdir / "test_input" / "anib"
+        self.seqdir = testdir / "test_input" / "sequences"
+        self.fragdir = testdir / "test_input/anib" / "fragfiles"
+        self.anibdir = testdir / "test_input/anib" / "blastn"
+        self.aniblastalldir = testdir / "test_input" / "anib" / "blastall"
         self.fname_legacy = self.indir / "NC_002696_vs_NC_010338.blast_tab"
         self.fname = self.indir / "NC_002696_vs_NC_011916.blast_tab"
         self.fragfname = self.indir / "NC_002696-fragments.fna"
@@ -404,20 +406,20 @@ class TestParsing(unittest.TestCase):
         )
 
     def test_parse_blasttab(self):
-        """parses ANIb .blast_tab output."""
+        """Parses ANIb .blast_tab output."""
         fragdata = anib.get_fraglength_dict([self.fragfname])
         result = anib.parse_blast_tab(self.fname, fragdata, mode="ANIb")
         self.assertEqual(result, (4_016_551, 93, 99.997_693_577_050_029))
 
     def test_parse_legacy_blasttab(self):
-        """parses legacy .blast_tab output"""
+        """Parses legacy .blast_tab output."""
         # ANIblastall output
         fragdata = anib.get_fraglength_dict([self.fragfname])
         result = anib.parse_blast_tab(self.fname_legacy, fragdata, mode="ANIblastall")
         self.assertEqual(result, (1_966_922, 406_104, 78.578_978_313_253_018))
 
     def test_blastdir_processing(self):
-        """parses directory of .blast_tab output."""
+        """Parses directory of .blast_tab output."""
         orglengths = pyani_files.get_sequence_lengths(self.infnames)
         fraglengths = anib.get_fraglength_dict(self.fragfiles)
         # ANIb
@@ -428,7 +430,7 @@ class TestParsing(unittest.TestCase):
         )
 
     def test_legacy_blastdir_processing(self):
-        """parses directory of legacy .blast_tab output"""
+        """Parses directory of legacy .blast_tab output."""
         orglengths = pyani_files.get_sequence_lengths(self.infnames)
         fraglengths = anib.get_fraglength_dict(self.fragfiles)
         result = anib.process_blast(

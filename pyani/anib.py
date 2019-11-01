@@ -280,11 +280,11 @@ def make_job_graph(infiles, fragfiles, blastcmds):
             jobnum += 1
             jobs = [
                 pyani_jobs.Job(
-                    "%s_exe_%06d_a" % (blastcmds.prefix, jobnum),
+                    f"{blastcmds.prefix}_exe_{jobnum:06d}_a",
                     blastcmds.build_blast_cmd(fname1, fname2.replace("-fragments", "")),
                 ),
                 pyani_jobs.Job(
-                    "%s_exe_%06d_b" % (blastcmds.prefix, jobnum),
+                    f"{blastcmds.prefix}_exe_{jobnum:06d}_b",
                     blastcmds.build_blast_cmd(fname2, fname1.replace("-fragments", "")),
                 ),
             ]
@@ -425,7 +425,7 @@ def construct_blastall_cmdline(
     fstem1 = os.path.splitext(os.path.split(fname1)[-1])[0]
     fstem2 = os.path.splitext(os.path.split(fname2)[-1])[0]
     fstem1 = fstem1.replace("-fragments", "")
-    prefix = os.path.join(outdir, "%s_vs_%s" % (fstem1, fstem2))
+    prefix = outdir / f"{fstem1}_vs_{fstem2}"
     cmd = (
         "{0} -p blastn -o {1}.blast_tab -i {2} -d {3} "
         + "-X 150 -q -1 -F F -e 1e-15 "
@@ -468,7 +468,7 @@ def process_blast(blast_dir, org_lengths, fraglengths=None, mode="ANIb", logger=
     # Process .blast_tab files assuming that the filename format holds:
     # org1_vs_org2.blast_tab:
     for blastfile in blastfiles:
-        qname, sname = os.path.splitext(os.path.split(blastfile)[-1])[0].split("_vs_")
+        qname, sname = blastfile.stem.split("_vs_")
 
         # We may have BLAST files from other analyses in the same directory
         # If this occurs, we raise a warning, and skip the file
@@ -519,7 +519,7 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
     '''
     """
     # Assuming that the filename format holds org1_vs_org2.blast_tab:
-    qname = os.path.splitext(os.path.split(filename)[-1])[0].split("_vs_")[0]
+    qname = filename.stem.split("_vs_")[0]
     # Load output as dataframe
     if mode == "ANIblastall":
         qfraglengths = fraglengths[qname]
