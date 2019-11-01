@@ -47,6 +47,7 @@ import os
 import subprocess  # nosec
 
 from collections import defaultdict
+from pathlib import Path
 
 from . import pyani_config
 from .pyani_jobs import JobGroup
@@ -95,12 +96,10 @@ def compile_jobgroups_from_joblist(joblist, jgprefix, sgegroupsize):
         count = 0
         for sublist in sublists:
             count += 1
-            sge_jobcmdlist = ['"%s"' % jc for jc in sublist]
+            sge_jobcmdlist = [f'"{jc}"' for jc in sublist]
             jobgroups.append(
                 JobGroup(
-                    "%s_%d" % (jgprefix, count),
-                    "$cmds",
-                    arguments={"cmds": sge_jobcmdlist},
+                    f"{jgprefix}_{count}" "$cmds", arguments={"cmds": sge_jobcmdlist}
                 )
             )
     return jobgroups
@@ -168,7 +167,7 @@ def run_dependency_graph(
     logger.info("Jobs passed to scheduler in order:")
     for job in jobgroups:
         logger.info("\t%s" % job.name)
-    build_and_submit_jobs(os.curdir, jobgroups, sgeargs)
+    build_and_submit_jobs(Path.cwd, jobgroups, sgeargs)
     logger.info("Waiting for SGE-submitted jobs to finish (polling)")
     for job in jobgroups:
         job.wait()
@@ -208,16 +207,15 @@ def build_directories(root_dir):
     - root_dir   Path to the top-level directory for creation of subdirectories
     """
     # If the root directory doesn't exist, create it
-    if not os.path.exists(root_dir):
-        os.mkdir(root_dir)
+    if not root_dir.exists():
+        root_dir.mkdir(exist_ok=True)
 
     # Create subdirectories
     directories = [
-        os.path.join(root_dir, subdir)
-        for subdir in ("output", "stderr", "stdout", "jobs")
+        root_dir / subdir for subdir in ("output", "stderr", "stdout", "jobs")
     ]
     for dirname in directories:
-        os.makedirs(dirname, exist_ok=True)
+        dirname.mkdir(exist_ok=True)
 
 
 def build_job_scripts(root_dir, jobs):
@@ -229,9 +227,9 @@ def build_job_scripts(root_dir, jobs):
     # Loop over the job list, creating each job script in turn, and then adding
     # scriptPath to the Job object
     for job in jobs:
-        scriptpath = os.path.join(root_dir, "jobs", job.name)
+        scriptpath = root_dir / "jobs" / job.name
         with open(scriptpath, "w") as scriptfile:
-            scriptfile.write("#!/bin/sh\n#$ -S /bin/bash\n%s\n" % job.script)
+            scriptfile.write(f"#!/bin/sh\n#$ -S /bin/bash\n{job.script}\n")
         job.scriptpath = scriptpath
 
 
@@ -260,14 +258,14 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
     """
     # Loop over each job, constructing SGE command-line based on job settings
     for job in jobs:
-        job.out = os.path.join(root_dir, "stdout")
-        job.err = os.path.join(root_dir, "stderr")
+        job.out = root_dir / "stdout"
+        job.err = root_dir / "stderr"
 
         # Add the job name, current working directory, and SGE stdout/stderr
         # directories to the SGE command line
-        args = " -N %s " % (job.name)
+        args = f" -N {job.name} " % (job.name)
         args += " -cwd "
-        args += " -o %s -e %s " % (job.out, job.err)
+        args += f" -o {job.out} -e {job.err} "
 
         # If a queue is specified, add this to the SGE command line
         # LP: This has an undeclared variable, not sure why - delete?
@@ -276,7 +274,7 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
 
         # If the job is actually a JobGroup, add the task numbering argument
         if isinstance(job, JobGroup):
-            args += "-t 1:%d " % (job.tasks)
+            args += f"-t 1:{job.tasks} "
 
         # If there are dependencies for this job, hold the job until they are
         # complete
@@ -287,9 +285,9 @@ def submit_safe_jobs(root_dir, jobs, sgeargs=None):
             args = args[:-1]
 
         # Build the qsub SGE commandline (passing local environment)
-        qsubcmd = "%s -V %s %s" % (pyani_config.QSUB_DEFAULT, args, job.scriptpath)
+        qsubcmd = f"{pyani_config.QSUB_DEFAULT} -V {args} {job.scriptpath}"
         if sgeargs is not None:
-            qsubcmd = "%s %s" % (qsubcmd, sgeargs)
+            qsubcmd = f"{qsubcmd} {sgeargs}"
         # We've considered Bandit warnings B404,B603 and silence
         # subprocess.call(qsubcmd, shell=False)  # nosec
         os.system(qsubcmd)
