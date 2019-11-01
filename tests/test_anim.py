@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""test_anim.py
-
-Test anim.py module.
+"""Test anim.py module.
 
 These tests are intended to be run from the repository root using:
 
@@ -50,6 +48,8 @@ THE SOFTWARE.
 import os
 import unittest
 
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
@@ -68,6 +68,7 @@ class TestNUCmerCmdline(unittest.TestCase):
     def setUp(self):
         """Set parameters for tests."""
         # Basic NUCmer and delta-filter command-line targets
+        testdir = Path("tests")
         self.ntgt = " ".join(
             [
                 "nucmer --mum -p",
@@ -89,82 +90,82 @@ class TestNUCmerCmdline(unittest.TestCase):
                 "tests/test_output/anim/nucmer_output/file1_vs_file2.filter",
             ]
         )
-        self.files = ["file1", "file2", "file3", "file4"]
+        self.files = [Path("file1"), Path("file2"), Path("file3"), Path("file4")]
         self.ncmdlist = [
-            "nucmer --mum -p ./nucmer_output/file1_vs_file2 file1 file2",
-            "nucmer --mum -p ./nucmer_output/file1_vs_file3 file1 file3",
-            "nucmer --mum -p ./nucmer_output/file1_vs_file4 file1 file4",
-            "nucmer --mum -p ./nucmer_output/file2_vs_file3 file2 file3",
-            "nucmer --mum -p ./nucmer_output/file2_vs_file4 file2 file4",
-            "nucmer --mum -p ./nucmer_output/file3_vs_file4 file3 file4",
+            "nucmer --mum -p nucmer_output/file1_vs_file2 file1 file2",
+            "nucmer --mum -p nucmer_output/file1_vs_file3 file1 file3",
+            "nucmer --mum -p nucmer_output/file1_vs_file4 file1 file4",
+            "nucmer --mum -p nucmer_output/file2_vs_file3 file2 file3",
+            "nucmer --mum -p nucmer_output/file2_vs_file4 file2 file4",
+            "nucmer --mum -p nucmer_output/file3_vs_file4 file3 file4",
         ]
         self.fcmdlist = [
             " ".join(
                 [
                     "delta_filter_wrapper.py delta-filter -1",
-                    "./nucmer_output/file1_vs_file2.delta",
-                    "./nucmer_output/file1_vs_file2.filter",
+                    "nucmer_output/file1_vs_file2.delta",
+                    "nucmer_output/file1_vs_file2.filter",
                 ]
             ),
             " ".join(
                 [
                     "delta_filter_wrapper.py delta-filter -1",
-                    "./nucmer_output/file1_vs_file3.delta",
-                    "./nucmer_output/file1_vs_file3.filter",
+                    "nucmer_output/file1_vs_file3.delta",
+                    "nucmer_output/file1_vs_file3.filter",
                 ]
             ),
             " ".join(
                 [
                     "delta_filter_wrapper.py delta-filter -1",
-                    "./nucmer_output/file1_vs_file4.delta",
-                    "./nucmer_output/file1_vs_file4.filter",
+                    "nucmer_output/file1_vs_file4.delta",
+                    "nucmer_output/file1_vs_file4.filter",
                 ]
             ),
             " ".join(
                 [
                     "delta_filter_wrapper.py delta-filter -1",
-                    "./nucmer_output/file2_vs_file3.delta",
-                    "./nucmer_output/file2_vs_file3.filter",
+                    "nucmer_output/file2_vs_file3.delta",
+                    "nucmer_output/file2_vs_file3.filter",
                 ]
             ),
             " ".join(
                 [
                     "delta_filter_wrapper.py delta-filter -1",
-                    "./nucmer_output/file2_vs_file4.delta",
-                    "./nucmer_output/file2_vs_file4.filter",
+                    "nucmer_output/file2_vs_file4.delta",
+                    "nucmer_output/file2_vs_file4.filter",
                 ]
             ),
             " ".join(
                 [
                     "delta_filter_wrapper.py delta-filter -1",
-                    "./nucmer_output/file3_vs_file4.delta",
-                    "./nucmer_output/file3_vs_file4.filter",
+                    "nucmer_output/file3_vs_file4.delta",
+                    "nucmer_output/file3_vs_file4.filter",
                 ]
             ),
         ]
-        self.outdir = os.path.join("tests", "test_output", "anim")
-        self.indir = os.path.join("tests", "test_input", "anim")
+        self.outdir = testdir / "test_output" / "anim"
+        self.indir = testdir / "test_input" / "anim"
 
     def test_single_cmd_generation(self):
-        """generate single abstract NUCmer/delta-filter command-line.
+        """Generate single abstract NUCmer/delta-filter command-line.
 
         Tests that a single NUCmer/delta-filter command-line pair is
         produced correctly
         """
         cmds = anim.construct_nucmer_cmdline(
-            "file1.fna", "file2.fna", outdir=self.outdir
+            Path("file1.fna"), Path("file2.fna"), outdir=self.outdir
         )
         self.assertEqual(cmds, (self.ntgt, self.ftgt))
 
     def test_maxmatch_cmd_generation(self):
-        """generate NUCmer command line with maxmatch."""
+        """Generate NUCmer command line with maxmatch."""
         ncmd, _ = anim.construct_nucmer_cmdline(
-            "file1.fna", "file2.fna", outdir=self.outdir, maxmatch=True
+            Path("file1.fna"), Path("file2.fna"), outdir=self.outdir, maxmatch=True
         )
         self.assertEqual(ncmd, self.ntgtmax)
 
     def test_multi_cmd_generation(self):
-        """generate multiple abstract NUCmer/delta-filter command-lines.
+        """Generate multiple abstract NUCmer/delta-filter command-lines.
 
         Tests that all the input files are correctly-paired
         """
@@ -172,7 +173,7 @@ class TestNUCmerCmdline(unittest.TestCase):
         self.assertEqual(cmds, (self.ncmdlist, self.fcmdlist))
 
     def test_nucmer_job_generation(self):
-        """generate dependency tree of NUCmer/delta-filter jobs.
+        """Generate dependency tree of NUCmer/delta-filter jobs.
 
         Tests that the correct dependency graph and naming scheme is produced.
         """
@@ -188,12 +189,13 @@ class TestNUCmerCmdline(unittest.TestCase):
 
 class TestDeltafileProcessing(unittest.TestCase):
 
-    """Class defining tests for .delta/.filter file parsing"""
+    """Class defining tests for .delta/.filter file parsing."""
 
     def setUp(self):
         """Set parameters for tests."""
-        self.indir = os.path.join("tests", "test_input", "anim")
-        self.seqdir = os.path.join("tests", "test_input", "sequences")
+        testdir = Path("tests")
+        self.indir = testdir / "test_input" / "anim"
+        self.seqdir = testdir / "test_input" / "sequences"
         self.deltafile = os.path.join(self.indir, "test.delta")
         self.deltadir = os.path.join(self.indir, "deltadir")
         self.df_pid = pd.DataFrame(
@@ -208,12 +210,12 @@ class TestDeltafileProcessing(unittest.TestCase):
         )
 
     def test_deltafile_import(self):
-        """parses NUCmer .delta/.filter file."""
+        """Parse test NUCmer .delta/.filter file."""
         result = anim.parse_delta(self.deltafile)
         self.assertEqual(result, (4074001, 2191))
 
     def test_process_deltadir(self):
-        """processes directory of .delta files into ANIResults."""
+        """Process test directory of .delta files into ANIResults."""
         seqfiles = pyani_files.get_fasta_files(self.seqdir)
         orglengths = pyani_files.get_sequence_lengths(seqfiles)
         result = anim.process_deltadir(self.deltadir, orglengths)

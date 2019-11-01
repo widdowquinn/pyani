@@ -105,7 +105,7 @@ def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
 # Generate list of Job objects, one per NUCmer run
 def generate_nucmer_jobs(
     filenames,
-    outdir=".",
+    outdir=Path("."),
     nucmer_exe=pyani_config.NUCMER_DEFAULT,
     filter_exe=pyani_config.FILTER_DEFAULT,
     maxmatch=False,

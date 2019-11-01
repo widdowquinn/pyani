@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""test_subcmd_02_index.py
-
-Test index subcommand for pyani
+"""Test index subcommand for pyani.
 
 The test suite is intended to be run from the repository root using:
 
@@ -62,6 +60,7 @@ import shutil
 import unittest
 
 from argparse import Namespace
+from pathlib import Path
 
 from pyani.scripts import subcommands
 
@@ -71,11 +70,12 @@ class TestIndexSubcommand(unittest.TestCase):
 
     def setUp(self):
         """Configure parameters for tests."""
-        self.indir = os.path.join("tests", "test_input", "subcmd_index")
-        self.outdir = os.path.join("tests", "test_output", "subcmd_index")
-        self.tgtdir = os.path.join("tests", "test_targets", "subcmd_index")
+        testdir = Path("tests")
+        self.indir = testdir / "test_input" / "subcmd_index"
+        self.outdir = testdir / "test_output" / "subcmd_index"
+        self.tgtdir = testdir / "test_targets" / "subcmd_index"
         # Remove output directory before copying input data across
-        if os.path.exists(self.outdir):
+        if self.outdir.exists():
             shutil.rmtree(self.outdir)
         shutil.copytree(self.indir, self.outdir)
 
@@ -86,14 +86,12 @@ class TestIndexSubcommand(unittest.TestCase):
         # Command line namespaces
         self.argsdict = {
             "index": Namespace(
-                indir=self.outdir,
-                labelfname=os.path.join("labels.txt"),
-                classfname=os.path.join("classes.txt"),
+                indir=self.outdir, labelfname="labels.txt", classfname="classes.txt"
             )
         }
 
     def test_index(self):
-        """test indexing of downloaded files"""
+        """Test indexing of downloaded files."""
         # Create index
         subcommands.subcmd_index(self.argsdict["index"], self.logger)
 

@@ -74,10 +74,9 @@ def get_fasta_paths(dirname, extlist=None):
     """
     extlist = extlist or [".fna", ".fa", ".fasta", ".fas"]
     return [
-        os.path.join(dirname, fname)
-        for fname in os.listdir(dirname)
-        if os.path.isfile(os.path.join(dirname, fname))
-        and os.path.splitext(fname)[-1] in extlist
+        dirname / fname
+        for fname in dirname.iterdir()
+        if (dirname / fname).is_file() and fname.suffix in extlist
     ]
 
 
@@ -92,8 +91,8 @@ def get_fasta_and_hash_paths(dirname="."):
     infiles = get_fasta_paths(dirname)
     outfiles = []
     for infile in infiles:
-        hashfile = os.path.splitext(infile)[0] + ".md5"
-        if not os.path.isfile(hashfile):
+        hashfile = infile.with_suffix(".md5")
+        if not hashfile.is_file():
             raise IOError("Hashfile %s does not exist" % hashfile)
         outfiles.append((infile, hashfile))
     return outfiles
@@ -106,8 +105,8 @@ def get_input_files(dirname, *ext):
     :param dirname:  str, path to input directory
     :param *ext:  list of arguments describing permitted file extensions
     """
-    filelist = [f for f in os.listdir(dirname) if os.path.splitext(f)[-1] in ext]
-    return [os.path.join(dirname, f) for f in filelist]
+    filelist = [fname for fname in dirname.iterdir() if fname.suffix in ext]
+    return [dirname / fname for fname in filelist]
 
 
 # Get lengths of input sequences
@@ -124,9 +123,7 @@ def get_sequence_lengths(fastafilenames):
     """
     tot_lengths = {}
     for fname in fastafilenames:
-        tot_lengths[os.path.splitext(os.path.split(fname)[-1])[0]] = sum(
-            [len(s) for s in SeqIO.parse(fname, "fasta")]
-        )
+        tot_lengths[fname.stem] = sum([len(s) for s in SeqIO.parse(fname, "fasta")])
     return tot_lengths
 
 
@@ -195,7 +192,5 @@ def collect_existing_output(dirpath, program, args):
             suffix = ".filter"
     elif program == "blastn":
         suffix = ".blast_tab"
-    existingfiles = [
-        fname for fname in os.listdir(dirpath) if os.path.splitext(fname)[-1] == suffix
-    ]
+    existingfiles = [fname for fname in dirpath.iterdir() if fname.suffix == suffix]
     return existingfiles
