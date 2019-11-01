@@ -128,8 +128,8 @@ def generate_nucmer_jobs(
     )
     joblist = []
     for idx, ncmd in enumerate(ncmds):
-        njob = pyani_jobs.Job("%s_%06d-n" % (jobprefix, idx), ncmd)
-        fjob = pyani_jobs.Job("%s_%06d-f" % (jobprefix, idx), fcmds[idx])
+        njob = pyani_jobs.Job(f"{jobprefix}_{idx:06d}-n", ncmd)
+        fjob = pyani_jobs.Job(f"{jobprefix}_{idx:06d}-f", fcmds[idx])
         fjob.add_dependency(njob)
         joblist.append(fjob)
     return joblist
@@ -284,22 +284,24 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
         if qname not in list(org_lengths.keys()):
             if logger:
                 logger.warning(
-                    "Query name %s not in input " % qname
-                    + "sequence list, skipping %s" % deltafile
+                    "Query name %s not in input sequence list, skipping %s",
+                    qname,
+                    deltafile,
                 )
             continue
         if sname not in list(org_lengths.keys()):
             if logger:
                 logger.warning(
-                    "Subject name %s not in input " % sname
-                    + "sequence list, skipping %s" % deltafile
+                    "Subject name %s not in input sequence list, skipping %s",
+                    sname,
+                    deltafile,
                 )
             continue
         tot_length, tot_sim_error = parse_delta(deltafile)
         if tot_length == 0 and logger is not None:
             if logger:
                 logger.warning(
-                    "Total alignment length reported in " + "%s is zero!" % deltafile
+                    "Total alignment length reported in %s is zero!", deltafile
                 )
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
