@@ -249,7 +249,7 @@ def parse_delta(filename):
 def process_deltadir(delta_dir, org_lengths, logger=None):
     """Return tuple of ANIm results for .deltas in passed directory.
 
-    :param delta_dir:  str, path to the directory containing .delta files
+    :param delta_dir:  Path, path to the directory containing .delta files
     :param org_lengths:  dictionary of total sequence lengths, keyed by sequence
 
     Returns the following pandas dataframes in an ANIResults object;

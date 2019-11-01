@@ -47,8 +47,9 @@ print() statements will be caught by nosetests unless there is an
 error. They can also be recovered with the -s option.
 """
 
-import os
 import unittest
+
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -102,13 +103,14 @@ class TestConcordance(unittest.TestCase):
 
     def setUp(self):
         """Set values and parameters for tests."""
-        self.indir = os.path.join("tests", "test_input", "concordance")
-        self.outdir = os.path.join("tests", "test_output", "concordance")
-        self.tgtdir = os.path.join("tests", "test_targets", "concordance")
-        self.deltadir = os.path.join(self.outdir, "nucmer_output")
+        testdir = Path("tests")
+        self.indir = testdir / "test_input" / "concordance"
+        self.outdir = testdir / "test_output" / "concordance"
+        self.tgtdir = testdir / "test_targets" / "concordance"
+        self.deltadir = self.outdir / "nucmer_output"
         self.infiles = pyani_files.get_fasta_files(self.indir)
         self.orglengths = pyani_files.get_sequence_lengths(self.infiles)
-        self.target = parse_jspecies(os.path.join(self.tgtdir, "jspecies_output.tab"))
+        self.target = parse_jspecies(self.tgtdir / "jspecies_output.tab")
         self.tolerance = {
             "ANIm": 0.1,
             "ANIb_lo": 5,
@@ -117,8 +119,8 @@ class TestConcordance(unittest.TestCase):
             "TETRA": 0.1,
         }
         self.fragsize = 1020
-        os.makedirs(self.outdir, exist_ok=True)
-        os.makedirs(self.deltadir, exist_ok=True)
+        self.outdir.mkdir(exist_ok=True)
+        self.deltadir.mkdir(exist_ok=True)
 
     def test_anim_concordance(self):
         """Check ANIm results are concordant with JSpecies."""
@@ -144,7 +146,7 @@ class TestConcordance(unittest.TestCase):
 
         results = anim.process_deltadir(self.deltadir, self.orglengths)
         result_pid = results.percentage_identity
-        result_pid.to_csv(os.path.join(self.outdir, "pyani_anim.tab"), sep="\t")
+        result_pid.to_csv(self.outdir / "pyani_anim.tab", sep="\t")
 
         # Compare JSpecies output to results
         result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
@@ -152,7 +154,7 @@ class TestConcordance(unittest.TestCase):
         anim_diff = pd.DataFrame(
             diffmat, index=result_pid.index, columns=result_pid.columns
         )
-        anim_diff.to_csv(os.path.join(self.outdir, "pyani_anim_diff.tab"), sep="\t")
+        anim_diff.to_csv(self.outdir / "pyani_anim_diff.tab", sep="\t")
         self.assertLess(anim_diff.abs().values.max(), self.tolerance["ANIm"])
 
     def test_anib_concordance(self):
@@ -162,8 +164,8 @@ class TestConcordance(unittest.TestCase):
         algorithm changed substantially between BLAST and BLAST+
         """
         # Perform ANIb on the input directory contents
-        outdir = os.path.join(self.outdir, "blastn")
-        os.makedirs(outdir, exist_ok=True)
+        outdir = self.outdir / "blastn"
+        outdir.mkdir(exist_ok=True)
         fragfiles, fraglengths = anib.fragment_fasta_files(
             self.infiles, outdir, self.fragsize
         )
@@ -173,7 +175,7 @@ class TestConcordance(unittest.TestCase):
         self.assertEqual(0, run_mp.run_dependency_graph(jobgraph))
         results = anib.process_blast(outdir, self.orglengths, fraglengths, mode="ANIb")
         result_pid = results.percentage_identity
-        result_pid.to_csv(os.path.join(self.outdir, "pyani_anib.tab"), sep="\t")
+        result_pid.to_csv(self.outdir / "pyani_anib.tab", sep="\t")
 
         # Compare JSpecies output to results. We do this in two blocks,
         # masked according to whether the expected result is greater than
@@ -196,15 +198,15 @@ class TestConcordance(unittest.TestCase):
         anib_diff = pd.DataFrame(
             diffmat, index=result_pid.index, columns=result_pid.columns
         )
-        anib_diff.to_csv(os.path.join(self.outdir, "pyani_anib_diff.tab"), sep="\t")
+        anib_diff.to_csv(self.outdir / "pyani_anib_diff.tab", sep="\t")
         self.assertLess(lo_diff.abs().values.max(), self.tolerance["ANIb_lo"])
         self.assertLess(hi_diff.abs().values.max(), self.tolerance["ANIb_hi"])
 
     def test_aniblastall_concordance(self):
         """Check ANIblastall results are concordant with JSpecies."""
         # Perform ANIblastall on the input directory contents
-        outdir = os.path.join(self.outdir, "blastall")
-        os.makedirs(outdir, exist_ok=True)
+        outdir = self.outdir / "blastall"
+        outdir.mkdir(exist_ok=True)
         fragfiles, fraglengths = anib.fragment_fasta_files(
             self.infiles, outdir, self.fragsize
         )
@@ -216,7 +218,7 @@ class TestConcordance(unittest.TestCase):
             outdir, self.orglengths, fraglengths, mode="ANIblastall"
         )
         result_pid = results.percentage_identity
-        result_pid.to_csv(os.path.join(self.outdir, "pyani_aniblastall.tab"), sep="\t")
+        result_pid.to_csv(self.outdir / "pyani_aniblastall.tab", sep="\t")
 
         # Compare JSpecies output to results
         result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
@@ -224,9 +226,7 @@ class TestConcordance(unittest.TestCase):
         aniblastall_diff = pd.DataFrame(
             diffmat, index=result_pid.index, columns=result_pid.columns
         )
-        aniblastall_diff.to_csv(
-            os.path.join(self.outdir, "pyani_aniblastall_diff.tab"), sep="\t"
-        )
+        aniblastall_diff.to_csv(self.outdir / "pyani_aniblastall_diff.tab", sep="\t")
         self.assertLess(
             aniblastall_diff.abs().values.max(), self.tolerance["ANIblastall"]
         )
@@ -236,13 +236,12 @@ class TestConcordance(unittest.TestCase):
         # Perform TETRA analysis
         zscores = dict()
         for filename in self.infiles:
-            org = os.path.splitext(os.path.split(filename)[-1])[0]
-            zscores[org] = tetra.calculate_tetra_zscore(filename)
+            zscores[filename.stem] = tetra.calculate_tetra_zscore(filename)
         results = tetra.calculate_correlations(zscores)
-        results.to_csv(os.path.join(self.outdir, "pyani_tetra.tab"), sep="\t")
+        results.to_csv(self.outdir / "pyani_tetra.tab", sep="\t")
 
         # Compare JSpecies output
         diffmat = results.values - self.target["Tetra"].values
         tetra_diff = pd.DataFrame(diffmat, index=results.index, columns=results.columns)
-        tetra_diff.to_csv(os.path.join(self.outdir, "pyani_tetra_diff.tab"), sep="\t")
+        tetra_diff.to_csv(self.outdir / "pyani_tetra_diff.tab", sep="\t")
         self.assertLess(tetra_diff.abs().values.max(), self.tolerance["TETRA"])

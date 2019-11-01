@@ -594,7 +594,5 @@ def parse_blast_tab(filename, fraglengths, mode="ANIb"):
         ani_pid = 0
     aln_length = filtered["ani_alnlen"].sum()
     sim_errors = filtered["blast_mismatch"].sum() + filtered["blast_gaps"].sum()
-    print(filename)
-    print(type(filename))
     filtered.to_csv(Path(filename).with_suffix(".blast_tab.dataframe"), sep="\t")
     return aln_length, sim_errors, ani_pid

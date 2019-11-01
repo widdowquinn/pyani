@@ -38,8 +38,6 @@
 # THE SOFTWARE.
 """Code to handle files for average nucleotide identity calculations."""
 
-import os
-
 from Bio import SeqIO
 
 from pyani import PyaniException
@@ -67,16 +65,16 @@ def get_fasta_files(dirname=None):
 def get_fasta_paths(dirname, extlist=None):
     """Return a list of paths to files matching a list of FASTA extensions.
 
-    :param dirname:
+    :param dirname:  Path, path to directory containing input FASTA files
     :param extlist:
 
     Returns the full path to each file.
     """
     extlist = extlist or [".fna", ".fa", ".fasta", ".fas"]
     return [
-        dirname / fname
+        fname
         for fname in dirname.iterdir()
-        if (dirname / fname).is_file() and fname.suffix in extlist
+        if fname.is_file() and fname.suffix in extlist
     ]
 
 
@@ -105,8 +103,7 @@ def get_input_files(dirname, *ext):
     :param dirname:  str, path to input directory
     :param *ext:  list of arguments describing permitted file extensions
     """
-    filelist = [fname for fname in dirname.iterdir() if fname.suffix in ext]
-    return [dirname / fname for fname in filelist]
+    return [fname for fname in dirname.iterdir() if fname.suffix in ext]
 
 
 # Get lengths of input sequences

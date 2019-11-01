@@ -60,7 +60,8 @@ def subcmd_index(args, logger):
     # Get list of FASTA files in the input directory
     logger.info("Scanning directory %s for FASTA files", args.indir)
     fpaths = pyani_files.get_fasta_paths(args.indir)
-    logger.info("\n".join(["Found FASTA files:"] + ["\t" + fpath for fpath in fpaths]))
+    logger.info("Found FASTA files:")
+    logger.info([f"\t{fpath}\n" for fpath in fpaths])
 
     # Lists of class/label information
     classes = []
@@ -68,8 +69,7 @@ def subcmd_index(args, logger):
 
     # Create MD5 hash for each file, if needed
     for fpath in fpaths:
-        fstem = os.path.splitext(os.path.split(fpath)[-1])[0]
-        hashfname = os.path.splitext(fpath)[0] + ".md5"
+        hashfname = fpath.with_suffix(".md5")
         if os.path.isfile(hashfname):
             logger.info("%s already indexed (using existing hash)", fpath)
             with open(hashfname, "r") as ifh:
@@ -79,13 +79,13 @@ def subcmd_index(args, logger):
             datahash = download.create_hash(fpath)
             logger.info("Writing hash to %s", hashfname)
             with open(hashfname, "w") as hfh:
-                hfh.write("\t".join([datahash, fpath]) + "\n")
+                hfh.write(f"{datahash}\t{fpath}\n")
 
         # Parse the file and get the label/class information
         with open(fpath, "r") as sfh:
             label = list(SeqIO.parse(sfh, "fasta"))[0].description.split(" ", 1)[-1]
-        labels.append("\t".join([datahash, fstem, label]))
-        classes.append("\t".join([datahash, fstem, label]))
+        labels.append("\t".join([datahash, fpath.stem, label]))
+        classes.append("\t".join([datahash, fpath.stem, label]))
 
     # Write class and label files
     classfname = os.path.join(args.indir, args.classfname)
