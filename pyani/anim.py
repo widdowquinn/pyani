@@ -52,10 +52,11 @@ counts, average nucleotide identity (ANI) percentages, and minimum aligned
 percentage (of whole genome) for each pairwise comparison.
 """
 
-import os
 import platform
 import re
 import subprocess
+
+from pathlib import Path
 
 from . import pyani_config
 from . import pyani_files
@@ -138,7 +139,7 @@ def generate_nucmer_jobs(
 # passed sequence filenames
 def generate_nucmer_commands(
     filenames,
-    outdir=".",
+    outdir=Path("."),
     nucmer_exe=pyani_config.NUCMER_DEFAULT,
     filter_exe=pyani_config.FILTER_DEFAULT,
     maxmatch=False,
@@ -177,15 +178,15 @@ def generate_nucmer_commands(
 def construct_nucmer_cmdline(
     fname1,
     fname2,
-    outdir=".",
+    outdir=Path("."),
     nucmer_exe=pyani_config.NUCMER_DEFAULT,
     filter_exe=pyani_config.FILTER_DEFAULT,
     maxmatch=False,
 ):
     """Return a tuple of corresponding NUCmer and delta-filter commands.
 
-    :param fname1:  query FASTA filepath
-    :param fname2:  subject FASTA filepath
+    :param fname1:  path to query FASTA file
+    :param fname2:  path to subject FASTA file
     :param outdir:  path to output directory
     :param nucmer_exe:
     :param filter_exe:
@@ -199,15 +200,8 @@ def construct_nucmer_cmdline(
     NOTE: This command-line writes output data to a subdirectory of the passed
     outdir, called "nucmer_output".
     """
-    outsubdir = os.path.join(outdir, pyani_config.ALIGNDIR["ANIm"])
-    outprefix = os.path.join(
-        outsubdir,
-        "%s_vs_%s"
-        % (
-            os.path.splitext(os.path.split(fname1)[-1])[0],
-            os.path.splitext(os.path.split(fname2)[-1])[0],
-        ),
-    )
+    outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"]
+    outprefix = outsubdir / f"{fname1.stem}_vs_{fname2.stem}"
     if maxmatch:
         mode = "--maxmatch"
     else:
@@ -215,9 +209,7 @@ def construct_nucmer_cmdline(
     nucmercmd = "{0} {1} -p {2} {3} {4}".format(
         nucmer_exe, mode, outprefix, fname1, fname2
     )
-    filtercmd = "delta_filter_wrapper.py " + "{0} -1 {1} {2}".format(
-        filter_exe, outprefix + ".delta", outprefix + ".filter"
-    )
+    filtercmd = f"delta_filter_wrapper.py {filter_exe} -1 {outprefix.with_suffix('.delta')} {outprefix.with_suffix('.filter')}"
     return (nucmercmd, filtercmd)
 
 
@@ -285,7 +277,7 @@ def process_deltadir(delta_dir, org_lengths, logger=None):
     # Process .delta files assuming that the filename format holds:
     # org1_vs_org2.delta
     for deltafile in deltafiles:
-        qname, sname = os.path.splitext(os.path.split(deltafile)[-1])[0].split("_vs_")
+        qname, sname = deltafile.stem.split("_vs_")
 
         # We may have .delta files from other analyses in the same directory
         # If this occurs, we raise a warning, and skip the .delta file
