@@ -38,6 +38,8 @@
 # THE SOFTWARE.
 """Code to handle files for average nucleotide identity calculations."""
 
+from pathlib import Path
+
 from Bio import SeqIO
 
 from pyani import PyaniException
@@ -62,7 +64,7 @@ def get_fasta_files(dirname=None):
 
 
 # Return a list of paths to FASTA files in a directory
-def get_fasta_paths(dirname, extlist=None):
+def get_fasta_paths(dirname=Path("."), extlist=None):
     """Return a list of paths to files matching a list of FASTA extensions.
 
     :param dirname:  Path, path to directory containing input FASTA files
@@ -79,7 +81,7 @@ def get_fasta_paths(dirname, extlist=None):
 
 
 # Get a list of FASTA files and corresponding hashes from the input directory
-def get_fasta_and_hash_paths(dirname="."):
+def get_fasta_and_hash_paths(dirname=Path(".")):
     """Return a list of (FASTA file, hash file) tuples in passed directory.
 
     :param dirname:  str, path to input directory

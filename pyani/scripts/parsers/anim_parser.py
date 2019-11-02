@@ -39,6 +39,7 @@
 """Provides parser for anim subcommand."""
 
 from argparse import ArgumentDefaultsHelpFormatter
+from pathlib import Path
 
 from pyani import pyani_config
 from pyani.scripts import subcommands
@@ -55,12 +56,17 @@ def build(subps, parents=None):
     )
     # Required positional arguments: input and output directories
     parser.add_argument(
-        action="store", dest="indir", default=None, help="input genome directory"
+        action="store",
+        dest="indir",
+        default=None,
+        type=Path,
+        help="input genome directory",
     )
     parser.add_argument(
         action="store",
         dest="outdir",
         default=None,
+        type=Path,
         help="output analysis results directory",
     )
     # Optional arguments

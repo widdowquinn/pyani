@@ -507,7 +507,7 @@ def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
             try:
                 genome = Genome(
                     genome_hash=inhash,
-                    path=abspath,
+                    path=str(abspath),
                     length=genome_len,
                     description=indesc,
                 )

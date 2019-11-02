@@ -52,7 +52,6 @@ import unittest
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 from pyani import run_multiprocessing as run_mp
 from pyani import anib, anim, tetra, pyani_files

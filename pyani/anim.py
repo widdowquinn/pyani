@@ -200,6 +200,10 @@ def construct_nucmer_cmdline(
     NOTE: This command-line writes output data to a subdirectory of the passed
     outdir, called "nucmer_output".
     """
+    # Cast path strings to pathlib.Path for safety
+    fname1, fname2 = Path(fname1), Path(fname2)
+
+    # Compile commands
     outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"]
     outprefix = outsubdir / f"{fname1.stem}_vs_{fname2.stem}"
     if maxmatch:
@@ -209,7 +213,11 @@ def construct_nucmer_cmdline(
     nucmercmd = "{0} {1} -p {2} {3} {4}".format(
         nucmer_exe, mode, outprefix, fname1, fname2
     )
-    filtercmd = f"delta_filter_wrapper.py {filter_exe} -1 {outprefix.with_suffix('.delta')} {outprefix.with_suffix('.filter')}"
+    # There's a subtle pathlib.Path issue, here. We must use string concatenation to add suffixes
+    # to the outprefix files, as using path.with_suffix() instead can replace part of the filestem
+    # in those cases where there is a period in the stem (this occurs frequently as it is part
+    # of the notation for genome assembly versions)
+    filtercmd = f"delta_filter_wrapper.py {filter_exe} -1 {str(outprefix) + '.delta'} {str(outprefix) + '.filter'}"
     return (nucmercmd, filtercmd)
 
 

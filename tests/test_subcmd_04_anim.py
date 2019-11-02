@@ -59,9 +59,9 @@ import logging
 import os
 import unittest
 
-from collections import namedtuple
-
 from argparse import Namespace
+from collections import namedtuple
+from pathlib import Path
 
 from pyani.scripts import subcommands
 
@@ -77,19 +77,20 @@ LabelPaths = namedtuple("LabelPaths", "classes labels")
 
 
 class TestANImSubcommand(unittest.TestCase):
+
     """Class defining tests of the pyani anim subcommand."""
 
     def setUp(self):
         """Configure parameters for tests."""
+        testdir = Path("tests")
         self.dirpaths = DirPaths(
-            os.path.join("tests", "test_input", "subcmd_anim"),
-            os.path.join("tests", "test_output", "subcmd_anim"),
+            testdir / "test_input" / "subcmd_anim",
+            testdir / "test_output" / "subcmd_anim",
         )
-        os.makedirs(self.dirpaths.outdir, exist_ok=True)
-        self.dbpath = os.path.join("tests", "test_output", "subcmd_createdb", "pyanidb")
+        self.dirpaths.outdir.mkdir(exist_ok=True)
+        self.dbpath = testdir / "test_output" / "subcmd_createdb" / "pyanidb"
         self.lblfiles = LabelPaths(
-            os.path.join(self.dirpaths.indir, "classes.txt"),
-            os.path.join(self.dirpaths.indir, "labels.txt"),
+            self.dirpaths.indir / "classes.txt", self.dirpaths.indir / "labels.txt"
         )
         self.exes = ThirdPartyExes("nucmer", "delta-filter")
         self.scheduler = "multiprocessing"

@@ -235,6 +235,8 @@ def subcmd_anim(args, logger):
     # Create list of NUCmer jobs for each comparison still to be performed
     logger.info("Creating NUCmer jobs for ANIm")
     joblist = generate_joblist(comparisons_to_run, existingfiles, args, logger)
+    for job in joblist:
+        print(f"\njob: {job}")
     logger.info(f"Generated {len(joblist)} jobs, {len(comparisons_to_run)} comparisons")
 
     # Pass jobs to appropriate scheduler
