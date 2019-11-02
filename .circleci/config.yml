@@ -13,6 +13,7 @@ workflows:
     jobs:
       - test-3_7
       - test-3_6
+      # - test-3_8
 
 jobs:
   test-3_7: &test-template
@@ -82,8 +83,11 @@ jobs:
       - codecov/upload:
           file: .coverage.xml
 
-
   test-3_6:
     <<: *test-template
     docker:
       - image: circleci/python:3.6.8
+  # test-3_8:
+  #   <<: *test-template
+  #   docker:
+  #     - image: circleci/python:3.8.0
