@@ -43,7 +43,6 @@ These tests are intended to be run from the repository root using:
 pytest -v
 """
 
-import os
 import unittest
 
 from pathlib import Path
@@ -210,9 +209,9 @@ class TestBLASTCmdline(unittest.TestCase):
                 ),
             ]
         )
-        self.outdir.mkdir(exist_ok=True)
-        self.fmtdboutdir.mkdir(exist_ok=True)
-        self.makeblastdbdir.mkdir(exist_ok=True)
+        self.outdir.mkdir(parents=True, exist_ok=True)
+        self.fmtdboutdir.mkdir(parents=True, exist_ok=True)
+        self.makeblastdbdir.mkdir(parents=True, exist_ok=True)
 
     def test_formatdb_generation(self):
         """Generate formatdb command-line."""
