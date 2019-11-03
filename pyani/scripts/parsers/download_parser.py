@@ -39,6 +39,7 @@
 """Provides parser for download subcommand."""
 
 from argparse import ArgumentDefaultsHelpFormatter
+from pathlib import Path
 
 from pyani.scripts import subcommands
 
@@ -68,7 +69,7 @@ def build(subps, parents=None):
     )
     # Required positional argument: output directory
     parser.add_argument(
-        action="store", dest="outdir", default=None, help="output directory"
+        action="store", dest="outdir", default=None, type=Path, help="output directory"
     )
     # Required arguments for NCBI query
     parser.add_argument(

@@ -39,6 +39,7 @@
 """Provides parser for plot subcommand."""
 
 from argparse import ArgumentDefaultsHelpFormatter
+from pathlib import Path
 
 from pyani.scripts import subcommands
 
@@ -58,7 +59,7 @@ def build(subps, parents=None):
     )
     # Required positional arguments: output directory and run ID
     parser.add_argument(
-        action="store", dest="outdir", default=None, help="output directory"
+        action="store", dest="outdir", default=None, type=Path, help="output directory"
     )
     parser.add_argument(
         action="store", dest="run_id", default=None, help="run ID to plot"
@@ -68,7 +69,8 @@ def build(subps, parents=None):
         "--dbpath",
         action="store",
         dest="dbpath",
-        default=".pyani/pyanidb",
+        default=Path(".pyani/pyanidb"),
+        type=Path,
         help="path to pyani database",
     )
     # Graphics methods and formats

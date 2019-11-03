@@ -39,7 +39,6 @@
 """Module providing functions useful for downloading genomes from NCBI."""
 
 import hashlib
-import os
 import re
 import shlex
 import subprocess
@@ -48,6 +47,7 @@ import traceback
 import urllib.request
 
 from collections import namedtuple
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 
 from Bio import Entrez
@@ -314,7 +314,7 @@ def download_url(url, outfname, timeout, disable_tqdm=False):
     """Download remote URL to a local directory.
 
     :param url:
-    :param outfname:
+    :param outfname: Path, path to write output
     :param timeout:
     :param disable_tqdm:  Boolean, show tqdm progress bar?
 
@@ -332,9 +332,7 @@ def download_url(url, outfname, timeout, disable_tqdm=False):
 
         # Download file
         with open(outfname, "wb") as ofh:
-            with tqdm(
-                total=fsize, disable=disable_tqdm, desc=os.path.split(outfname)[-1]
-            ) as pbar:
+            with tqdm(total=fsize, disable=disable_tqdm, desc=outfname.name) as pbar:
                 while True:
                     buffer = response.read(bsize)
                     if not buffer:
@@ -348,12 +346,12 @@ def download_url(url, outfname, timeout, disable_tqdm=False):
 def construct_output_paths(filestem, suffix, outdir):
     """Construct paths to output files for genome and hash.
 
-    :param filestem:
-    :param suffix:
-    :param outdir:
+    :param filestem:  str, output filename stem
+    :param suffix:  str, output filename suffix
+    :param outdir:  Path, path to output directory
     """
-    outfname = os.path.join(outdir, "_".join([filestem, suffix]))
-    outfhash = os.path.join(outdir, "_".join([filestem, "hashes.txt"]))
+    outfname = outdir / "_".join([filestem, suffix])
+    outfhash = outdir / "_".join([filestem, "hashes.txt"])
     return (outfname, outfhash)
 
 
@@ -392,8 +390,8 @@ def retrieve_genome_and_hash(
 def check_hash(fname, hashfile):
     """Check MD5 of passed file against downloaded NCBI hash file.
 
-    :param fname:
-    :param hashfile:
+    :param fname:  Path, path to local hash file
+    :param hashfile:  Path, path to NCBI hash file
     """
     Hashstatus = namedtuple("Hashstatus", "passed localhash filehash")
     filehash = ""
@@ -403,8 +401,7 @@ def check_hash(fname, hashfile):
     localhash = create_hash(fname)
 
     # Get hash from file
-    localfname = os.path.split(fname)[-1]
-    filehash = extract_hash(hashfile, localfname)
+    filehash = extract_hash(hashfile, fname.name)
 
     # Check for match
     if filehash == localhash:
@@ -420,7 +417,7 @@ def extract_contigs(fname, ename):
     :param fname:  str, path to input compressed file
     :param ename:  str, path to output uncompressed file
     """
-    cmd = ["gunzip", "-c", shlex.quote(fname)]
+    cmd = ["gunzip", "-c", shlex.quote(str(fname))]
     with open(ename, "w") as efh:
         subprocess.run(cmd, stdout=efh, check=True, shell=False)
 
@@ -479,11 +476,11 @@ def extract_hash(hashfile, name):
     """Return MD5 hash from file of name:MD5 hashes.
 
     :param hashfile:  str, path to file containing name:MD5 pairs
-    :param name:  str, name asspcoated with hash
+    :param name:  str, name associated with hash
     """
     filehash = None
     with open(hashfile, "r") as hhandle:
         for line in [_.strip().split() for _ in hhandle if len(_.strip())]:
-            if os.path.split(line[1])[-1] == name:  # hash filename
+            if Path(line[1]).name == name:  # hash filename
                 filehash = line[0]
     return filehash

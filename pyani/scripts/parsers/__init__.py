@@ -31,7 +31,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""Module providing command-line parser definitions"""
+"""Module providing command-line parser definitions."""
 
 import sys
 
@@ -111,6 +111,7 @@ def parse_cmdline(argv=None):
     classify_parser.build(subparsers, parents=[parser_common])
 
     # Parse arguments
+    # The list comprehension is to allow PosixPaths to be defined and passed in testing
     if argv is None:
         argv = sys.argv[1:]
-    return parser_main.parse_args(argv)
+    return parser_main.parse_args([str(_) for _ in argv])

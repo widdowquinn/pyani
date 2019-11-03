@@ -54,23 +54,25 @@ passed as the sole argument to the appropriate subcommand.
 """
 
 import logging
-import os
 import unittest
 
 from argparse import Namespace
+from pathlib import Path
 
 from pyani.scripts import subcommands
 
 
 class TestDownloadSubcommand(unittest.TestCase):
+
     """Class defining tests of the pyani download subcommand."""
 
     def setUp(self):
         """Configure parameters for tests."""
-        self.outdir = os.path.join("tests", "test_output", "subcmd_download")
-        os.makedirs(self.outdir, exist_ok=True)
-        self.krakendir = os.path.join("tests", "test_output", "subcmd_download_kraken")
-        os.makedirs(self.krakendir, exist_ok=True)
+        testdir = Path("tests")
+        self.outdir = testdir / "test_output" / "subcmd_download"
+        self.krakendir = testdir / "test_output" / "subcmd_download_kraken"
+        self.outdir.mkdir(exist_ok=True)
+        self.krakendir.mkdir(exist_ok=True)
 
         # Null logger instance
         self.logger = logging.getLogger("TestDownloadSubcommand logger")

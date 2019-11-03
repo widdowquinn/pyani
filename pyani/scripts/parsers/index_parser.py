@@ -39,6 +39,7 @@
 """Provides parser for index subcommand."""
 
 from argparse import ArgumentDefaultsHelpFormatter
+from pathlib import Path
 
 from pyani.scripts import subcommands
 
@@ -58,21 +59,23 @@ def build(subps, parents=None):
     )
     # Required positional argument: input directory
     parser.add_argument(
-        action="store", dest="indir", default=None, help="input directory"
+        action="store", dest="indir", default=None, type=Path, help="input directory"
     )
     # Names for output files
     parser.add_argument(
         "--labels",
         dest="labelfname",
         action="store",
-        default="labels.txt",
+        default=Path("labels.txt"),
+        type=Path,
         help="Filename for labels file",
     )
     parser.add_argument(
         "--classes",
         dest="classfname",
         action="store",
-        default="classes.txt",
+        default=Path("classes.txt"),
+        type=Path,
         help="Filename for classes file",
     )
     parser.set_defaults(func=subcommands.subcmd_index)

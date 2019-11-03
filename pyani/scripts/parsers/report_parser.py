@@ -39,6 +39,7 @@
 """Provides parser for report subcommand."""
 
 from argparse import ArgumentDefaultsHelpFormatter
+from pathlib import Path
 
 from pyani.scripts import subcommands
 
@@ -57,6 +58,7 @@ def build(subps, parents=None):
         action="store",
         dest="outdir",
         default=None,
+        type=Path,
         help="output analysis results directory",
     )
     # Optional arguments
@@ -64,7 +66,8 @@ def build(subps, parents=None):
         "--dbpath",
         action="store",
         dest="dbpath",
-        default=".pyani/pyanidb",
+        default=Path(".pyani/pyanidb"),
+        type=Path,
         help="path to pyani database",
     )
     parser.add_argument(

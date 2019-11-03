@@ -52,7 +52,6 @@ doi:10.1111/j.1462-2920.2004.00624.x
 """
 
 import collections
-import os
 import math
 
 import pandas as pd
@@ -68,8 +67,7 @@ def calculate_tetra_zscores(infilenames):
     """
     org_tetraz = {}
     for filename in infilenames:
-        org = os.path.splitext(os.path.split(filename)[-1])[0]
-        org_tetraz[org] = calculate_tetra_zscore(filename)
+        org_tetraz[filename.stem] = calculate_tetra_zscore(filename)
     return org_tetraz
 
 

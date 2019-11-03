@@ -39,6 +39,7 @@
 """Provides parser for anib subcommand."""
 
 from argparse import ArgumentDefaultsHelpFormatter
+from pathlib import Path
 
 from pyani import pyani_config
 from pyani.scripts import subcommands
@@ -59,12 +60,17 @@ def build(subps, parents=None):
     )
     # Required positional arguments: input and output directories
     parser.add_argument(
-        action="store", dest="indir", default=None, help="input genome directory"
+        action="store",
+        dest="indir",
+        default=None,
+        type=Path,
+        help="input genome directory",
     )
     parser.add_argument(
         action="store",
         dest="outdir",
         default=None,
+        type=Path,
         help="output analysis results directory",
     )
     # Optional arguments
@@ -72,7 +78,8 @@ def build(subps, parents=None):
         "--dbpath",
         action="store",
         dest="dbpath",
-        default=".pyani/pyanidb",
+        default=Path(".pyani/pyanidb"),
+        type=Path,
         help="path to pyani database",
     )
     parser.add_argument(
@@ -80,6 +87,7 @@ def build(subps, parents=None):
         dest="blastn_exe",
         action="store",
         default=pyani_config.BLASTN_DEFAULT,
+        type=Path,
         help="path to blastn executable",
     )
     parser.add_argument(
@@ -87,6 +95,7 @@ def build(subps, parents=None):
         dest="format_exe",
         action="store",
         default=pyani_config.MAKEBLASTDB_DEFAULT,
+        type=Path,
         help="path to makeblastdb executable",
     )
     parser.add_argument(
