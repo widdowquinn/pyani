@@ -83,21 +83,21 @@ class TestBLASTCmdline(unittest.TestCase):
         self.blastdbtgt = [
             (
                 f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} -title NC_002696 -out {self.outdir / 'NC_002696.fna'}",
-                str(self.outdir / "NC_002696.fna"),
+                self.outdir / "NC_002696.fna",
             ),
             (
                 f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_010338.fna'} -title NC_010338 -out {self.outdir / 'NC_010338.fna'}",
-                str(self.outdir / "NC_010338.fna"),
+                self.outdir / "NC_010338.fna",
             ),
         ]
         self.blastdbtgtlegacy = [
             (
                 f"formatdb -p F -i {self.outdir / 'NC_002696.fna'} -t NC_002696",
-                str(self.outdir / "NC_002696.fna"),
+                self.outdir / "NC_002696.fna",
             ),
             (
                 f"formatdb -p F -i {self.outdir / 'NC_010338.fna'} -t NC_010338",
-                str(self.outdir / "NC_010338.fna"),
+                self.outdir / "NC_010338.fna",
             ),
         ]
         self.blastncmd = (
@@ -151,19 +151,19 @@ class TestBLASTCmdline(unittest.TestCase):
         self.blastnjobdict = sorted(
             [
                 (
-                    str(self.outdir / "NC_002696.fna"),
+                    self.outdir / "NC_002696.fna",
                     f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} -title NC_002696 -out {self.outdir / 'NC_002696.fna'}",
                 ),
                 (
-                    str(self.outdir / "NC_010338.fna"),
+                    self.outdir / "NC_010338.fna",
                     f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_010338.fna'} -title NC_010338 -out {self.outdir / 'NC_010338.fna'}",
                 ),
                 (
-                    str(self.outdir / "NC_011916.fna"),
+                    self.outdir / "NC_011916.fna",
                     f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_011916.fna'} -title NC_011916 -out {self.outdir / 'NC_011916.fna'}",
                 ),
                 (
-                    str(self.outdir / "NC_014100.fna"),
+                    self.outdir / "NC_014100.fna",
                     f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_014100.fna'} -title NC_014100 -out {self.outdir / 'NC_014100.fna'}",
                 ),
             ]
@@ -171,19 +171,19 @@ class TestBLASTCmdline(unittest.TestCase):
         self.blastalljobdict = sorted(
             [
                 (
-                    str(self.outdir / "NC_002696.fna"),
+                    self.outdir / "NC_002696.fna",
                     f"formatdb -p F -i {self.outdir / 'NC_002696.fna'} -t NC_002696",
                 ),
                 (
-                    str(self.outdir / "NC_010338.fna"),
+                    self.outdir / "NC_010338.fna",
                     f"formatdb -p F -i {self.outdir / 'NC_010338.fna'} -t NC_010338",
                 ),
                 (
-                    str(self.outdir / "NC_011916.fna"),
+                    self.outdir / "NC_011916.fna",
                     f"formatdb -p F -i {self.outdir / 'NC_011916.fna'} -t NC_011916",
                 ),
                 (
-                    str(self.outdir / "NC_014100.fna"),
+                    self.outdir / "NC_014100.fna",
                     f"formatdb -p F -i {self.outdir / 'NC_014100.fna '}-t NC_014100",
                 ),
             ]
