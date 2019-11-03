@@ -49,7 +49,6 @@ tests are conducted first.
 """
 
 import logging
-import os
 import shutil
 
 from argparse import Namespace
@@ -78,12 +77,13 @@ class TestLegacyScripts(PyaniTestCase):
 
     def setUp(self):
         """Configure parameters for tests."""
+        testdir = Path("tests")
         self.testdirs = TestDirs(
-            Path("tests/test_output/legacy_scripts"),
-            Path("tests/test_targets/legacy_scripts"),
-            Path("tests/test_output/legacy_scripts/C_blochmannia"),
+            testdir / "test_output" / "legacy_scripts",
+            testdir / "test_targets" / "legacy_scripts",
+            testdir / "test_output" / "legacy_scripts" / "C_blochmannia",
         )
-        os.makedirs(self.testdirs.outdir, exist_ok=True)
+        self.testdirs.outdir.mkdir(exist_ok=True)
         self.exes = Executables(
             "nucmer", "delta-filter", "blastn", "blastall", "makeblastdb", "formatdb"
         )
@@ -148,7 +148,8 @@ class TestLegacyScripts(PyaniTestCase):
             "anim_mpl": modify_namespace(
                 self.base_ani,
                 {
-                    "outdirname": self.testdirs.outdir / f"ANIm_mpl_{anim.get_version()}",
+                    "outdirname": self.testdirs.outdir
+                    / f"ANIm_mpl_{anim.get_version()}",
                     "gmethod": "mpl",
                 },
             ),
@@ -190,7 +191,8 @@ class TestLegacyScripts(PyaniTestCase):
             --email emailme@my.email.domain \
             -t 203804 -f
         """
-        shutil.rmtree(self.testdirs.outdir)  # Clean before running
+        if self.testdirs.dldir.is_dir():
+            shutil.rmtree(self.testdirs.dldir)  # Clean before running
         genbank_get_genomes_by_taxon.run_main(self.argsdict["download"], self.logger)
         self.assertDirsEqual(
             self.testdirs.dldir, self.testdirs.tgtdir / "C_blochmannia"

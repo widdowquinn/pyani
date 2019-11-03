@@ -434,7 +434,7 @@ def make_outdirs(args, logger):
         If args.noclobber is set True, use the existing output directory,
         and keep any existing output
     """
-    if os.path.exists(args.outdirname):
+    if args.outdirname.exists():
         if not args.force:  # crash out if directory exists
             logger.error(f"Output directory {args.outdirname} exists (exiting)")
             raise SystemExit(1)
@@ -443,11 +443,11 @@ def make_outdirs(args, logger):
         else:  # args.force only is set - delete
             logger.info(f"FORCE set, removing existing {args.outdirname}")
             shutil.rmtree(args.outdirname)
-    os.makedirs(args.outdirname, exist_ok=True)
+    args.outdirname.mkdir(exist_ok=True)
 
     # TETRA needs directories for alignment output files
     if args.method != "TETRA":
-        os.makedirs(os.path.join(args.outdirname, ALIGNDIR[args.method]), exist_ok=True)
+        (args.outdirname / ALIGNDIR[args.method]).mkdir(exist_ok=True)
 
 
 # Compress output directory and delete it
@@ -489,7 +489,7 @@ def calculate_anim(args, logger, infiles, org_lengths):
     """
     logger.info("Running ANIm")
     logger.info("Generating NUCmer command-lines")
-    deltadir = os.path.join(args.outdirname, ALIGNDIR["ANIm"])
+    deltadir = args.outdirname / ALIGNDIR["ANIm"]
     logger.info("Writing nucmer output to %s", deltadir)
     # Schedule NUCmer runs
     if not args.skip_nucmer:
@@ -559,7 +559,6 @@ def calculate_tetra(args, logger, infiles):
     :param args: Namespace, command-line arguments
     :param logger:  logging object
     :param infiles:  list, paths to each input file
-    :param org_lengths:  dict, input sequence lengths, keyed by sequence
 
     Calculates TETRA correlation scores, as described in:
 
@@ -579,8 +578,7 @@ def calculate_tetra(args, logger, infiles):
     tetra_zscores = {}
     for filename in infiles:
         logger.info("Calculating TETRA Z-scores for %s", filename)
-        org = os.path.splitext(os.path.split(filename)[-1])[0]
-        tetra_zscores[org] = tetra.calculate_tetra_zscore(filename)
+        tetra_zscores[filename.stem] = tetra.calculate_tetra_zscore(filename)
     # Then calculate Pearson correlation between Z-scores for each sequence
     logger.info("Calculating TETRA correlation scores.")
     tetra_correlations = tetra.calculate_correlations(tetra_zscores)
@@ -602,7 +600,7 @@ def make_sequence_fragments(args, logger, infiles, blastdir):
     """
     fragfiles, fraglengths = anib.fragment_fasta_files(infiles, blastdir, args.fragsize)
     # Export fragment lengths as JSON, in case we re-run with --skip_blastn
-    fragpath = os.path.join(blastdir, "fraglengths.json")
+    fragpath = blastdir / "fraglengths.json"
     logger.info(f"Writing cache of fragment lengths to {fragpath}")
     with open(fragpath, "w") as ofh:
         json.dump(fraglengths, ofh)
@@ -651,7 +649,7 @@ def run_blast(args, logger, infiles, blastdir):
         logger.warning("Skipping BLASTN runs (as instructed)!")
         # Import fragment lengths from JSON
         if args.method == "ANIblastall":
-            fragpath = os.path.join(blastdir, "fraglengths.json")
+            fragpath = blastdir / "fraglengths.json"
             logger.info(f"Loading sequence fragments from {fragpath}")
             with open(fragpath, "rU") as ifh:
                 fraglengths = json.load(ifh)
@@ -698,7 +696,7 @@ def unified_anib(args, logger, infiles, org_lengths):
     output directory in plain text tab-separated format.
     """
     logger.info("Running %s", args.method)
-    blastdir = os.path.join(args.outdirname, ALIGNDIR[args.method])
+    blastdir = args.outdirname / ALIGNDIR[args.method]
     logger.info("Writing BLAST output to %s", blastdir)
 
     # Build BLAST databases and run pairwise BLASTN
@@ -745,15 +743,15 @@ def write(args, logger, results):
     """
     logger.info("Writing %s results to %s", args.method, args.outdirname)
     if args.method == "TETRA":
-        out_excel = os.path.join(args.outdirname, TETRA_FILESTEMS[0]) + ".xlsx"
-        out_csv = os.path.join(args.outdirname, TETRA_FILESTEMS[0]) + ".tab"
+        out_excel = args.outdirname / TETRA_FILESTEMS[0] + ".xlsx"
+        out_csv = args.outdirname / TETRA_FILESTEMS[0] + ".tab"
         if args.write_excel:
             results.to_excel(out_excel, index=True)
         results.to_csv(out_csv, index=True, sep="\t")
     else:
         for dfr, filestem in results.data:
-            out_excel = os.path.join(args.outdirname, filestem) + ".xlsx"
-            out_csv = os.path.join(args.outdirname, filestem) + ".tab"
+            out_excel = args.outdirname, filestem + ".xlsx"
+            out_csv = args.outdirname, filestem + ".tab"
             logger.info("\t%s", filestem)
             if args.write_excel:
                 dfr.to_excel(out_excel, index=True)
@@ -771,7 +769,7 @@ def draw(args, logger, filestems, gformat):
     """
     # Draw heatmaps
     for filestem in filestems:
-        fullstem = os.path.join(args.outdirname, filestem)
+        fullstem = args.outdirname / filestem
         outfilename = fullstem + ".%s" % gformat
         infilename = fullstem + ".tab"
         dfm = pd.read_csv(infilename, index_col=0, sep="\t")
@@ -827,7 +825,7 @@ def subsample_input(args, logger, infiles):
 
 
 def process_arguments(args):
-    """Initial processing of command-line arguments.
+    """Process command-line arguments.
 
     :param args:  Namespace of command-line arguments
 
@@ -858,23 +856,24 @@ def build_logger(args, logger):
     if args.indirname is None:
         logger.error("No input directory name (exiting)")
         raise SystemExit(1)
-    logger.info(f"Input directory: {args.indirname}")
+    logger.info("Input directory: %s", args.indirname)
     if args.outdirname is None:
         logger.error("No output directory name (exiting)")
         raise SystemExit(1)
     if args.rerender:  # Rerendering, we want to overwrite graphics
         args.force, args.noclobber = True, True
     make_outdirs(args, logger)
-    logger.info(f"Output directory: {args.outdirname}")
+    logger.info("Output directory: %s", args.outdirname)
 
     # Check for the presence of space characters in any of the input filenames
     # or output directory. If we have any, abort here and now.
-    filenames = [args.outdirname] + os.listdir(args.indirname)
+    filenames = [args.outdirname] + list(args.indirname.iterdir())
     for fname in filenames:
-        if " " in os.path.abspath(fname):
+        if " " in str(fname.resolve()):
             logger.error(
-                f"File or directory '{fname}' contains whitespace. "
-                "This will cause issues with MUMmer and BLAST (exiting)."
+                "File or directory %s contains whitespace. "
+                "This will cause issues with MUMmer and BLAST (exiting).",
+                fname,
             )
             raise SystemExit(1)
 
@@ -889,10 +888,10 @@ def test_class_label_paths(args, logger):
 
     Exits if class and label files are not found
     """
-    if args.labels and not os.path.isfile(args.labels):
+    if args.labels and not args.labels.is_file():
         logger.error(f"Missing labels file: {args.labels}")
         raise SystemExit(1)
-    if args.classes and not os.path.isfile(args.classes):
+    if args.classes and not args.classes.is_file():
         logger.error(f"Missing classes file: {args.classes}")
         raise SystemExit(1)
 

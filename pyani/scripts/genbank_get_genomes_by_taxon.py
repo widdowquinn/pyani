@@ -45,7 +45,6 @@ it can find from NCBI in the corresponding taxon subgraph that has
 the passed argument as root.
 """
 
-import os
 import re
 import shutil
 import subprocess  # nosec
@@ -207,7 +206,7 @@ def make_outdir(args, logger):
     FORCE: continue, and remove the existing output directory
     NOCLOBBER+FORCE: continue, but do not remove the existing output
     """
-    if os.path.exists(args.outdirname):
+    if args.outdirname.exists():
         if not args.force:
             logger.error(
                 "Output directory %s would overwrite existing files (exiting)",
@@ -224,7 +223,7 @@ def make_outdir(args, logger):
             shutil.rmtree(args.outdirname)
     logger.info("Creating directory %s", args.outdirname)
     try:
-        os.makedirs(args.outdirname)  # We make the directory recursively
+        args.outdirname.mkdir(exist_ok=True)  # We make the directory recursively
     except OSError:
         # This gets thrown if the directory exists. If we've forced overwrite/
         # delete and we're not clobbering, we let things slide
@@ -514,8 +513,8 @@ def retrieve_asm_contigs(
     logger.info("Opened URL and parsed metadata.")
 
     # Download data
-    outfname = os.path.join(args.outdirname, "_".join([filestem, suffix]))
-    if os.path.exists(outfname):
+    outfname = args.outdirname / f"{filestem}_{suffix}"
+    if outfname.exists():
         logger.warning(f"Output file {outfname} exists, not downloading")
     else:
         logger.info(f"Downloading {asmurl} ({fsize} bytes)")
@@ -543,13 +542,16 @@ def retrieve_asm_contigs(
 def extract_archive(archivepath, logger):
     """Return path to extracted gzip file.
 
-    :param archivepath:  path to gzipped file
+    :param archivepath:  Path, path to gzipped file with ".tar.gz" suffix
     :param logger:  logging object
     """
-    # Extract data
-    ename = os.path.splitext(archivepath)[0]  # Strips only .gz from filename
-    if os.path.exists(ename):
-        logger.warning(f"Output file {ename} exists, not extracting", ename)
+    # Extract data from targzed file.
+    if archivepath.suffix == ".gz":
+        ename = archivepath.with_suffix("")  # Strips only .gz from filename
+    else:
+        logger.info("Expected .gz file, got %s - not extracting", ename)
+    if ename.exists():
+        logger.warning("Output file %s exists - not extracting", ename)
     else:
         logger.info(f"Extracting archive {archivepath} to {ename}")
         try:
@@ -597,9 +599,7 @@ def write_contigs(args, logger, asm_uid, contig_uids, batchsize=10000):
     except KeyError:
         asm_strain = ""
     # Assembly UID (long form) for the output filename
-    outfilename = "%s.fasta" % os.path.join(
-        args.outdirname, asm_smry["AssemblyAccession"]
-    )
+    outfilename = f"args.outdirname, {asm_smry['AssemblyAccession']}.fasta"
 
     # Create label and class strings
     genus, species = asm_organism.split(" ", 1)
@@ -752,8 +752,8 @@ def run_main(args=None, logger=None):
             uidaccdict[uid] = accession
 
     # Write class and label files
-    classfilename = os.path.join(args.outdirname, "classes.txt")
-    labelfilename = os.path.join(args.outdirname, "labels.txt")
+    classfilename = args.outdirname / "classes.txt"
+    labelfilename = args.outdirname / "labels.txt"
     logger.info("Writing classes file to %s", classfilename)
     with open(classfilename, "w") as ofh:
         ofh.write("\n".join(classes) + "\n")
