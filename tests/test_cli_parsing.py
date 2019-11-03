@@ -64,7 +64,7 @@ class TestCLIParsing(unittest.TestCase):
         self.downloadpath = self.outdir / "downloads"
 
         self.email = "pyani@pyani.org"
-        self.testdbpath = testdir / "test_output" "parsertests" / "testdb"
+        self.testdbpath = testdir / "test_output" / "parsertests" / "testdb"
 
         # Lists of command-line arguments for each tests
         self.argsdict = {
