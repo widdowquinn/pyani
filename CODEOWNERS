@@ -1,0 +1,4 @@
+# @widdowquinn is the default CODEOWNER for all branches and files.
+# Unless later matches take precedence, they will be the default person
+# for review when PRs come in.
+*   @widdowquinn
