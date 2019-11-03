@@ -76,17 +76,26 @@ class TestBLASTCmdline(unittest.TestCase):
             f"formatdb -p F -i {self.fmtdboutdir / 'NC_002696.fna'} -t NC_002696"
         )
         self.makeblastdbdir = self.outdir / "makeblastdb"
-        self.makeblastdbcmd = f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} -title NC_002696 -out {self.makeblastdbdir / 'NC_002696.fna'}"
+        self.makeblastdbcmd = (
+            f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} "
+            f"-title NC_002696 -out {self.makeblastdbdir / 'NC_002696.fna'}"
+        )
         self.blastdbfnames = [
             self.seqdir / fname for fname in ("NC_002696.fna", "NC_010338.fna")
         ]
         self.blastdbtgt = [
             (
-                f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} -title NC_002696 -out {self.outdir / 'NC_002696.fna'}",
+                (
+                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} "
+                    f"-title NC_002696 -out {self.outdir / 'NC_002696.fna'}"
+                ),
                 self.outdir / "NC_002696.fna",
             ),
             (
-                f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_010338.fna'} -title NC_010338 -out {self.outdir / 'NC_010338.fna'}",
+                (
+                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_010338.fna'} "
+                    f"-title NC_010338 -out {self.outdir / 'NC_010338.fna'}"
+                ),
                 self.outdir / "NC_010338.fna",
             ),
         ]
@@ -105,7 +114,8 @@ class TestBLASTCmdline(unittest.TestCase):
             f"-query {self.seqdir / 'NC_002696.fna'} "
             f"-db {self.seqdir / 'NC_010338.fna'} "
             "-xdrop_gap_final 150 -dust no -evalue 1e-15 -max_target_seqs 1 "
-            "-outfmt '6 qseqid sseqid length mismatch pident nident qlen slen qstart qend sstart send positive ppos gaps' "
+            "-outfmt '6 qseqid sseqid length mismatch pident nident qlen slen "
+            "qstart qend sstart send positive ppos gaps' "
             "-task blastn"
         )
         self.blastallcmd = (
@@ -152,19 +162,31 @@ class TestBLASTCmdline(unittest.TestCase):
             [
                 (
                     self.outdir / "NC_002696.fna",
-                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} -title NC_002696 -out {self.outdir / 'NC_002696.fna'}",
+                    (
+                        f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} "
+                        f"-title NC_002696 -out {self.outdir / 'NC_002696.fna'}"
+                    ),
                 ),
                 (
                     self.outdir / "NC_010338.fna",
-                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_010338.fna'} -title NC_010338 -out {self.outdir / 'NC_010338.fna'}",
+                    (
+                        f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_010338.fna'} "
+                        f"-title NC_010338 -out {self.outdir / 'NC_010338.fna'}"
+                    ),
                 ),
                 (
                     self.outdir / "NC_011916.fna",
-                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_011916.fna'} -title NC_011916 -out {self.outdir / 'NC_011916.fna'}",
+                    (
+                        f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_011916.fna'} "
+                        f"-title NC_011916 -out {self.outdir / 'NC_011916.fna'}"
+                    ),
                 ),
                 (
                     self.outdir / "NC_014100.fna",
-                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_014100.fna'} -title NC_014100 -out {self.outdir / 'NC_014100.fna'}",
+                    (
+                        f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_014100.fna'} "
+                        f"-title NC_014100 -out {self.outdir / 'NC_014100.fna'}"
+                    ),
                 ),
             ]
         )
