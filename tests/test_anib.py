@@ -16,7 +16,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2017-2019 The James Hutton Institute
 # Copyright (c) 2019 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# (c) The James Hutton Institute 2016-2019
+# (c) The James Hutton Institute 2017-2019
 # (c) University of Strathclyde 2019
 # Author: Leighton Pritchard
 #
@@ -16,7 +16,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2017-2019 The James Hutton Institute
 # Copyright (c) 2019 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
