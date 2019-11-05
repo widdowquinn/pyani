@@ -39,10 +39,7 @@
 # THE SOFTWARE.
 """Provides the download subcommand for pyani."""
 
-import os
-
 from collections import namedtuple
-from pathlib import Path
 
 from Bio import SeqIO
 
@@ -70,7 +67,7 @@ def subcmd_download(args, logger):
     logger.info(f"Setting Entrez email address: {args.email}")
 
     # Parse Entrez API key, if provided
-    api_path = Path(os.path.expanduser(args.api_keypath))
+    api_path = args.api_keypath.expanduser()
     if not api_path.is_file():
         logger.warning(f"API path {api_path} not a valid file. Not using API key.")
         api_key = None
@@ -198,8 +195,8 @@ def subcmd_download(args, logger):
                 logger.warning("MD5 hash check failed. Please check and retry.")
 
             # Extract downloaded files
-            ename = os.path.splitext(dlstatus.outfname)[0]
-            if os.path.exists(ename) and args.noclobber:
+            ename = dlstatus.outfname.with_suffix("")  # should strip only last suffix
+            if ename.exists() and args.noclobber:
                 logger.warning(f"Output file {ename} exists, not extracting")
             else:
                 logger.info(f"Extracting archive {dlstatus.outfname} to {ename}")
@@ -218,7 +215,7 @@ def subcmd_download(args, logger):
 
             # Create MD5 hash for the downloaded contigs
             logger.info(f"Creating local MD5 hash for {ename}")
-            hashfname = os.path.splitext(ename)[0] + ".md5"
+            hashfname = ename.stem + ".md5"
             datahash = download.create_hash(ename)
             logger.info("Writing hash to %s" % hashfname)
             with open(hashfname, "w") as hfh:
@@ -232,17 +229,17 @@ def subcmd_download(args, logger):
             )
 
     # Write class and label files
-    classfname = os.path.join(args.outdir, args.classfname)
+    classfname = args.outdir / args.classfname
     logger.info(f"Writing classes file to {classfname}")
-    if os.path.exists(classfname) and args.noclobber:
+    if classfname.exists() and args.noclobber:
         logger.warning(f"Class file {classfname} exists, not overwriting")
     else:
         with open(classfname, "w") as ofh:
             ofh.write("\n".join(classes) + "\n")
 
-    labelfname = os.path.join(args.outdir, args.labelfname)
+    labelfname = args.outdir / args.labelfname
     logger.info(f"Writing labels file to {labelfname}")
-    if os.path.exists(labelfname) and args.noclobber:
+    if labelfname.exists() and args.noclobber:
         logger.warning(f"Labels file {labelfname} exists, not overwriting")
     else:
         with open(labelfname, "w") as ofh:
