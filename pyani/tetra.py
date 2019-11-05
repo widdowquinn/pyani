@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# (c) The James Hutton Institute 2016-2019
+# (c) The James Hutton Institute 2017-2019
 # (c) University of Strathclyde 2019
 # Author: Leighton Pritchard
 #
@@ -16,7 +16,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2017-2019 The James Hutton Institute
 # Copyright (c) 2019 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -52,7 +52,6 @@ doi:10.1111/j.1462-2920.2004.00624.x
 """
 
 import collections
-import os
 import math
 
 import pandas as pd
@@ -68,8 +67,7 @@ def calculate_tetra_zscores(infilenames):
     """
     org_tetraz = {}
     for filename in infilenames:
-        org = os.path.splitext(os.path.split(filename)[-1])[0]
-        org_tetraz[org] = calculate_tetra_zscore(filename)
+        org_tetraz[filename.stem] = calculate_tetra_zscore(filename)
     return org_tetraz
 
 

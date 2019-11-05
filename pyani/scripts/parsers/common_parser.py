@@ -40,6 +40,8 @@
 
 from argparse import ArgumentParser
 
+from pathlib import Path
+
 
 # Common parser for all subcommands
 def build():
@@ -60,6 +62,7 @@ def build():
         dest="logfile",
         action="store",
         default=None,
+        type=Path,
         help="logfile location",
     )
     parser.add_argument(

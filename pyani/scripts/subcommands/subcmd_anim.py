@@ -39,10 +39,10 @@
 """Provides the anim subcommand for pyani."""
 
 import datetime
-import os
 
 from collections import namedtuple
 from itertools import combinations
+from pathlib import Path
 
 from tqdm import tqdm
 
@@ -171,13 +171,13 @@ def subcmd_anim(args, logger):
 
     # Generate commandlines for NUCmer analysis and output compression
     logger.info("Generating ANIm command-lines")
-    deltadir = os.path.join(os.path.join(args.outdir, pyani_config.ALIGNDIR["ANIm"]))
+    deltadir = args.outdir / pyani_config.ALIGNDIR["ANIm"]
     logger.info("NUCmer output will be written temporarily to %s", deltadir)
 
     # Create output directories
     logger.info(f"Creating output directory {deltadir}")
     try:
-        os.makedirs(deltadir, exist_ok=True)
+        deltadir.mkdir(exist_ok=True)
     except IOError:
         logger.error(
             f"Could not create output directory {deltadir} (exiting)", exc_info=True
@@ -274,9 +274,9 @@ def generate_joblist(comparisons, existingfiles, args, logger):
         logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
         outprefix = ncmd.split()[3]  # prefix for NUCmer output
         if args.nofilter:
-            outfname = outprefix + ".delta"
+            outfname = Path(outprefix + ".delta")
         else:
-            outfname = outprefix + ".filter"
+            outfname = Path(outprefix + ".filter")
         logger.debug("Expected output file for db: %s", outfname)
 
         # If we're in recovery mode, we don't want to repeat a computational
@@ -286,7 +286,7 @@ def generate_joblist(comparisons, existingfiles, args, logger):
         # The comparisons collections always gets updated, so that results are
         # added to the database whether they come from recovery mode or are run
         # in this call of the script.
-        if args.recovery and os.path.split(outfname)[-1] in existingfiles:
+        if args.recovery and outfname.name in existingfiles:
             logger.debug("Recovering output from %s, not building job", outfname)
         else:
             logger.debug("Building job")

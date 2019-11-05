@@ -39,8 +39,6 @@
 # THE SOFTWARE.
 """Provides the index subcommand for pyani."""
 
-import os
-
 from Bio import SeqIO
 
 from pyani import download, pyani_files
@@ -70,7 +68,7 @@ def subcmd_index(args, logger):
     # Create MD5 hash for each file, if needed
     for fpath in fpaths:
         hashfname = fpath.with_suffix(".md5")
-        if os.path.isfile(hashfname):
+        if hashfname.is_file():
             logger.info("%s already indexed (using existing hash)", fpath)
             with open(hashfname, "r") as ifh:
                 datahash = ifh.readline().split()[0]
@@ -88,17 +86,17 @@ def subcmd_index(args, logger):
         classes.append("\t".join([datahash, fpath.stem, label]))
 
     # Write class and label files
-    classfname = os.path.join(args.indir, args.classfname)
+    classfname = args.indir / args.classfname
     logger.info("Writing classes file to %s", classfname)
-    if os.path.exists(classfname):
+    if classfname.exists():
         logger.warning("Class file %s exists, not overwriting", classfname)
     else:
         with open(classfname, "w") as ofh:
             ofh.write("\n".join(classes) + "\n")
 
-    labelfname = os.path.join(args.indir, args.labelfname)
+    labelfname = args.indir / args.labelfname
     logger.info("Writing labels file to %s", labelfname)
-    if os.path.exists(labelfname):
+    if labelfname.exists():
         logger.warning("Labels file %s exists, not overwriting", labelfname)
     else:
         with open(labelfname, "w") as ofh:

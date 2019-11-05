@@ -129,7 +129,7 @@ def fragment_fasta_files(infiles, outdirname, fragsize):
     """Chop sequences of the passed files into fragments, return filenames.
 
     :param infiles:  collection of paths to each input sequence file
-    :param outdirname:  path to output directory
+    :param outdirname:  Path, path to output directory
     :param fragsize:  Int, the size of sequence fragments
 
     Takes every sequence from every file in infiles, and splits them into
@@ -149,8 +149,7 @@ def fragment_fasta_files(infiles, outdirname, fragsize):
     """
     outfnames = []
     for fname in infiles:
-        outstem, outext = os.path.splitext(os.path.split(fname)[-1])
-        outfname = os.path.join(outdirname, outstem) + "-fragments" + outext
+        outfname = outdirname / f"{fname.stem}-fragments{fname.suffix}"
         outseqs = []
         count = 0
         for seq in SeqIO.parse(fname, "fasta"):
@@ -178,7 +177,7 @@ def get_fraglength_dict(fastafiles):
     """
     fraglength_dict = {}
     for filename in fastafiles:
-        qname = os.path.split(filename)[-1].split("-fragments")[0]
+        qname = filename.stem.split("-fragments")[0]
         fraglength_dict[qname] = get_fragment_lengths(filename)
     return fraglength_dict
 
@@ -281,15 +280,23 @@ def make_job_graph(infiles, fragfiles, blastcmds):
             jobs = [
                 pyani_jobs.Job(
                     f"{blastcmds.prefix}_exe_{jobnum:06d}_a",
-                    blastcmds.build_blast_cmd(fname1, fname2.replace("-fragments", "")),
+                    blastcmds.build_blast_cmd(
+                        fname1, fname2.parent / fname2.name.replace("-fragments", "")
+                    ),
                 ),
                 pyani_jobs.Job(
                     f"{blastcmds.prefix}_exe_{jobnum:06d}_b",
-                    blastcmds.build_blast_cmd(fname2, fname1.replace("-fragments", "")),
+                    blastcmds.build_blast_cmd(
+                        fname2, fname1.parent / fname1.name.replace("-fragments", "")
+                    ),
                 ),
             ]
-            jobs[0].add_dependency(dbjobdict[fname1.replace("-fragments", "")])
-            jobs[1].add_dependency(dbjobdict[fname2.replace("-fragments", "")])
+            jobs[0].add_dependency(
+                dbjobdict[fname1.parent / fname1.name.replace("-fragments", "")]
+            )
+            jobs[1].add_dependency(
+                dbjobdict[fname2.parent / fname2.name.replace("-fragments", "")]
+            )
             joblist.extend(jobs)
 
     # Return the dependency graph
@@ -323,37 +330,30 @@ def generate_blastdb_commands(filenames, outdir, blastdb_exe=None, mode="ANIb"):
 def construct_makeblastdb_cmd(
     filename, outdir, blastdb_exe=pyani_config.MAKEBLASTDB_DEFAULT
 ):
-    """Return single makeblastdb command.
+    """Return makeblastdb command and path to output file.
 
-    :param filename:  str, input filename
-    :param outdir:  str, directory for output
-    :param blastdb_exe:  str, path to the makeblastdb executable
+    :param filename:  Path, input filename
+    :param outdir:  Path, directory for output
+    :param blastdb_exe:  Path, path to the makeblastdb executable
     """
-    title = os.path.splitext(os.path.split(filename)[-1])[0]
-    outfilename = os.path.join(outdir, os.path.split(filename)[-1])
+    outfilename = outdir / filename.name
     return (
-        "{0} -dbtype nucl -in {1} -title {2} -out {3}".format(
-            blastdb_exe, filename, title, outfilename
-        ),
+        f"{blastdb_exe} -dbtype nucl -in {filename} -title {filename.stem} -out {outfilename}",
         outfilename,
     )
 
 
 # Generate single makeblastdb command line
 def construct_formatdb_cmd(filename, outdir, blastdb_exe=pyani_config.FORMATDB_DEFAULT):
-    """Return single formatdb command.
+    """Return formatdb command and path to output file.
 
     :param filename:  str, input filename
     :param outdir:  str, path to output directory
     :param blastdb_exe:  str, path to the formatdb executable
     """
-    title = os.path.splitext(os.path.split(filename)[-1])[0]
-    newfilename = os.path.join(outdir, os.path.split(filename)[-1])
+    newfilename = outdir / filename.name
     shutil.copy(filename, newfilename)
-    return (
-        "{0} -p F -i {1} -t {2}".format(blastdb_exe, newfilename, title),
-        newfilename,
-    )
+    return (f"{blastdb_exe} -p F -i {newfilename} -t {filename.stem}", newfilename)
 
 
 # Generate list of BLASTN command lines from passed filenames
@@ -403,12 +403,14 @@ def construct_blastn_cmdline(
     :param outdir:
     :param blastn_exe:  str, path to blastn executable
     """
-    fstem1 = os.path.splitext(os.path.split(fname1)[-1])[0]
-    fstem2 = os.path.splitext(os.path.split(fname2)[-1])[0]
-    fstem1 = fstem1.replace("-fragments", "")
-    prefix = os.path.join(outdir, f"{fstem1}_vs_{fstem2}")
-    cmd = f"{blastn_exe} -out {prefix}.blast_tab -query {fname1} -db {fname2} -xdrop_gap_final 150 -dust no -evalue 1e-15 -max_target_seqs 1 -outfmt '6 qseqid sseqid length mismatch pident nident qlen slen qstart qend sstart send positive ppos gaps' -task blastn"
-    return cmd
+    prefix = outdir / f"{fname1.stem.replace('-fragments', '')}_vs_{fname2.stem}"
+    return (
+        f"{blastn_exe} -out {prefix}.blast_tab -query {fname1} -db {fname2} "
+        "-xdrop_gap_final 150 -dust no -evalue 1e-15 -max_target_seqs 1 -outfmt "
+        "'6 qseqid sseqid length mismatch pident nident qlen slen "
+        "qstart qend sstart send positive ppos gaps' "
+        "-task blastn"
+    )
 
 
 # Generate single BLASTALL command line
@@ -422,16 +424,11 @@ def construct_blastall_cmdline(
     :param outdir:
     :param blastall_exe:  str, path to BLASTALL executable
     """
-    fstem1 = os.path.splitext(os.path.split(fname1)[-1])[0]
-    fstem2 = os.path.splitext(os.path.split(fname2)[-1])[0]
-    fstem1 = fstem1.replace("-fragments", "")
-    prefix = outdir / f"{fstem1}_vs_{fstem2}"
-    cmd = (
-        "{0} -p blastn -o {1}.blast_tab -i {2} -d {3} "
-        + "-X 150 -q -1 -F F -e 1e-15 "
-        + "-b 1 -v 1 -m 8"
+    prefix = outdir / f"{fname1.stem.replace('-fragments', '')}_vs_{fname2.stem}"
+    return (
+        f"{blastall_exe} -p blastn -o {prefix}.blast_tab -i {fname1} -d {fname2} "
+        "-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8"
     )
-    return cmd.format(blastall_exe, prefix, fname1, fname2)
 
 
 # Process pairwise BLASTN output

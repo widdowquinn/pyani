@@ -16,7 +16,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2017-2019 The James Hutton Institute
 # Copyright (c) 2019 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -43,7 +43,6 @@ These tests are intended to be run from the repository root using:
 pytest -v
 """
 
-import os
 import unittest
 
 from pathlib import Path
@@ -76,28 +75,37 @@ class TestBLASTCmdline(unittest.TestCase):
             f"formatdb -p F -i {self.fmtdboutdir / 'NC_002696.fna'} -t NC_002696"
         )
         self.makeblastdbdir = self.outdir / "makeblastdb"
-        self.makeblastdbcmd = f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} -title NC_002696 -out {self.makeblastdbdir / 'NC_002696.fna'}"
+        self.makeblastdbcmd = (
+            f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} "
+            f"-title NC_002696 -out {self.makeblastdbdir / 'NC_002696.fna'}"
+        )
         self.blastdbfnames = [
             self.seqdir / fname for fname in ("NC_002696.fna", "NC_010338.fna")
         ]
         self.blastdbtgt = [
             (
-                f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} -title NC_002696 -out {self.outdir / 'NC_002696.fna'}",
-                str(self.outdir / "NC_002696.fna"),
+                (
+                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} "
+                    f"-title NC_002696 -out {self.outdir / 'NC_002696.fna'}"
+                ),
+                self.outdir / "NC_002696.fna",
             ),
             (
-                f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_010338.fna'} -title NC_010338 -out {self.outdir / 'NC_010338.fna'}",
-                str(self.outdir / "NC_010338.fna"),
+                (
+                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_010338.fna'} "
+                    f"-title NC_010338 -out {self.outdir / 'NC_010338.fna'}"
+                ),
+                self.outdir / "NC_010338.fna",
             ),
         ]
         self.blastdbtgtlegacy = [
             (
                 f"formatdb -p F -i {self.outdir / 'NC_002696.fna'} -t NC_002696",
-                str(self.outdir / "NC_002696.fna"),
+                self.outdir / "NC_002696.fna",
             ),
             (
                 f"formatdb -p F -i {self.outdir / 'NC_010338.fna'} -t NC_010338",
-                str(self.outdir / "NC_010338.fna"),
+                self.outdir / "NC_010338.fna",
             ),
         ]
         self.blastncmd = (
@@ -105,7 +113,8 @@ class TestBLASTCmdline(unittest.TestCase):
             f"-query {self.seqdir / 'NC_002696.fna'} "
             f"-db {self.seqdir / 'NC_010338.fna'} "
             "-xdrop_gap_final 150 -dust no -evalue 1e-15 -max_target_seqs 1 "
-            "-outfmt '6 qseqid sseqid length mismatch pident nident qlen slen qstart qend sstart send positive ppos gaps' "
+            "-outfmt '6 qseqid sseqid length mismatch pident nident qlen slen "
+            "qstart qend sstart send positive ppos gaps' "
             "-task blastn"
         )
         self.blastallcmd = (
@@ -151,46 +160,58 @@ class TestBLASTCmdline(unittest.TestCase):
         self.blastnjobdict = sorted(
             [
                 (
-                    str(self.outdir / "NC_002696.fna"),
-                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} -title NC_002696 -out {self.outdir / 'NC_002696.fna'}",
+                    self.outdir / "NC_002696.fna",
+                    (
+                        f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_002696.fna'} "
+                        f"-title NC_002696 -out {self.outdir / 'NC_002696.fna'}"
+                    ),
                 ),
                 (
-                    str(self.outdir / "NC_010338.fna"),
-                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_010338.fna'} -title NC_010338 -out {self.outdir / 'NC_010338.fna'}",
+                    self.outdir / "NC_010338.fna",
+                    (
+                        f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_010338.fna'} "
+                        f"-title NC_010338 -out {self.outdir / 'NC_010338.fna'}"
+                    ),
                 ),
                 (
-                    str(self.outdir / "NC_011916.fna"),
-                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_011916.fna'} -title NC_011916 -out {self.outdir / 'NC_011916.fna'}",
+                    self.outdir / "NC_011916.fna",
+                    (
+                        f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_011916.fna'} "
+                        f"-title NC_011916 -out {self.outdir / 'NC_011916.fna'}"
+                    ),
                 ),
                 (
-                    str(self.outdir / "NC_014100.fna"),
-                    f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_014100.fna'} -title NC_014100 -out {self.outdir / 'NC_014100.fna'}",
+                    self.outdir / "NC_014100.fna",
+                    (
+                        f"makeblastdb -dbtype nucl -in {self.seqdir / 'NC_014100.fna'} "
+                        f"-title NC_014100 -out {self.outdir / 'NC_014100.fna'}"
+                    ),
                 ),
             ]
         )
         self.blastalljobdict = sorted(
             [
                 (
-                    str(self.outdir / "NC_002696.fna"),
+                    self.outdir / "NC_002696.fna",
                     f"formatdb -p F -i {self.outdir / 'NC_002696.fna'} -t NC_002696",
                 ),
                 (
-                    str(self.outdir / "NC_010338.fna"),
+                    self.outdir / "NC_010338.fna",
                     f"formatdb -p F -i {self.outdir / 'NC_010338.fna'} -t NC_010338",
                 ),
                 (
-                    str(self.outdir / "NC_011916.fna"),
+                    self.outdir / "NC_011916.fna",
                     f"formatdb -p F -i {self.outdir / 'NC_011916.fna'} -t NC_011916",
                 ),
                 (
-                    str(self.outdir / "NC_014100.fna"),
+                    self.outdir / "NC_014100.fna",
                     f"formatdb -p F -i {self.outdir / 'NC_014100.fna '}-t NC_014100",
                 ),
             ]
         )
-        self.outdir.mkdir(exist_ok=True)
-        self.fmtdboutdir.mkdir(exist_ok=True)
-        self.makeblastdbdir.mkdir(exist_ok=True)
+        self.outdir.mkdir(parents=True, exist_ok=True)
+        self.fmtdboutdir.mkdir(parents=True, exist_ok=True)
+        self.makeblastdbdir.mkdir(parents=True, exist_ok=True)
 
     def test_formatdb_generation(self):
         """Generate formatdb command-line."""

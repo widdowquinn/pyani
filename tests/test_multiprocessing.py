@@ -1,54 +1,51 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""test_multiprocessing.py
-
-Test run_multiprocessing.py module.
+# (c) The James Hutton Institute 2017-2019
+# (c) University of Strathclyde 2019
+# Author: Leighton Pritchard
+#
+# Contact: leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# Cathedral Street,
+# Glasgow,
+# G1 1XQ
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2017-2019 The James Hutton Institute
+# Copyright (c) 2019 University of Strathclyde
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+"""Test run_multiprocessing.py module.
 
 These tests are intended to be run from the repository root using:
 
 pytest -v
-
-(c) The James Hutton Institute 2017-2018
-Author: Leighton Pritchard
-
-Contact:
-leighton.pritchard@hutton.ac.uk
-
-Leighton Pritchard,
-Information and Computing Sciences,
-James Hutton Institute,
-Errol Road,
-Invergowrie,
-Dundee,
-DD2 5DA,
-Scotland,
-UK
-
-The MIT License
-
-Copyright (c) 2017-2018 The James Hutton Institute
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
 """
 
-import os
 import unittest
+
+from pathlib import Path
 
 from pyani import run_multiprocessing, pyani_jobs, anib
 
@@ -65,21 +62,20 @@ class TestMultiprocessing(unittest.TestCase):
             for v in range(5)
         ]
         self.cmds = ["ls -ltrh", "echo ${PWD}"]
-        self.seqdir = os.path.join("tests", "test_input", "sequences")
-        self.outdir = os.path.join("tests", "test_output", "multiprocessing")
-        self.infiles = [
-            os.path.join(self.seqdir, fname) for fname in os.listdir(self.seqdir)
-        ][:2]
+        testdir = Path("tests")
+        self.seqdir = testdir / "test_input" / "sequences"
+        self.outdir = testdir / "test_output" / "multiprocessing"
+        self.infiles = [_ for _ in self.seqdir.iterdir()][:2]
         self.fraglen = 1000
-        os.makedirs(self.outdir, exist_ok=True)
+        self.outdir.mkdir(exist_ok=True)
 
     def test_multiprocessing_run(self):
-        """multiprocessing() runs basic jobs."""
+        """Test that multiprocessing() runs basic jobs."""
         result = run_multiprocessing.multiprocessing_run(self.cmdlist)
         self.assertEqual(0, result)
 
     def test_cmdsets(self):
-        """module builds command sets."""
+        """Test that module builds command sets."""
         job1 = pyani_jobs.Job("dummy_with_dependency", self.cmds[0])
         job2 = pyani_jobs.Job("dummy_dependency", self.cmds[1])
         job1.add_dependency(job2)
@@ -88,7 +84,7 @@ class TestMultiprocessing(unittest.TestCase):
         self.assertEqual(cmdsets, target)
 
     def test_dependency_graph_run(self):
-        """module runs dependency graph."""
+        """Test that module runs dependency graph."""
         fragresult = anib.fragment_fasta_files(self.infiles, self.outdir, self.fraglen)
         blastcmds = anib.make_blastcmd_builder("ANIb", self.outdir)
         jobgraph = anib.make_job_graph(self.infiles, fragresult[0], blastcmds)

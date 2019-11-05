@@ -39,6 +39,7 @@
 """Provides parser for arguments common to analysis run subcommands."""
 
 from argparse import ArgumentParser
+from pathlib import Path
 
 
 # Common parser for all subcommands
@@ -67,6 +68,7 @@ def build():
         dest="classes",
         action="store",
         default=None,
+        type=Path,
         help="Path to genome classes for the run",
     )
     parser.add_argument(
@@ -74,6 +76,7 @@ def build():
         dest="labels",
         action="store",
         default=None,
+        type=Path,
         help="Path to genome labels for the run",
     )
     parser.add_argument(

@@ -74,7 +74,8 @@ def build(subps, parents=None):
         "--dbpath",
         action="store",
         dest="dbpath",
-        default=".pyani/pyanidb",
+        default=Path(".pyani/pyanidb"),
+        type=Path,
         help="path to pyani database",
     )
     parser.add_argument(
@@ -82,6 +83,7 @@ def build(subps, parents=None):
         dest="nucmer_exe",
         action="store",
         default=pyani_config.NUCMER_DEFAULT,
+        type=Path,
         help="path to NUCmer executable",
     )
     parser.add_argument(
@@ -89,6 +91,7 @@ def build(subps, parents=None):
         dest="filter_exe",
         action="store",
         default=pyani_config.FILTER_DEFAULT,
+        type=Path,
         help="path to delta-filter executable",
     )
     parser.add_argument(

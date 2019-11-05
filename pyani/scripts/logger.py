@@ -43,16 +43,17 @@ This wraps the builtin logging module classes
 """
 
 import logging
-import os
 import sys
 import time
+
+from pathlib import Path
 
 
 def build_logger(name, args):
     """Return a logger for this script.
 
-    :param name:
-    :param args:
+    :param name:  str, name for logger
+    :param args:  Namespace, command-line arguments
 
     Instantiates a logger for the script, and adds basic info.
     """
@@ -71,13 +72,11 @@ def build_logger(name, args):
 
     # If a logfile was specified, use it
     if args.logfile is not None:
-        logdir = os.path.split(args.logfile)[:-1]
+        logdir = args.logfile.parents
         try:
-            if logdir[0] != "":
-                os.makedirs(
-                    os.path.join(*os.path.split(args.logfile)[:-1]), exist_ok=True
-                )
-            logstream = open(args.logfile, "w")
+            if not logdir == Path.cwd():
+                logdir.mkdir(exist_ok=True)
+            logstream = args.logfile.open("w")
         except OSError:
             logger.error("Could not open %s for logging", args.logfile, exc_info=True)
             raise SystemExit(1)

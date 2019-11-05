@@ -54,23 +54,26 @@ passed as the sole argument to the appropriate subcommand.
 """
 
 import logging
-import os
 import unittest
 
 from argparse import Namespace
+from pathlib import Path
 
 from pyani.scripts import subcommands
 
 
 class TestDownloadSubcommand(unittest.TestCase):
+
     """Class defining tests of the pyani download subcommand."""
 
     def setUp(self):
         """Configure parameters for tests."""
-        self.outdir = os.path.join("tests", "test_output", "subcmd_download")
-        os.makedirs(self.outdir, exist_ok=True)
-        self.krakendir = os.path.join("tests", "test_output", "subcmd_download_kraken")
-        os.makedirs(self.krakendir, exist_ok=True)
+        testdir = Path("tests")
+        self.outdir = testdir / "test_output" / "subcmd_download"
+        self.krakendir = testdir / "test_output" / "subcmd_download_kraken"
+        self.outdir.mkdir(exist_ok=True)
+        self.krakendir.mkdir(exist_ok=True)
+        self.api_keypath = Path("~/.ncbi/api_key")
 
         # Null logger instance
         self.logger = logging.getLogger("TestDownloadSubcommand logger")
@@ -92,7 +95,7 @@ class TestDownloadSubcommand(unittest.TestCase):
                 force=False,
                 kraken=False,
                 disable_tqdm=True,
-                api_keypath="~/.ncbi/api_key",
+                api_keypath=self.api_keypath,
             ),
             "C_blochmannia": Namespace(
                 outdir=self.outdir,
@@ -108,7 +111,7 @@ class TestDownloadSubcommand(unittest.TestCase):
                 noclobber=False,
                 dryrun=False,
                 disable_tqdm=True,
-                api_keypath="~/.ncbi/api_key",
+                api_keypath=self.api_keypath,
             ),
             "kraken": Namespace(
                 outdir=self.krakendir,
@@ -124,7 +127,7 @@ class TestDownloadSubcommand(unittest.TestCase):
                 noclobber=False,
                 dryrun=False,
                 disable_tqdm=True,
-                api_keypath="~/.ncbi/api_key",
+                api_keypath=self.api_keypath,
             ),
         }
 

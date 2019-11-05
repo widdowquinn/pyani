@@ -40,9 +40,8 @@
 # THE SOFTWARE.
 """Provides the report subcommand for pyani."""
 
-import os
-
 from collections import namedtuple
+from pathlib import Path
 
 import pandas as pd
 
@@ -283,8 +282,10 @@ def subcmd_report(args, logger):
                 matrix = label_results_matrix(matrix, matlabel_dict)
                 pyani_report.write_dbtable(
                     matrix,
-                    "_".join(
-                        [os.path.join(args.outdir, "matrix"), matdata.name, str(run_id)]
+                    Path(
+                        "_".join(
+                            [str(args.outdir / "matrix"), matdata.name, str(run_id)]
+                        )
                     ),
                     formats,
                     show_index=True,
@@ -301,7 +302,7 @@ def report(args, logger, session, formats, params):
     :param formats:  list of output formats
     :param params:  ReportParams namedtuple
     """
-    outfname = os.path.join(args.outdir, params.name)
+    outfname = args.outdir / params.name
     logger.info(
         f"Writing table of pyani {params.name} from the database to {outfname}.*"
     )

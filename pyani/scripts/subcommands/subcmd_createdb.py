@@ -39,8 +39,6 @@
 # THE SOFTWARE.
 """Provides the createdb subcommand for pyani."""
 
-import os
-
 # from pyani import pyani_db
 from pyani import pyani_orm
 
@@ -52,18 +50,17 @@ def subcmd_createdb(args, logger):
     :param logger:  logging object
     """
     # If the database exists, raise an error rather than overwrite
-    if os.path.isfile(args.dbpath):
+    if args.dbpath.is_file():
         if not args.force:
             logger.error(f"Database {args.dbpath} already exists (exiting)")
             raise SystemError(1)
         logger.warning(f"Database {args.dbpath} already exists - overwriting")
-        os.remove(args.dbpath)
+        args.dbpath.unlink()
 
     # If the path to the database doesn't exist, create it
-    dbdir = os.path.split(args.dbpath)[0]
-    if not os.path.isdir(dbdir):
-        logger.info("Creating database directory %s", dbdir)
-        os.makedirs(dbdir, exist_ok=True)
+    if not args.dbpath.parent.is_dir():
+        logger.info("Creating database directory %s", args.dbpath.parent)
+        args.dbpath.parent.mkdir(parents=True, exist_ok=True)
 
     # Create the empty database
     logger.info("Creating pyani database at %s", args.dbpath)

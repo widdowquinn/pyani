@@ -38,7 +38,6 @@
 # THE SOFTWARE.
 """Module providing functions in support of the pyani command-line scripts."""
 
-import os
 import re
 import shutil
 
@@ -64,7 +63,7 @@ class PyaniScriptException(Exception):
 def make_outdir(outdir, force, noclobber, logger):
     """Create output directory (allows for force and noclobber).
 
-    :param outdir:
+    :param outdir:  Path, path to output directory
     :param force:
     :param noclobber:
     :param logger:
@@ -73,12 +72,13 @@ def make_outdir(outdir, force, noclobber, logger):
     outdir doesn't exist: create outdir
     outdir exists: raise exception
     outdir exists, --force only: remove the directory tree
-    outdir exists, --force --noclobber: continue with existing directory tree but do not overwrite files
+    outdir exists, --force --noclobber:
+        continue with existing directory tree but do not overwrite files
 
     So long as the outdir is created with this function, we need only check
     for args.noclobber elsewhere to see how to proceed when a file exists.
     """
-    if os.path.isdir(outdir):
+    if outdir.is_dir():
         logger.warning("Output directory %s exists", outdir)
         if force and not noclobber:  # user forces directory reuse, and overwrite
             # Delete old directory and start again
@@ -96,7 +96,7 @@ def make_outdir(outdir, force, noclobber, logger):
             raise PyaniScriptException(
                 "Will not modify existing directory " + "%s" % outdir
             )
-    os.makedirs(outdir, exist_ok=True)
+    outdir.mkdir(parents=True, exist_ok=True)
 
 
 # Make a dictionary of assembly download info

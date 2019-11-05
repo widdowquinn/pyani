@@ -225,7 +225,7 @@ def construct_nucmer_cmdline(
 def parse_delta(filename):
     """Return (alignment length, similarity errors) tuple from passed .delta.
 
-    :param filename:  str, path to the input .delta file
+    :param filename:  Path, path to the input .delta file
 
     Extracts the aligned length and number of similarity errors for each
     aligned uniquely-matched region, and returns the cumulative total for
@@ -241,7 +241,9 @@ def parse_delta(filename):
     - stop codons (always zero for nucmer)
     """
     aln_length, sim_errors = 0, 0
-    for line in [l.strip().split() for l in open(filename, "r").readlines()]:
+    print(filename)
+    print(type(filename))
+    for line in [l.strip().split() for l in filename.open("r").readlines()]:
         if line[0] == "NUCMER" or line[0].startswith(">"):  # Skip headers
             continue
         # We only process lines with seven columns:

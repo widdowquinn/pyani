@@ -46,8 +46,9 @@ pytest -v
 """
 
 import logging
-import os
 import unittest
+
+from pathlib import Path
 
 from argparse import Namespace
 
@@ -55,13 +56,15 @@ from pyani.scripts import subcommands
 
 
 class TestReportSubcommand(unittest.TestCase):
+
     """Class defining tests of the pyani report subcommand."""
 
     def setUp(self):
         """Configure parameters for tests."""
-        self.dbpath = os.path.join("tests", "test_output", "subcmd_createdb", "pyanidb")
-        self.outdir = os.path.join("tests", "test_output", "subcmd_report")
-        os.makedirs(self.outdir, exist_ok=True)
+        testdir = Path("tests")
+        self.dbpath = testdir / "test_output" / "subcmd_createdb" / "pyanidb"
+        self.outdir = testdir / "test_output" / "subcmd_report"
+        self.outdir.mkdir(exist_ok=True)
 
         # Null logger instance
         self.logger = logging.getLogger("TestReportSubcommand logger")
