@@ -47,29 +47,30 @@ print() statements will be caught by nosetests unless there is an
 error. They can also be recovered with the -s option.
 """
 
-import os
 import pandas as pd
+
+from pathlib import Path
 
 from pyani import pyani_graphics, pyani_config, pyani_tools
 
 
 # Work out where we are. We need to do this to find related data files
 # for testing
-curdir = os.path.dirname(os.path.abspath(__file__))
+curdir = Path(__file__).resolve()
 
-OUTDIR = os.path.join("tests", "test_graphics_output")
+TESTDIR = Path("tests")
+OUTDIR = TESTDIR / "test_graphics_output"
 
 
 def define_inputs():
+    """Return a dict of input files, keyed by file name option."""
     return {
-        "infilename": os.path.join(
-            "tests", "target_ANIm_output", "ANIm_percentage_identity.tab"
-        ),
+        "infilename": TESTDIR / "target_ANIm_output" / "ANIm_percentage_identity.tab",
         "labels": pyani_tools.get_labels(
-            os.path.join("tests", "test_ani_data", "labels.tab"), logger=None
+            TESTDIR / "test_ani_data" / "labels.tab", logger=None
         ),
         "classes": pyani_tools.get_labels(
-            os.path.join("tests", "test_ani_data", "classes.tab"), logger=None
+            TESTDIR / "test_ani_data" / "classes.tab", logger=None
         ),
     }
 
@@ -77,10 +78,10 @@ def define_inputs():
 def draw_format_method(fmt, mth):
     """Render graphics format and method output."""
     inputs = define_inputs()
-    outfilename = os.path.join(OUTDIR, "%s.%s" % (mth, fmt))
+    outfilename = OUTDIR / f"{mth}.{fmt}"
     stem = "ANIm_percentage_identity"
     df = pd.read_csv(inputs["infilename"], index_col=0, sep="\t")
-    os.makedirs(OUTDIR, exist_ok=True)
+    OUTDIR.mkdir(exist_ok=True)
     fn = {"mpl": pyani_graphics.heatmap_mpl, "seaborn": pyani_graphics.heatmap_seaborn}
     params = {"mpl": pyani_config.params_mpl, "seaborn": pyani_config.params_mpl}
     method_params = pyani_graphics.Params(
