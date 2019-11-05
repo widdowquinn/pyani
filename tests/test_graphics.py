@@ -54,10 +54,6 @@ from pathlib import Path
 from pyani import pyani_graphics, pyani_config, pyani_tools
 
 
-# Work out where we are. We need to do this to find related data files
-# for testing
-curdir = Path(__file__).resolve()
-
 TESTDIR = Path("tests")
 OUTDIR = TESTDIR / "test_graphics_output"
 
