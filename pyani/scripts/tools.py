@@ -96,7 +96,7 @@ def make_outdir(outdir, force, noclobber, logger):
             raise PyaniScriptException(
                 "Will not modify existing directory " + "%s" % outdir
             )
-    outdir.mkdir(exist_ok=True)
+    outdir.mkdir(parents=True, exist_ok=True)
 
 
 # Make a dictionary of assembly download info

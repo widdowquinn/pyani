@@ -215,7 +215,7 @@ def subcmd_download(args, logger):
 
             # Create MD5 hash for the downloaded contigs
             logger.info(f"Creating local MD5 hash for {ename}")
-            hashfname = ename.stem + ".md5"
+            hashfname = ename.with_suffix(".md5")
             datahash = download.create_hash(ename)
             logger.info("Writing hash to %s" % hashfname)
             with open(hashfname, "w") as hfh:
