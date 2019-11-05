@@ -241,6 +241,8 @@ def parse_delta(filename):
     - stop codons (always zero for nucmer)
     """
     aln_length, sim_errors = 0, 0
+    print(filename)
+    print(type(filename))
     for line in [l.strip().split() for l in filename.open("r").readlines()]:
         if line[0] == "NUCMER" or line[0].startswith(">"):  # Skip headers
             continue

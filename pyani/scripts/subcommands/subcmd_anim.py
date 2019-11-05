@@ -43,6 +43,7 @@ import os
 
 from collections import namedtuple
 from itertools import combinations
+from pathlib import Path
 
 from tqdm import tqdm
 
@@ -274,9 +275,9 @@ def generate_joblist(comparisons, existingfiles, args, logger):
         logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
         outprefix = ncmd.split()[3]  # prefix for NUCmer output
         if args.nofilter:
-            outfname = outprefix + ".delta"
+            outfname = Path(outprefix + ".delta")
         else:
-            outfname = outprefix + ".filter"
+            outfname = Path(outprefix + ".filter")
         logger.debug("Expected output file for db: %s", outfname)
 
         # If we're in recovery mode, we don't want to repeat a computational

@@ -42,7 +42,6 @@
 
 import copy
 import json
-import os
 import unittest
 
 import pandas as pd
@@ -51,6 +50,7 @@ from pyani import blast, nucmer
 
 
 class PyaniFileEqualityTests(unittest.TestCase):
+
     """Tests for equality of filetypes used in pyani.
 
     Each test defines a comparison for a specific filetype, with contents that are
@@ -158,13 +158,14 @@ class PyaniFileEqualityTests(unittest.TestCase):
 
 
 class PyaniTestCase(PyaniFileEqualityTests, unittest.TestCase):
+
     """Specific pyani unit tests."""
 
     def assertDirsEqual(self, dir1, dir2, filt=None):  # pylint: disable=C0103
         """Assert that two passed directories have the same contents.
 
-        :param dir1:  Reference directory for comparison
-        :param dir2:  Comparator direcotry for comparison
+        :param dir1:  Path, reference directory for comparison
+        :param dir2:  Path, comparator direcotry for comparison
 
         Files to be compared can be restricted using the filter argument. For
         instance:
@@ -175,8 +176,8 @@ class PyaniTestCase(PyaniFileEqualityTests, unittest.TestCase):
         Directories are compared recursively.
         """
         # List directories and skip hidden files
-        dir1files = ordered([_ for _ in os.listdir(dir1) if not _.startswith(".")])
-        dir2files = ordered([_ for _ in os.listdir(dir2) if not _.startswith(".")])
+        dir1files = ordered([_ for _ in dir1.iterdir() if not _.startswith(".")])
+        dir2files = ordered([_ for _ in dir2.iterdir() if not _.startswith(".")])
         self.assertEqual(
             dir1files,
             dir2files,
@@ -186,19 +187,15 @@ class PyaniTestCase(PyaniFileEqualityTests, unittest.TestCase):
         # filter file extensions if needed
         if filt is not None:
             dir1files = [
-                _
-                for _ in dir1files
-                if (os.path.isdir(_) is False) and (os.path.splitext(_)[-1] == filt)
+                _ for _ in dir1files if (_.is_dir() is False) and (_.suffix == filt)
             ]
         for fpath in dir1files:
-            if os.path.isdir(os.path.join(dir1, fpath)):  # Compare dictionaries
-                self.assertDirsEqual(
-                    os.path.join(dir1, fpath), os.path.join(dir2, fpath)
-                )
+            if (dir1 / fpath).is_dir():  # Compare dictionaries
+                self.assertDirsEqual(dir1 / fpath, dir2 / fpath)
             else:  # Compare files
-                ext = os.path.splitext(fpath)[-1]
-                fname1 = os.path.join(dir1, fpath)
-                fname2 = os.path.join(dir2, fpath)
+                ext = fpath.suffix
+                fname1 = dir1 / fpath
+                fname2 = dir2 / fpath
                 if ext.lower() in (".gz", ".pdf", ".png"):  # skip these files
                     continue
                 elif ext.lower() == ".tab":  # Compare tab-separated tabular files
