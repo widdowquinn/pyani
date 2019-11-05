@@ -219,7 +219,7 @@ def subcmd_download(args, logger):
             datahash = download.create_hash(ename)
             logger.info("Writing hash to %s" % hashfname)
             with open(hashfname, "w") as hfh:
-                hfh.write("\t".join([datahash, ename]) + "\n")
+                hfh.write("\t".join([datahash, str(ename)]) + "\n")
             # Make label/class text
             labeltxt, classtxt = download.create_labels(uid_class, filestem, datahash)
             classes.append(classtxt)

@@ -73,6 +73,7 @@ class TestDownloadSubcommand(unittest.TestCase):
         self.krakendir = testdir / "test_output" / "subcmd_download_kraken"
         self.outdir.mkdir(exist_ok=True)
         self.krakendir.mkdir(exist_ok=True)
+        self.api_keypath = Path("~/.ncbi/api_key")
 
         # Null logger instance
         self.logger = logging.getLogger("TestDownloadSubcommand logger")
@@ -94,7 +95,7 @@ class TestDownloadSubcommand(unittest.TestCase):
                 force=False,
                 kraken=False,
                 disable_tqdm=True,
-                api_keypath="~/.ncbi/api_key",
+                api_keypath=self.api_keypath,
             ),
             "C_blochmannia": Namespace(
                 outdir=self.outdir,
@@ -110,7 +111,7 @@ class TestDownloadSubcommand(unittest.TestCase):
                 noclobber=False,
                 dryrun=False,
                 disable_tqdm=True,
-                api_keypath="~/.ncbi/api_key",
+                api_keypath=self.api_keypath,
             ),
             "kraken": Namespace(
                 outdir=self.krakendir,
@@ -126,7 +127,7 @@ class TestDownloadSubcommand(unittest.TestCase):
                 noclobber=False,
                 dryrun=False,
                 disable_tqdm=True,
-                api_keypath="~/.ncbi/api_key",
+                api_keypath=self.api_keypath,
             ),
         }
 

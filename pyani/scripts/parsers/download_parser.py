@@ -95,6 +95,7 @@ def build(subps, parents=None):
         dest="api_keypath",
         action="store",
         default="~/.ncbi/api_key",
+        type=Path,
         help="Path to NCBI Entrez API key file",
     )
     # Arguments controlling connection to NCBI for download
