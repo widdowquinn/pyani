@@ -115,9 +115,7 @@ def colour_numeric(val, threshold=0.95, colour="#FF2222"):
     :param threshold:  float, threshold for cell highlighting
     :param colour:  str, hex colour for highlighted cell
     """
-    if val > threshold:
-        colour = colour
-    else:
+    if val < threshold:
         colour = "black"
     return "color: %s" % colour
 
@@ -178,6 +176,7 @@ def write_dbtable(
     """Write database result table to output file in named format.
 
     :param dfm:  pd.Dataframe
+    :param path:  Path to output file
     :param formats:  tuple of str, output file formats
     :param index:  Boolean
     :param show_index:  Boolean
@@ -197,5 +196,5 @@ def write_dbtable(
     }
     for fmt in formats:
         func, args, ext = formatdict[fmt]
-        ofname = path + ext
+        ofname = path.with_suffix(ext)
         func(ofname, **args)
