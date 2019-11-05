@@ -39,8 +39,6 @@
 # THE SOFTWARE.
 """Provides the createdb subcommand for pyani."""
 
-import os
-
 # from pyani import pyani_db
 from pyani import pyani_orm
 
