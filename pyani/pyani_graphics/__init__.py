@@ -80,15 +80,3 @@ class Params:  # pylint: disable=too-few-public-methods
     def vdiff(self):
         """Return difference between max and min values for presentation."""
         return max(0.01, self.vmax - self.vmin)
-
-
-# helper for cleaning up matplotlib axes by removing ticks etc.
-def clean_axis(axis):
-    """Remove ticks, tick labels, and frame from axis.
-
-    :param axis:
-    """
-    axis.get_xaxis().set_ticks([])
-    axis.get_yaxis().set_ticks([])
-    for spine in list(axis.spines.values()):
-        spine.set_visible(False)
