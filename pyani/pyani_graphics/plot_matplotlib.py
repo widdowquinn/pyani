@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# (c) The James Hutton Institute 2017-2019
-# (c) The University of Strathclude 2019
+# (c) The University of Strathclyde 2019
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,8 +17,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2017-2018 The James Hutton Institute
-# (c) The University of Strathclude 2019
+# (c) The University of Strathclyde 2019
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -38,33 +36,24 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""Code to implement graphics output for ANI analyses."""
-
-# Force matplotlib NOT to use an Xwindows backend on *nix, so that
-# _tkinter.TclError is avoided when there is no $DISPLAY env: this can occur
-# when running the package/script via ssh
-# See http://stackoverflow.com/questions/2801882/\
-#            generating-a-png-with-matplotlib-when-display-is-undefined
-# This needs to be done before importing pyplot
+"""Code to implement MatPLotLib graphics output for ANI analyses."""
 
 import warnings
 
 from math import floor, log10
 
+import matplotlib  # pylint: disable=C0411
 import numpy as np
+import pandas as pd
 import scipy.cluster.hierarchy as sch
 import scipy.spatial.distance as distance
-import seaborn as sns
-import pandas as pd
 
 from scipy.stats import gaussian_kde
 
-from . import pyani_config
+from pyani import pyani_config
 
 # Specify matplotlib backend. This *must* be done before pyplot import, but
 # raises errors with flake8 etc. So we comment out the specific error
-import matplotlib  # pylint: disable=C0411
-
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402 # pylint: disable=wrong-import-position,wrong-import-order
 import matplotlib.gridspec as gridspec  # noqa: E402 # pylint: disable=wrong-import-position,wrong-import-order
@@ -79,30 +68,6 @@ plt.register_cmap(cmap=pyani_config.CMAP_BURD)
 MPLVERSION = matplotlib.__version__
 
 
-# Convenience class to hold heatmap graphics parameters
-class Params:  # pylint: disable=too-few-public-methods
-
-    """Convenience class to hold heatmap rendering parameters."""
-
-    def __init__(self, params, labels=None, classes=None):
-        """Instantiate class.
-
-        :param params:
-        :param labels:
-        :param classes:
-        """
-        self.cmap = plt.get_cmap(params[0])
-        self.vmin = params[1]
-        self.vmax = params[2]
-        self.labels = labels
-        self.classes = classes
-
-    @property
-    def vdiff(self):
-        """Return difference between max and min values for presentation."""
-        return max(0.01, self.vmax - self.vmin)
-
-
 # helper for cleaning up matplotlib axes by removing ticks etc.
 def clean_axis(axis):
     """Remove ticks, tick labels, and frame from axis.
@@ -113,170 +78,6 @@ def clean_axis(axis):
     axis.get_yaxis().set_ticks([])
     for spine in list(axis.spines.values()):
         spine.set_visible(False)
-
-
-# Add classes colorbar to Seaborn plot
-def get_seaborn_colorbar(dfr, classes):
-    """Return a colorbar representing classes, for a Seaborn plot.
-
-    :param dfr:
-    :param classes:
-
-    The aim is to get a pd.Series for the passed dataframe columns,
-    in the form:
-    0    colour for class in col 0
-    1    colour for class in col 1
-    ...  colour for class in col ...
-    n    colour for class in col n
-    """
-    levels = sorted(list(set(classes.values())))
-    paldict = {
-        lvl: pal
-        for (lvl, pal) in zip(
-            levels,
-            sns.cubehelix_palette(
-                len(levels), light=0.9, dark=0.1, reverse=True, start=1, rot=-2
-            ),
-        )
-    }
-    lvl_pal = {cls: paldict[lvl] for (cls, lvl) in list(classes.items())}
-    # Have to use string conversion of the dataframe index, here
-    col_cb = pd.Series([str(_) for _ in dfr.index]).map(lvl_pal)
-    # The col_cb Series index now has to match the dfr.index, but
-    # we don't create the Series with this (and if we try, it
-    # fails) - so change it with this line
-    col_cb.index = dfr.index
-    return col_cb
-
-
-# Add labels to the seaborn heatmap axes
-def add_seaborn_labels(fig, params):
-    """Add labels to Seaborn heatmap axes, in-place.
-
-    :param fig:
-    :param params:
-    """
-    if params.labels:
-        # If a label mapping is missing, use the key text as fall back
-        [
-            _.set_text(params.labels.get(_.get_text(), _.get_text()))
-            for _ in fig.ax_heatmap.get_yticklabels()
-        ]
-        [
-            _.set_text(params.labels.get(_.get_text(), _.get_text()))
-            for _ in fig.ax_heatmap.get_xticklabels()
-        ]
-    fig.ax_heatmap.set_xticklabels(fig.ax_heatmap.get_xticklabels(), rotation=90)
-    fig.ax_heatmap.set_yticklabels(fig.ax_heatmap.get_yticklabels(), rotation=0)
-    return fig
-
-
-# Return a clustermap
-def get_seaborn_clustermap(dfr, params, title=None, annot=True):
-    """Return a Seaborn clustermap for the passed dataframe.
-
-    :param dfr:
-    :param params:
-    :param title:  str, plot title
-    :param annot:  Boolean, add text for cell values?
-    """
-    fig = sns.clustermap(
-        dfr,
-        cmap=params.cmap,
-        vmin=params.vmin,
-        vmax=params.vmax,
-        col_colors=params.colorbar,
-        row_colors=params.colorbar,
-        figsize=(params.figsize, params.figsize),
-        linewidths=params.linewidths,
-        annot=annot,
-    )
-
-    # add labels for each of the input genomes
-    add_seaborn_labels(fig, params)
-
-    fig.cax.yaxis.set_label_position("left")
-    if title:
-        fig.cax.set_ylabel(title)
-
-    # Return clustermap
-    return fig
-
-
-# Generate Seaborn heatmap output
-def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
-    """Return seaborn heatmap with cluster dendrograms.
-
-    :param dfr:  pandas DataFrame with relevant data
-    :param outfilename:  path to output file (indicates output format)
-    :param title:
-    :param params:
-    """
-    # Decide on figure layout size: a minimum size is required for
-    # aesthetics, and a maximum to avoid core dumps on rendering.
-    # If we hit the maximum size, we should modify font size.
-    maxfigsize = 120
-    calcfigsize = dfr.shape[0] * 1.1
-    figsize = min(max(8, calcfigsize), maxfigsize)
-    if figsize == maxfigsize:
-        scale = maxfigsize / calcfigsize
-        sns.set_context("notebook", font_scale=scale)
-
-    # Add a colorbar?
-    if params.classes is None:
-        col_cb = None
-    else:
-        col_cb = get_seaborn_colorbar(dfr, params.classes)
-
-    # Add attributes to parameter object, and draw heatmap
-    params.colorbar = col_cb
-    params.figsize = figsize
-    params.linewidths = 0.25
-    fig = get_seaborn_clustermap(dfr, params, title=title)
-
-    # Save to file
-    if outfilename:
-        fig.savefig(outfilename)
-
-    # Return clustermap
-    return fig
-
-
-def distribution_seaborn(dfr, outfilename, matname, title=None):
-    """Return seaborn distribution plot for matrix.
-
-    :param drf:  DataFrame with results matrix
-    :param outfilename:  Path to output file for writing
-    :param matname:  str, type of matrix being plotted
-    :param title:  str, optional title
-    """
-    fig, axes = plt.subplots(1, 2, figsize=(15, 5))
-    fig.suptitle(title)
-    sns.distplot(
-        dfr.values.flatten(), kde=False, rug=False, ax=axes[0], norm_hist=False
-    )
-    sns.distplot(
-        dfr.values.flatten(), hist=False, rug=True, ax=axes[1], norm_hist=False
-    )
-
-    # Modify axes after data is plotted
-    for ax in axes:
-        if matname == "sim_errors":
-            ax.set_xlim(0, ax.get_xlim()[1])
-        elif matname in ["hadamard", "coverage"]:
-            ax.set_xlim(0, 1.01)
-        elif matname == "identity":
-            ax.set_xlim(0.75, 1.01)
-
-    # Tidy figure
-    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
-
-    if outfilename:
-        # For some reason seaborn gives us an AxesSubPlot with
-        # sns.distplot, rather than a Figure, so we need this hack
-        fig.savefig(outfilename)
-
-    return fig
 
 
 # Add dendrogram and axes to passed figure
@@ -342,22 +143,22 @@ def distribution_mpl(dfr, outfilename, matname, title=None):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     fig.suptitle(title)
     data = dfr.values.flatten()
-    xs = np.linspace(min(data), max(data), 200)
+    xvals = np.linspace(min(data), max(data), 200)
     # Plot histogram
     axes[0].hist(data, bins=50)
     # Plot density
     density = gaussian_kde(data)
     density._compute_covariance()
-    axes[1].plot(xs, density(xs))
+    axes[1].plot(xvals, density(xvals))
 
     # Modify axes after data is plotted
-    for ax in axes:
+    for _ in axes:
         if matname == "sim_errors":
-            ax.set_xlim(0, ax.get_xlim()[1])
+            _.set_xlim(0, _.get_xlim()[1])
         elif matname in ["hadamard", "coverage"]:
-            ax.set_xlim(0, 1.01)
+            _.set_xlim(0, 1.01)
         elif matname == "identity":
-            ax.set_xlim(ax.get_xlim()[0], 1.01)
+            _.set_xlim(_.get_xlim()[0], 1.01)
 
     # Tidy figure
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
