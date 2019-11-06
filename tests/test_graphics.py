@@ -78,7 +78,7 @@ def draw_format_method(fmt, mth):
     stem = "ANIm_percentage_identity"
     df = pd.read_csv(inputs["infilename"], index_col=0, sep="\t")
     OUTDIR.mkdir(exist_ok=True)
-    fn = {"mpl": pyani_graphics.heatmap_mpl, "seaborn": pyani_graphics.heatmap_seaborn}
+    fn = {"mpl": pyani_graphics.mpl.heatmap, "seaborn": pyani_graphics.sns.heatmap}
     params = {"mpl": pyani_config.params_mpl, "seaborn": pyani_config.params_mpl}
     method_params = pyani_graphics.Params(
         params[mth](df)[stem], inputs["labels"], inputs["classes"]

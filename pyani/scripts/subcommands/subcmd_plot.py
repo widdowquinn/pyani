@@ -52,14 +52,11 @@ from pyani.pyani_tools import MatrixData
 
 
 # Distribution dictionary of matrix graphics methods
-GMETHODS = {
-    "mpl": pyani_graphics.heatmap_mpl,
-    "seaborn": pyani_graphics.heatmap_seaborn,
-}
+GMETHODS = {"mpl": pyani_graphics.mpl.heatmap, "seaborn": pyani_graphics.sns.heatmap}
 # Distribution dictionary of distribution graphics methods
 DISTMETHODS = {
-    "mpl": pyani_graphics.distribution_mpl,
-    "seaborn": pyani_graphics.distribution_seaborn,
+    "mpl": pyani_graphics.mpl.distribution,
+    "seaborn": pyani_graphics.sns.distribution,
 }
 
 
