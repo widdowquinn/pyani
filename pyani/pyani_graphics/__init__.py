@@ -49,8 +49,8 @@
 
 import matplotlib  # pylint: disable=C0411
 
-from .plot_matplotlib import heatmap_mpl, distribution_mpl
-from .plot_seaborn import heatmap_seaborn, distribution_seaborn
+from . import mpl  # matplotlib wrappers
+from . import sns  # seaborn wrappers
 
 # Specify matplotlib backend. This *must* be done before pyplot import, but
 # raises errors with flake8 etc. So we comment out the specific error

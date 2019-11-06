@@ -47,7 +47,7 @@ import matplotlib.pyplot as plt  # noqa: E402 # pylint: disable=wrong-import-pos
 
 
 # Add classes colorbar to Seaborn plot
-def get_seaborn_colorbar(dfr, classes):
+def get_colorbar(dfr, classes):
     """Return a colorbar representing classes, for a Seaborn plot.
 
     :param dfr:
@@ -80,7 +80,7 @@ def get_seaborn_colorbar(dfr, classes):
 
 
 # Add labels to the seaborn heatmap axes
-def add_seaborn_labels(fig, params):
+def add_labels(fig, params):
     """Add labels to Seaborn heatmap axes, in-place.
 
     :param fig:
@@ -98,7 +98,7 @@ def add_seaborn_labels(fig, params):
 
 
 # Return a clustermap
-def get_seaborn_clustermap(dfr, params, title=None, annot=True):
+def get_clustermap(dfr, params, title=None, annot=True):
     """Return a Seaborn clustermap for the passed dataframe.
 
     :param dfr:
@@ -119,7 +119,7 @@ def get_seaborn_clustermap(dfr, params, title=None, annot=True):
     )
 
     # add labels for each of the input genomes
-    add_seaborn_labels(fig, params)
+    add_labels(fig, params)
 
     fig.cax.yaxis.set_label_position("left")
     if title:
@@ -130,7 +130,7 @@ def get_seaborn_clustermap(dfr, params, title=None, annot=True):
 
 
 # Generate Seaborn heatmap output
-def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
+def heatmap(dfr, outfilename=None, title=None, params=None):
     """Return seaborn heatmap with cluster dendrograms.
 
     :param dfr:  pandas DataFrame with relevant data
@@ -152,13 +152,13 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
     if params.classes is None:
         col_cb = None
     else:
-        col_cb = get_seaborn_colorbar(dfr, params.classes)
+        col_cb = get_colorbar(dfr, params.classes)
 
     # Add attributes to parameter object, and draw heatmap
     params.colorbar = col_cb
     params.figsize = figsize
     params.linewidths = 0.25
-    fig = get_seaborn_clustermap(dfr, params, title=title)
+    fig = get_clustermap(dfr, params, title=title)
 
     # Save to file
     if outfilename:
@@ -168,7 +168,7 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
     return fig
 
 
-def distribution_seaborn(dfr, outfilename, matname, title=None):
+def distribution(dfr, outfilename, matname, title=None):
     """Return seaborn distribution plot for matrix.
 
     :param drf:  DataFrame with results matrix

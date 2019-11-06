@@ -81,7 +81,7 @@ def clean_axis(axis):
 
 
 # Add dendrogram and axes to passed figure
-def add_mpl_dendrogram(dfr, fig, params, heatmap_gs, orientation="col"):
+def add_dendrogram(dfr, fig, params, heatmap_gs, orientation="col"):
     """Return a dendrogram and corresponding gridspec, attached to the fig.
 
     :param dfr:
@@ -132,7 +132,7 @@ def add_mpl_dendrogram(dfr, fig, params, heatmap_gs, orientation="col"):
     return {"dendrogram": dend, "gridspec": gspec}
 
 
-def distribution_mpl(dfr, outfilename, matname, title=None):
+def distribution(dfr, outfilename, matname, title=None):
     """Return matplotlib distribution plot for matrix.
 
     :param dfr:  DataFrame with results matrix
@@ -172,7 +172,7 @@ def distribution_mpl(dfr, outfilename, matname, title=None):
 
 
 # Create heatmap axes for Matplotlib output
-def get_mpl_heatmap_axes(dfr, fig, heatmap_gs):
+def get_heatmap_axes(dfr, fig, heatmap_gs):
     """Return axis for Matplotlib heatmap.
 
     :param dfr:
@@ -189,7 +189,7 @@ def get_mpl_heatmap_axes(dfr, fig, heatmap_gs):
     return heatmap_axes
 
 
-def add_mpl_colorbar(dfr, fig, dend, params, orientation="row"):
+def add_colorbar(dfr, fig, dend, params, orientation="row"):
     """Add class colorbars to Matplotlib heatmap.
 
     :param dfr:
@@ -234,7 +234,7 @@ def add_mpl_colorbar(dfr, fig, dend, params, orientation="row"):
 
 
 # Add labels to the heatmap axes
-def add_mpl_labels(heatmap_axes, rowlabels, collabels, params):
+def add_labels(heatmap_axes, rowlabels, collabels, params):
     """Add labels to Matplotlib heatmap axes, in-place.
 
     :param heatmap_axes:
@@ -256,7 +256,7 @@ def add_mpl_labels(heatmap_axes, rowlabels, collabels, params):
 
 
 # Add colour scale to heatmap
-def add_mpl_colorscale(fig, heatmap_gs, ax_map, params, title=None):
+def add_colorscale(fig, heatmap_gs, ax_map, params, title=None):
     """Add colour scale to heatmap.
 
     :param fig:
@@ -286,7 +286,7 @@ def add_mpl_colorscale(fig, heatmap_gs, ax_map, params, title=None):
 
 
 # Generate Matplotlib heatmap output
-def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
+def heatmap(dfr, outfilename=None, title=None, params=None):
     """Return matplotlib heatmap with cluster dendrograms.
 
     :param dfr:  pandas DataFrame with relevant data
@@ -313,11 +313,11 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
     )
 
     # Add column and row dendrograms/axes to figure
-    coldend = add_mpl_dendrogram(dfr, fig, params, heatmap_gs, orientation="col")
-    rowdend = add_mpl_dendrogram(dfr, fig, params, heatmap_gs, orientation="row")
+    coldend = add_dendrogram(dfr, fig, params, heatmap_gs, orientation="col")
+    rowdend = add_dendrogram(dfr, fig, params, heatmap_gs, orientation="row")
 
     # Add heatmap axes to figure, with rows/columns as in the dendrograms
-    heatmap_axes = get_mpl_heatmap_axes(dfr, fig, heatmap_gs)
+    heatmap_axes = get_heatmap_axes(dfr, fig, heatmap_gs)
     ax_map = heatmap_axes.imshow(
         dfr.iloc[rowdend["dendrogram"]["leaves"], coldend["dendrogram"]["leaves"]],
         interpolation="nearest",
@@ -330,16 +330,16 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
 
     # Are there class colourbars to add?
     if params.classes is not None:
-        add_mpl_colorbar(dfr, fig, coldend, params, orientation="col")
-        add_mpl_colorbar(dfr, fig, rowdend, params, orientation="row")
+        add_colorbar(dfr, fig, coldend, params, orientation="col")
+        add_colorbar(dfr, fig, rowdend, params, orientation="row")
 
     # Add heatmap labels
-    add_mpl_labels(
+    add_labels(
         heatmap_axes, rowdend["dendrogram"]["ivl"], coldend["dendrogram"]["ivl"], params
     )
 
     # Add colour scale
-    add_mpl_colorscale(fig, heatmap_gs, ax_map, params, title)
+    add_colorscale(fig, heatmap_gs, ax_map, params, title)
 
     # Return figure output, and write, if required
     plt.subplots_adjust(top=0.85)  # Leave room for title
