@@ -14,35 +14,33 @@
 
 <!-- TOC -->
 
-- [README.md (pyani)](#readmemd-pyani)
-    - [Overview](#overview)
-    - [Installation](#installation)
-        - [`pip3`](#pip3)
-        - [`bioconda`](#bioconda)
-        - [Installing legacy BLAST](#installing-legacy-blast)
-    - [Citing `pyani`](#citing-pyani)
-    - [Documentation](#documentation)
-    - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
-    - [Contributing](#contributing)
-    - [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
-        - [1. Download genome data](#1-download-genome-data)
-        - [2. Create an analysis database](#2-create-an-analysis-database)
-        - [3. Conduct ANI analysis](#3-conduct-ani-analysis)
-            - [Rerunning the same analysis](#rerunning-the-same-analysis)
-        - [4. Reporting Analyses and Analysis Results](#4-reporting-analyses-and-analysis-results)
-        - [5. Generating graphical output for ANI](#5-generating-graphical-output-for-ani)
-        - [6. Classifying Genomes from Analysis Results](#6-classifying-genomes-from-analysis-results)
-    - [Testing `pyani`](#testing-pyani)
-    - [Running `pyani`](#running-pyani)
-        - [Script: `average_nucleotide_identity.py`](#script-average_nucleotide_identitypy)
-        - [Script: `genbank_get_genomes_by_taxon.py`](#script-genbank_get_genomes_by_taxonpy)
-    - [DEPENDENCIES](#dependencies)
-        - [For ANI analysis](#for-ani-analysis)
-            - [Alignment tools](#alignment-tools)
-        - [For graphical output](#for-graphical-output)
-    - [Method and Output Description](#method-and-output-description)
-        - [Average Nucleotide Identity (ANI)](#average-nucleotide-identity-ani)
-    - [Licensing](#licensing)
+- [Overview](#overview)
+- [Installation](#installation)
+    - [`pip3`](#pip3)
+    - [`bioconda`](#bioconda)
+    - [Installing legacy BLAST](#installing-legacy-blast)
+- [Citing `pyani`](#citing-pyani)
+- [Documentation](#documentation)
+    - [Older documentation](#older-documentation)
+- [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
+- [Contributing](#contributing)
+- [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
+    - [1. Download genome data](#1-download-genome-data)
+    - [2. Create an analysis database](#2-create-an-analysis-database)
+    - [3. Conduct ANI analysis](#3-conduct-ani-analysis)
+    - [4. Reporting Analyses and Analysis Results](#4-reporting-analyses-and-analysis-results)
+    - [5. Generating graphical output for ANI](#5-generating-graphical-output-for-ani)
+    - [6. Classifying Genomes from Analysis Results](#6-classifying-genomes-from-analysis-results)
+- [Testing `pyani`](#testing-pyani)
+- [Running `pyani`](#running-pyani)
+    - [Script: `average_nucleotide_identity.py`](#script-average_nucleotide_identitypy)
+    - [Script: `genbank_get_genomes_by_taxon.py`](#script-genbank_get_genomes_by_taxonpy)
+- [DEPENDENCIES](#dependencies)
+    - [For ANI analysis](#for-ani-analysis)
+    - [For graphical output](#for-graphical-output)
+- [Method and Output Description](#method-and-output-description)
+    - [Average Nucleotide Identity (ANI)](#average-nucleotide-identity-ani)
+- [Licensing](#licensing)
 
 <!-- /TOC -->
 
@@ -95,9 +93,15 @@ A guide to citing `pyani` is included in the file [`CITATIONS`](CITATIONS)
 
 ## Documentation
 
-This `README.md` file provides a quick overview and walkthrough for **THE DEVELOPMENT VERSION OF `pyani`**, but full documentation can be found at the link below:
+This `README.md` file provides a quick overview and walkthrough for **THE DEVELOPMENT VERSION (v0.3+) OF `pyani`**, and full documentation can be found at the link below:
 
-- [`pyani` Documentation](https://readthedocs.org/projects/pyani/)
+- [`pyani` v0.3+ Documentation](https://readthedocs.org/projects/pyani/)
+
+### Older documentation
+
+If you are using an older version of `pyani` (v0.2.x), then please note that the command-line API has changed, and documentation for this version can be found at the following page:
+
+- [`pyani` v0.2.x Documentation](./README_v_0_2_x.md)
 
 ## Bugs, issues, problems and questions
 
