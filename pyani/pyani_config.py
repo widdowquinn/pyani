@@ -42,8 +42,11 @@
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
+<<<<<<< HEAD
 import pandas as pd  # type: ignore
 
+=======
+>>>>>>> fix import issues for mypy with pyani/anim.py
 from matplotlib.colors import LinearSegmentedColormap  # type: ignore
 
 # Defaults assume that common binaries are on the $PATH
