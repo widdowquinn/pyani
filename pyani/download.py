@@ -48,6 +48,7 @@ import urllib.request
 
 from collections import namedtuple
 from pathlib import Path
+from typing import Any, List
 from urllib.error import HTTPError, URLError
 
 from Bio import Entrez  # type: ignore
@@ -78,13 +79,13 @@ class FileExistsException(Exception):
         Exception.__init__(self, msg)
 
 
-def last_exception():
+def last_exception() -> str:
     """Return last exception as a string."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
     return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
 
-def set_ncbi_email(email):
+def set_ncbi_email(email: str) -> None:
     """Set contact email for NCBI.
 
     :param email:  str, email address to give to Entrez at NCBI
@@ -93,7 +94,7 @@ def set_ncbi_email(email):
     Entrez.tool = "pyani.py"
 
 
-def parse_api_key(api_path):
+def parse_api_key(api_path: Path) -> str:
     """Parse the contents of the file for NCBI API key.
 
     :param api_path:  Path, location of NCBI API key
@@ -107,7 +108,9 @@ def parse_api_key(api_path):
 
 
 # Get results from NCBI web history, in batches
-def entrez_batch_webhistory(record, expected, batchsize, retries, *fnargs, **fnkwargs):
+def entrez_batch_webhistory(
+    record, expected, batchsize, retries, *fnargs, **fnkwargs
+) -> List[str]:
     """Recover the Entrez data from a prior NCBI webhistory search.
 
     :param record:  Entrez webhistory record
@@ -120,7 +123,7 @@ def entrez_batch_webhistory(record, expected, batchsize, retries, *fnargs, **fnk
     Recovers results in batches of defined size, using Efetch.
     Returns all results as a list.
     """
-    results = []
+    results = []  # type: List[Any]
     for start in range(0, expected, batchsize):
         batch_handle = entrez_retry(
             Entrez.efetch,
