@@ -39,16 +39,18 @@
 # THE SOFTWARE.
 """Configuration settings for the pyani package."""
 
+from pathlib import Path
+
 from matplotlib.colors import LinearSegmentedColormap
 
 # Defaults assume that common binaries are on the $PATH
-NUCMER_DEFAULT = "nucmer"
-FILTER_DEFAULT = "delta-filter"
-BLASTN_DEFAULT = "blastn"
-MAKEBLASTDB_DEFAULT = "makeblastdb"
-BLASTALL_DEFAULT = "blastall"
-FORMATDB_DEFAULT = "formatdb"
-QSUB_DEFAULT = "qsub"
+NUCMER_DEFAULT = Path("nucmer")
+FILTER_DEFAULT = Path("delta-filter")
+BLASTN_DEFAULT = Path("blastn")
+MAKEBLASTDB_DEFAULT = Path("makeblastdb")
+BLASTALL_DEFAULT = Path("blastall")
+FORMATDB_DEFAULT = Path("formatdb")
+QSUB_DEFAULT = Path("qsub")
 
 # Stems for output files
 ANIM_FILESTEMS = (

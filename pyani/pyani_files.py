@@ -38,7 +38,9 @@
 # THE SOFTWARE.
 """Code to handle files for average nucleotide identity calculations."""
 
+from argparse import Namespace
 from pathlib import Path
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from Bio import SeqIO
 
@@ -52,26 +54,27 @@ class PyaniFilesException(PyaniException):
 
 
 # Get a list of FASTA files from the input directory
-def get_fasta_files(dirname=None):
+def get_fasta_files(dirname: Path = Path(".")) -> Iterable[Path]:
     """Return a list of FASTA files in the passed directory.
 
-    :param dirname: - path to input directory
+    :param dirname:  Path, path to input directory
     """
-    if dirname is None:
-        dirname = "."
     infiles = get_input_files(dirname, ".fasta", ".fas", ".fa", ".fna", ".fsa_nt")
     return infiles
 
 
 # Return a list of paths to FASTA files in a directory
-def get_fasta_paths(dirname=Path("."), extlist=None):
+def get_fasta_paths(
+    dirname: Path = Path("."), extlist: Optional[List] = None
+) -> List[Path]:
     """Return a list of paths to files matching a list of FASTA extensions.
 
     :param dirname:  Path, path to directory containing input FASTA files
-    :param extlist:
+    :param extlist:  List, file suffixes for FASTA files
 
     Returns the full path to each file.
     """
+    # Lists are dangerous to have as default function arguments
     extlist = extlist or [".fna", ".fa", ".fasta", ".fas"]
     return [
         fname
@@ -81,10 +84,10 @@ def get_fasta_paths(dirname=Path("."), extlist=None):
 
 
 # Get a list of FASTA files and corresponding hashes from the input directory
-def get_fasta_and_hash_paths(dirname=Path(".")):
+def get_fasta_and_hash_paths(dirname: Path = Path(".")) -> List[Tuple[Path, Path]]:
     """Return a list of (FASTA file, hash file) tuples in passed directory.
 
-    :param dirname:  str, path to input directory
+    :param dirname:   Path, path to input directory
 
     Raises an IOError if the corresponding hash for a FASTA file does not exist
     """
@@ -99,20 +102,20 @@ def get_fasta_and_hash_paths(dirname=Path(".")):
 
 
 # Get list of FASTA files in a directory
-def get_input_files(dirname, *ext):
+def get_input_files(dirname: Path, *ext) -> Iterable[Path]:
     """Return files in passed directory, filtered by extension.
 
-    :param dirname:  str, path to input directory
-    :param *ext:  list of arguments describing permitted file extensions
+    :param dirname:  Path, path to input directory
+    :param *ext:  optional iterable of arguments describing permitted file extensions
     """
     return [fname for fname in dirname.iterdir() if fname.suffix in ext]
 
 
 # Get lengths of input sequences
-def get_sequence_lengths(fastafilenames):
+def get_sequence_lengths(fastafilenames: Iterable[Path]) -> Dict[str, int]:
     """Return dictionary of sequence lengths, keyed by organism.
 
-    :param fastafilenames:  str, path to input FASTA file
+    :param fastafilenames:  Iterable[Path], paths to input FASTA files
 
     Biopython's SeqIO module is used to parse all sequences in the FASTA
     file corresponding to each organism, and the total base count in each
@@ -127,10 +130,10 @@ def get_sequence_lengths(fastafilenames):
 
 
 # Get hash string from hash file
-def read_hash_string(filename):
+def read_hash_string(filename: Path) -> Tuple[str, str]:
     """Return the hash and file strings from the passed hash file.
 
-    :param filename:  str, path to file containing hash string
+    :param filename:  Path, path to file containing hash string
     """
     try:
         with open(filename, "r") as ifh:
@@ -144,10 +147,10 @@ def read_hash_string(filename):
 
 
 # Get description string from FASTA file
-def read_fasta_description(filename):
+def read_fasta_description(filename: Path) -> str:
     """Return the first description string from a FASTA file.
 
-    :param filename:  str, path to FASTA file
+    :param filename:  Path, path to FASTA file
     """
     for data in SeqIO.parse(filename, "fasta"):
         if data.description:
@@ -156,10 +159,10 @@ def read_fasta_description(filename):
 
 
 # Load class or label file as dictionary
-def load_classes_labels(path):
+def load_classes_labels(path: Path) -> Dict[str, str]:
     r"""Return a dictionary of genome classes or labels keyed by hash.
 
-    :param path:  str, path to classes or labels file
+    :param path:  Path, path to classes or labels file
 
     The expected format of the classes and labels files is:
     <HASH>\t<FILESTEM>\t<CLASS>|<LABEL>,
@@ -177,10 +180,13 @@ def load_classes_labels(path):
 
 
 # Collect existing output files when in recovery mode
-def collect_existing_output(dirpath, program, args):
+def collect_existing_output(
+    dirpath: Path, program: str, args: Namespace
+) -> Iterable[Path]:
     """Return a list of existing output files at dirpath.
 
-    :param dirpath:  str, path to existing output directory
+    :param dirpath:  Path, path to existing output directory
+    :param program:  str, name of program to use for comparisons
     :param args:  Namespace, command-line arguments for the run
     """
     # Obtain collection of expected output files already present in directory

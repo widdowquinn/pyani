@@ -57,6 +57,7 @@ import re
 import subprocess
 
 from pathlib import Path
+from typing import Iterable, List
 
 from . import pyani_config
 from . import pyani_files
@@ -66,13 +67,11 @@ from .pyani_tools import ANIResults
 
 
 # Get a list of FASTA files from the input directory
-def get_fasta_files(dirname=None):
-    """Return list of FASTA files in the passed directory.
+def get_fasta_files(dirname: Path = Path(".")) -> Iterable:
+    """Return iterable of FASTA files in the passed directory.
 
     :param dirname:  str, path to input directory
     """
-    if dirname is None:
-        dirname = "."
     infiles = pyani_files.get_input_files(
         dirname, ".fasta", ".fas", ".fa", ".fna", ".fsa_nt"
     )
@@ -80,7 +79,7 @@ def get_fasta_files(dirname=None):
 
 
 # Get NUCmer version
-def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
+def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
     """Return NUCmer package version as a string.
 
     :param nucmer_exe:  path to NUCmer executable
@@ -94,26 +93,27 @@ def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
 
     we concatenate this with the OS name.
     """
-    cmdline = [nucmer_exe, "-V"]
+    cmdline = [nucmer_exe, "-V"]  # type: List
     result = subprocess.run(
         cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
     )
-    version = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8")).group()
+    match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
+    version = match.group()  # type: ignore
     return f"{platform.system()}_{version}"
 
 
 # Generate list of Job objects, one per NUCmer run
 def generate_nucmer_jobs(
-    filenames,
-    outdir=Path("."),
-    nucmer_exe=pyani_config.NUCMER_DEFAULT,
-    filter_exe=pyani_config.FILTER_DEFAULT,
-    maxmatch=False,
-    jobprefix="ANINUCmer",
+    filenames: Iterable[Path],
+    outdir: Path = Path("."),
+    nucmer_exe: Path = pyani_config.NUCMER_DEFAULT,
+    filter_exe: Path = pyani_config.FILTER_DEFAULT,
+    maxmatch: bool = False,
+    jobprefix: str = "ANINUCmer",
 ):
     """Return list of Jobs describing NUCmer command-lines for ANIm.
 
-    :param filenames:  a list of paths to input FASTA files
+    :param filenames:  Iterable, Paths to input FASTA files
     :param outdir:  str, path to output directory
     :param nucmer_exe:  str, location of the nucmer binary
     :param filter_exe:
