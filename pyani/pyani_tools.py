@@ -44,9 +44,9 @@ import shutil
 
 from collections import namedtuple
 
-import pandas as pd
+import pandas as pd  # type: ignore
 
-from Bio import SeqIO
+from Bio import SeqIO  # type: ignore
 
 from . import pyani_config, download
 

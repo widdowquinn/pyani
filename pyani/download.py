@@ -50,9 +50,9 @@ from collections import namedtuple
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 
-from Bio import Entrez
-from tqdm import tqdm
-from namedlist import namedlist
+from Bio import Entrez  # type: ignore
+from tqdm import tqdm  # type: ignore
+from namedlist import namedlist  # type: ignore
 
 
 # Regular expression for NCBI taxon numbers

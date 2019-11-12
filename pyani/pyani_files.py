@@ -42,7 +42,7 @@ from argparse import Namespace
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
-from Bio import SeqIO
+from Bio import SeqIO  # type: ignore
 
 from pyani import PyaniException
 

@@ -26,6 +26,9 @@ distribute*
 docs/_build/
 docs/make.bat
 
+# MyPy cache
+.mypy_cache/
+
 # Test output
 *.log
 tests/test_*_out/

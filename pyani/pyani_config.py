@@ -41,7 +41,7 @@
 
 from pathlib import Path
 
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import LinearSegmentedColormap  # type: ignore
 
 # Defaults assume that common binaries are on the $PATH
 NUCMER_DEFAULT = Path("nucmer")
