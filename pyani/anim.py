@@ -218,7 +218,10 @@ def construct_nucmer_cmdline(
     # to the outprefix files, as using path.with_suffix() instead can replace part of the filestem
     # in those cases where there is a period in the stem (this occurs frequently as it is part
     # of the NCBI notation for genome assembly versions)
-    filtercmd = f"delta_filter_wrapper.py {filter_exe} -1 {str(outprefix) + '.delta'} {str(outprefix) + '.filter'}"
+    filtercmd = (
+        f"delta_filter_wrapper.py {filter_exe} -1 {str(outprefix) + '.delta'} "
+        f"{str(outprefix) + '.filter'}"
+    )
     return (nucmercmd, filtercmd)
 
 
