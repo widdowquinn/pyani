@@ -5,6 +5,7 @@ coverage
 doc8
 flake8
 jinja2
+mypy
 pydocstyle
 pylint
 pytest
