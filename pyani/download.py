@@ -48,7 +48,7 @@ import urllib.request
 
 from collections import namedtuple
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, NamedTuple, Tuple
 from urllib.error import HTTPError, URLError
 
 from Bio import Entrez  # type: ignore
@@ -65,7 +65,7 @@ class NCBIDownloadException(Exception):
 
     """General exception for failed NCBI download."""
 
-    def __init__(self, msg="Error downloading file from NCBI"):
+    def __init__(self, msg: str = "Error downloading file from NCBI"):
         """Instantiate class."""
         Exception.__init__(self, msg)
 
@@ -74,9 +74,28 @@ class FileExistsException(Exception):
 
     """A specified file exists."""
 
-    def __init__(self, msg="Specified file exists"):
+    def __init__(self, msg: str = "Specified file exists"):
         """Instantiate class."""
         Exception.__init__(self, msg)
+
+
+class ASMIDs(NamedTuple):
+
+    """Matching Assembly ID information for a query taxID."""
+
+    query: str
+    result_count: int
+    asm_ids: List[str]
+
+
+class Classification(NamedTuple):
+
+    """Taxonomic classification for an isolate."""
+
+    organism: str
+    genus: str
+    species: str
+    strain: str
 
 
 def last_exception() -> str:
@@ -133,7 +152,7 @@ def entrez_batch_webhistory(
             webenv=record["WebEnv"],
             query_key=record["QueryKey"],
             *fnargs,
-            **fnkwargs
+            **fnkwargs,
         )
         batch_record = Entrez.read(batch_handle, validate=False)
         results.extend(batch_record)
@@ -162,7 +181,7 @@ def entrez_retry(func, retries, *fnargs, **fnkwargs):
 
 
 # Split a list of taxon ids into components, checking for correct formatting
-def split_taxa(taxa):
+def split_taxa(taxa: str) -> List[str]:
     """Return list of taxon ids from the passed comma-separated list.
 
     :param taxa:  str, comma-separated list of valid NCBI taxonomy IDs
@@ -178,16 +197,15 @@ def split_taxa(taxa):
 
 
 # Get assembly UIDs for the subtree rooted at the passed taxon
-def get_asm_uids(taxon_uid, retries):
+def get_asm_uids(taxon_uid: str, retries: int) -> ASMIDs:
     """Return set of NCBI UIDs associated with the passed taxon UID.
 
-    :param taxon_uid:
-    :param retries:
+    :param taxon_uid:  str, NCBI taxID for taxon to download
+    :param retries:  int, number of download retry attempts
 
     This query at NCBI returns all assemblies for the taxon subtree
     rooted at the passed taxon_uid.
     """
-    Results = namedtuple("ASM_UIDs", "query count asm_ids")
     query = "txid%s[Organism:exp]" % taxon_uid
 
     # Perform initial search for assembly UIDs with taxon ID as query.
@@ -203,11 +221,11 @@ def get_asm_uids(taxon_uid, retries):
         record, result_count, 250, retries, db="assembly", retmode="xml"
     )
 
-    return Results(query, result_count, asm_ids)
+    return ASMIDs(query, result_count, asm_ids)
 
 
 # Get a filestem from Entrez eSummary data
-def extract_filestem(esummary):
+def extract_filestem(esummary) -> str:
     """Extract filestem from Entrez eSummary data.
 
     :param esummary:
@@ -225,7 +243,7 @@ def extract_filestem(esummary):
 
 
 # Get eSummary data for a single assembly UID
-def get_ncbi_esummary(asm_uid, retries, api_key=None):
+def get_ncbi_esummary(asm_uid, retries, api_key=None) -> Tuple:
     """Obtain full eSummary info for the passed assembly UID.
 
     :param asm_uid:
@@ -258,8 +276,6 @@ def get_ncbi_classification(esummary):
 
     :param esummary:
     """
-    Classification = namedtuple("Classsification", "organism genus species strain")
-
     # Extract species/strain info
     organism = esummary["SpeciesName"]
     try:
@@ -426,7 +442,7 @@ def extract_contigs(fname, ename):
 
 
 # Using a genomes UID, create class and label text files
-def create_labels(classification, filestem, genomehash):
+def create_labels(classification, filestem, genomehash) -> Tuple[str, str]:
     r"""Return class and label text from UID classification.
 
     :param classification:  Classification named tuple (org, genus, species, strain)
@@ -444,18 +460,10 @@ def create_labels(classification, filestem, genomehash):
     The hash is used to help uniquely identify the genome in the database
     (label/class is unique by a combination of hash and run ID).
     """
-    class_data = (
-        filestem,
-        classification.genus[0] + ".",
-        classification.species,
-        classification.strain,
+    return (
+        f"{genomehash}\t{filestem}_genomic\t{classification.genus[0] + '.'} {classification.species} {classification.strain}",
+        f"{genomehash}\t{filestem}_genomic\t{classification.organism}",
     )
-    labeltxt = "{0}\t{1}_genomic\t{2} {3} {4}".format(genomehash, *class_data)
-    classtxt = "{0}\t{1}_genomic\t{2}".format(
-        genomehash, filestem, classification.organism
-    )
-
-    return (labeltxt, classtxt)
 
 
 # Create an MD5 hash for the passed genome
