@@ -46,8 +46,8 @@ import sys
 import traceback
 import urllib.request
 
-from collections import namedtuple
 from pathlib import Path
+from subprocess import CompletedProcess
 from typing import Any, List, NamedTuple, Tuple
 from urllib.error import HTTPError, URLError
 
@@ -96,6 +96,15 @@ class Classification(NamedTuple):
     genus: str
     species: str
     strain: str
+
+
+class Hashstatus(NamedTuple):
+
+    """Status report on file hash comparison."""
+
+    passed: bool
+    localhash: str
+    filehash: str
 
 
 def last_exception() -> str:
@@ -271,7 +280,7 @@ def get_ncbi_esummary(asm_uid, retries, api_key=None) -> Tuple:
 
 
 # Get the taxonomic classification strings for eSummary data
-def get_ncbi_classification(esummary):
+def get_ncbi_classification(esummary) -> Classification:
     """Return organism, genus, species, strain info from eSummary data.
 
     :param esummary:
@@ -289,7 +298,7 @@ def get_ncbi_classification(esummary):
 
 
 # Given a remote filestem, generate URIs for download
-def compile_url(filestem, suffix, ftpstem):
+def compile_url(filestem: str, suffix: str, ftpstem: str) -> Tuple[str, str]:
     """Compile download URLs given a passed filestem.
 
     :param filestem:
@@ -321,15 +330,15 @@ def compile_url(filestem, suffix, ftpstem):
     aaval = acc.split(".")[0]
     subdirs = "/".join([acc[i : i + 3] for i in range(0, len(aaval), 3)])
 
-    url = "{0}/{1}/{2}/{3}/{3}_{4}".format(ftpstem, gcstem, subdirs, filestem, suffix)
-    hashurl = "{0}/{1}/{2}/{3}/{4}".format(
-        ftpstem, gcstem, subdirs, filestem, "md5checksums.txt"
-    )
+    url = f"{ftpstem}/{gcstem}/{subdirs}/{filestem}/{filestem}_{suffix}"
+    hashurl = f"{ftpstem}/{gcstem}/{subdirs}/{filestem}/md5checksums.txt"
     return (url, hashurl)
 
 
 # Download a remote file to the specified directory
-def download_url(url, outfname, timeout, disable_tqdm=False):
+def download_url(
+    url: str, outfname: Path, timeout: int, disable_tqdm: bool = False
+) -> None:
     """Download remote URL to a local directory.
 
     :param url:
@@ -362,7 +371,9 @@ def download_url(url, outfname, timeout, disable_tqdm=False):
 
 
 # Construct filepaths for downloaded files and their hashes
-def construct_output_paths(filestem, suffix, outdir):
+def construct_output_paths(
+    filestem: str, suffix: str, outdir: Path
+) -> Tuple[Path, Path]:
     """Construct paths to output files for genome and hash.
 
     :param filestem:  str, output filename stem
@@ -376,8 +387,13 @@ def construct_output_paths(filestem, suffix, outdir):
 
 # Download a remote genome from NCBI and its MD5 hash
 def retrieve_genome_and_hash(
-    filestem, suffix, ftpstem, outdir, timeout, disable_tqdm=False
-):
+    filestem: str,
+    suffix: str,
+    ftpstem: str,
+    outdir: Path,
+    timeout: int,
+    disable_tqdm: bool = False,
+) -> namedlist:
     """Download genome contigs and MD5 hash data from NCBI.
 
     :param filestem:
@@ -406,13 +422,12 @@ def retrieve_genome_and_hash(
 
 
 # Check the file hash against the downloaded hash
-def check_hash(fname, hashfile):
+def check_hash(fname: Path, hashfile: Path) -> Hashstatus:
     """Check MD5 of passed file against downloaded NCBI hash file.
 
     :param fname:  Path, path to local hash file
     :param hashfile:  Path, path to NCBI hash file
     """
-    Hashstatus = namedtuple("Hashstatus", "passed localhash filehash")
     filehash = ""
     passed = False  # Flag - set to True if the hash matches
 
@@ -430,23 +445,27 @@ def check_hash(fname, hashfile):
 
 
 # Extract contigs from a compressed file, using gunzip
-def extract_contigs(fname, ename):
+def extract_contigs(fname: Path, ename: Path) -> CompletedProcess:
     """Extract contents of fname to ename using gunzip.
 
     :param fname:  str, path to input compressed file
     :param ename:  str, path to output uncompressed file
+
+    Returns status of subprocess call
     """
     cmd = ["gunzip", "-c", shlex.quote(str(fname))]
     with open(ename, "w") as efh:
-        subprocess.run(cmd, stdout=efh, check=True, shell=False)
+        return subprocess.run(cmd, stdout=efh, check=True, shell=False)
 
 
 # Using a genomes UID, create class and label text files
-def create_labels(classification, filestem, genomehash) -> Tuple[str, str]:
+def create_labels(
+    classification: Classification, filestem: str, genomehash: str
+) -> Tuple[str, str]:
     r"""Return class and label text from UID classification.
 
     :param classification:  Classification named tuple (org, genus, species, strain)
-    :param filestem:  filestem of input genome file
+    :param filestem:  str, filestem of input genome file
     :param genomehash:  str, MD5 hash of genome data
 
     The 'class' data is the organism as provided in the passed Classification
@@ -467,10 +486,10 @@ def create_labels(classification, filestem, genomehash) -> Tuple[str, str]:
 
 
 # Create an MD5 hash for the passed genome
-def create_hash(fname):
+def create_hash(fname: Path) -> str:
     """Return MD5 hash of the passed file contents.
 
-    :param fname: path to file for hashing
+    :param fname:  Path, path to file for hashing
 
     We can ignore the Bandit B303 error as we're not using the hash for
     cryptographic purposes.
@@ -483,10 +502,10 @@ def create_hash(fname):
 
 
 # Create an MD5 hash for the passed genome
-def extract_hash(hashfile, name):
+def extract_hash(hashfile: Path, name: str) -> str:
     """Return MD5 hash from file of name:MD5 hashes.
 
-    :param hashfile:  str, path to file containing name:MD5 pairs
+    :param hashfile:  Path, path to file containing name:MD5 pairs
     :param name:  str, name associated with hash
     """
     filehash = None
@@ -494,4 +513,4 @@ def extract_hash(hashfile, name):
         for line in [_.strip().split() for _ in hhandle if len(_.strip())]:
             if Path(line[1]).name == name:  # hash filename
                 filehash = line[0]
-    return filehash
+    return str(filehash)
