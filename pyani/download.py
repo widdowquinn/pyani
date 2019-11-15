@@ -17,7 +17,7 @@
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019-2020 University of Strathclyde
+# Copyright (c) 2019 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -337,12 +337,13 @@ def compile_url(filestem: str, suffix: str, ftpstem: str) -> Tuple[str, str]:
 
 # Download a remote file to the specified directory
 def download_url(
-    url: str, outfname: Path, disable_tqdm: bool = False
+    url: str, outfname: Path, timeout: int, disable_tqdm: bool = False
 ) -> None:
     """Download remote URL to a local directory.
 
     :param url:  URL of remote file for download
     :param outfname: Path, path to write output
+    :param timeout: 
     :param disable_tqdm:  Boolean, show tqdm progress bar?
 
     This function downloads the contents of the passed URL to the passed
