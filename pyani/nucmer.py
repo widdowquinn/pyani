@@ -40,6 +40,9 @@
 
 import os
 
+from pathlib import Path
+from typing import List, Optional, TextIO
+
 
 class DeltaData:
 
@@ -62,19 +65,19 @@ class DeltaData:
     - subject: path to the subject sequence file
     """
 
-    def __init__(self, name, handle=None):
+    def __init__(self, name: str, handle: TextIO = None) -> None:
         """Initialise DeltaData object.
 
         :param name:
         :param handle:
         """
         self.name = name
-        self._metadata = None
-        self._comparisons = []
+        self._metadata = None  # type: Optional[DeltaMetadata]
+        self._comparisons = []  # type: List[DeltaComparison]
         if handle is not None:
             self.from_delta(handle)
 
-    def from_delta(self, handle):
+    def from_delta(self, handle: TextIO) -> None:
         """Populate the object from the passed .delta or .filter filehandle."""
         parser = DeltaIterator(handle)
         for element in parser:
@@ -133,7 +136,9 @@ class DeltaHeader:
 
     """Represents a single sequence comparison header from a MUMmer .delta file."""
 
-    def __init__(self, reference, query, reflen, querylen):
+    def __init__(
+        self, reference: Path, query: Path, reflen: int, querylen: int
+    ) -> None:
         """Initialise DeltaHeader object.
 
         :param reference:
@@ -166,7 +171,16 @@ class DeltaAlignment:
 
     """Represents a single alignment region and scores for a pairwise comparison."""
 
-    def __init__(self, refstart, refend, qrystart, qryend, errs, simerrs, stops):
+    def __init__(
+        self,
+        refstart: int,
+        refend: int,
+        qrystart: int,
+        qryend: int,
+        errs: int,
+        simerrs: int,
+        stops: int,
+    ) -> None:
         """Initialise DeltaAlignment object.
 
         :param refstart:
@@ -184,7 +198,7 @@ class DeltaAlignment:
         self.errs = int(errs)
         self.simerrs = int(simerrs)
         self.stops = int(stops)
-        self.indels = []
+        self.indels = []  # type: List[str]
 
     def __lt__(self, other):
         return (self.refstart, self.refend, self.querystart, self.queryend) < (
@@ -221,11 +235,11 @@ class DeltaMetadata:
 
     """Represents the metadata header for a MUMmer .delta file."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialise DeltaMetadata object."""
-        self.reference = None
-        self.query = None
-        self.program = None
+        self.reference = None  #  type: Optional[Path]
+        self.query = None  # type: Optional[Path]
+        self.program = None  # type: Optional[str]
 
     def __eq__(self, other):
         if not isinstance(other, DeltaMetadata):
@@ -244,7 +258,7 @@ class DeltaComparison:
 
     """Represents a comparison between two sequences in a .delta file."""
 
-    def __init__(self, header, alignments):
+    def __init__(self, header: DeltaHeader, alignments: List[DeltaAlignment]) -> None:
         """Initialise DeltaComparison object.
 
         :param header:
@@ -253,7 +267,7 @@ class DeltaComparison:
         self.header = header
         self.alignments = alignments
 
-    def add_alignment(self, aln):
+    def add_alignment(self, aln: DeltaAlignment) -> None:
         """Add passed alignment to this object.
 
         :param aln:  DeltaAlignment object
@@ -286,7 +300,7 @@ class DeltaIterator:
     http://mummer.sourceforge.net/manual/#nucmeroutput
     """
 
-    def __init__(self, handle):
+    def __init__(self, handle: TextIO) -> None:
         """Instantiate DeltaIterator object with the passed filehandle.
 
         :param handle:
