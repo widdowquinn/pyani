@@ -39,10 +39,10 @@
 # THE SOFTWARE.
 """Module providing functions to generate clusters/species hypotheses."""
 
-from typing import List, NamedTuple, Tuple
+from typing import Dict, List, NamedTuple, Tuple
 
-import networkx as nx
-import pandas as pd
+import networkx as nx  # type: ignore
+import pandas as pd  # type: ignore
 
 from pyani.pyani_tools import label_results_matrix
 
@@ -59,7 +59,7 @@ class Cliquesinfo(NamedTuple):
 
 # Build an undirected graph from an ANIResults object
 def build_graph_from_results(
-    results, label_dict, cov_min: float = 0, id_min: float = 0
+    results, label_dict: Dict[int, str], cov_min: float = 0, id_min: float = 0
 ) -> nx.Graph:
     """Return undirected graph representing the passed ANIResults object.
 
