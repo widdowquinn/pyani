@@ -1,8 +1,8 @@
 # README.md (pyani)
 
 [![pyani PyPi version](https://img.shields.io/pypi/v/pyani.svg "PyPi version")](https://pypi.python.org/pypi/pyani)
-[![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/development/LICENSE)
-[![CircleCI](https://circleci.com/gh/widdowquinn/pyani/tree/development.svg?style=shield)](https://circleci.com/gh/widdowquinn/pyani/tree/development)
+[![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/master/LICENSE)
+[![CircleCI](https://circleci.com/gh/widdowquinn/pyani/tree/master.svg?style=shield)](https://circleci.com/gh/widdowquinn/pyani/tree/master)
 [![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/development.svg)](https://codecov.io/github/widdowquinn/pyani)
 
 [![GitHub Issues](https://img.shields.io/github/issues-closed/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/issues)
