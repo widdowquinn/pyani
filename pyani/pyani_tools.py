@@ -44,6 +44,7 @@ import shutil
 
 from collections import namedtuple
 from pathlib import Path
+from typing import Any, Iterator, List, Optional, Tuple
 
 import pandas as pd  # type: ignore
 
@@ -66,7 +67,7 @@ class ANIResults:
 
     """Holds ANI dataframe results."""
 
-    def __init__(self, labels, mode):
+    def __init__(self, labels: List[str], mode: str) -> None:
         """Initialise with four empty, labelled dataframes.
 
         :param labels:
@@ -85,7 +86,9 @@ class ANIResults:
         self.zero_error = False
         self.mode = mode
 
-    def add_tot_length(self, qname, sname, value, sym=True):
+    def add_tot_length(
+        self, qname: str, sname: str, value: float, sym: bool = True
+    ) -> None:
         """Add a total length value to self.alignment_lengths.
 
         :param qname:
@@ -97,7 +100,9 @@ class ANIResults:
         if sym:
             self.alignment_lengths.loc[sname, qname] = value
 
-    def add_sim_errors(self, qname, sname, value, sym=True):
+    def add_sim_errors(
+        self, qname: str, sname: str, value: float, sym: bool = True
+    ) -> None:
         """Add a similarity error value to self.similarity_errors.
 
         :param qname:
@@ -109,7 +114,7 @@ class ANIResults:
         if sym:
             self.similarity_errors.loc[sname, qname] = value
 
-    def add_pid(self, qname, sname, value, sym=True):
+    def add_pid(self, qname: str, sname: str, value: str, sym: bool = True) -> None:
         """Add a percentage identity value to self.percentage_identity.
 
         :param qname:
@@ -121,7 +126,9 @@ class ANIResults:
         if sym:
             self.percentage_identity.loc[sname, qname] = value
 
-    def add_coverage(self, qname, sname, qcover, scover=None):
+    def add_coverage(
+        self, qname: str, sname: str, qcover: float, scover: Optional[float] = None
+    ) -> None:
         """Add percentage coverage values to self.alignment_coverage.
 
         :param qname:
@@ -134,12 +141,12 @@ class ANIResults:
             self.alignment_coverage.loc[sname, qname] = scover
 
     @property
-    def hadamard(self):
+    def hadamard(self) -> float:
         """Return Hadamard matrix (identity * coverage)."""
         return self.percentage_identity * self.alignment_coverage
 
     @property
-    def data(self):
+    def data(self) -> Iterator[Tuple[Any, str]]:
         """Return list of (dataframe, filestem) tuples."""
         stemdict = {
             "ANIm": pyani_config.ANIM_FILESTEMS,
@@ -190,7 +197,7 @@ class BLASTcmds:
 
     """Class for construction of BLASTN and database formatting commands."""
 
-    def __init__(self, funcs, exes, prefix: str, outdir: Path):
+    def __init__(self, funcs, exes, prefix: str, outdir: Path) -> None:
         """Instantiate class.
 
         :param funcs:
