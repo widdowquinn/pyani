@@ -43,6 +43,7 @@
 import shutil
 
 from collections import namedtuple
+from pathlib import Path
 
 import pandas as pd  # type: ignore
 
@@ -189,7 +190,7 @@ class BLASTcmds:
 
     """Class for construction of BLASTN and database formatting commands."""
 
-    def __init__(self, funcs, exes, prefix, outdir):
+    def __init__(self, funcs, exes, prefix: str, outdir: Path):
         """Instantiate class.
 
         :param funcs:
@@ -202,25 +203,25 @@ class BLASTcmds:
         self.prefix = prefix
         self.outdir = outdir
 
-    def build_db_cmd(self, fname):
+    def build_db_cmd(self, fname: Path) -> str:
         """Return database format/build command.
 
         :param fname:
         """
         return self.funcs.db_func(fname, self.outdir, self.exes.format_exe)[0]
 
-    def get_db_name(self, fname):
+    def get_db_name(self, fname: Path) -> str:
         """Return database filename.
 
         :param fname:
         """
         return self.funcs.db_func(fname, self.outdir, self.exes.format_exe)[1]
 
-    def build_blast_cmd(self, fname, dbname):
+    def build_blast_cmd(self, fname: Path, dbname: Path):
         """Return BLASTN command.
 
-        :param fname:
-        :param dbname:
+        :param fname:  Path to query file
+        :param dbname:  Path to database
         """
         return self.funcs.blastn_func(fname, dbname, self.outdir, self.exes.blast_exe)
 
