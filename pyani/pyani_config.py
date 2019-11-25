@@ -40,6 +40,9 @@
 """Configuration settings for the pyani package."""
 
 from pathlib import Path
+from typing import Any, Dict, Tuple
+
+import pandas as pd
 
 from matplotlib.colors import LinearSegmentedColormap  # type: ignore
 
@@ -149,7 +152,7 @@ CMAP_BURD = LinearSegmentedColormap("BuRd", cdict_BuRd)
 
 # Graphics parameters for each output file. Note that this should be
 # in sync with the output file stems above
-def params_mpl(dfm):
+def params_mpl(dfm: pd.DataFrame) -> Dict[str, Tuple[str, Any, Any]]:
     """Return dict of matplotlib parameters, dependent on dataframe.
 
     :param dfm:
@@ -176,7 +179,7 @@ def params_mpl(dfm):
     }
 
 
-def get_colormap(dataframe, matname):
+def get_colormap(dataframe: pd.DataFrame, matname: str) -> Tuple[str, Any, Any]:
     """Return colormap parameters for a dataframe.
 
     :param dataframe:
