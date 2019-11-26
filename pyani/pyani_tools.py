@@ -42,9 +42,19 @@
 
 import shutil
 
-from collections import namedtuple
+from logging import Logger
 from pathlib import Path
-from typing import Any, Iterator, List, Optional, Tuple
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    NamedTuple,
+    Optional,
+    Tuple,
+)
 
 import pandas as pd  # type: ignore
 
@@ -52,15 +62,24 @@ from Bio import SeqIO  # type: ignore
 
 from . import pyani_config, download
 
-# Convenience struct for matrix data returned by ORM
-MatrixData = namedtuple("MatrixData", "name data graphic_args")
 
-# Convenience struct for third-party dependency presence
-Dependencies = namedtuple("Dependencies", "blast legacy_blast mummer")
+class MatrixData(NamedTuple):
+
+    """Convenience struct for matrix data returned by ORM."""
+
+    name: str
+    data: pd.DataFrame
+    graphic_args: Dict
 
 
-# CLASSES
-# =======
+class Dependencies(NamedTuple):
+
+    """Convenience struct for third-party dependency presence."""
+
+    blast: Optional[str]
+    legacy_blast: Optional[str]
+    mummer: Optional[str]
+
 
 # Class to hold ANI dataframe results
 class ANIResults:
@@ -170,26 +189,20 @@ class ANIResults:
         #        (self.hadamard, "ANIm_hadamard")]
 
 
-# Class to hold BLAST functions
-class BLASTfunctions:
+class BLASTfunctions(NamedTuple):
 
-    """Class to hold BLAST functions."""
+    """Convenience structure to hold BLAST functions."""
 
-    def __init__(self, db_func, blastn_func):
-        """Instantiate class."""
-        self.db_func = db_func
-        self.blastn_func = blastn_func
+    db_func: Callable
+    blastn_func: Callable
 
 
-# Class to hold BLAST executables
-class BLASTexes:
+class BLASTexes(NamedTuple):
 
-    """Class to hold BLAST functions."""
+    """Convenience structure to hold BLAST executables."""
 
-    def __init__(self, format_exe, blast_exe):
-        """Instantiate class."""
-        self.format_exe = format_exe
-        self.blast_exe = blast_exe
+    format_exe: Path
+    blast_exe: Path
 
 
 # Class to hold/build BLAST commands
@@ -197,13 +210,15 @@ class BLASTcmds:
 
     """Class for construction of BLASTN and database formatting commands."""
 
-    def __init__(self, funcs, exes, prefix: str, outdir: Path) -> None:
+    def __init__(
+        self, funcs: BLASTfunctions, exes: BLASTexes, prefix: str, outdir: Path
+    ) -> None:
         """Instantiate class.
 
-        :param funcs:
-        :param exes:
-        :param prefix:
-        :param outdir:
+        :param funcs:  BLASTfunctions, containing functions for this BLAST analysis
+        :param exes:  BLASTexes, containing executables for this BLAST analysis
+        :param prefix:  str, prefix for outputs from this BLAST analysis
+        :param outdir:  Path to output directory for this BLAST analysis
         """
         self.funcs = funcs
         self.exes = exes
@@ -237,11 +252,11 @@ class BLASTcmds:
 # =================
 
 # Make a dictionary of assembly download info
-def make_asm_dict(taxon_ids, retries):
+def make_asm_dict(taxon_ids: Iterable[str], retries: int) -> Dict:
     """Return dict of assembly UIDs, keyed by each passed taxon ID.
 
-    :param taxon_ids:
-    :param retries:
+    :param taxon_ids:  Iterable of NCBI taxonomy IDs
+    :param retries:  Number of Entrez retry attempts
     """
     asm_dict = dict()
 
@@ -253,7 +268,7 @@ def make_asm_dict(taxon_ids, retries):
 
 
 # Read sequence annotations in from file
-def get_labels(filename, logger=None):
+def get_labels(filename: Path, logger: Logger = None) -> Dict:
     r"""Return dictionary of alternative sequence labels, or None.
 
     :param filename:  path to file containing tab-separated table of labels
@@ -283,7 +298,7 @@ def get_labels(filename, logger=None):
 
 
 # Return the total length of sequences in a passed FASTA file
-def get_genome_length(filename):
+def get_genome_length(filename: Path) -> int:
     """Return total length of all sequences in a FASTA file.
 
     :param filename:  path to FASTA file
@@ -293,7 +308,7 @@ def get_genome_length(filename):
 
 
 # Helper function to label results matrices from Run objects
-def label_results_matrix(matrix, labels):
+def label_results_matrix(matrix: pd.DataFrame, labels: Dict) -> pd.DataFrame:
     """Return results matrix dataframe with labels.
 
     :param matrix:  results dataframe deriving from Run object
@@ -310,11 +325,8 @@ def label_results_matrix(matrix, labels):
 
 # Helper function that establishes whether dependencies are present
 # This caches the most recent result
-def has_dependencies():
-    """Return namedtuple indicating if 3rd dependencies are available.
-
-    An LRU cache stores the last set of test results, for convenience
-    """
+def has_dependencies() -> Dependencies:
+    """Return NamedTuple indicating if 3rd dependencies are available."""
     return Dependencies(
         shutil.which("blastn"), shutil.which("blastall"), shutil.which("nucmer")
     )
