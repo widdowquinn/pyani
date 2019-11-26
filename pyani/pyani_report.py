@@ -40,8 +40,15 @@
 
 import sys
 
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-def colour_rows(series, even_colour="#DDECF5", odd_colour="#6CB6E4"):
+import pandas as pd
+
+
+def colour_rows(
+    series: pd.Series, even_colour: str = "#DDECF5", odd_colour: str = "#6CB6E4"
+) -> List[str]:
     """Return alternating colours for rows in a dataframe.
 
     :param series:  pd.Series
@@ -57,12 +64,12 @@ def colour_rows(series, even_colour="#DDECF5", odd_colour="#6CB6E4"):
     ]
 
 
-def table_padding():
+def table_padding() -> Dict[str, Any]:
     """Return HTML for table cell padding."""
     return dict(selector="td", props=[("padding", "15px")])
 
 
-def hover_highlight(hover_colour="#FFFF99"):
+def hover_highlight(hover_colour: str = "#FFFF99") -> Dict[str, Any]:
     """Return HTML style to colour dataframe row when hovering.
 
     :param hover_colour:  str, hex colour for hover highlight
@@ -70,7 +77,7 @@ def hover_highlight(hover_colour="#FFFF99"):
     return dict(selector="tr:hover", props=[("background-color", "%s" % hover_colour)])
 
 
-def header_font():
+def header_font() -> Dict[str, Any]:
     """Return header HTML font style."""
     return dict(
         selector="th",
@@ -82,7 +89,9 @@ def header_font():
     )
 
 
-def colour_identity(series, threshold=0.95, colour="#FF2222"):
+def colour_identity(
+    series: pd.Series, threshold: float = 0.95, colour: str = "#FF2222"
+) -> List[str]:
     """Highlight percentage identities over a threshold.
 
     :param series:
@@ -95,7 +104,9 @@ def colour_identity(series, threshold=0.95, colour="#FF2222"):
     return ["" for v in series]
 
 
-def colour_coverage(series, threshold=0.95, colour="#FF2222"):
+def colour_coverage(
+    series: pd.Series, threshold: float = 0.95, colour: str = "#FF2222"
+) -> List[str]:
     """Highlight percent coverage over a threshold.
 
     :param series:
@@ -108,7 +119,7 @@ def colour_coverage(series, threshold=0.95, colour="#FF2222"):
     return ["" for v in series]
 
 
-def colour_numeric(val, threshold=0.95, colour="#FF2222"):
+def colour_numeric(val: float, threshold: float = 0.95, colour: str = "#FF2222") -> str:
     """Highlight numeric values over a threshold.
 
     :param val:
@@ -121,7 +132,9 @@ def colour_numeric(val, threshold=0.95, colour="#FF2222"):
 
 
 # Write a dataframe in pyani-styled HTML
-def write_styled_html(path, dfm, index=None, colour_num=False):
+def write_styled_html(
+    path: Path, dfm: pd.DataFrame, index: Optional[str] = None, colour_num: bool = False
+) -> None:
     """Add CSS styling to a dataframe and write as HTML.
 
     :param path:       path to write output file
@@ -157,7 +170,9 @@ def write_styled_html(path, dfm, index=None, colour_num=False):
 
 
 # Write a dataframe to STDOUT
-def write_to_stdout(stem, dfm, show_index=False, line_width=None):
+def write_to_stdout(
+    stem: str, dfm: pd.DataFrame, show_index: bool = False, line_width: float = None
+) -> None:
     """Write dataframe in tab-separated form to STDOUT.
 
     :param stem:  str
@@ -171,8 +186,13 @@ def write_to_stdout(stem, dfm, show_index=False, line_width=None):
 
 # Write a table returned from the pyani database in the requested format
 def write_dbtable(
-    dfm, path=None, formats=("tab",), index=False, show_index=False, colour_num=False
-):
+    dfm: pd.DataFrame,
+    path: Path,
+    formats: Tuple[str] = ("tab",),
+    index: bool = False,
+    show_index: bool = False,
+    colour_num: bool = False,
+) -> None:
     """Write database result table to output file in named format.
 
     :param dfm:  pd.Dataframe
