@@ -182,7 +182,7 @@ def load_classes_labels(path: Path) -> Dict[str, str]:
 # Collect existing output files when in recovery mode
 def collect_existing_output(
     dirpath: Path, program: str, args: Namespace
-) -> Iterable[Path]:
+) -> List[Path]:
     """Return a list of existing output files at dirpath.
 
     :param dirpath:  Path, path to existing output directory

@@ -40,9 +40,11 @@
 
 import datetime
 
-from collections import namedtuple
+from argparse import Namespace
 from itertools import combinations
+from logging import Logger
 from pathlib import Path
+from typing import List, NamedTuple, Tuple
 
 from tqdm import tqdm
 
@@ -68,28 +70,65 @@ from pyani.pyani_orm import (
 
 # Convenience struct describing a pairwise comparison job for the SQLAlchemy
 # implementation
-ComparisonJob = namedtuple(
-    "ComparisonJob", "query subject filtercmd nucmercmd outfile job"
-)
+class ComparisonJob(NamedTuple):
+
+    """Pairwise comparison job for the SQLAlchemy implementation."""
+
+    query: str
+    subject: str
+    filtercmd: str
+    nucmercmd: str
+    outfile: Path
+    job: pyani_jobs.Job
+
 
 # Convenience struct describing an analysis run
-RunData = namedtuple("RunData", "method name date cmdline")
+class RunData(NamedTuple):
 
-# Convenience struct for a single nucmer comparison result
-ComparisonResult = namedtuple(
-    "ComparisonResult", "qid sid aln_length sim_errs pid qlen slen qcov scov"
-)
+    """Convenience struct describing an analysis run."""
 
-# Convenience struct for comparison program data/info
-ProgData = namedtuple("ProgData", "program version")
-
-# Convenience struct for comparison parameters
-# Use default of zero for fragsize or else db queries will not work
-# SQLite/Python nulls do not match up well
-ProgParams = namedtuple("ProgParams", "fragsize maxmatch")
+    method: str
+    name: str
+    date: datetime.datetime
+    cmdline: str
 
 
-def subcmd_anim(args, logger):
+class ComparisonResult(NamedTuple):
+
+    """Convenience struct for a single nucmer comparison result."""
+
+    qid: float
+    sid: float
+    aln_length: int
+    sim_errs: int
+    pid: float
+    qlen: int
+    slen: int
+    qcov: float
+    scov: float
+
+
+class ProgData(NamedTuple):
+
+    """Convenience struct for comparison program data/info."""
+
+    program: str
+    version: str
+
+
+class ProgParams(NamedTuple):
+
+    """Convenience struct for comparison parameters.
+
+    Use default of zero for fragsize or else db queries will not work
+    as SQLite/Python nulls do not match up well
+    """
+
+    fragsize: str
+    maxmatch: bool
+
+
+def subcmd_anim(args: Namespace, logger: Logger) -> None:
     """Perform ANIm on all genome files in an input directory.
 
     :param args:  Namespace, command-line arguments
@@ -229,7 +268,7 @@ def subcmd_anim(args, logger):
             f"\tIdentified {len(existingfiles)} existing output files for reuse"
         )
     else:
-        existingfiles = None
+        existingfiles = list()
         logger.info(f"\tIdentified no existing output files")
 
     # Create list of NUCmer jobs for each comparison still to be performed
@@ -251,7 +290,12 @@ def subcmd_anim(args, logger):
     logger.info("...database updated.")
 
 
-def generate_joblist(comparisons, existingfiles, args, logger):
+def generate_joblist(
+    comparisons: List[Tuple],
+    existingfiles: List[Path],
+    args: Namespace,
+    logger: Logger,
+) -> List[ComparisonJob]:
     """Return list of ComparisonJobs.
 
     :param comparisons:  list of (Genome, Genome) tuples
@@ -298,7 +342,7 @@ def generate_joblist(comparisons, existingfiles, args, logger):
     return joblist
 
 
-def run_anim_jobs(joblist, args, logger):
+def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace, logger: Logger) -> None:
     """Pass ANIm nucmer jobs to the scheduler.
 
     :param joblist:           list of ComparisonJob namedtuples
@@ -333,7 +377,7 @@ def run_anim_jobs(joblist, args, logger):
         )
 
 
-def update_comparison_results(joblist, run, session, nucmer_version, args, logger):
+def update_comparison_results(joblist: List[ComparisonJob], run, session, nucmer_version: str, args: Namespace, logger: Logger) -> NotImplementedError:
     """Update the Comparison table with the completed result set.
 
     :param joblist:         list of ComparisonJob namedtuples
