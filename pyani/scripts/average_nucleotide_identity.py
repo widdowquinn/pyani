@@ -553,10 +553,9 @@ def calculate_anim(args, logger, infiles, org_lengths):
 
 
 # Calculate TETRA for input
-def calculate_tetra(args, logger, infiles):
+def calculate_tetra(logger, infiles):
     """Calculate TETRA for files in input directory.
 
-    :param args: Namespace, command-line arguments
     :param logger:  logging object
     :param infiles:  list, paths to each input file
 
