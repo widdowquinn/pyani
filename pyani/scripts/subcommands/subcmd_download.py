@@ -40,14 +40,21 @@
 """Provides the download subcommand for pyani."""
 
 from collections import namedtuple
+from typing import NamedTuple
 
 from Bio import SeqIO
 
 from pyani import download
 from pyani.scripts import tools
 
-# Convenience struct for file download data
-DLFileData = namedtuple("DLFileData", "filestem ftpstem suffix")
+
+class DLFileData(NamedTuple):
+
+    """Convenience struct for file download data."""
+
+    filestem: str
+    ftpstem: str
+    suffix: str
 
 
 def subcmd_download(args, logger):
