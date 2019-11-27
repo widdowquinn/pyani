@@ -54,7 +54,7 @@ class PyaniFilesException(PyaniException):
 
 
 # Get a list of FASTA files from the input directory
-def get_fasta_files(dirname: Path = Path(".")) -> Iterable[Path]:
+def get_fasta_files(dirname: Path = Path(".")) -> List[Path]:
     """Return a list of FASTA files in the passed directory.
 
     :param dirname:  Path, path to input directory
@@ -102,7 +102,7 @@ def get_fasta_and_hash_paths(dirname: Path = Path(".")) -> List[Tuple[Path, Path
 
 
 # Get list of FASTA files in a directory
-def get_input_files(dirname: Path, *ext) -> Iterable[Path]:
+def get_input_files(dirname: Path, *ext) -> List[Path]:
     """Return files in passed directory, filtered by extension.
 
     :param dirname:  Path, path to input directory

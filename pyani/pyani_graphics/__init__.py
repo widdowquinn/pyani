@@ -48,7 +48,7 @@
 # This needs to be done before importing pyplot
 
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import matplotlib  # pylint: disable=C0411
 
@@ -69,8 +69,8 @@ class Params:  # pylint: disable=too-few-public-methods
     def __init__(
         self,
         params: Tuple,
-        labels: Optional[Path] = None,
-        classes: Optional[Path] = None,
+        labels: Optional[Dict] = None,
+        classes: Optional[Dict] = None,
     ):
         """Instantiate class.
 

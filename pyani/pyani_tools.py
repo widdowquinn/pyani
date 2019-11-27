@@ -133,7 +133,7 @@ class ANIResults:
         if sym:
             self.similarity_errors.loc[sname, qname] = value
 
-    def add_pid(self, qname: str, sname: str, value: str, sym: bool = True) -> None:
+    def add_pid(self, qname: str, sname: str, value: float, sym: bool = True) -> None:
         """Add a percentage identity value to self.percentage_identity.
 
         :param qname:
