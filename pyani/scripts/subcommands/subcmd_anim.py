@@ -377,7 +377,7 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace, logger: Logger)
         )
 
 
-def update_comparison_results(joblist: List[ComparisonJob], run, session, nucmer_version: str, args: Namespace, logger: Logger) -> NotImplementedError:
+def update_comparison_results(joblist: List[ComparisonJob], run, session, nucmer_version: str, args: Namespace, logger: Logger) -> None:
     """Update the Comparison table with the completed result set.
 
     :param joblist:         list of ComparisonJob namedtuples
