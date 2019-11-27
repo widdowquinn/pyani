@@ -49,7 +49,7 @@ import sys
 from logging import Logger
 from typing import List, Optional
 
-from pyani_jobs import Job
+from .pyani_jobs import Job
 
 
 # Run a job dependency graph with multiprocessing
