@@ -42,13 +42,16 @@
 import sys
 import time
 
+from logging import Logger
+from typing import List, Optional
+
 from .logger import build_logger
 from .parsers import parse_cmdline
 from .. import __version__
 
 
 # Main function
-def run_main(argv=None, logger=None):
+def run_main(argv: Optional[List[str]] = None, logger: Optional[Logger] = None) -> int:
     """Run main process for pyani.py script.
 
     :param argv:
