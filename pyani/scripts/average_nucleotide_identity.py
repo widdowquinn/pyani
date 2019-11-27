@@ -780,11 +780,11 @@ def draw(args, logger, filestems, gformat):
             pyani_tools.get_labels(args.classes),
         )
         if args.gmethod == "mpl":
-            pyani_graphics.heatmap_mpl(
+            pyani_graphics.mpl.heatmap()(
                 dfm, outfilename=outfilename, title=filestem, params=params
             )
         elif args.gmethod == "seaborn":
-            pyani_graphics.heatmap_seaborn(
+            pyani_graphics.sns.heatmap()(
                 dfm, outfilename=outfilename, title=filestem, params=params
             )
 
