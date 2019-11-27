@@ -67,7 +67,7 @@ import subprocess
 import sys
 
 
-def run_main():
+def run_main() -> int:
     """Run main process for delta_filter_wrapper.py."""
     # Parse command-line
     df_exe = sys.argv[1]
