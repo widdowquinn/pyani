@@ -44,11 +44,16 @@ import shutil
 from argparse import Namespace
 from logging import Logger
 from pathlib import Path
+<<<<<<< HEAD
 from typing import Dict, List, NamedTuple
+=======
+from typing import Dict, List
+>>>>>>> add static typing hints to tools.py
 
 from namedlist import namedlist
 
 from pyani import download
+from .subcommands.subcmd_download import DLFileData
 
 
 # EXCEPTIONS
