@@ -83,6 +83,11 @@ Then install `pyani`:
 conda install pyani
 ```
 
+**NOTE:** The current `conda` version is *behind* the development version and has a different command-line interface. Documentation for the `conda` version (0.2.x) can be found at the link below:
+
+- [https://github.com/widdowquinn/pyani/blob/master/README_v_0_2_x.md](https://github.com/widdowquinn/pyani/blob/master/README_v_0_2_x.md)
+
+
 ### Installing legacy BLAST
 
 The NCBI legacy `BLAST` package is deprecated and not recommended. However, if you wish to use `pyani blastall` or the `ANIblastall` method with the legacy `pyani` interface, you will require a locally-installed copy of this package. This is one of the packages linked in the `requirements-thirdparty.txt` file.
