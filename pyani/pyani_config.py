@@ -42,7 +42,7 @@
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
-import pandas as pd
+import pandas as pd  # type: ignore
 
 from matplotlib.colors import LinearSegmentedColormap  # type: ignore
 
