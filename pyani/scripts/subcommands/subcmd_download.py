@@ -39,7 +39,9 @@
 # THE SOFTWARE.
 """Provides the download subcommand for pyani."""
 
+from argparse import Namespace
 from collections import namedtuple
+from logging import Logger
 from typing import NamedTuple
 
 from Bio import SeqIO
@@ -57,7 +59,7 @@ class DLFileData(NamedTuple):
     suffix: str
 
 
-def subcmd_download(args, logger):
+def subcmd_download(args: Namespace, logger: Logger) -> int:
     """Download assembled genomes in subtree of passed NCBI taxon ID.
 
     :param args:  Namespace, command-line arguments
@@ -265,3 +267,5 @@ def subcmd_download(args, logger):
                 ]
             )
             logger.warning(f"{skipped.organism} {skipped.strain}:\n\t{outstr}")
+
+    return 0
