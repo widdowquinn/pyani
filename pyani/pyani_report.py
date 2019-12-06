@@ -43,7 +43,7 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-import pandas as pd
+import pandas as pd  # type: ignore
 
 
 def colour_rows(

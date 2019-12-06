@@ -57,9 +57,9 @@ import math
 from pathlib import Path
 from typing import Dict, Iterable, Tuple
 
-import pandas as pd
+import pandas as pd  # type: ignore
 
-from Bio import SeqIO
+from Bio import SeqIO  # type: ignore
 
 
 # Calculate tetranucleotide Z-score for a set of input sequences

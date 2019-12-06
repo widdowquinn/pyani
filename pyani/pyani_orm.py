@@ -45,14 +45,14 @@ This SQLAlchemy-based ORM replaces the previous SQL-based module
 from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
-import numpy as np
-import pandas as pd
+import numpy as np  # type: ignore
+import pandas as pd  # type: ignore
 
-from sqlalchemy import and_
+from sqlalchemy import and_   # type: ignore
 from sqlalchemy import UniqueConstraint, create_engine, Table
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Boolean
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base  # type: ignore
+from sqlalchemy.orm import relationship, sessionmaker  # type: ignore
 
 from pyani import PyaniException
 from pyani.pyani_files import (

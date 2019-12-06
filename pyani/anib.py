@@ -90,9 +90,9 @@ from logging import Logger
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
 
-import pandas as pd
+import pandas as pd  # type: ignore
 
-from Bio import SeqIO
+from Bio import SeqIO  # type: ignore
 
 from . import pyani_config
 from . import pyani_files
