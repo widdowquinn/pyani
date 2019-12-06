@@ -41,6 +41,7 @@
 
 from argparse import Namespace
 from collections import namedtuple
+from logging import Logger
 from typing import NamedTuple
 
 from Bio import SeqIO
