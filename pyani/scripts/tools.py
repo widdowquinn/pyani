@@ -44,12 +44,11 @@ import shutil
 from argparse import Namespace
 from logging import Logger
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, NamedTuple
 
 from namedlist import namedlist
 
 from pyani import download
-from pyani.scripts.subcommands.subcmd_download import DLFileData
 
 
 # EXCEPTIONS
@@ -62,6 +61,15 @@ class PyaniScriptException(Exception):
     def __init__(self, msg="Error in pyani.py script"):
         """Insantiate exception."""
         Exception.__init__(self, msg)
+
+
+class DLFileData(NamedTuple):
+
+    """Convenience struct for file download data."""
+
+    filestem: str
+    ftpstem: str
+    suffix: str
 
 
 # UTILITY FUNCTIONS

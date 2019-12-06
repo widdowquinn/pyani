@@ -42,21 +42,11 @@
 from argparse import Namespace
 from collections import namedtuple
 from logging import Logger
-from typing import NamedTuple
 
 from Bio import SeqIO
 
 from pyani import download
 from pyani.scripts import tools
-
-
-class DLFileData(NamedTuple):
-
-    """Convenience struct for file download data."""
-
-    filestem: str
-    ftpstem: str
-    suffix: str
 
 
 def subcmd_download(args: Namespace, logger: Logger) -> int:
@@ -140,7 +130,7 @@ def subcmd_download(args: Namespace, logger: Logger) -> int:
 
             # Obtain URLs, trying the RefSeq filestem first, then GenBank if
             # there's a failure
-            dlfiledata = DLFileData(
+            dlfiledata = tools.DLFileData(
                 filestem, "ftp://ftp.ncbi.nlm.nih.gov/genomes/all", "genomic.fna.gz"
             )
             logger.info(f"Retrieving URLs for {filestem}")
