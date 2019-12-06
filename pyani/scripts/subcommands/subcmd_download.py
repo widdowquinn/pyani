@@ -42,21 +42,11 @@
 from argparse import Namespace
 from collections import namedtuple
 from logging import Logger
-from typing import NamedTuple
 
 from Bio import SeqIO
 
 from pyani import download
 from pyani.scripts import tools
-
-
-class DLFileData(NamedTuple):
-
-    """Convenience struct for file download data."""
-
-    filestem: str
-    ftpstem: str
-    suffix: str
 
 
 def subcmd_download(args: Namespace, logger: Logger) -> int:
