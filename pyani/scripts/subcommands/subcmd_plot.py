@@ -42,7 +42,10 @@
 
 import os
 
+from argparse import Namespace
+from logging import Logger
 from pathlib import Path
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -60,7 +63,7 @@ DISTMETHODS = {
 }
 
 
-def subcmd_plot(args, logger):
+def subcmd_plot(args: Namespace, logger: Logger) -> int:
     """Produce graphical output for an analysis.
 
     :param args:  Namespace of command-line arguments
@@ -89,8 +92,12 @@ def subcmd_plot(args, logger):
     for run_id in run_ids:
         write_run_heatmaps(run_id, session, outfmts, args, logger)
 
+    return 0
 
-def write_run_heatmaps(run_id, session, outfmts, args, logger):
+
+def write_run_heatmaps(
+    run_id: int, session, outfmts: List[str], args: Namespace, logger: Logger
+) -> None:
     """Write all heatmaps for a specified run to file.
 
     :param run_id:  int, run identifier in database session
@@ -125,7 +132,13 @@ def write_run_heatmaps(run_id, session, outfmts, args, logger):
         write_distribution(run_id, matdata, outfmts, args, logger)
 
 
-def write_distribution(run_id, matdata, outfmts, args, logger):
+def write_distribution(
+    run_id: int,
+    matdata: MatrixData,
+    outfmts: List[str],
+    args: Namespace,
+    logger: Logger,
+) -> None:
     """Write distribution plots for each matrix type.
 
     :param run_id:  int, run_id for this run
@@ -147,8 +160,14 @@ def write_distribution(run_id, matdata, outfmts, args, logger):
 
 
 def write_heatmap(
-    run_id, matdata, result_labels, result_classes, outfmts, args, logger
-):
+    run_id: int,
+    matdata: MatrixData,
+    result_labels: Dict,
+    result_classes: Dict,
+    outfmts: List[str],
+    args: Namespace,
+    logger: Logger,
+) -> None:
     """Write a single heatmap for a pyani run.
 
     :param run_id:  int, run_id for this run

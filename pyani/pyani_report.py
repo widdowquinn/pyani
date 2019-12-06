@@ -41,7 +41,7 @@
 import sys
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence
 
 import pandas as pd  # type: ignore
 
@@ -188,7 +188,7 @@ def write_to_stdout(
 def write_dbtable(
     dfm: pd.DataFrame,
     path: Path,
-    formats: Tuple[str] = ("tab",),
+    formats: Sequence[str] = ("tab",),
     index: bool = False,
     show_index: bool = False,
     colour_num: bool = False,
