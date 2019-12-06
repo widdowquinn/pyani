@@ -49,7 +49,7 @@ from typing import Dict, List, NamedTuple
 from namedlist import namedlist
 
 from pyani import download
-from pyani.subcommands.subcmd_download import DLFileData
+from pyani.scripts.subcommands.subcmd_download import DLFileData
 
 
 # EXCEPTIONS
