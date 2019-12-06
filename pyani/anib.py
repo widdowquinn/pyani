@@ -117,7 +117,11 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
     """
     cmdline = [blast_exe, "-version"]
     result = subprocess.run(
-        cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True  # type: ignore
+        cmdline,  # type: ignore
+        shell=False,
+        stdout=subprocess.PIPE,  # type: ignore
+        stderr=subprocess.PIPE,
+        check=True,
     )
     version = re.search(  # type: ignore
         r"(?<=blastn:\s)[0-9\.]*\+", str(result.stdout, "utf-8")
@@ -505,15 +509,17 @@ def process_blast(
         if qname not in list(org_lengths.keys()):
             if logger:
                 logger.warning(
-                    "Query name %s not in input " % qname
-                    + "sequence list, skipping %s" % blastfile
+                    "Query name %s not in input sequence list, skipping %s",
+                    qname,
+                    blastfile,
                 )
             continue
         if sname not in list(org_lengths.keys()):
             if logger:
                 logger.warning(
-                    "Subject name %s not in input " % sname
-                    + "sequence list, skipping %s" % blastfile
+                    "Subject name %s not in input sequence list, skipping %s",
+                    sname,
+                    blastfile,
                 )
             continue
         resultvals = parse_blast_tab(blastfile, fraglengths, mode)
