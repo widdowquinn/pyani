@@ -91,14 +91,13 @@ def make_outdir(outdir: Path, force: bool, noclobber: bool, logger: Logger) -> N
         if force and not noclobber:  # user forces directory reuse, and overwrite
             # Delete old directory and start again
             logger.warning(
-                "Overwrite forced. Removing %s and everything " + "below it (--force)",
+                "Overwrite forced. Removing %s and everything below it (--force)",
                 outdir,
             )
             shutil.rmtree(outdir)
         elif force and noclobber:  # user forces directory reuse, not file overwrite
             logger.warning(
-                "Keeping existing directory, skipping existing "
-                + "files (--force --noclobber)."
+                "Keeping existing directory, skipping existing files (--force --noclobber)."
             )
         else:  # user is not forcing directory reuse
             raise PyaniScriptException(
