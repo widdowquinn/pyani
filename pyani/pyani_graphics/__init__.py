@@ -47,7 +47,6 @@
 #            generating-a-png-with-matplotlib-when-display-is-undefined
 # This needs to be done before importing pyplot
 
-from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 import matplotlib  # pylint: disable=C0411
