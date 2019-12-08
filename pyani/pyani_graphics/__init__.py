@@ -49,13 +49,13 @@
 
 import matplotlib  # pylint: disable=C0411
 
-from . import mpl  # matplotlib wrappers
-from . import sns  # seaborn wrappers
+from . import mpl  # noqa: F401  # matplotlib wrappers
+from . import sns  # noqa: F401  # seaborn wrappers
 
 # Specify matplotlib backend. This *must* be done before pyplot import, but
 # raises errors with flake8 etc. So we comment out the specific error
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402 # pylint: disable=wrong-import-position,wrong-import-order
+import matplotlib.pyplot as plt  # noqa: E402,E501 # pylint: disable=wrong-import-position,wrong-import-order
 
 
 # Convenience class to hold heatmap graphics parameters

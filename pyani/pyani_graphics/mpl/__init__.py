@@ -55,8 +55,8 @@ from pyani import pyani_config
 # Specify matplotlib backend. This *must* be done before pyplot import, but
 # raises errors with flake8 etc. So we comment out the specific error
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402 # pylint: disable=wrong-import-position,wrong-import-order
-import matplotlib.gridspec as gridspec  # noqa: E402 # pylint: disable=wrong-import-position,wrong-import-order
+import matplotlib.pyplot as plt  # noqa: E402,E501 # pylint: disable=wrong-import-position,wrong-import-order,ungrouped-imports
+import matplotlib.gridspec as gridspec  # noqa: E402,E501 # pylint: disable=wrong-import-position,wrong-import-order,ungrouped-imports
 
 
 # Register Matplotlib colourmaps
