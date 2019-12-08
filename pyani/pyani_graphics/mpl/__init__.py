@@ -148,7 +148,7 @@ def distribution(dfr, outfilename, matname, title=None):
     axes[0].hist(data, bins=50)
     # Plot density
     density = gaussian_kde(data)
-    density._compute_covariance()
+    density._compute_covariance()  # pylint: disable=protected-access
     axes[1].plot(xvals, density(xvals))
 
     # Modify axes after data is plotted
