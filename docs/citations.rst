@@ -56,6 +56,12 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 (If I've missed out your paper, please do put in a pull request on ``GitHub`` or get in touch and I'll be happy to add it!)
 
 ^^^^
+2020
+^^^^
+
+* Albert *et al.* (2020) "Comparative Pangenomics of the Mammalian Gut Commensal *Bifidobacterium longum*" *Microorganisms* `doi:10.3390/microorganisms8010007 <https://doi.org/10.3390/microorganisms8010007>`_
+
+^^^^
 2019
 ^^^^
 
@@ -80,6 +86,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Falagan *et al.* (2019) "Acidithiobacillus sulfuriphilus sp. nov.: an extremely acidophilic sulfur-oxidizing chemolithotroph isolated from a neutral pH environment" *Int. J. Syst. Evol. Micro.* `doi:0.1099/ijsem.0.003576 <https://doi.org/0.1099/ijsem.0.003576>`_
 * Faoro *et al.* (2019) "Genome comparison between clinical and environmental strains of *Herbaspirillum seropedicae* reveals a potential new emerging bacterium adapted to human hosts" *BMC Genomics* `doi:10.1186/s12864-019-5982-9 <https://doi.org/10.1186/s12864-019-5982-9>`_
 * Feng *et al.* (2019) "Complete genome sequence of *Hahella* sp. KA22, a prodigiosin-producing algicidal bacterium" *Marine Genomics* `doi:10.1016/j.margen.2019.04.003 <https://doi.org/10.1016/j.margen.2019.04.003>`_
+* Gasparrini *et al.* (2019) "Metagenomic signatures of early life hospitalization and antibiotic treatment in the infant gut microbiota and resistome persist long after discharge" *Nature Microbiol.* `doi:10.1038/s41564-019-0550-2 <https://doi.org/10.1038/s41564-019-0550-2>`_
 * Ghosh *et al.* (2019) "Reanalysis of *Lactobacillus paracasei* Lbs2 Strain and Large-Scale Comparative Genomics Places Many Strains into Their Correct Taxonomic Position" *Microorganisms* `doi:10.3390/microorganisms7110487 <https://doi.org/10.3390/microorganisms7110487>`_
 * Hollensteiner *et al.* (2019) "Complete Genome Sequence of *Marinobacter* sp. Strain JH2, Isolated from Seawater of the Kiel Fjord" *Micro. Res. Ann.* `doi:10.1128/MRA.00596-19 <https://doi.org/10.1128/MRA.00596-19>`_
 * Hornung *et al.* (2019) "An in silico survey of *Clostridioides difficile* extrachromosomal elements" *BioRxiv* `doi:10.1101/651539 <https://doi.org/10.1101/651539>`_
@@ -91,8 +98,10 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Kirmiz *et al.* (2019) "Comparative genomics guides elucidation of vitamin B12 biosynthesis in novel human associated *Akkermansia*" *BioRxiv* `doi:10.1101/587527 <https://doi.org/10.1101/587527>`_
 * Kiu *et al.* (2019) "Genomic analysis on broiler-associated *Clostridium perfringens* strains and exploratory caecal microbiome investigation reveals key factors linked to poultry necrotic enteritis" *Animal Microbiome* `doi:10.1186/s42523-019-0015-1 <https://doi.org/10.1186/s42523-019-0015-1>`_
 * Kiu *et al.* (2019) "Phylogenomic analysis of gastroenteritis-associated *Clostridium perfringens* in England and Wales over a 7-year period indicates distribution of clonal toxigenic strains in multiple outbreaks and extensive involvement of enterotoxin-encoding (CPE) plasmids" *Micro. Genom.* `doi:10.1099/mgen.0.000297 <https://doi.org/10.1099/mgen.0.000297>`_
+* Lozada *et al.* (2019) "Phage vB_BmeM-Goe8 infecting *Bacillus megaterium* DSM319" *Arch. Virol.* `doi:10.1007/s00705-019-04513-5 <https://doi.org/10.1007/s00705-019-04513-5>`_
 * Kochetkova *et al.* (2019) "*Tepidiforma bonchosmolovskayae* gen. nov., sp. nov., a moderately thermophilic *Chloroflexi* bacterium from a Chukotka hot spring (Arctic, Russia), representing a novel class, *Tepidiformia*, which includes the previously uncultivated lineage OLB14" *Int. J. Syst. Evol. Microbiol.* `doi:10.1099/ijsem.0.003902 <https://doi.org/10.1099/ijsem.0.003902>`_
 * Kovaleva *et al.* (2019) "*Tautonia sociabilis* gen. nov., sp. nov., a novel thermotolerant planctomycete, isolated from a 4000 m deep subterranean habitat" *Int. J. Syst. Evol. Microbiol.* `doi:10.1099/ijsem.0.003467 <https://doi.org/10.1099/ijsem.0.003467>`_
+* Labuda *et al.* (2019) "Bloodstream Infections With a Novel Nontuberculous Mycobacterium Involving 52 Outpatient Oncology Clinic Patients―Arkansas, 2018" *Clin. Inf. Dis.* `doi:10.1093/cid/ciz1120 <https://doi.org/10.1093/cid/ciz1120>`_
 * Lan *et al.* (2019) "*Vogesella urethralis* *sp. nov.*, isolated from human urine, and emended descriptions of *Vogesella perlucida* and *Vogesella mureinivorans*" *Int. J. Syst. Evol. Microbiol.* `doi:10.1099/ijsem.0.003802 <https://doi.org/10.1099/ijsem.0.003802>`_
 * Lawson *et al.* (2019) "Breast milk-derived human milk oligosaccharides promote *Bifidobacterium* interactions within a single ecosystem" *ISME J.* `doi:0.1038/s41396-019-0553-2 <https://doi.org/0.1038/s41396-019-0553-2>`_
 * Matteo-Estrada *et al.* (2019) "Phylogenomics Reveals Clear Cases of Misclassification and Genus-Wide Phylogenetic Markers for *Acinetobacter*" *Genome Biol. Evol.* `doi:10.1093/gbe/evz178 <https://doi.org/10.1093/gbe/evz178>`_
@@ -100,6 +109,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Nordmann *et al.* (2019) "Complete genome sequence of the virus isolate vB_BthM-Goe5 infecting *Bacillus thuringiensis*" *Arch. Virol.* `doi:10.1007/s00705-019-04187-z <https://10.1007/s00705-019-04187-z>`_
 * Paim *et al.* (2019) "Evaluation of niche adaptation features by genome data mining approach of *Escherichia coli* urinary and gastrointestinal strains" *PeerJ Preprints* `doi:10.7287/peerj.preprints.27720v1 <https://doi.org/10.7287/peerj.preprints.27720v1>`_
 * Park *et al* (2019) "Complete genome sequence of acetate-producing *Klebsiella pneumoniae* L5-2 isolated from infant feces" *3Biotech* `doi:10.1007/s13205-019-1578-y <https://doi.org/10.1007/s13205-019-1578-y>`_
+* Pedron & van Gijsegem (2019) "Diversity in the Bacterial Genus *Dickeya* Grouping Plant Pathogens and Waterways Isolates" *OBM Genetics* `doi:10.21926/obm.genet.1904098 <https://doi.org/10.21926/obm.genet.1904098>`_
 * Portier *et al.* (2019) "Elevation of *Pectobacterium carotovorum* subsp. *odoriferum* to species level as *Pectobacterium odoriferum* sp. nov., proposal of *Pectobacterium brasiliense* sp. nov. and *Pectobacterium actinidiae* sp. nov., emended description of *Pectobacterium carotovorum* and description of *Pectobacterium versatile* sp. nov., isolated from streams and symptoms on diverse plants" *Int. J Syst. Evol. Biol* `doi:10.1099/ijsem.0.003611 <https://doi.org/10.1099/ijsem.0.003611>`_
 * Potter *et al.* (2019) "In Silico Analysis of *Gardnerella* Genomospecies Detected in the Setting of Bacterial Vaginosis" *Clin. Chem.* `doi:10.1373/clinchem.2019.305474 <https://doi.org/10.1373/clinchem.2019.305474>`_
 * Reichler *et al.* (2019) "A century of gray: A genomic locus found in 2 distinct *Pseudomonas* spp. is associated with historical and contemporary color defects in dairy products worldwide" *J. Dairy Sci.* `doi:10.3168/jds.2018-16192 <https://doi.org/10.3168/jds.2018-16192>`_
