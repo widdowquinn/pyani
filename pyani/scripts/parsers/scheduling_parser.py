@@ -41,7 +41,7 @@
 from argparse import ArgumentParser
 
 
-def build():
+def build() -> ArgumentParser:
     """Return the common argument parser for job scheduling.
 
     :param subps:  collection of subparsers in main parser
