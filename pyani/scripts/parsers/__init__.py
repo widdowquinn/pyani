@@ -35,7 +35,8 @@
 
 import sys
 
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
+from typing import List, Optional
 
 from pyani.scripts.parsers import (
     download_parser,
@@ -54,7 +55,7 @@ from pyani.scripts.parsers import (
 
 
 # Process command-line
-def parse_cmdline(argv=None):
+def parse_cmdline(argv: Optional[List] = None) -> Namespace:
     """Parse command-line arguments for script.
 
     :param argv:  Namespace, command-line arguments
