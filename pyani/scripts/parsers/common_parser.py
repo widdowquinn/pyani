@@ -44,7 +44,7 @@ from pathlib import Path
 
 
 # Common parser for all subcommands
-def build():
+def build() -> ArgumentParser:
     """Return the common argument parser for all script subcommands.
 
     :param subps:  collection of subparsers in main parser

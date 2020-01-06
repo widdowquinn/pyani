@@ -38,14 +38,17 @@
 # THE SOFTWARE.
 """Provides parser for anim subcommand."""
 
-from argparse import ArgumentDefaultsHelpFormatter
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, _SubParsersAction
 from pathlib import Path
+from typing import List, Optional
 
 from pyani import pyani_config
 from pyani.scripts import subcommands
 
 
-def build(subps, parents=None):
+def build(
+    subps: _SubParsersAction, parents: Optional[List[ArgumentParser]] = None
+) -> None:
     """Return a command-line parser for the anim subcommand.
 
     :param subps:  collection of subparsers in main parser
