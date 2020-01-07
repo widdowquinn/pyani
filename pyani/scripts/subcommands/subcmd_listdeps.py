@@ -37,8 +37,10 @@
 # THE SOFTWARE.
 """Provides the listdeps subcommand for pyani."""
 
+import sys
+
 from argparse import Namespace
-from logging import Logger
+from logging import INFO, Logger, StreamHandler
 
 from pyani.dependencies import (
     get_requirements,
@@ -54,16 +56,20 @@ def subcmd_listdeps(args: Namespace, logger: Logger) -> int:
     :param args:  Namespace, received command-line arguments
     :param logger:  logging object
     """
-    logger.info("Listing pyani Python dependendencies...")
+    handler = StreamHandler(sys.stdout)
+    handler.setLevel(INFO)
+    logger.addHandler(handler)
+
+    logger.info("Installed pyani Python dependendencies...")
     for package, version in get_requirements():
         logger.info("\t%s==%s", package, version)
-    logger.info("Listing pyani development dependendencies...")
+    logger.info("Installed pyani development dependendencies...")
     for package, version in get_dev_requirements():
         logger.info("\t%s==%s", package, version)
-    logger.info("Listing pyani pip-install dependendencies...")
+    logger.info("Installed pyani pip-install dependendencies...")
     for package, version in get_pip_requirements():
         logger.info("\t%s==%s", package, version)
-    logger.info("Listing third-party tool versions...")
+    logger.info("Installed third-party tool versions...")
     for tool, version in get_tool_versions():
         logger.info("\t%s==%s", tool, version)
     return 0
