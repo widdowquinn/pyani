@@ -1,6 +1,6 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -16,8 +16,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,15 +35,18 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""Module providing subcommands for pyani scripts."""
+"""Provides the listdeps subcommand for pyani."""
 
-from .subcmd_anib import subcmd_anib
-from .subcmd_aniblastall import subcmd_aniblastall
-from .subcmd_anim import subcmd_anim
-from .subcmd_classify import subcmd_classify
-from .subcmd_createdb import subcmd_createdb
-from .subcmd_download import subcmd_download
-from .subcmd_index import subcmd_index
-from .subcmd_listdeps import subcmd_listdeps
-from .subcmd_plot import subcmd_plot
-from .subcmd_report import subcmd_report
+from argparse import Namespace
+from logging import Logger
+
+from typing import Generator
+
+
+def subcmd_listdeps(args: Namespace, logger: Logger) -> Generator:
+    """Returns a Generator of (dependency_name, dependency_version) tuples.
+
+    :param args:  Namespace, received command-line arguments
+    :param logger:  logging object
+    """
+    raise NotImplementedError

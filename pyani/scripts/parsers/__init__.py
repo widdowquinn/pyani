@@ -56,6 +56,7 @@ from pyani.scripts.parsers import (
     scheduling_parser,
     common_parser,
     run_common_parser,
+    listdeps_parser,
 )
 
 
@@ -115,6 +116,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
     report_parser.build(subparsers, parents=[parser_common])
     plot_parser.build(subparsers, parents=[parser_common])
     classify_parser.build(subparsers, parents=[parser_common])
+    listdeps_parser.build(subparsers, parents=[parser_common])
 
     # Parse arguments
     # The list comprehension is to allow PosixPaths to be defined and passed in testing
