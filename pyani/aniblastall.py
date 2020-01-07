@@ -1,23 +1,20 @@
 # -*- coding: utf-8 -*-
-# (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2020
 # Author: Leighton Pritchard
 #
-# Contact:
-# leighton.pritchard@strath.ac.uk
+# Contact: leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
 # Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
-# Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,15 +33,42 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""Module providing subcommands for pyani scripts."""
+"""Code to implement the ANIblastall average nucleotide identity method."""
 
-from .subcmd_anib import subcmd_anib
-from .subcmd_aniblastall import subcmd_aniblastall
-from .subcmd_anim import subcmd_anim
-from .subcmd_classify import subcmd_classify
-from .subcmd_createdb import subcmd_createdb
-from .subcmd_download import subcmd_download
-from .subcmd_index import subcmd_index
-from .subcmd_listdeps import subcmd_listdeps
-from .subcmd_plot import subcmd_plot
-from .subcmd_report import subcmd_report
+import platform
+import re
+import subprocess
+
+
+from pathlib import Path
+
+from . import pyani_config
+
+
+def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
+    r"""Return BLAST blastall version as a string.
+
+    :param blast_exe:  path to blastall executable
+
+    We expect blastall to return a string as, for example
+
+    .. code-block:: bash
+
+        $ blastall -version
+        [blastall 2.2.26] ERROR: Number of database sequences to show \
+        one-line descriptions for (V) [ersion] is bad or out of range [? to ?]
+
+    This is concatenated with the OS name.
+    """
+    cmdline = [blast_exe, "-version"]
+    result = subprocess.run(
+        cmdline,  # type: ignore
+        shell=False,
+        stdout=subprocess.PIPE,  # type: ignore
+        stderr=subprocess.PIPE,
+        check=False,  # blastall doesn't return 0
+    )
+    version = re.search(  # type: ignore
+        r"(?<=blastall\s)[0-9\.]*", str(result.stderr, "utf-8")
+    ).group()
+    return f"{platform.system()}_{version}"

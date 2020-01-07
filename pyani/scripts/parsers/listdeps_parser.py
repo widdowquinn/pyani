@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -10,14 +9,13 @@
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
 # Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
-# Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,15 +34,29 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""Module providing subcommands for pyani scripts."""
+"""Provides parser for listdepsp subcommand."""
 
-from .subcmd_anib import subcmd_anib
-from .subcmd_aniblastall import subcmd_aniblastall
-from .subcmd_anim import subcmd_anim
-from .subcmd_classify import subcmd_classify
-from .subcmd_createdb import subcmd_createdb
-from .subcmd_download import subcmd_download
-from .subcmd_index import subcmd_index
-from .subcmd_listdeps import subcmd_listdeps
-from .subcmd_plot import subcmd_plot
-from .subcmd_report import subcmd_report
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, _SubParsersAction
+from typing import List, Optional
+
+from pyani.scripts import subcommands
+
+
+def build(
+    subps: _SubParsersAction, parents: Optional[List[ArgumentParser]] = None
+) -> None:
+    """Return a command-line parser for the listdeps subcommand.
+
+    :param subps:  collection of subparsers in main parser
+    :param parents:  parsers from which arguments are inherited
+
+    The terminology may be confusing, but in practice the main parser collects
+    command-line arguments that are then available to this parser, which inherits
+    options from the parsers in `parents` in addition to those defined below.
+
+    pyani listdeps takes no arguments, it just reports dependencies and versions
+    """
+    parser = subps.add_parser(
+        "listdeps", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
+    )
+    parser.set_defaults(func=subcommands.subcmd_listdeps)
