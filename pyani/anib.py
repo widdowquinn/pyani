@@ -9,7 +9,7 @@
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
 # Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #

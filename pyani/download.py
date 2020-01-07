@@ -343,7 +343,7 @@ def download_url(
 
     :param url:  URL of remote file for download
     :param outfname: Path, path to write output
-    :param timeout: 
+    :param timeout:
     :param disable_tqdm:  Boolean, show tqdm progress bar?
 
     This function downloads the contents of the passed URL to the passed

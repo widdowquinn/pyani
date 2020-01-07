@@ -1,16 +1,14 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) University of Strathclyde 2020
 # Author: Leighton Pritchard
 #
-# Contact:
-# leighton.pritchard@strath.ac.uk
+# Contact: leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
 # Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
@@ -35,35 +33,42 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""Provides the listdeps subcommand for pyani."""
+"""Code to implement the ANIblastall average nucleotide identity method."""
 
-from argparse import Namespace
-from logging import Logger
-
-from pyani.dependencies import (
-    get_requirements,
-    get_dev_requirements,
-    get_pip_requirements,
-    get_tool_versions,
-)
+import platform
+import re
+import subprocess
 
 
-def subcmd_listdeps(args: Namespace, logger: Logger) -> int:
-    """Reports dependency versions to logger.
+from pathlib import Path
 
-    :param args:  Namespace, received command-line arguments
-    :param logger:  logging object
+from . import pyani_config
+
+
+def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
+    r"""Return BLAST blastall version as a string.
+
+    :param blast_exe:  path to blastall executable
+
+    We expect blastall to return a string as, for example
+
+    .. code-block:: bash
+
+        $ blastall -version
+        [blastall 2.2.26] ERROR: Number of database sequences to show \
+        one-line descriptions for (V) [ersion] is bad or out of range [? to ?]
+
+    This is concatenated with the OS name.
     """
-    logger.info("Listing pyani Python dependendencies...")
-    for package, version in get_requirements():
-        logger.info("\t%s==%s", package, version)
-    logger.info("Listing pyani development dependendencies...")
-    for package, version in get_dev_requirements():
-        logger.info("\t%s==%s", package, version)
-    logger.info("Listing pyani pip-install dependendencies...")
-    for package, version in get_pip_requirements():
-        logger.info("\t%s==%s", package, version)
-    logger.info("Listing third-party tool versions...")
-    for tool, version in get_tool_versions():
-        logger.info("\t%s==%s", tool, version)
-    return 0
+    cmdline = [blast_exe, "-version"]
+    result = subprocess.run(
+        cmdline,  # type: ignore
+        shell=False,
+        stdout=subprocess.PIPE,  # type: ignore
+        stderr=subprocess.PIPE,
+        check=False,  # blastall doesn't return 0
+    )
+    version = re.search(  # type: ignore
+        r"(?<=blastall\s)[0-9\.]*", str(result.stderr, "utf-8")
+    ).group()
+    return f"{platform.system()}_{version}"
