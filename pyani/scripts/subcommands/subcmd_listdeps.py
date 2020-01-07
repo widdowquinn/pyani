@@ -61,14 +61,14 @@ def subcmd_listdeps(args: Namespace, logger: Logger) -> int:
     logger.addHandler(handler)
 
     logger.info("Installed pyani Python dependendencies...")
-    for package, version in get_requirements():
-        logger.info("\t%s==%s", package, version)
+    for package, version, loc in get_requirements():
+        logger.info("\t%s==%s (%s)", package, version, loc)
     logger.info("Installed pyani development dependendencies...")
-    for package, version in get_dev_requirements():
-        logger.info("\t%s==%s", package, version)
+    for package, version, loc in get_dev_requirements():
+        logger.info("\t%s==%s (%s)", package, version, loc)
     logger.info("Installed pyani pip-install dependendencies...")
-    for package, version in get_pip_requirements():
-        logger.info("\t%s==%s", package, version)
+    for package, version, loc in get_pip_requirements():
+        logger.info("\t%s==%s (%s)", package, version, loc)
     logger.info("Installed third-party tool versions...")
     for tool, version in get_tool_versions():
         logger.info("\t%s==%s", tool, version)

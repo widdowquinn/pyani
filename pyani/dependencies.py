@@ -85,9 +85,11 @@ def get_versions(deplist: str) -> Generator:
     for depname in sorted(depdict[deplist]):
         try:
             version = pkg_resources.get_distribution(depname).version
+            loc = pkg_resources.get_distribution(depname).location
         except pkg_resources.DistributionNotFound:
             version = "Not Installed"
-        yield (depname, version)
+            loc = "-"
+        yield (depname, version, loc)
 
 
 def get_requirements() -> Generator:
