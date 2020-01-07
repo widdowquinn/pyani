@@ -40,7 +40,9 @@
 # THE SOFTWARE.
 """Provides the report subcommand for pyani."""
 
-from collections import namedtuple
+from argparse import Namespace
+from logging import Logger
+from typing import List, NamedTuple
 from pathlib import Path
 
 import pandas as pd
@@ -59,11 +61,17 @@ from pyani.pyani_orm import (
 )
 from pyani.pyani_tools import label_results_matrix, MatrixData
 
-# Convenience struct for report query/header data
-ReportParams = namedtuple("ReportParams", "name statement headers")
+
+class ReportParams(NamedTuple):
+
+    """Report query/header data."""
+
+    name: str  # name of table being reported
+    statement: str  #  SQL statement of query
+    headers: List[str]  #  Column headers for table
 
 
-def subcmd_report(args, logger):
+def subcmd_report(args: Namespace, logger: Logger) -> int:
     """Present report on ANI results and/or database contents.
 
     :param args:  Namespace, command-line arguments
@@ -292,8 +300,12 @@ def subcmd_report(args, logger):
                     **matdata.graphic_args,
                 )
 
+    return 0
 
-def report(args, logger, session, formats, params):
+
+def report(
+    args: Namespace, logger: Logger, session, formats: List[str], params: ReportParams,
+) -> None:
     """Write tabular report of pyani runs from database.
 
     :param args:  Namespace of command-line arguments
@@ -311,7 +323,7 @@ def report(args, logger, session, formats, params):
     pyani_report.write_dbtable(data, outfname, formats)
 
 
-def process_formats(args):
+def process_formats(args: Namespace) -> List[str]:
     """Return processed list of output formats for writing reports.
 
     :param args:  Namespace of command-line arguments

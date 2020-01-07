@@ -39,16 +39,21 @@
 # THE SOFTWARE.
 """Configuration settings for the pyani package."""
 
-from matplotlib.colors import LinearSegmentedColormap
+from pathlib import Path
+from typing import Any, Dict, Tuple
+
+import pandas as pd  # type: ignore
+
+from matplotlib.colors import LinearSegmentedColormap  # type: ignore
 
 # Defaults assume that common binaries are on the $PATH
-NUCMER_DEFAULT = "nucmer"
-FILTER_DEFAULT = "delta-filter"
-BLASTN_DEFAULT = "blastn"
-MAKEBLASTDB_DEFAULT = "makeblastdb"
-BLASTALL_DEFAULT = "blastall"
-FORMATDB_DEFAULT = "formatdb"
-QSUB_DEFAULT = "qsub"
+NUCMER_DEFAULT = Path("nucmer")
+FILTER_DEFAULT = Path("delta-filter")
+BLASTN_DEFAULT = Path("blastn")
+MAKEBLASTDB_DEFAULT = Path("makeblastdb")
+BLASTALL_DEFAULT = Path("blastall")
+FORMATDB_DEFAULT = Path("formatdb")
+QSUB_DEFAULT = Path("qsub")
 
 # Stems for output files
 ANIM_FILESTEMS = (
@@ -147,7 +152,7 @@ CMAP_BURD = LinearSegmentedColormap("BuRd", cdict_BuRd)
 
 # Graphics parameters for each output file. Note that this should be
 # in sync with the output file stems above
-def params_mpl(dfm):
+def params_mpl(dfm: pd.DataFrame) -> Dict[str, Tuple[str, Any, Any]]:
     """Return dict of matplotlib parameters, dependent on dataframe.
 
     :param dfm:
@@ -174,7 +179,7 @@ def params_mpl(dfm):
     }
 
 
-def get_colormap(dataframe, matname):
+def get_colormap(dataframe: pd.DataFrame, matname: str) -> Tuple[str, Any, Any]:
     """Return colormap parameters for a dataframe.
 
     :param dataframe:

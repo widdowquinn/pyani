@@ -63,6 +63,8 @@ This code is essentially a frozen and cut-down version of pysge
 import os
 import time
 
+from typing import Any, Dict, List, Optional
+
 from .pyani_config import SGE_WAIT
 
 ###
@@ -71,11 +73,11 @@ from .pyani_config import SGE_WAIT
 
 # The Job class describes a single command-line job, with dependencies (jobs
 # that must be run first.
-class Job:
+class Job(object):
 
     """Individual job to be run, with list of dependencies."""
 
-    def __init__(self, name, command, queue=None):
+    def __init__(self, name: str, command: str, queue: Optional[str] = None) -> None:
         """Instantiate a Job object.
 
         :param name:           String describing the job (uniquely)
@@ -86,12 +88,12 @@ class Job:
         self.queue = queue  # The SGE queue to run the job under
         self.command = command  # Command line to run for this job
         self.script = command
-        self.scriptPath = None  # Will hold path to the script file
-        self.dependencies = []  # List of jobs to be completed first
-        self.submitted = False  # Flag: is job submitted?
-        self.finished = False
+        self.scriptPath = None  # type: Optional[Any]
+        self.dependencies = []  # type: List[Any]
+        self.submitted = False  # type: bool
+        self.finished = False  # type: int
 
-    def add_dependency(self, job):
+    def add_dependency(self, job) -> None:
         """Add passed job to the dependency list for this Job.
 
         :param job:  Job to be added to the Job's dependency list
@@ -100,29 +102,35 @@ class Job:
         """
         self.dependencies.append(job)
 
-    def remove_dependency(self, job):
+    def remove_dependency(self, job) -> None:
         """Remove passed job from this Job's dependency list.
 
         :param job:     Job to be removed from the Job's dependency list
         """
         self.dependencies.remove(job)
 
-    def wait(self, interval=SGE_WAIT):
+    def wait(self, interval: float = SGE_WAIT) -> None:
         """Wait until the job finishes, and poll SGE on its status.
 
-        :param interval:  int, number of seconds to wait before polling SGE
+        :param interval:  float, number of seconds to wait before polling SGE
         """
         while not self.finished:
             time.sleep(interval)
-            interval = min(2 * interval, 60)
-            self.finished = os.system("qstat -j %s > /dev/null" % (self.name))
+            interval = min(2.0 * interval, 60)
+            self.finished = os.system(f"qstat -j {self.name} > /dev/null")
 
 
-class JobGroup:
+class JobGroup(object):
 
     """Class that stores a group of jobs, permitting parameter sweeps."""
 
-    def __init__(self, name, command, queue=None, arguments=None):
+    def __init__(
+        self,
+        name: str,
+        command: str,
+        queue: Optional[str] = None,
+        arguments: Optional[Dict[str, List[Any]]] = None,
+    ) -> None:
         """Instantiate a JobGroup object.
 
         JobGroups allow for the use of combinatorial parameter sweeps by
@@ -143,18 +151,18 @@ class JobGroup:
         self.name = name  # Set JobQueue name
         self.queue = queue  # Set SGE queue to request
         self.command = command  # Set command string
-        self.dependencies = []  # Create empty list for dependencies
-        self.submitted = False  # Set submitted Boolean
-        self.finished = False
+        self.dependencies = []  # type: List[Any]
+        self.submitted = False  # type: bool
+        self.finished = False  # type: int
         if arguments is not None:
             self.arguments = arguments  # Dictionary of arguments for command
         else:
             self.arguments = {}
         self.generate_script()  # Make SGE script for sweep/array
 
-    def generate_script(self):
+    def generate_script(self) -> None:
         """Create the SGE script that will run the jobs in the JobGroup."""
-        self.script = ""  # Holds the script string
+        self.script = ""  # type: str
         total = 1  # total number of jobs in this group
 
         # for now, SGE_TASK_ID becomes TASK_ID, but we base it at zero
@@ -189,7 +197,7 @@ class JobGroup:
         # set the number of tasks in this group
         self.tasks = total
 
-    def add_dependency(self, job):
+    def add_dependency(self, job) -> None:
         """Add the passed job to the dependency list for this JobGroup.
 
         :param job:  Job, job to be added to the JobGroup's dependency list
@@ -199,14 +207,14 @@ class JobGroup:
         """
         self.dependencies.append(job)
 
-    def remove_dependency(self, job):
+    def remove_dependency(self, job) -> None:
         """Remove passed job from this JobGroup's dependency list.
 
         :param job:  Job, job to be removed from the JobGroup's dependency list
         """
         self.dependencies.remove(job)
 
-    def wait(self, interval=SGE_WAIT):
+    def wait(self, interval: float = SGE_WAIT) -> None:
         """Wait for a defined period, then poll SGE for job status.
 
         :param interval:  int, seconds to wait before polling SGE

@@ -39,19 +39,28 @@
 # THE SOFTWARE.
 """Module providing functions to generate clusters/species hypotheses."""
 
-from collections import namedtuple
+from typing import Dict, List, NamedTuple, Tuple
 
-import networkx as nx
-import pandas as pd
+import networkx as nx  # type: ignore
+import pandas as pd  # type: ignore
 
 from pyani.pyani_tools import label_results_matrix
 
+
 # Holds summary information about a graph's cliques
-Cliquesinfo = namedtuple("Cliquesinfo", "n_nodes n_subgraphs all_k_complete")
+class Cliquesinfo(NamedTuple):
+
+    """Summary of clique structure."""
+
+    n_nodes: int
+    n_subgraphs: int
+    all_k_complete: bool
 
 
 # Build an undirected graph from an ANIResults object
-def build_graph_from_results(results, label_dict, cov_min=0, id_min=0):
+def build_graph_from_results(
+    results, label_dict: Dict[int, str], cov_min: float = 0, id_min: float = 0
+) -> nx.Graph:
     """Return undirected graph representing the passed ANIResults object.
 
     The passed ANIResults object is converted to an undirected graph where
@@ -103,8 +112,8 @@ def build_graph_from_results(results, label_dict, cov_min=0, id_min=0):
 
 
 # Report clique info for a graph
-def analyse_cliques(graph):
-    """Return Cliquesinfo namedtuple describing clique data for a graph.
+def analyse_cliques(graph: nx.Graph) -> Cliquesinfo:
+    """Return Cliquesinfo NamedTuple describing clique data for a graph.
 
     :param graph:  NetworkX Graph object
     """
@@ -112,7 +121,7 @@ def analyse_cliques(graph):
     return Cliquesinfo(len(graph), len(subgraphs), all_components_k_complete(graph))
 
 
-def all_components_k_complete(graph):
+def all_components_k_complete(graph: nx.Graph) -> bool:
     """Return True if all components in passed graph are k-complete.
 
     :param graph:  NetworkX Graph object
@@ -120,7 +129,7 @@ def all_components_k_complete(graph):
     return all(k_complete_component_status(graph))
 
 
-def k_complete_component_status(graph):
+def k_complete_component_status(graph: nx.Graph) -> List[bool]:
     """Return list of Booleans of whether connected components of the graph are k-complete.
 
     :param graph:  NetworkX Graph object
@@ -139,7 +148,9 @@ def k_complete_component_status(graph):
     ]
 
 
-def remove_low_weight_edges(graph, threshold, attribute="identity"):
+def remove_low_weight_edges(
+    graph: nx.Graph, threshold: float, attribute: str = "identity"
+) -> Tuple[nx.Graph, List]:
     """Return graph and edgelist where edges having weight < threshold are removed.
 
     :param graph:  NetworkX Graph

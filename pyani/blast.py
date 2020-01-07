@@ -38,11 +38,13 @@
 # THE SOFTWARE.
 """Code for handling BLAST output files."""
 
+from typing import Any, List, TextIO
 
-def parse_blasttab(fhandle):
+
+def parse_blasttab(fhandle: TextIO) -> List[List[str]]:
     """Return the passed BLAST tab output file as a list of lists.
 
-    :param fhandle:  filehandle, contains BLAST output file
+    :param fhandle:  TextIO, filehandle containing BLAST output file
 
     This is used when testing for conserved BLAST output, as the
     exact format of the BLAST result can depend on the software version.
@@ -55,7 +57,8 @@ def parse_blasttab(fhandle):
     """
     retval = []
     for line in fhandle.readlines():
-        splitline = line.split("\t")
+        splitline = line.split("\t")  # type: List[Any]
         data = splitline[:2]  # First two columns are strings
         data += [float(_) for _ in splitline[2:]]  # The rest are numeric
+        retval.append(data)
     return retval

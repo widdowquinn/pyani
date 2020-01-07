@@ -42,8 +42,11 @@ import datetime
 import json
 import os
 
+from argparse import Namespace
 from itertools import permutations
+from logging import Logger
 from pathlib import Path
+from typing import List, Tuple
 
 from Bio import SeqIO
 from tqdm import tqdm
@@ -60,7 +63,7 @@ from pyani.pyani_orm import (
 )
 
 
-def subcmd_anib(args, logger):
+def subcmd_anib(args: Namespace, logger: Logger) -> None:
     """Perform ANIb on all genome files in an input directory.
 
     :param args:  Namespace, command-line arguments
@@ -235,7 +238,14 @@ def subcmd_anib(args, logger):
     raise NotImplementedError
 
 
-def generate_joblist(comparisons, existingfiles, fragfiles, fraglens, args, logger):
+def generate_joblist(
+    comparisons: List,
+    existingfiles: List,
+    fragfiles: List,
+    fraglens: List,
+    args: Namespace,
+    logger: Logger,
+) -> NotImplementedError:
     """Return list of ComparisonJobs.
 
     :param comparisons:  list of (Genome, Genome) tuples for which comparisons are needed
@@ -248,7 +258,7 @@ def generate_joblist(comparisons, existingfiles, fragfiles, fraglens, args, logg
     raise NotImplementedError
 
 
-def fragment_fasta_file(inpath, outdir, fragsize):
+def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path, str]:
     """Return path to fragmented sequence file and JSON of fragment lengths.
 
     :param inpath:  Path to genome file

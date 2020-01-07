@@ -131,7 +131,10 @@ import tarfile
 import time
 import traceback
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
+from logging import Logger
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -154,7 +157,7 @@ from pyani.scripts import logger as pyani_logger
 
 
 # Process command-line arguments
-def parse_cmdline(argv=None):
+def parse_cmdline(argv: Optional[List] = None) -> Namespace:
     """Parse command-line arguments for script.
 
     :param argv:  list of arguments from command-line
@@ -413,14 +416,14 @@ def parse_cmdline(argv=None):
 
 
 # Report last exception as string
-def last_exception():
+def last_exception() -> str:
     """Return last exception as a string, or use in logging."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
     return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
 
 # Create output directory if it doesn't exist
-def make_outdirs(args, logger):
+def make_outdirs(args: Namespace, logger: Logger):
     """Make the output directory, if required.
 
     :param args:  Namespace of command-line options
@@ -451,19 +454,19 @@ def make_outdirs(args, logger):
 
 
 # Compress output directory and delete it
-def compress_delete_outdir(outdir, logger):
+def compress_delete_outdir(outdir: Path, logger: Logger) -> None:
     """Compress the contents of the passed directory to .tar.gz and delete."""
     # Compress output in .tar.gz file and remove raw output
-    tarfn = outdir + ".tar.gz"
+    tarfn = outdir.with_suffix(".tar.gz")
     logger.info("\tCompressing output from %s to %s", outdir, tarfn)
-    with tarfile.open(tarfn, "w:gz") as ofh:
-        ofh.add(outdir)
+    with tarfile.open(str(tarfn), "w:gz") as ofh:
+        ofh.add(str(outdir))
     logger.info("\tRemoving output directory %s", outdir)
     shutil.rmtree(outdir)
 
 
 # Calculate ANIm for input
-def calculate_anim(args, logger, infiles, org_lengths):
+def calculate_anim(args: Namespace, logger: Logger, infiles: List[Path], org_lengths: Dict) -> pyani_tools.ANIResults:
     """Return ANIm result dataframes for files in input directory.
 
     :param args:  Namespace, command-line arguments
@@ -553,10 +556,9 @@ def calculate_anim(args, logger, infiles, org_lengths):
 
 
 # Calculate TETRA for input
-def calculate_tetra(args, logger, infiles):
+def calculate_tetra(logger: Logger, infiles: List[Path]) -> pd.DataFrame:
     """Calculate TETRA for files in input directory.
 
-    :param args: Namespace, command-line arguments
     :param logger:  logging object
     :param infiles:  list, paths to each input file
 
@@ -585,7 +587,7 @@ def calculate_tetra(args, logger, infiles):
     return tetra_correlations
 
 
-def make_sequence_fragments(args, logger, infiles, blastdir):
+def make_sequence_fragments(args: Namespace, logger: Logger, infiles: List[Path], blastdir: Path) -> Tuple[List, Dict]:
     """Return tuple of fragment files, and fragment sizes.
 
     :param args:  Namespace of command-line arguments
@@ -607,7 +609,7 @@ def make_sequence_fragments(args, logger, infiles, blastdir):
     return fragfiles, fraglengths
 
 
-def run_blast(args, logger, infiles, blastdir):
+def run_blast(args: Namespace, logger: Logger, infiles: List[Path], blastdir: Path) -> Tuple:
     """Run BLAST commands for ANIb methods.
 
     :param args:  Namespace of command-line options
@@ -654,13 +656,13 @@ def run_blast(args, logger, infiles, blastdir):
             with open(fragpath, "rU") as ifh:
                 fraglengths = json.load(ifh)
         else:
-            fraglengths = None
+            fraglengths = dict()
 
     return cumval, fraglengths
 
 
 # Calculate ANIb for input
-def unified_anib(args, logger, infiles, org_lengths):
+def unified_anib(args: Namespace, logger: Logger, infiles: List[Path], org_lengths: Dict[str, int]) -> pyani_tools.ANIResults:
     """Calculate ANIb for files in input directory.
 
     :param args:  Namespace of command-line options
@@ -730,7 +732,7 @@ def unified_anib(args, logger, infiles, org_lengths):
 
 
 # Write ANIb/ANIm/TETRA output
-def write(args, logger, results):
+def write(args: Namespace, logger: Logger, results: pd.DataFrame) -> None:
     """Write ANIb/ANIm/TETRA results to output directory.
 
     :param args:  Namespace, command-line arguments
@@ -759,7 +761,7 @@ def write(args, logger, results):
 
 
 # Draw ANIb/ANIm/TETRA output
-def draw(args, logger, filestems, gformat):
+def draw(args: Namespace, logger: Logger, filestems: List[str], gformat: str) -> None:
     """Draw ANIb/ANIm/TETRA results.
 
     :param args:  Namespace, command-line arguments
@@ -780,17 +782,17 @@ def draw(args, logger, filestems, gformat):
             pyani_tools.get_labels(args.classes),
         )
         if args.gmethod == "mpl":
-            pyani_graphics.heatmap_mpl(
+            pyani_graphics.mpl.heatmap(
                 dfm, outfilename=outfilename, title=filestem, params=params
             )
         elif args.gmethod == "seaborn":
-            pyani_graphics.heatmap_seaborn(
+            pyani_graphics.sns.heatmap(
                 dfm, outfilename=outfilename, title=filestem, params=params
             )
 
 
 # Subsample the input files
-def subsample_input(args, logger, infiles):
+def subsample_input(args: Namespace, logger: Logger, infiles: List[Path]) -> List[Path]:
     """Return a random subsample of the passed input files.
 
     :param args:  Namespace, command-line arguments
@@ -824,7 +826,7 @@ def subsample_input(args, logger, infiles):
     return random.sample(infiles, k)
 
 
-def process_arguments(args):
+def process_arguments(args: Optional[Namespace]) -> Namespace:
     """Process command-line arguments.
 
     :param args:  Namespace of command-line arguments
@@ -843,7 +845,7 @@ def process_arguments(args):
     return args
 
 
-def build_logger(args, logger):
+def build_logger(args: Namespace, logger: Optional[Logger]) -> Logger:
     """Return a logging object for the script.
 
     :param args:  Namespace of command-line arguments
@@ -880,7 +882,7 @@ def build_logger(args, logger):
     return logger
 
 
-def test_class_label_paths(args, logger):
+def test_class_label_paths(args: Namespace, logger: Logger) -> None:
     """Raise error and exit if label and class files exist.
 
     :param args:  Namespace of command-line arguments
@@ -896,7 +898,7 @@ def test_class_label_paths(args, logger):
         raise SystemExit(1)
 
 
-def get_method(args, logger):
+def get_method(args: Namespace, logger: Logger) -> Tuple:
     """Return function and config for the chosen method.
 
     :param args:  Namespace of command-line arguments
@@ -922,7 +924,7 @@ def get_method(args, logger):
     return methods[args.method]
 
 
-def test_scheduler(args, logger):
+def test_scheduler(args: Namespace, logger: Logger) -> None:
     """Test if the specified scheduler can be used.
 
     :param args:  Namespace of command-line arguments
@@ -941,16 +943,16 @@ def test_scheduler(args, logger):
 
 
 # Main function
-def run_main(args=None, logger=None):
+def run_main(argsin: Optional[Namespace] = None, logger: Optional[Logger] = None) -> int:
     """Run main process for average_nucleotide_identity.py script.
 
-    :param args:  Namespace, command-line arguments
+    :param argsin:  Namespace, command-line arguments
     :param logger:  logging object
     """
     time0 = time.time()
 
     # Process command-line and build logger
-    args = process_arguments(args)
+    args = process_arguments(argsin)
     logger = build_logger(args, logger)
 
     # Ensure argument validity and get method function/config
@@ -967,12 +969,12 @@ def run_main(args=None, logger=None):
         # Run ANI comparisons
         logger.info("Identifying FASTA files in %s", args.indirname)
         infiles = pyani_files.get_fasta_files(args.indirname)
-        logger.info("Input files:\n\t%s", "\n\t".join(infiles))
+        logger.info("Input files:\n\t%s", "\n\t".join([str(_) for _ in infiles]))
 
         # Are we subsampling? If so, make the selection here
         if args.subsample:
             infiles = subsample_input(args, logger, infiles)
-            logger.info("Sampled input files:\n\t%s", "\n\t".join(infiles))
+            logger.info("Sampled input files:\n\t%s", "\n\t".join([str(_) for _ in infiles]))
 
         # Get lengths of input sequences
         logger.info("Processing input sequence lengths")

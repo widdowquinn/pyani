@@ -42,16 +42,17 @@
 This SQLAlchemy-based ORM replaces the previous SQL-based module
 """
 
-from collections import namedtuple
+from pathlib import Path
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
-import numpy as np
-import pandas as pd
+import numpy as np  # type: ignore
+import pandas as pd  # type: ignore
 
-from sqlalchemy import and_
+from sqlalchemy import and_   # type: ignore
 from sqlalchemy import UniqueConstraint, create_engine, Table
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Boolean
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base  # type: ignore
+from sqlalchemy.orm import relationship, sessionmaker  # type: ignore
 
 from pyani import PyaniException
 from pyani.pyani_files import (
@@ -70,7 +71,8 @@ class PyaniORMException(PyaniException):
 
 # Using the declarative system
 # We follow Flask-like naming conventions, so override some of the pyline errors
-Base = declarative_base()  # pylint: disable=C0103
+# Mypy doesn't like dynamic base classes, see https://github.com/python/mypy/issues/2477
+Base = declarative_base()  # type: Any
 Session = sessionmaker()  # pylint: disable=C0103
 
 # Linker table between genomes and runs tables
@@ -90,8 +92,13 @@ runcomparison = Table(  # pylint: disable=C0103
 )
 
 
-# Convenience struct for labels and classes files
-LabelTuple = namedtuple("LabelTuple", "label class_label")
+# Convenience struct for labels and classes
+class LabelTuple(NamedTuple):
+
+    """Label and Class for each file."""
+
+    label: str
+    class_label: str
 
 
 class Label(Base):
@@ -112,7 +119,7 @@ class Label(Base):
     genome = relationship("Genome", back_populates="labels")
     run = relationship("Run", back_populates="labels")
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return string representation of Label table row."""
         return str(
             "Genome ID: {}, Run ID: {}, Label ID: {}, Label: {}, Class: {}".format(
@@ -120,7 +127,7 @@ class Label(Base):
             )
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return string representation of Label table object."""
         return "<Label(key=({}, {}, {}))>".format(
             self.label_id, self.run_id, self.genome_id
@@ -153,7 +160,7 @@ class BlastDB(Base):
     genome = relationship("Genome", back_populates="blastdbs")
     run = relationship("Run", back_populates="blastdbs")
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return string representation of BlastDB table row."""
         return str(
             "BlastDB: {}, Run ID: {}, Label ID: {}, Label: {}, Class: {}".format(
@@ -161,7 +168,7 @@ class BlastDB(Base):
             )
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return string representation of BlastDB table object."""
         return "<BlastDB(key=({}, {}, {}))>".format(
             self.label_id, self.run_id, self.genome_id
@@ -209,11 +216,11 @@ class Genome(Base):
         primaryjoin="Genome.genome_id == Comparison.subject_id",
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return string representation of Genome table row."""
         return str("Genome {}: {}".format(self.genome_id, self.description))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return string representation of Genome table object."""
         return "<Genome(id='{}',desc='{}')>".format(self.genome_id, self.description)
 
@@ -245,11 +252,11 @@ class Run(Base):
     labels = relationship("Label", back_populates="run", lazy="dynamic")
     blastdbs = relationship("BlastDB", back_populates="run", lazy="dynamic")
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return string representation of Run table row."""
         return str("Run {}: {} ({})".format(self.run_id, self.name, self.date))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return string representation of Run table object."""
         return "<Run(run_id={})>".format(self.run_id)
 
@@ -288,7 +295,7 @@ class Comparison(Base):
         "Run", secondary=runcomparison, back_populates="comparisons", lazy="dynamic"
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return string representation of Comparison table row."""
         return str(
             "Query: {}, Subject: {}, %%ID={}, ({} {})".format(
@@ -300,12 +307,12 @@ class Comparison(Base):
             )
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return string representation of Comparison table object."""
         return "<Comparison(comparison_id={})>".format(self.comparison_id)
 
 
-def create_db(dbpath):
+def create_db(dbpath: Path) -> None:
     """Create an empty pyani SQLite3 database at the passed path.
 
     :param dbpath:  path to pyani database
@@ -314,7 +321,7 @@ def create_db(dbpath):
     Base.metadata.create_all(engine)
 
 
-def get_session(dbpath):
+def get_session(dbpath: Path) -> Any:
     """Connect to an existing pyani SQLite3 database and return a session.
 
     :param dbpath: path to pyani database
@@ -324,7 +331,7 @@ def get_session(dbpath):
     return Session()
 
 
-def get_comparison_dict(session):
+def get_comparison_dict(session: Any) -> Dict[Tuple, Any]:
     """Return a dictionary of comparisons in the session database.
 
     :param session:      live SQLAlchemy session of pyani database
@@ -338,7 +345,7 @@ def get_comparison_dict(session):
     }
 
 
-def get_matrix_labels_for_run(session, run_id):
+def get_matrix_labels_for_run(session: Any, run_id: int) -> Dict:
     """Return dictionary of genome labels, keyed by row/column ID.
 
     :param session:  live SQLAlchemy session
@@ -362,7 +369,7 @@ def get_matrix_labels_for_run(session, run_id):
     return {str(_.genome_id): _.label for _ in results}
 
 
-def get_matrix_classes_for_run(session, run_id):
+def get_matrix_classes_for_run(session: Any, run_id: int) -> Dict[str, List]:
     """Return dictionary of genome classes, keyed by row/column ID.
 
     :param session:  live SQLAlchemy session
@@ -387,8 +394,8 @@ def get_matrix_classes_for_run(session, run_id):
 
 
 def filter_existing_comparisons(
-    session, run, comparisons, program, version, fragsize=None, maxmatch=None
-):
+    session, run, comparisons, program, version, fragsize: Optional[int] = None, maxmatch: Optional[bool] = None
+) -> List:
     """Filter list of (Genome, Genome) comparisons for those not in the session db.
 
     :param session:       live SQLAlchemy session of pyani database
@@ -453,7 +460,7 @@ def add_run(session, method, cmdline, date, status, name):
     return run
 
 
-def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
+def add_run_genomes(session, run, indir: Path, classpath: Path, labelpath: Path) -> List:
     """Add genomes for a run to the database.
 
     :param session:       live SQLAlchemy session of pyani database
@@ -475,7 +482,9 @@ def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
     """
     # Get list of genome files and paths to class and labels files
     infiles = get_fasta_and_hash_paths(indir)  # paired FASTA/hash files
-    class_data, label_data, all_keys = None, None, []
+    class_data = {}  # type: Dict[str,str]
+    label_data = {}  # type: Dict[str,str]
+    all_keys = []  # type: List[str]
     if classpath:
         class_data = load_classes_labels(classpath)
         all_keys += list(class_data.keys())
@@ -485,9 +494,9 @@ def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
 
     # Make dictionary of labels and/or classes
     new_keys = set(all_keys)
-    label_dict = {}
+    label_dict = {}  # type: Dict
     for key in new_keys:
-        label_dict[key] = LabelTuple(label_data[key] or None, class_data[key] or None)
+        label_dict[key] = LabelTuple(label_data[key] or "", class_data[key] or "")
 
     # Get hash and sequence description for each FASTA/hash pair, and add
     # to current session database
@@ -548,7 +557,7 @@ def add_run_genomes(session, run, indir, classpath=None, labelpath=None):
     return genome_ids
 
 
-def update_comparison_matrices(session, run):
+def update_comparison_matrices(session, run) -> None:
     """Update the Run table with summary matrices for the analysis.
 
     :param session:       active pyanidb session via ORM

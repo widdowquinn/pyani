@@ -39,12 +39,15 @@
 # THE SOFTWARE.
 """Provides the index subcommand for pyani."""
 
+from argparse import Namespace
+from logging import Logger
+
 from Bio import SeqIO
 
 from pyani import download, pyani_files
 
 
-def subcmd_index(args, logger):
+def subcmd_index(args: Namespace, logger: Logger) -> int:
     """Generate a file with the MD5 hash for each genome in an input directory.
 
     :param args:  Namespace, received command-line arguments
@@ -101,3 +104,5 @@ def subcmd_index(args, logger):
     else:
         with open(labelfname, "w") as ofh:
             ofh.write("\n".join(labels) + "\n")
+
+    return 0

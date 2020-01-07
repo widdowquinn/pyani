@@ -39,11 +39,13 @@
 # THE SOFTWARE.
 """Provides the createdb subcommand for pyani."""
 
-# from pyani import pyani_db
+from argparse import Namespace
+from logging import Logger
+
 from pyani import pyani_orm
 
 
-def subcmd_createdb(args, logger):
+def subcmd_createdb(args: Namespace, logger: Logger) -> int:
     """Create an empty pyani database.
 
     :param args:  Namespace, command-line arguments
@@ -65,3 +67,5 @@ def subcmd_createdb(args, logger):
     # Create the empty database
     logger.info("Creating pyani database at %s", args.dbpath)
     pyani_orm.create_db(args.dbpath)
+
+    return 0

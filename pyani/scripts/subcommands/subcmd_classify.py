@@ -39,10 +39,11 @@
 # THE SOFTWARE.
 """Provides the classify subcommand for pyani."""
 
-import time
+from argparse import Namespace
+from logging import Logger
+from typing import Generator, NamedTuple
 
-from collections import namedtuple
-
+import networkx as nx
 import numpy as np
 
 from tqdm import tqdm
@@ -50,11 +51,16 @@ from tqdm import tqdm
 from pyani import pyani_classify, pyani_orm
 
 
-# Convenience struct for subgraph result
-SubgraphData = namedtuple("SubgraphData", "interval graph cliqueinfo")
+class SubgraphData(NamedTuple):
+
+    """Subgraph clique/classification output."""
+
+    interval: float  # the trimming threshold for this subgraph
+    graph: nx.Graph  # the trimmed subgraph
+    cliqueinfo: pyani_classify.Cliquesinfo
 
 
-def subcmd_classify(args, logger):
+def subcmd_classify(args: Namespace, logger: Logger) -> int:
     """Generate classifications for an analysis.
 
     :param args:  Namespace, command-line arguments
@@ -102,14 +108,20 @@ def subcmd_classify(args, logger):
         outstr = "\n\t".join([f"{_.interval}\t{_.cliqueinfo}" for _ in subgraphs])
         logger.info(f"Subgraphs at all identity thresholds:\n\t{outstr}")
 
+    return 0
+
 
 # Generate a list of graphs from lowest to highest pairwise identity threshold
-def trimmed_graph_sequence(ingraph, args, attribute="identity"):
+def trimmed_graph_sequence(
+    ingraph: nx.Graph, args: Namespace, attribute: str = "identity"
+) -> Generator:
     """Return graphs trimmed from lowest to highest attribute value.
 
-    :param ingraph:
-    :param args:  Namespace, command-line arguments
-    :param attribute:
+    :param ingraph:  nx.Graph of genomes as nodes, having edges weighted by
+                     the property named in attribute
+    :param args:  Namespace, parsed command-line arguments
+    :param attribute:  str, name of the property by which the graph edges
+                       should be trimmed
 
     A generator which, starting from the initial graph, yields in sequence a
     series of graphs from which the edge(s) with the lowest threshold value
@@ -117,30 +129,34 @@ def trimmed_graph_sequence(ingraph, args, attribute="identity"):
 
     (threshold, graph, analyse_cliques(graph))
 
-    ingraph          - the initial graph to work from
-    attribute  - string describing the attribute to work on
-
     This will be slow with moderate-large graphs
     """
     graph = ingraph.copy()
-    # Trim the graph now
+
+    # Trim the graph now, removing edges at the minimum allowed identity and below
     graph, edgelist = pyani_classify.remove_low_weight_edges(
         graph, args.min_id, attribute
     )
+
     #  There's no sense resolving to small intervals if there would be more
-    # of these than there are edges to remove from the graph
+    # of these than there are edges to remove from the graph. If the
+    # resolution leads to more breakpoints than there are edges, just trim
+    # edge by edge. Otherwise work over a range of property value breaks.
     if len(edgelist) < 1 / args.resolution:
         breaks = [_[-1] for _ in edgelist]
     else:
         breaks = np.arange(
             args.min_id or edgelist[0][-1], args.max_id or 1, args.resolution
         )
+
+    # Remove edges at each breakpoint and yield the resulting subgraph
     for threshold in tqdm(breaks, disable=args.disable_tqdm):
         yield SubgraphData(threshold, graph, pyani_classify.analyse_cliques(graph))
         while edgelist and edgelist[0][-1] <= threshold:
             edge = edgelist.pop(0)
             graph.remove_edge(edge[0], edge[1])
-    # For last edge/graph (identity)
+
+    # Yield final edge/graph (identity)
     yield SubgraphData(
         1,
         pyani_classify.remove_low_weight_edges(graph, 1, attribute)[0],

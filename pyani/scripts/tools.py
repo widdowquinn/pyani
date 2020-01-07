@@ -41,6 +41,13 @@
 import re
 import shutil
 
+from argparse import Namespace
+from logging import Logger
+from pathlib import Path
+from typing import Dict, List, NamedTuple
+
+from namedlist import namedlist
+
 from pyani import download
 
 
@@ -56,11 +63,20 @@ class PyaniScriptException(Exception):
         Exception.__init__(self, msg)
 
 
+class DLFileData(NamedTuple):
+
+    """Convenience struct for file download data."""
+
+    filestem: str
+    ftpstem: str
+    suffix: str
+
+
 # UTILITY FUNCTIONS
 # =================
 
 # Create a directory (handling force/noclobber options)
-def make_outdir(outdir, force, noclobber, logger):
+def make_outdir(outdir: Path, force: bool, noclobber: bool, logger: Logger) -> None:
     """Create output directory (allows for force and noclobber).
 
     :param outdir:  Path, path to output directory
@@ -83,14 +99,13 @@ def make_outdir(outdir, force, noclobber, logger):
         if force and not noclobber:  # user forces directory reuse, and overwrite
             # Delete old directory and start again
             logger.warning(
-                "Overwrite forced. Removing %s and everything " + "below it (--force)",
+                "Overwrite forced. Removing %s and everything below it (--force)",
                 outdir,
             )
             shutil.rmtree(outdir)
         elif force and noclobber:  # user forces directory reuse, not file overwrite
             logger.warning(
-                "Keeping existing directory, skipping existing "
-                + "files (--force --noclobber)."
+                "Keeping existing directory, skipping existing files (--force --noclobber)."
             )
         else:  # user is not forcing directory reuse
             raise PyaniScriptException(
@@ -100,7 +115,7 @@ def make_outdir(outdir, force, noclobber, logger):
 
 
 # Make a dictionary of assembly download info
-def make_asm_dict(taxon_ids, retries):
+def make_asm_dict(taxon_ids: List[str], retries: int) -> Dict:
     """Return a dict of assembly UIDs, keyed by each passed taxon ID.
 
     :param taxon_ids:
@@ -117,8 +132,12 @@ def make_asm_dict(taxon_ids, retries):
 
 # Download the RefSeq genome and MD5 hash from NCBI
 def download_genome_and_hash(
-    args, logger, dlfiledata, dltype="RefSeq", disable_tqdm=False
-):
+    args: Namespace,
+    logger: Logger,
+    dlfiledata: DLFileData,
+    dltype: str = "RefSeq",
+    disable_tqdm: bool = False,
+) -> namedlist:
     """Download genome and accompanying MD5 hash from NCBI.
 
     :param args:  Namespace for command-line arguments

@@ -46,10 +46,11 @@ import logging
 import sys
 import time
 
+from argparse import Namespace
 from pathlib import Path
 
 
-def build_logger(name, args):
+def build_logger(name: str, args: Namespace) -> logging.Logger:
     """Return a logger for this script.
 
     :param name:  str, name for logger

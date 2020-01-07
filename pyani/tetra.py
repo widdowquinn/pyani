@@ -54,25 +54,28 @@ doi:10.1111/j.1462-2920.2004.00624.x
 import collections
 import math
 
-import pandas as pd
+from pathlib import Path
+from typing import Dict, Iterable, Tuple
 
-from Bio import SeqIO
+import pandas as pd  # type: ignore
+
+from Bio import SeqIO  # type: ignore
 
 
 # Calculate tetranucleotide Z-score for a set of input sequences
-def calculate_tetra_zscores(infilenames):
+def calculate_tetra_zscores(infilenames: Iterable) -> Dict[str, Dict[str, float]]:
     """Return dictionary of TETRA Z-scores for each input file.
 
     :param infilenames:  iterable of paths to input sequence files
     """
-    org_tetraz = {}
+    org_tetraz = {}  # type: Dict[str, Dict[str, float]]
     for filename in infilenames:
         org_tetraz[filename.stem] = calculate_tetra_zscore(filename)
     return org_tetraz
 
 
 # Calculate tetranucleotide Z-score for a single sequence file
-def calculate_tetra_zscore(filename):
+def calculate_tetra_zscore(filename: Path) -> Dict[str, float]:
     """Return TETRA Z-score for the sequence in the passed file.
 
     :param filename:  path to sequence file
@@ -91,7 +94,7 @@ def calculate_tetra_zscore(filename):
         collections.defaultdict(int),
         collections.defaultdict(int),
         collections.defaultdict(int),
-    )
+    )  # type: Tuple
     for rec in SeqIO.parse(filename, "fasta"):
         for seq in [str(rec.seq).upper(), str(rec.seq.reverse_complement()).upper()]:
             # The Teeling et al. algorithm requires us to consider
@@ -137,22 +140,22 @@ def calculate_tetra_zscore(filename):
 
 
 # Returns true if the passed string contains only A, C, G or T
-def tetra_clean(string):
+def tetra_clean(instr: str) -> bool:
     """Return True if string contains only unambiguous IUPAC nucleotide symbols.
 
-    :param string:  str, nucleotide sequence
+    :param instr:  str, nucleotide sequence
 
     We are assuming that a low frequency of IUPAC ambiguity symbols doesn't
     affect our calculation.
     """
-    if set(string) - set("ACGT"):
+    if set(instr) - set("ACGT"):
         return False
     return True
 
 
 # Calculate Pearson's correlation coefficient from the Z-scores for each
 # tetranucleotide. If we're forcing rpy2, might as well use that, though...
-def calculate_correlations(tetra_z):
+def calculate_correlations(tetra_z: Dict[str, Dict[str, float]]) -> pd.DataFrame:
     """Return dataframe of Pearson correlation coefficients.
 
     :param tetra_z:  dict, Z-scores, keyed by sequence ID

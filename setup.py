@@ -43,6 +43,8 @@ import sys
 import re
 import setuptools
 
+from pathlib import Path
+
 try:
     import distribute_setup
 
@@ -51,18 +53,17 @@ except ImportError:
     pass
 
 # Get long description from README.md
-with open("README.md", "r") as dfh:
+with Path("README.md").open("r") as dfh:
     long_description = dfh.read()  # pylint: disable=C0103
 
 # parse version from package/module without importing or
 # evaluating the code
-with open("pyani/__init__.py") as fh:
-    for line in fh:
+with Path("pyani/__init__.py").open() as ifh:
+    for line in ifh:
         # The escaping/use of quotes in the re.search() below can be treacherous
-        m = re.search(r'^__version__ = "(?P<version>[^"]+)"$', line)
-        print(m)
-        if m:
-            version = m.group("version")
+        match = re.search(r'^__version__ = "(?P<version>[^"]+)"$', line)
+        if match:
+            version = match.group("version")
             break
 
 if sys.version_info <= (3, 0):
@@ -73,7 +74,7 @@ setuptools.setup(
     name="pyani",
     version=version,
     author="Leighton Pritchard",
-    author_email="leighton.pritchard@hutton.ac.uk",
+    author_email="leighton.pritchard@strath.ac.uk",
     description="".join(
         [
             (
@@ -123,6 +124,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
 )

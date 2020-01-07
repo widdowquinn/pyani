@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -10,14 +10,14 @@
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
 # Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ from pathlib import Path
 
 
 # Common parser for all subcommands
-def build():
+def build() -> ArgumentParser:
     """Return the common argument parser for analysis run subcommands.
 
     :param subps:  collection of subparsers in main parser

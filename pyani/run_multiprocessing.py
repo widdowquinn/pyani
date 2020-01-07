@@ -46,11 +46,16 @@ import multiprocessing
 import subprocess
 import sys
 
-CUMRETVAL = 0
+from logging import Logger
+from typing import List, Optional
+
+from .pyani_jobs import Job
 
 
 # Run a job dependency graph with multiprocessing
-def run_dependency_graph(jobgraph, workers=None, logger=None):
+def run_dependency_graph(
+    jobgraph, workers: Optional[int] = None, logger: Optional[Logger] = None
+) -> int:
     """Create and run pools of jobs based on the passed jobgraph.
 
     :param jobgraph:  list of jobs, which may have dependencies.
@@ -61,7 +66,7 @@ def run_dependency_graph(jobgraph, workers=None, logger=None):
     and create/populate a series of Sets of commands, to be run in
     reverse order with multiprocessing_run as asynchronous pools.
     """
-    cmdsets = []
+    cmdsets = []  # type: List
     for job in jobgraph:
         cmdsets = populate_cmdsets(job, cmdsets, depth=1)
 
@@ -79,7 +84,7 @@ def run_dependency_graph(jobgraph, workers=None, logger=None):
     return cumretval
 
 
-def populate_cmdsets(job, cmdsets, depth):
+def populate_cmdsets(job: Job, cmdsets: List, depth: int) -> List:
     """Create list of jobsets at different depths of dependency tree.
 
     :param job:
@@ -105,7 +110,7 @@ def populate_cmdsets(job, cmdsets, depth):
 
 
 # Run a set of command lines using multiprocessing
-def multiprocessing_run(cmdlines, workers=None):
+def multiprocessing_run(cmdlines: List, workers: Optional[int] = None) -> int:
     """Distributes passed command-line jobs using multiprocessing.
 
     :param cmdlines:  iterable, command line strings

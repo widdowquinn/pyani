@@ -43,7 +43,7 @@ import pandas as pd
 import seaborn as sns
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402 # pylint: disable=wrong-import-position,wrong-import-order
+import matplotlib.pyplot as plt  # noqa: E402,E501 # pylint: disable=wrong-import-position,wrong-import-order,ungrouped-imports
 
 
 # Add classes colorbar to Seaborn plot

@@ -47,6 +47,8 @@
 #            generating-a-png-with-matplotlib-when-display-is-undefined
 # This needs to be done before importing pyplot
 
+from typing import Dict, Optional, Tuple
+
 import matplotlib  # pylint: disable=C0411
 
 from . import mpl  # noqa: F401  # matplotlib wrappers
@@ -63,7 +65,12 @@ class Params:  # pylint: disable=too-few-public-methods
 
     """Convenience class to hold heatmap rendering parameters."""
 
-    def __init__(self, params, labels=None, classes=None):
+    def __init__(
+        self,
+        params: Tuple,
+        labels: Optional[Dict] = None,
+        classes: Optional[Dict] = None,
+    ):
         """Instantiate class.
 
         :param params:

@@ -39,18 +39,17 @@
 # THE SOFTWARE.
 """Provides the download subcommand for pyani."""
 
+from argparse import Namespace
 from collections import namedtuple
+from logging import Logger
 
 from Bio import SeqIO
 
 from pyani import download
 from pyani.scripts import tools
 
-# Convenience struct for file download data
-DLFileData = namedtuple("DLFileData", "filestem ftpstem suffix")
 
-
-def subcmd_download(args, logger):
+def subcmd_download(args: Namespace, logger: Logger) -> int:
     """Download assembled genomes in subtree of passed NCBI taxon ID.
 
     :param args:  Namespace, command-line arguments
@@ -131,7 +130,7 @@ def subcmd_download(args, logger):
 
             # Obtain URLs, trying the RefSeq filestem first, then GenBank if
             # there's a failure
-            dlfiledata = DLFileData(
+            dlfiledata = tools.DLFileData(
                 filestem, "ftp://ftp.ncbi.nlm.nih.gov/genomes/all", "genomic.fna.gz"
             )
             logger.info(f"Retrieving URLs for {filestem}")
@@ -258,3 +257,5 @@ def subcmd_download(args, logger):
                 ]
             )
             logger.warning(f"{skipped.organism} {skipped.strain}:\n\t{outstr}")
+
+    return 0

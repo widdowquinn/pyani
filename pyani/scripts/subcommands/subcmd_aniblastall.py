@@ -39,8 +39,11 @@
 # THE SOFTWARE.
 """Provides the aniblastall subcommand for pyani."""
 
+from argparse import Namespace
+from logging import Logger
 
-def subcmd_aniblastall(args, logger):
+
+def subcmd_aniblastall(args: Namespace, logger: Logger):
     """Perform ANIblastall on all genome files in an input directory.
 
     :param args:

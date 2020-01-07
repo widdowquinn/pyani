@@ -56,7 +56,9 @@ import platform
 import re
 import subprocess
 
+from logging import Logger
 from pathlib import Path
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from . import pyani_config
 from . import pyani_files
@@ -66,13 +68,11 @@ from .pyani_tools import ANIResults
 
 
 # Get a list of FASTA files from the input directory
-def get_fasta_files(dirname=None):
-    """Return list of FASTA files in the passed directory.
+def get_fasta_files(dirname: Path = Path(".")) -> Iterable:
+    """Return iterable of FASTA files in the passed directory.
 
     :param dirname:  str, path to input directory
     """
-    if dirname is None:
-        dirname = "."
     infiles = pyani_files.get_input_files(
         dirname, ".fasta", ".fas", ".fa", ".fna", ".fsa_nt"
     )
@@ -80,7 +80,7 @@ def get_fasta_files(dirname=None):
 
 
 # Get NUCmer version
-def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
+def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
     """Return NUCmer package version as a string.
 
     :param nucmer_exe:  path to NUCmer executable
@@ -94,26 +94,27 @@ def get_version(nucmer_exe=pyani_config.NUCMER_DEFAULT):
 
     we concatenate this with the OS name.
     """
-    cmdline = [nucmer_exe, "-V"]
+    cmdline = [nucmer_exe, "-V"]  # type: List
     result = subprocess.run(
         cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
     )
-    version = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8")).group()
+    match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
+    version = match.group()  # type: ignore
     return f"{platform.system()}_{version}"
 
 
 # Generate list of Job objects, one per NUCmer run
 def generate_nucmer_jobs(
-    filenames,
-    outdir=Path("."),
-    nucmer_exe=pyani_config.NUCMER_DEFAULT,
-    filter_exe=pyani_config.FILTER_DEFAULT,
-    maxmatch=False,
-    jobprefix="ANINUCmer",
+    filenames: List[Path],
+    outdir: Path = Path("."),
+    nucmer_exe: Path = pyani_config.NUCMER_DEFAULT,
+    filter_exe: Path = pyani_config.FILTER_DEFAULT,
+    maxmatch: bool = False,
+    jobprefix: str = "ANINUCmer",
 ):
     """Return list of Jobs describing NUCmer command-lines for ANIm.
 
-    :param filenames:  a list of paths to input FASTA files
+    :param filenames:  Iterable, Paths to input FASTA files
     :param outdir:  str, path to output directory
     :param nucmer_exe:  str, location of the nucmer binary
     :param filter_exe:
@@ -138,12 +139,12 @@ def generate_nucmer_jobs(
 # Generate list of NUCmer pairwise comparison command lines from
 # passed sequence filenames
 def generate_nucmer_commands(
-    filenames,
-    outdir=Path("."),
-    nucmer_exe=pyani_config.NUCMER_DEFAULT,
-    filter_exe=pyani_config.FILTER_DEFAULT,
-    maxmatch=False,
-):
+    filenames: List[Path],
+    outdir: Path = Path("."),
+    nucmer_exe: Path = pyani_config.NUCMER_DEFAULT,
+    filter_exe: Path = pyani_config.FILTER_DEFAULT,
+    maxmatch: bool = False,
+) -> Tuple[List, List]:
     """Return list of NUCmer command-lines for ANIm.
 
     :param filenames:  a list of paths to input FASTA files
@@ -176,13 +177,13 @@ def generate_nucmer_commands(
 # Generate single NUCmer pairwise comparison command line from pair of
 # input filenames
 def construct_nucmer_cmdline(
-    fname1,
-    fname2,
-    outdir=Path("."),
-    nucmer_exe=pyani_config.NUCMER_DEFAULT,
-    filter_exe=pyani_config.FILTER_DEFAULT,
-    maxmatch=False,
-):
+    fname1: Path,
+    fname2: Path,
+    outdir: Path = Path("."),
+    nucmer_exe: Path = pyani_config.NUCMER_DEFAULT,
+    filter_exe: Path = pyani_config.FILTER_DEFAULT,
+    maxmatch: bool = False,
+) -> Tuple[str, str]:
     """Return a tuple of corresponding NUCmer and delta-filter commands.
 
     :param fname1:  path to query FASTA file
@@ -216,13 +217,16 @@ def construct_nucmer_cmdline(
     # There's a subtle pathlib.Path issue, here. We must use string concatenation to add suffixes
     # to the outprefix files, as using path.with_suffix() instead can replace part of the filestem
     # in those cases where there is a period in the stem (this occurs frequently as it is part
-    # of the notation for genome assembly versions)
-    filtercmd = f"delta_filter_wrapper.py {filter_exe} -1 {str(outprefix) + '.delta'} {str(outprefix) + '.filter'}"
+    # of the NCBI notation for genome assembly versions)
+    filtercmd = (
+        f"delta_filter_wrapper.py {filter_exe} -1 {str(outprefix) + '.delta'} "
+        f"{str(outprefix) + '.filter'}"
+    )
     return (nucmercmd, filtercmd)
 
 
 # Parse NUCmer delta file to get total alignment length and total sim_errors
-def parse_delta(filename):
+def parse_delta(filename: Path) -> Tuple[int, int]:
     """Return (alignment length, similarity errors) tuple from passed .delta.
 
     :param filename:  Path, path to the input .delta file
@@ -256,7 +260,9 @@ def parse_delta(filename):
 
 
 # Parse all the .delta files in the passed directory
-def process_deltadir(delta_dir, org_lengths, logger=None):
+def process_deltadir(
+    delta_dir: Path, org_lengths: Dict, logger: Optional[Logger] = None
+) -> ANIResults:
     """Return tuple of ANIm results for .deltas in passed directory.
 
     :param delta_dir:  Path, path to the directory containing .delta files
