@@ -91,4 +91,35 @@ def build_logger(name: str, args: Namespace) -> logging.Logger:
     logger.info("Processed arguments: %s", args)
     logger.info("command-line: %s", args.cmdline)
 
+    # Add citation information
+    logger.info("CITATION INFO")
+    pyani_citation = [
+        "If you use pyani in your published work, please cite the",
+        "following publication:",
+        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G., ",
+        "\t& Toth, I.K. (2015) 'Genomics and taxonomy in diagnostics for ",
+        "\tfood security: soft-rotting enterobacterial plant pathogens.'",
+        "\tAnalytical Methods, 8(1), 12–24. http://doi.org/10.1039/C5AY02550H",
+    ]
+    for line in pyani_citation:
+        logger.info(line)
+
+    # Add dependency citations
+    dep_citations = [
+        "The authors of pyani gratefully acknowledge its dependence on",
+        "the following bioinformatics software:",
+        "\tMUMmer3: S. Kurtz, A. Phillippy, A.L. Delcher, M. Smoot, M. Shumway,",
+        "\tC. Antonescu, and S.L. Salzberg (2004), 'Versatile and open software",
+        "\tfor comparing large genomes' Genome Biology 5:R12",
+        "\tBLAST+: Camacho C., Coulouris G., Avagyan V., Ma N., Papadopoulos J.,",
+        "\tBealer K., & Madden T.L. (2008) 'BLAST+: architecture and applications.'",
+        "\tBMC Bioinformatics 10:421.",
+        "\tBLAST: Altschul, S.F., Madden, T.L., Schäffer, A.A., Zhang, J.,",
+        "\tZhang, Z., Miller, W. & Lipman, D.J. (1997) 'Gapped BLAST and PSI-BLAST:",
+        "\ta new generation of protein database search programs.' Nucleic Acids Res.",
+        "\t25:3389-3402\n",
+    ]
+    for line in dep_citations:
+        logger.info(line)
+
     return logger
