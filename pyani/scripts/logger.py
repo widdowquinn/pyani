@@ -97,7 +97,7 @@ def build_logger(name: str, args: Namespace) -> logging.Logger:
         "If you use pyani in your published work, please cite the",
         "following publication:",
         "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G., ",
-        "\t& Toth, I.K. (2015) 'Genomics and taxonomy in diagnostics for ",
+        "\t& Toth, I.K. (2016) 'Genomics and taxonomy in diagnostics for ",
         "\tfood security: soft-rotting enterobacterial plant pathogens.'",
         "\tAnalytical Methods, 8(1), 12–24. http://doi.org/10.1039/C5AY02550H",
     ]

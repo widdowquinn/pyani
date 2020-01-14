@@ -60,6 +60,10 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 ^^^^
 
 * Albert *et al.* (2020) "Comparative Pangenomics of the Mammalian Gut Commensal *Bifidobacterium longum*" *Microorganisms* `doi:10.3390/microorganisms8010007 <https://doi.org/10.3390/microorganisms8010007>`_
+* Ibarra Caballero *et al.* (2020) "Genome comparison and transcriptome analysis of the invasive brown root rot pathogen, *Phellinus noxius*, from different geographic regions reveals potential enzymes associated with degradation of different wood substrates" *Fungal Biology* `doi:10.1016/j.funbio.2019.12.007 <https://doi.org/10.1016/j.funbio.2019.12.007>`_
+* Kuleshov *et al.* (2020) "Whole genome sequencing of *Borrelia miyamotoi* isolate Izh-4: reference for a complex bacterial genome" *BMC Genomics* `doi:10.1186/s12864-019-6388-4 <https://doi.org/10.1186/s12864-019-6388-4>`_
+* Lacault *et al.* (2020) "Zucchini vein clearing disease is caused by several lineages within *Pseudomonas syringae* species complex." *Phytopathology* `doi:10.1094/PHYTO-07-19-0266-R <https://doi.org/10.1094/PHYTO-07-19-0266-R>`_
+* Wang *et al.* (2020) "Comparative Genomics Analysis of *Lactobacillus ruminis* from Different Niches" *Genes* `doi:10.3390/genes11010070 <https://doi.org/10.3390/genes11010070>`_
 
 ^^^^
 2019
