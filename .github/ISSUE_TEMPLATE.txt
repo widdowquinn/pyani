@@ -1,26 +1,29 @@
 #### Summary:
-Please provide a short summary (a couple of sentences).
+Please provide a short summary of your issue (in a couple of sentences).
 
 
 #### Description:
-Describe the issue as clearly as possible.
+Describe the issue in detail, as clearly as possible.
 
 
 #### Reproducible Steps:
-Please report steps to reproduce the issue. If it's not possible to reproduce, please include a description of how you discovered the issue.
+Please report a series of steps (e.g. command-line instructions) that would enable someone else to reproduce the issue. If possible, please attach a small set of input files/data that would be sufficient to allow someone else to reproduce the issue. 
 
-If you have a reproducible example, please include it.
-
+If it's not possible to reproduce the issue, please include a description of how you discovered the issue.
 
 #### Current Output:
-The current output. Knowing what is the current behavior is useful.
+The output you get from `pyani` or at the terminal, with this issue. It is very useful to know the current "wrong" behavior on your system.
 
 
 #### Expected Output:
-Describe what you expect the output to be. Knowing the correct behavior is also very useful.
+Describe what you expect the output to be. It is also very useful to know the expected "correct" behavior on your systems.
 
 
 #### pyani Version:
+
+
+#### installed dependencies
+If you are running a version of `pyani` v0.3 or later, then please run the command `pyani listdeps` at the command line, and enter the output below.
 
 #### Python Version:
 
