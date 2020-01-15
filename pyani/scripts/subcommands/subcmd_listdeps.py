@@ -37,6 +37,7 @@
 # THE SOFTWARE.
 """Provides the listdeps subcommand for pyani."""
 
+import platform
 import sys
 
 from argparse import Namespace
@@ -60,6 +61,12 @@ def subcmd_listdeps(args: Namespace, logger: Logger) -> int:
     handler.setLevel(INFO)
     logger.addHandler(handler)
 
+    # System information
+    logger.info("System information")
+    logger.info("\tPlatorm==%s", platform.platform())
+    logger.info("\tPython==%s", sys.version)
+
+    # Pyani dependencies
     logger.info("Installed pyani Python dependendencies...")
     for package, version, loc in get_requirements():
         logger.info("\t%s==%s (%s)", package, version, loc)
