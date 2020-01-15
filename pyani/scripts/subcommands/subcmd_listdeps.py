@@ -57,9 +57,12 @@ def subcmd_listdeps(args: Namespace, logger: Logger) -> int:
     :param args:  Namespace, received command-line arguments
     :param logger:  logging object
     """
-    handler = StreamHandler(sys.stdout)
-    handler.setLevel(INFO)
-    logger.addHandler(handler)
+    # If the -v argument is provided, we don't want to have two
+    # streams writing to STDOUT
+    if not args.verbose:
+        handler = StreamHandler(sys.stdout)
+        handler.setLevel(INFO)
+        logger.addHandler(handler)
 
     # System information
     logger.info("System information")
