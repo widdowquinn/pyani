@@ -60,9 +60,13 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 ^^^^
 
 * Albert *et al.* (2020) "Comparative Pangenomics of the Mammalian Gut Commensal *Bifidobacterium longum*" *Microorganisms* `doi:10.3390/microorganisms8010007 <https://doi.org/10.3390/microorganisms8010007>`_
+* Déraspe *et al.* (2020) "Genome Sequence of a *Klebsiella pneumoniae* NDM-1 Producer Isolated in Quebec City" *Microbiol. Resour. Announc.* `doi:10.1128/MRA.00829-19 <https://doi.org/10.1128/MRA.00829-19>`_
 * Ibarra Caballero *et al.* (2020) "Genome comparison and transcriptome analysis of the invasive brown root rot pathogen, *Phellinus noxius*, from different geographic regions reveals potential enzymes associated with degradation of different wood substrates" *Fungal Biology* `doi:10.1016/j.funbio.2019.12.007 <https://doi.org/10.1016/j.funbio.2019.12.007>`_
 * Kuleshov *et al.* (2020) "Whole genome sequencing of *Borrelia miyamotoi* isolate Izh-4: reference for a complex bacterial genome" *BMC Genomics* `doi:10.1186/s12864-019-6388-4 <https://doi.org/10.1186/s12864-019-6388-4>`_
+* La China *et al.* (2020) "Genome sequencing and phylogenetic analysis of K1G4: a new *Komagataeibacter* strain producing bacterial cellulose from different carbon sources" *Biotech. Lett.* `doi:10.1007/s10529-020-02811-6 <https://doi.org/10.1007/s10529-020-02811-6>`_
 * Lacault *et al.* (2020) "Zucchini vein clearing disease is caused by several lineages within *Pseudomonas syringae* species complex." *Phytopathology* `doi:10.1094/PHYTO-07-19-0266-R <https://doi.org/10.1094/PHYTO-07-19-0266-R>`_
+* Mu *et al.* (2020) "*Bradymonabacteria*, a novel bacterial predator with versatile survival strategies in saline environments" *Microbiome* `doi:10.21203/rs.2.20535/v1 <https://doi.org/10.21203/rs.2.20535/v1>`_
+* Norris *et al.* (2020) "*Acidithiobacillus ferrianus* sp. nov.: an ancestral extremely acidophilic and facultatively anaerobic chemolithoautotroph" *Extremophiles* `doi:0.1007/s00792-020-01157-1 <https://doi.org/0.1007/s00792-020-01157-1>`_
 * Wang *et al.* (2020) "Comparative Genomics Analysis of *Lactobacillus ruminis* from Different Niches" *Genes* `doi:10.3390/genes11010070 <https://doi.org/10.3390/genes11010070>`_
 
 ^^^^
