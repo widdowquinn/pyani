@@ -1,5 +1,9 @@
 # CHANGES.md
 
+## v0.2.10
+
+- fix Issue #178: input filenames that could be interpreted as floats may break `labels.txt`/`classes.txt` integration, and graphical output
+
 ## v0.2.9
 
 - fix 1ssue #132: TETRA would fail if not all 4-mers present in all input sequences
