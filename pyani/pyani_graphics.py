@@ -1,4 +1,4 @@
-# Copyright 2013-2019, The James Hutton Insitute
+# Copyright 2013-2020, The James Hutton Insitute
 # Author: Leighton Pritchard
 #
 # This code is part of the pyani package, and is governed by its licence.
@@ -102,8 +102,8 @@ def get_seaborn_colorbar(dfr, classes):
 def get_safe_seaborn_labels(dfr, labels):
     """Returns labels guaranteed to correspond to the dataframe."""
     if labels is not None:
-        return [labels.get(i, i) for i in dfr.index]
-    return [i for i in dfr.index]
+        return [labels.get(str(i), str(i)) for i in dfr.index]
+    return [str(i) for i in dfr.index]
 
 
 # Return a clustermap

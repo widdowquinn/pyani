@@ -114,7 +114,7 @@
 #   --makeblastdb_exe=MAKEBLASTDB_EXE
 #                         Path to BLAST+ makeblastdb executable
 #
-# (c) The James Hutton Institute 2013-2019
+# (c) The James Hutton Institute 2013-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -132,7 +132,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2010-2019 The James Hutton Institute
+# Copyright (c) 2010-2020 The James Hutton Institute
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -792,12 +792,19 @@ def draw(filestems, gformat):
         fullstem = os.path.join(args.outdirname, filestem)
         outfilename = fullstem + ".%s" % gformat
         infilename = fullstem + ".tab"
-        df = pd.read_csv(infilename, index_col=0, sep="\t")
+        # As some people want to provide input files whose names look like
+        # floating point numbers, we need to guard against pandas interpreting
+        # them as such, and creating a Float64Index. This requires us to read
+        #  the .csv as if it had no index, specify column 0 as string datatype,
+        # then reindex the dataframe with that column.
+        df = pd.read_csv(infilename, sep="\t", dtype={"Unnamed: 0": str})
+        df.set_index("Unnamed: 0", inplace=True)
+        df = df.reindex(df.index.rename("Genomes"))
         logger.info("Writing heatmap to %s", outfilename)
         params = pyani_graphics.Params(
             params_mpl(df)[filestem],
-            pyani_tools.get_labels(args.labels),
-            pyani_tools.get_labels(args.classes),
+            pyani_tools.get_labels(args.labels, logger=logger),
+            pyani_tools.get_labels(args.classes, logger=logger),
         )
         if args.gmethod == "mpl":
             pyani_graphics.heatmap_mpl(

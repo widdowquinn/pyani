@@ -1,4 +1,4 @@
-# Copyright 2016-2019, The James Hutton Insitute
+# Copyright 2016-2020, The James Hutton Insitute
 # Author: Leighton Pritchard
 #
 # This code is part of the pyani package, and is governed by its licence.
@@ -152,5 +152,5 @@ def get_labels(filename, logger=None):
                         logger.warning("(skipping line)")
                     continue
                 else:
-                    labeldict[key] = label
+                    labeldict[str(key)] = str(label)
     return labeldict
