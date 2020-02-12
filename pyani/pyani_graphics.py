@@ -1,11 +1,41 @@
-# Copyright 2013-2020, The James Hutton Insitute
+# -*- coding: utf-8 -*-
+# (c) The James Hutton Institute 2013-2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
-# This code is part of the pyani package, and is governed by its licence.
-# Please see the LICENSE file that should have been included as part of
-# this package.
-
-"""Code to implement graphics output for ANI analyses."""
+# Contact: leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# Cathedral Street,
+# Glasgow,
+# G4 0RE
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2013-2019 The James Hutton Institute
+# Copyright (c) 2019-2020 University of Strathclyde
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+"""Module to implement graphics output for ANI analyses."""
 
 # Force matplotlib NOT to use an Xwindows backend on *nix, so that
 # _tkinter.TclError is avoided when there is no $DISPLAY env: this can occur
@@ -22,18 +52,18 @@ import matplotlib
 # Specify matplotlib backend
 matplotlib.use("Agg")
 
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.gridspec as gridspec  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-import scipy.cluster.hierarchy as sch
-import scipy.spatial.distance as distance
+import scipy.cluster.hierarchy as sch  # noqa: E402
+import scipy.spatial.distance as distance  # noqa: E402
 
-import seaborn as sns
-import pandas as pd
+import seaborn as sns  # noqa: E402
+import pandas as pd  # noqa: E402
 
-from . import pyani_config
+from . import pyani_config  # noqa: E402
 
 
 # Register Matplotlib colourmaps
@@ -44,9 +74,11 @@ plt.register_cmap(cmap=pyani_config.CMAP_BURD)
 
 # Convenience class to hold heatmap graphics parameters
 class Params(object):  # pylint: disable=too-few-public-methods
+
     """Convenience class to hold heatmap rendering parameters."""
 
     def __init__(self, params, labels=None, classes=None):
+        """Instantiate Params object."""
         self.cmap = plt.get_cmap(params[0])
         self.vmin = params[1]
         self.vmax = params[2]
@@ -55,13 +87,13 @@ class Params(object):  # pylint: disable=too-few-public-methods
 
     @property
     def vdiff(self):
-        """Returns difference between max and min values for presentation"""
+        """Returns difference between max and min values for presentation."""
         return max(0.01, self.vmax - self.vmin)
 
 
 # helper for cleaning up matplotlib axes by removing ticks etc.
 def clean_axis(axis):
-    """Remove ticks, tick labels, and frame from axis"""
+    """Remove ticks, tick labels, and frame from axis."""
     axis.get_xaxis().set_ticks([])
     axis.get_yaxis().set_ticks([])
     for spine in list(axis.spines.values()):
@@ -177,7 +209,7 @@ def heatmap_seaborn(dfr, outfilename=None, title=None, params=None):
 
 # Add dendrogram and axes to passed figure
 def add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation="col"):
-    """Return a dendrogram and corresponding gridspec, attached to the fig
+    """Return a dendrogram and corresponding gridspec, attached to the fig.
 
     Modifies the fig in-place. Orientation is either 'row' or 'col' and
     determines location and orientation of the rendered dendrogram.

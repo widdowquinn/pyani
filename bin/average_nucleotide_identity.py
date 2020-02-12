@@ -1,138 +1,23 @@
 #!/usr/bin/env python3
-#
-# average_nucleotide_identity.py
-#
-# This script calculates Average Nucleotide Identity (ANI) according to one of
-# a number of alternative methods described in, e.g.
-#
-# Richter M, Rossello-Mora R (2009) Shifting the genomic gold standard for the
-# prokaryotic species definition. Proc Natl Acad Sci USA 106: 19126-19131.
-# doi:10.1073/pnas.0906412106. (ANI1020, ANIm, ANIb)
-#
-# Goris J, Konstantinidis KT, Klappenbach JA, Coenye T, Vandamme P, et al.
-# (2007) DNA-DNA hybridization values and their relationship to whole-genome
-# sequence similarities. Int J Syst Evol Micr 57: 81-91.
-# doi:10.1099/ijs.0.64483-0.
-#
-# ANI is proposed to be the appropriate in silico substitute for DNA-DNA
-# hybridisation (DDH), and so useful for delineating species boundaries. A
-# typical percentage threshold for species boundary in the literature is 95%
-# ANI (e.g. Richter et al. 2009).
-#
-# All ANI methods follow the basic algorithm:
-# - Align the genome of organism 1 against that of organism 2, and identify
-#   the matching regions
-# - Calculate the percentage nucleotide identity of the matching regions, as
-#   an average for all matching regions
-# Methods differ on: (1) what alignment algorithm is used, and the choice of
-# parameters (this affects the aligned region boundaries); (2) what the input
-# is for alignment (typically either fragments of fixed size, or the most
-# complete assembly available); (3) whether a reciprocal comparison is
-# necessary or desirable.
-#
-# ANIm: uses MUMmer (NUCmer) to align the input sequences.
-# ANIb: uses BLASTN to align 1000nt fragments of the input sequences
-# TETRA: calculates tetranucleotide frequencies of each input sequence
-#
-# This script takes as main input a directory containing a set of
-# correctly-formatted FASTA multiple sequence files. All sequences for a
-# single organism should be contained in only one sequence file. The names of
-# these files are used for identification, so it would be advisable to name
-# them sensibly.
-#
-# Output is written to a named directory. The output files differ depending on
-# the chosen ANI method.
-#
-# ANIm: MUMmer/NUCmer .delta files, describing the sequence
-#       alignment; tab-separated format plain text tables describing total
-#       alignment lengths, and total alignment percentage identity
-#
-# ANIb: FASTA sequences describing 1000nt fragments of each input sequence;
-#       BLAST nucleotide databases - one for each set of fragments; and BLASTN
-#       output files (tab-separated tabular format plain text) - one for each
-#       pairwise comparison of input sequences. There are potentially a lot of
-#       intermediate files.
-#
-# TETRA: Tab-separated text file describing the Z-scores for each
-#        tetranucleotide in each input sequence.
-#
-# In addition, all methods produce a table of output percentage identity (ANIm
-# and ANIb) or correlation (TETRA), between each sequence.
-#
-# If graphical output is chosen, the output directory will also contain PDF
-# files representing the similarity between sequences as a heatmap with
-# row and column dendrograms.
-#
-# DEPENDENCIES
-# ============
-#
-# o Biopython (http://www.biopython.org)
-#
-# o BLAST+ executable in the $PATH, or available on the command line (ANIb)
-#       (ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
-#
-# o MUMmer executables in the $PATH, or available on the command line (ANIm)
-#       (http://mummer.sourceforge.net/)
-#
-# For graphical output
-# --------------------
-#
-# o R with shared libraries installed on the system, for graphical output
-#       (http://cran.r-project.org/)
-#
-# o Rpy2 (http://rpy.sourceforge.net/rpy2.html)
-#
-#
-# USAGE
-# =====
-#
-# calculate_ani.py [options]
-#
-# Options:
-#   -h, --help            show this help message and exit
-#   -o OUTDIRNAME, --outdir=OUTDIRNAME
-#                         Output directory
-#   -i INDIRNAME, --indir=INDIRNAME
-#                         Input directory name
-#   -v, --verbose         Give verbose output
-#   -f, --force           Force file overwriting
-#   -s, --fragsize        Sequence fragment size for ANIb
-#   --skip_nucmer         Skip NUCmer runs, for testing (e.g. if output already
-#                         present)
-#   --skip_blast          Skip BLAST runs, for testing (e.g. if output already
-#                         present)
-#   --noclobber           Don't nuke existing files
-#   -g, --graphics        Generate heatmap of ANI
-#   -m METHOD, --method=METHOD
-#                         ANI method
-#   --maxmatch            Override MUMmer settings and allow all matches in
-#                         NUCmer
-#   --nucmer_exe=NUCMER_EXE
-#                         Path to NUCmer executable
-#   --blast_exe=BLAST_EXE
-#                         Path to BLASTN+ executable
-#   --makeblastdb_exe=MAKEBLASTDB_EXE
-#                         Path to BLAST+ makeblastdb executable
-#
-# (c) The James Hutton Institute 2013-2020
+# -*- coding: utf-8 -*-
+# (c) The James Hutton Institute 2013-2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
-# Contact:
-# leighton.pritchard@hutton.ac.uk
+# Contact: leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
-# Information and Computing Sciences,
-# James Hutton Institute,
-# Errol Road,
-# Invergowrie,
-# Dundee,
-# DD6 9LH,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# Cathedral Street,
+# Glasgow,
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
-# Copyright (c) 2010-2020 The James Hutton Institute
+# Copyright (c) 2013-2019 The James Hutton Institute
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -151,6 +36,120 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+"""Provides average_nucleotide_identity.py script.
+
+This script calculates Average Nucleotide Identity (ANI) according to one of
+a number of alternative methods described in, e.g.
+
+Richter M, Rossello-Mora R (2009) Shifting the genomic gold standard for the
+prokaryotic species definition. Proc Natl Acad Sci USA 106: 19126-19131.
+doi:10.1073/pnas.0906412106. (ANI1020, ANIm, ANIb)
+
+Goris J, Konstantinidis KT, Klappenbach JA, Coenye T, Vandamme P, et al.
+(2007) DNA-DNA hybridization values and their relationship to whole-genome
+sequence similarities. Int J Syst Evol Micr 57: 81-91.
+doi:10.1099/ijs.0.64483-0.
+
+ANI is proposed to be the appropriate in silico substitute for DNA-DNA
+hybridisation (DDH), and so useful for delineating species boundaries. A
+typical percentage threshold for species boundary in the literature is 95%
+ANI (e.g. Richter et al. 2009).
+
+All ANI methods follow the basic algorithm:
+- Align the genome of organism 1 against that of organism 2, and identify
+  the matching regions
+- Calculate the percentage nucleotide identity of the matching regions, as
+  an average for all matching regions
+Methods differ on: (1) what alignment algorithm is used, and the choice of
+parameters (this affects the aligned region boundaries); (2) what the input
+is for alignment (typically either fragments of fixed size, or the most
+complete assembly available); (3) whether a reciprocal comparison is
+necessary or desirable.
+
+ANIm: uses MUMmer (NUCmer) to align the input sequences.
+ANIb: uses BLASTN to align 1000nt fragments of the input sequences
+TETRA: calculates tetranucleotide frequencies of each input sequence
+
+This script takes as main input a directory containing a set of
+correctly-formatted FASTA multiple sequence files. All sequences for a
+single organism should be contained in only one sequence file. The names of
+these files are used for identification, so it would be advisable to name
+them sensibly.
+
+Output is written to a named directory. The output files differ depending on
+the chosen ANI method.
+
+ANIm: MUMmer/NUCmer .delta files, describing the sequence
+      alignment; tab-separated format plain text tables describing total
+      alignment lengths, and total alignment percentage identity
+
+ANIb: FASTA sequences describing 1000nt fragments of each input sequence;
+      BLAST nucleotide databases - one for each set of fragments; and BLASTN
+      output files (tab-separated tabular format plain text) - one for each
+      pairwise comparison of input sequences. There are potentially a lot of
+      intermediate files.
+
+TETRA: Tab-separated text file describing the Z-scores for each
+       tetranucleotide in each input sequence.
+
+In addition, all methods produce a table of output percentage identity (ANIm
+and ANIb) or correlation (TETRA), between each sequence.
+
+If graphical output is chosen, the output directory will also contain PDF
+files representing the similarity between sequences as a heatmap with
+row and column dendrograms.
+
+DEPENDENCIES
+============
+
+o Biopython (http://www.biopython.org)
+
+o BLAST+ executable in the $PATH, or available on the command line (ANIb)
+       (ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
+
+o MUMmer executables in the $PATH, or available on the command line (ANIm)
+       (http://mummer.sourceforge.net/)
+
+For graphical output
+--------------------
+
+o R with shared libraries installed on the system, for graphical output
+      (http://cran.r-project.org/)
+
+o Rpy2 (http://rpy.sourceforge.net/rpy2.html)
+
+
+USAGE
+=====
+
+calculate_ani.py [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -o OUTDIRNAME, --outdir=OUTDIRNAME
+                        Output directory
+  -i INDIRNAME, --indir=INDIRNAME
+                        Input directory name
+  -v, --verbose         Give verbose output
+  -f, --force           Force file overwriting
+  -s, --fragsize        Sequence fragment size for ANIb
+  --skip_nucmer         Skip NUCmer runs, for testing (e.g. if output already
+                        present)
+  --skip_blast          Skip BLAST runs, for testing (e.g. if output already
+                        present)
+  --noclobber           Don't nuke existing files
+  -g, --graphics        Generate heatmap of ANI
+  -m METHOD, --method=METHOD
+                        ANI method
+  --maxmatch            Override MUMmer settings and allow all matches in
+                        NUCmer
+  --nucmer_exe=NUCMER_EXE
+                        Path to NUCmer executable
+  --blast_exe=BLAST_EXE
+                        Path to BLASTN+ executable
+  --makeblastdb_exe=MAKEBLASTDB_EXE
+                        Path to BLAST+ makeblastdb executable
+"""
 
 import json
 import logging
@@ -437,8 +436,7 @@ def parse_cmdline():
 
 # Report last exception as string
 def last_exception():
-    """ Returns last exception as a string, or use in logging.
-    """
+    """Return last exception as a string, or use in logging."""
     exc_type, exc_value, exc_traceback = sys.exc_info()
     return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
@@ -460,7 +458,7 @@ def make_outdir():
     if os.path.exists(args.outdirname):
         if not args.force:
             logger.error(
-                "Output directory %s would overwrite existing " + "files (exiting)",
+                "Output directory %s would overwrite existing files (exiting)",
                 args.outdirname,
             )
             sys.exit(1)
@@ -542,7 +540,7 @@ def calculate_anim(infiles, org_lengths):
         if args.scheduler == "multiprocessing":
             logger.info("Running jobs with multiprocessing")
             if args.workers is None:
-                logger.info("(using maximum number of available " + "worker threads)")
+                logger.info("(using maximum number of available worker threads)")
             else:
                 logger.info("(using %d worker threads, if available)", args.workers)
             cumval = run_mp.run_dependency_graph(
@@ -550,9 +548,7 @@ def calculate_anim(infiles, org_lengths):
             )
             logger.info("Cumulative return value: %d", cumval)
             if 0 < cumval:
-                logger.warning(
-                    "At least one NUCmer comparison failed. " + "ANIm may fail."
-                )
+                logger.warning("At least one NUCmer comparison failed. ANIm may fail.")
             else:
                 logger.info("All multiprocessing jobs complete.")
         else:
@@ -575,21 +571,22 @@ def calculate_anim(infiles, org_lengths):
         if not args.skip_nucmer and args.scheduler == "multiprocessing":
             if 0 < cumval:
                 logger.error(
-                    "This has possibly been a NUCmer run failure, "
-                    + "please investigate"
+                    "This has possibly been a NUCmer run failure, please investigate"
                 )
                 logger.error(last_exception())
                 sys.exit(1)
             else:
                 logger.error(
-                    "This is possibly due to a NUCmer comparison "
-                    + "being too distant for use. Please consider "
-                    + "using the --maxmatch option."
+                    (
+                        "This is possibly due to a NUCmer comparison being too "
+                        "distant for use. Please consider using the --maxmatch option."
+                    )
                 )
                 logger.error(
-                    "This is alternatively due to NUCmer run "
-                    + "failure, analysis will continue, but please "
-                    + "investigate."
+                    (
+                        "This is alternatively due to NUCmer run failure, "
+                        "analysis will continue, but please investigate."
+                    )
                 )
     if not args.nocompress:
         logger.info("Compressing/deleting %s", deltadir)
@@ -700,7 +697,7 @@ def unified_anib(infiles, org_lengths):
             logger.info("Running jobs with multiprocessing")
             logger.info("Running job dependency graph")
             if args.workers is None:
-                logger.info("(using maximum number of available " + "worker threads)")
+                logger.info("(using maximum number of available worker threads)")
             else:
                 logger.info("(using %d worker threads, if available)", args.workers)
             cumval = run_mp.run_dependency_graph(
@@ -708,7 +705,7 @@ def unified_anib(infiles, org_lengths):
             )
             if 0 < cumval:
                 logger.warning(
-                    "At least one BLAST run failed. " + "%s may fail.", args.method
+                    "At least one BLAST run failed. %s may fail.", args.method
                 )
             else:
                 logger.info("All multiprocessing jobs complete.")
@@ -735,13 +732,11 @@ def unified_anib(infiles, org_lengths):
         if not args.skip_blastn:
             if 0 < cumval:
                 logger.error(
-                    "This is possibly due to BLASTN run failure, "
-                    + "please investigate"
+                    "This is possibly due to BLASTN run failure, please investigate"
                 )
             else:
                 logger.error(
-                    "This is possibly due to a BLASTN comparison "
-                    + "being too distant for use."
+                    "This is possibly due to a BLASTN comparison being too distant for use."
                 )
         logger.error(last_exception())
     if not args.nocompress:
@@ -782,7 +777,7 @@ def write(results):
 
 # Draw ANIb/ANIm/TETRA output
 def draw(filestems, gformat):
-    """Draw ANIb/ANIm/TETRA results
+    """Draw ANIb/ANIm/TETRA results.
 
     - filestems - filestems for output files
     - gformat - the format for output graphics
@@ -871,7 +866,7 @@ if __name__ == "__main__":
             err_handler_file.setFormatter(err_formatter)
             err_handler_file.setLevel(logging.INFO)
             logger.addHandler(err_handler_file)
-        except:
+        except IOError:
             logger.error("Could not open %s for logging", args.logfile)
             sys.exit(1)
 
@@ -958,12 +953,10 @@ if __name__ == "__main__":
         # Get lengths of input sequences
         logger.info("Processing input sequence lengths")
         org_lengths = pyani_files.get_sequence_lengths(infiles)
-        logger.info(
-            "Sequence lengths:\n"
-            + os.linesep.join(
-                ["\t%s: %d" % (k, v) for k, v in list(org_lengths.items())]
-            )
+        logstr = "Sequence lengths:\n" + os.linesep.join(
+            ["\t%s: %d" % (k, v) for k, v in list(org_lengths.items())]
         )
+        logger.info(logstr)
 
         # Run appropriate method on the contents of the input directory,
         # and write out corresponding results.
