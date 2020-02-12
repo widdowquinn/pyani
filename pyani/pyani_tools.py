@@ -1,11 +1,42 @@
-# Copyright 2016-2019, The James Hutton Insitute
+# -*- coding: utf-8 -*-
+# (c) The James Hutton Institute 2016-2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
-# This code is part of the pyani package, and is governed by its licence.
-# Please see the LICENSE file that should have been included as part of
-# this package.
+# Contact: leighton.pritchard@strath.ac.uk
+#
+# Leighton Pritchard,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# Cathedral Street,
+# Glasgow,
+# G4 0RE
+# Scotland,
+# UK
+#
+# The MIT License
+#
+# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2019-2020 University of Strathclyde
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
-"""Code to support pyani."""
+"""Code to support pyani with miscellaneous functions."""
 
 import pandas as pd
 from . import pyani_config
@@ -13,6 +44,7 @@ from . import pyani_config
 
 # Class to hold ANI dataframe results
 class ANIResults(object):
+
     """Holds ANI dataframe results."""
 
     def __init__(self, labels, mode):
@@ -86,50 +118,54 @@ class ANIResults(object):
 
 # Class to hold BLAST functions
 class BLASTfunctions(object):
+
     """Class to hold BLAST functions."""
 
     def __init__(self, db_func, blastn_func):
+        """Initialise struct to hold BLAST functions."""
         self.db_func = db_func
         self.blastn_func = blastn_func
 
 
 # Class to hold BLAST executables
 class BLASTexes(object):
+
     """Class to hold BLAST functions."""
 
     def __init__(self, format_exe, blast_exe):
+        """Initialise struct to hold BLAST functions."""
         self.format_exe = format_exe
         self.blast_exe = blast_exe
 
 
 # Class to hold/build BLAST commands
 class BLASTcmds(object):
-    """Class to hold BLAST command data for construction of BLASTN and
-    database formatting commands.
-    """
+
+    """Holds BLAST command/database formatting commands."""
 
     def __init__(self, funcs, exes, prefix, outdir):
+        """Initialise BLASTcmds."""
         self.funcs = funcs
         self.exes = exes
         self.prefix = prefix
         self.outdir = outdir
 
     def build_db_cmd(self, fname):
-        """Return database format/build command"""
+        """Return database format/build command."""
         return self.funcs.db_func(fname, self.outdir, self.exes.format_exe)[0]
 
     def get_db_name(self, fname):
-        """Return database filename"""
+        """Return database filename."""
         return self.funcs.db_func(fname, self.outdir, self.exes.format_exe)[1]
 
     def build_blast_cmd(self, fname, dbname):
-        """Return BLASTN command"""
+        """Return BLASTN command."""
         return self.funcs.blastn_func(fname, dbname, self.outdir, self.exes.blast_exe)
 
 
 # Read sequence annotations in from file
 def get_labels(filename, logger=None):
-    """Returns a dictionary of alternative sequence labels, or None
+    r"""Return dictionary of alternative sequence labels, or None.
 
     - filename - path to file containing tab-separated table of labels
 
@@ -152,5 +188,5 @@ def get_labels(filename, logger=None):
                         logger.warning("(skipping line)")
                     continue
                 else:
-                    labeldict[key] = label
+                    labeldict[str(key)] = str(label)
     return labeldict

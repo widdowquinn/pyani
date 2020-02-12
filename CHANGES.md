@@ -1,5 +1,9 @@
 # CHANGES.md
 
+## v0.2.10
+
+- fix Issue #178: input filenames that could be interpreted as floats may break `labels.txt`/`classes.txt` integration, and graphical output
+
 ## v0.2.9
 
 - fix 1ssue #132: TETRA would fail if not all 4-mers present in all input sequences
@@ -47,8 +51,8 @@
 - Changes to `--noclobber` log behaviour (issue #79)
 - fixed `--rerender` code (issue #85)
 
-
 ## v0.2.3
+
 - fixes a bug in the installed scripts where the shebang (`#!`) in wheel and egg packages pointed to a development Python
 
 ## v0.2.2
@@ -60,7 +64,6 @@
 - add several tests and support for `codecov.io`, `landscape.io` and `Travis-CI`
 - removed requirement for `rpy2`
 - moved scripts to `bin/` subdirectory
-
 
 ## v0.2.1
 
