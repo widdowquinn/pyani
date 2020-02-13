@@ -1,0 +1,95 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+# This config file is for the version_0_2 branch of pyani, and caches
+# dependencies specific to this branch
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@1.0.5
+
+workflows:
+  version: 2.1
+  test:
+    jobs:
+      - test-3_7
+      - test-3_6
+      # - test-3_8
+
+jobs:
+  test-3_7: &test-template
+    docker:
+      - image: circleci/python:3.7.5
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - pyani-v0_2-dependencies-pip-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
+            - pyani-v0_2-dependencies-pip-
+
+      - run:
+          name: update apt-get
+          command: |
+            sudo apt-get update
+      - run:
+          name: install third-party tools
+          command: |
+            sudo apt-get install csh mummer ncbi-blast+
+      - run:
+          name: install legacy BLAST
+          command: |
+            curl -o legacy_blast.tar.gz ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy.NOTSUPPORTED/2.2.26/blast-2.2.26-x64-linux.tar.gz
+            tar -zxf legacy_blast.tar.gz
+            echo 'export PATH=$PWD/blast-2.2.26/bin:$PATH' >> $BASH_ENV
+            source $BASH_ENV
+
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install --upgrade pip setuptools virtualenv
+            pip install -r requirements.txt
+            pip install -r requirements-dev.txt
+            pip install -r requirements-pip.txt
+
+      - save_cache:
+          paths:
+            - ./venv
+          key: pyani-v0_2-dependencies-pip-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
+
+      - run:
+          name: install pyani
+          command: |
+            . venv/bin/activate
+            pip install -e .  # Install the repo as a package
+
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            pytest -v --cov=pyani --cov-report xml:.coverage.xml
+
+      - store_artifacts:
+          path: tests/test_output
+          destination: tests/test_output
+      - store_artifacts:
+          path: .coverage.xml
+          destination: .coverage.xml
+
+      - codecov/upload:
+          file: .coverage.xml
+
+  test-3_6:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.6.8
+  # test-3_8:
+  #   <<: *test-template
+  #   docker:
+  #     - image: circleci/python:3.8.0
