@@ -1,4 +1,4 @@
-# README.md (pyani)
+# README.md (pyani v0.2)
 
 [![pyani PyPi version](https://img.shields.io/pypi/v/pyani.svg "PyPi version")](https://pypi.python.org/pypi/pyani)
 [![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/master/LICENSE)
@@ -28,6 +28,8 @@
 
 ## Overview
 `pyani` is a Python3 module that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
+
+**This `README.md` applies only to v0.2 of `pyani`.**
 
 `pyani` installs the following scripts into the `$PATH`:
 
