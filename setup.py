@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+"""Setup script for package distribution."""
+
 # try using distribute or setuptools or distutils.
 try:
     import distribute_setup
@@ -33,7 +36,10 @@ setuptools.setup(
     version=version,
     author="Leighton Pritchard",
     author_email="leighton.pritchard@hutton.ac.uk",
-    description="pyani provides a package and script for calculation of genome-scale average nucleotide identity.",
+    description=(
+        "pyani provides a package and script for calculation of "
+        "genome-scale average nucleotide identity."
+    ),
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="MIT",
