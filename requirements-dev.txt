@@ -2,6 +2,7 @@ black
 flake8
 nose
 pytest
+pytest-cov
 setuptools
 twine
 wheel
