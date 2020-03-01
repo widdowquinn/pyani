@@ -61,9 +61,15 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 
 * Albert *et al.* (2020) "Comparative Pangenomics of the Mammalian Gut Commensal *Bifidobacterium longum*" *Microorganisms* `doi:10.3390/microorganisms8010007 <https://doi.org/10.3390/microorganisms8010007>`_
 * Ibarra Caballero *et al.* (2020) "Genome comparison and transcriptome analysis of the invasive brown root rot pathogen, *Phellinus noxius*, from different geographic regions reveals potential enzymes associated with degradation of different wood substrates" *Fungal Biology* `doi:10.1016/j.funbio.2019.12.007 <https://doi.org/10.1016/j.funbio.2019.12.007>`_
+* Joglekar *et al.* (2020) "Polyphasic analysis reveals correlation between phenotypic and genotypic analysis in soybean bradyrhizobia (*Bradyrhizobium* spp.)" *Syst. Appl. Microb.* `doi:10.1016/j.syapm.2020.126073 <https://doi.org/10.1016/j.syapm.2020.126073>`_
 * Kuleshov *et al.* (2020) "Whole genome sequencing of *Borrelia miyamotoi* isolate Izh-4: reference for a complex bacterial genome" *BMC Genomics* `doi:10.1186/s12864-019-6388-4 <https://doi.org/10.1186/s12864-019-6388-4>`_
 * Lacault *et al.* (2020) "Zucchini vein clearing disease is caused by several lineages within *Pseudomonas syringae* species complex." *Phytopathology* `doi:10.1094/PHYTO-07-19-0266-R <https://doi.org/10.1094/PHYTO-07-19-0266-R>`_
+* Pasanen *et al.* (2020) "*Pectobacterium parvum* sp. nov., having a Salmonella SPI-1-like Type III secretion system and low virulence" *Int. J. Syst. Evol. Microb.* `doi:10.1099/ijsem.0.004057 <https://doi.org/10.1099/ijsem.0.004057>`_
+* Rackaityte (2020) "Viable bacterial colonization is highly limited in the human intestine in utero" *Nature Medicine* `doi:10.1038/s41591-020-0761-3 <https://doi.org/10.1038/s41591-020-0761-3>`_
 * Wang *et al.* (2020) "Comparative Genomics Analysis of *Lactobacillus ruminis* from Different Niches" *Genes* `doi:10.3390/genes11010070 <https://doi.org/10.3390/genes11010070>`_
+* Wist *et al.* (2020) "Phenotypic and Genotypic Traits of Vancomycin-Resistant *Enterococci* from Healthy Food- Producing Animals"  *Microorganisms* `doi:10.3390/microorganisms8020261 <https://doi.org/10.3390/microorganisms8020261>`_
+* Wu *et al.* (2020) "Toward a high-quality pan-genome landscape of *Bacillus subtilis* by removal of confounding strains" *Brief. Bioinf.* `doi:10.1093/bib/bbaa013 <https://doi.org/10.1093/bib/bbaa013>`_
+* Yang *et al.* (2020) "Isolation and Characterization of the Novel Phages vB_VpS_BA3 and vB_VpS_CA8 for Lysing *Vibrio parahaemolyticus*" *Front. Microbiol.* `doi:10.3389/fmicb.2020.00259 <https://doi.org/10.3389/fmicb.2020.00259>`_
 
 ^^^^
 2019
