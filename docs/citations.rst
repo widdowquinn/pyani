@@ -60,16 +60,28 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 ^^^^
 
 * Albert *et al.* (2020) "Comparative Pangenomics of the Mammalian Gut Commensal *Bifidobacterium longum*" *Microorganisms* `doi:10.3390/microorganisms8010007 <https://doi.org/10.3390/microorganisms8010007>`_
+* Déraspe *et al.* (2020) "Genome Sequence of a *Klebsiella pneumoniae* NDM-1 Producer Isolated in Quebec City" *Microbiol. Resour. Announc.* `doi:10.1128/MRA.00829-19 <https://doi.org/10.1128/MRA.00829-19>`_
+* Furrer *et al.* (2020) "Phage vB_BveM-Goe7 represents a new genus in the subfamily *Bastillevirinae*" *Arch. Virol.* `doi:10.1007/s00705-020-04546-1 <https://doi.org/10.1007/s00705-020-04546-1>`_
+* Hinger *et al.* (2020) "Phylogenomic Analyses of Members of the Widespread Marine Heterotrophic Genus *Pseudovibrio* Suggest Distinct Evolutionary Trajectories and a Novel Genus, *Polycladidibacter* gen. nov." *Appl. Env. Microbiol.* `doi:10.1128/AEM.02395-19 <https://doi.org/10.1128/AEM.02395-19>`_
 * Ibarra Caballero *et al.* (2020) "Genome comparison and transcriptome analysis of the invasive brown root rot pathogen, *Phellinus noxius*, from different geographic regions reveals potential enzymes associated with degradation of different wood substrates" *Fungal Biology* `doi:10.1016/j.funbio.2019.12.007 <https://doi.org/10.1016/j.funbio.2019.12.007>`_
+* Inderbitzin *et al.* (2020) "Species identification in plant-associated prokaryotes and fungi using DNA" *Phytobiomes J.* `doi:10.1094/PBIOMES-12-19-0067-RVW <https://doi.org/10.1094/PBIOMES-12-19-0067-RVW">`_
 * Joglekar *et al.* (2020) "Polyphasic analysis reveals correlation between phenotypic and genotypic analysis in soybean bradyrhizobia (*Bradyrhizobium* spp.)" *Syst. Appl. Microb.* `doi:10.1016/j.syapm.2020.126073 <https://doi.org/10.1016/j.syapm.2020.126073>`_
 * Kuleshov *et al.* (2020) "Whole genome sequencing of *Borrelia miyamotoi* isolate Izh-4: reference for a complex bacterial genome" *BMC Genomics* `doi:10.1186/s12864-019-6388-4 <https://doi.org/10.1186/s12864-019-6388-4>`_
+* La China *et al.* (2020) "Genome sequencing and phylogenetic analysis of K1G4: a new *Komagataeibacter* strain producing bacterial cellulose from different carbon sources" *Biotech. Lett.* `doi:10.1007/s10529-020-02811-6 <https://doi.org/10.1007/s10529-020-02811-6>`_
 * Lacault *et al.* (2020) "Zucchini vein clearing disease is caused by several lineages within *Pseudomonas syringae* species complex." *Phytopathology* `doi:10.1094/PHYTO-07-19-0266-R <https://doi.org/10.1094/PHYTO-07-19-0266-R>`_
+* Mu *et al.* (2020) "*Bradymonabacteria*, a novel bacterial predator with versatile survival strategies in saline environments" *Microbiome* `doi:10.21203/rs.2.20535/v1 <https://doi.org/10.21203/rs.2.20535/v1>`_
+* Nilsson *et al.* (2020) "Diversity and Host Interactions Among Virulent and Temperate Baltic Sea *Flavobacterium* Phages" *Viruses* `doi:10.3390/v12020158 <https://doi.org/10.3390/v12020158>`_
+* Norris *et al.* (2020) "*Acidithiobacillus ferrianus* sp. nov.: an ancestral extremely acidophilic and facultatively anaerobic chemolithoautotroph" *Extremophiles* `doi:0.1007/s00792-020-01157-1 <https://doi.org/0.1007/s00792-020-01157-1>`_
 * Pasanen *et al.* (2020) "*Pectobacterium parvum* sp. nov., having a Salmonella SPI-1-like Type III secretion system and low virulence" *Int. J. Syst. Evol. Microb.* `doi:10.1099/ijsem.0.004057 <https://doi.org/10.1099/ijsem.0.004057>`_
 * Rackaityte (2020) "Viable bacterial colonization is highly limited in the human intestine in utero" *Nature Medicine* `doi:10.1038/s41591-020-0761-3 <https://doi.org/10.1038/s41591-020-0761-3>`_
+* Vijayan *et al.* (2020) "Bacteria known to induce settlement of larvae of *Hydroides elegans* are rare in natural inductive biofilm" *Aquatic Microb. Ecol.* `doi:10.3354/ame01925 <https://doi.org/10.3354/ame01925>`_
+* Waleron *et al.* (2020) "*Arthrospiribacter ruber* gen. nov., sp. nov., a novel bacterium isolated from *Arthrospira* cultures" *Syst. Appl. Microbiol.* `doi:10.1016/j.syapm.2020.126072 <https://doi.org/10.1016/j.syapm.2020.126072>`_
 * Wang *et al.* (2020) "Comparative Genomics Analysis of *Lactobacillus ruminis* from Different Niches" *Genes* `doi:10.3390/genes11010070 <https://doi.org/10.3390/genes11010070>`_
+* Wang *et al.* (2020) "Complete genomic data of Burkholderia glumae strain GX associated with bacterial panicle blight of rice in China" *Plant Dis.* `doi:10.1094/PDIS-10-19-2265-A <https://doi.org/10.1094/PDIS-10-19-2265-A>`_
 * Wist *et al.* (2020) "Phenotypic and Genotypic Traits of Vancomycin-Resistant *Enterococci* from Healthy Food- Producing Animals"  *Microorganisms* `doi:10.3390/microorganisms8020261 <https://doi.org/10.3390/microorganisms8020261>`_
 * Wu *et al.* (2020) "Toward a high-quality pan-genome landscape of *Bacillus subtilis* by removal of confounding strains" *Brief. Bioinf.* `doi:10.1093/bib/bbaa013 <https://doi.org/10.1093/bib/bbaa013>`_
 * Yang *et al.* (2020) "Isolation and Characterization of the Novel Phages vB_VpS_BA3 and vB_VpS_CA8 for Lysing *Vibrio parahaemolyticus*" *Front. Microbiol.* `doi:10.3389/fmicb.2020.00259 <https://doi.org/10.3389/fmicb.2020.00259>`_
+* Zhou *et al.* (2020) "Comparative analysis of *Lactobacillus gasseri* from Chinese subjects reveals a new species-level taxa" *BMC Genomics* `doi:10.1186/s12864-020-6527-y <https://doi.org/10.1186/s12864-020-6527-y>`_
 
 ^^^^
 2019

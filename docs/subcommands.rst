@@ -25,3 +25,4 @@ This document links out to detailed instructions for each of the ``pyani`` subco
     subcmd_report
     subcmd_plot
     subcmd_classify
+    subcmd_listdeps
