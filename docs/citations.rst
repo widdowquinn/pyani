@@ -60,6 +60,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 ^^^^
 
 * Albert *et al.* (2020) "Comparative Pangenomics of the Mammalian Gut Commensal *Bifidobacterium longum*" *Microorganisms* `doi:10.3390/microorganisms8010007 <https://doi.org/10.3390/microorganisms8010007>`_
+* Cunningham-Oakes *et al.* (2020) "Genome Sequence of *Pluralibacter gergoviae* ECO77, a Multireplicon Isolate of Industrial Origin" *Microbiol. Res. Ann.* `doi:0.1128/MRA.01561-19 <https://doi.org/0.1128/MRA.01561-19>`_
 * Déraspe *et al.* (2020) "Genome Sequence of a *Klebsiella pneumoniae* NDM-1 Producer Isolated in Quebec City" *Microbiol. Resour. Announc.* `doi:10.1128/MRA.00829-19 <https://doi.org/10.1128/MRA.00829-19>`_
 * Furrer *et al.* (2020) "Phage vB_BveM-Goe7 represents a new genus in the subfamily *Bastillevirinae*" *Arch. Virol.* `doi:10.1007/s00705-020-04546-1 <https://doi.org/10.1007/s00705-020-04546-1>`_
 * Hinger *et al.* (2020) "Phylogenomic Analyses of Members of the Widespread Marine Heterotrophic Genus *Pseudovibrio* Suggest Distinct Evolutionary Trajectories and a Novel Genus, *Polycladidibacter* gen. nov." *Appl. Env. Microbiol.* `doi:10.1128/AEM.02395-19 <https://doi.org/10.1128/AEM.02395-19>`_
@@ -74,6 +75,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Norris *et al.* (2020) "*Acidithiobacillus ferrianus* sp. nov.: an ancestral extremely acidophilic and facultatively anaerobic chemolithoautotroph" *Extremophiles* `doi:0.1007/s00792-020-01157-1 <https://doi.org/0.1007/s00792-020-01157-1>`_
 * Pasanen *et al.* (2020) "*Pectobacterium parvum* sp. nov., having a Salmonella SPI-1-like Type III secretion system and low virulence" *Int. J. Syst. Evol. Microb.* `doi:10.1099/ijsem.0.004057 <https://doi.org/10.1099/ijsem.0.004057>`_
 * Rackaityte (2020) "Viable bacterial colonization is highly limited in the human intestine in utero" *Nature Medicine* `doi:10.1038/s41591-020-0761-3 <https://doi.org/10.1038/s41591-020-0761-3>`_
+* Thapa *et al.* (2020) "Genome‐wide analyses of Liberibacter species provides insights into evolution, phylogenetic relationships, and virulence factors" *Mol. Plant Path.* `doi:10.1111/mpp.12925  <https://doi.org/10.1111/mpp.12925>`_
 * Vijayan *et al.* (2020) "Bacteria known to induce settlement of larvae of *Hydroides elegans* are rare in natural inductive biofilm" *Aquatic Microb. Ecol.* `doi:10.3354/ame01925 <https://doi.org/10.3354/ame01925>`_
 * Waleron *et al.* (2020) "*Arthrospiribacter ruber* gen. nov., sp. nov., a novel bacterium isolated from *Arthrospira* cultures" *Syst. Appl. Microbiol.* `doi:10.1016/j.syapm.2020.126072 <https://doi.org/10.1016/j.syapm.2020.126072>`_
 * Wang *et al.* (2020) "Comparative Genomics Analysis of *Lactobacillus ruminis* from Different Niches" *Genes* `doi:10.3390/genes11010070 <https://doi.org/10.3390/genes11010070>`_
