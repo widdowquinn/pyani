@@ -73,7 +73,7 @@ def build_logger(name: str, args: Namespace) -> logging.Logger:
 
     # If a logfile was specified, use it
     if args.logfile is not None:
-        logdir = args.logfile.parents
+        logdir = args.logfile.parents[0]
         try:
             if not logdir == Path.cwd():
                 logdir.mkdir(exist_ok=True)
