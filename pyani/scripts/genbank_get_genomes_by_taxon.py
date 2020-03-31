@@ -54,6 +54,7 @@ import traceback
 
 from argparse import ArgumentParser
 from collections import defaultdict
+from pathlib import Path
 from socket import timeout
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
@@ -61,6 +62,7 @@ from urllib.request import urlopen
 from Bio import Entrez, SeqIO
 
 from pyani import __version__
+from pyani.download import create_hash
 
 from .logger import build_logger
 
@@ -88,6 +90,7 @@ def parse_cmdline(argv=None):
         required=True,
         action="store",
         default=None,
+        type=Path,
         help="Output directory (required)",
     )
     parser.add_argument(
@@ -127,13 +130,14 @@ def parse_cmdline(argv=None):
         dest="logfile",
         action="store",
         default=None,
+        type=Path,
         help="Logfile location",
     )
     parser.add_argument(
         "--format",
         dest="format",
         action="store",
-        default="gbk,fasta",
+        default="fasta",
         help="Output file format [gbk|fasta]",
     )
     parser.add_argument(
@@ -404,16 +408,11 @@ def get_ncbi_asm(args, logger, asm_uid, fmt="fasta"):
         # we consider this an error/incompleteness in the NCBI metadata
         strain = ""
 
-    # Create label and class strings
-    genus, species = organism.split(" ", 1)
-    lbltxt = "%s_genomic\t%s %s %s" % (filestem, genus[0] + ".", species, strain)
-    clstxt = "%s_genomic\t%s" % (filestem, organism)
-    logger.info("\tLabel: %s", lbltxt)
-    logger.info("\tClass: %s", clstxt)
-
     # Download and extract genome assembly
+    hash_md5 = None
     try:
         fastafname = retrieve_asm_contigs(args, logger, filestem, fmt=fmt)
+        hash_md5 = create_hash(fastafname)
     except NCBIDownloadException:
         # This is a little hacky. Sometimes, RefSeq assemblies are
         # suppressed (presumably because they are non-redundant),
@@ -425,8 +424,22 @@ def get_ncbi_asm(args, logger, asm_uid, fmt="fasta"):
         logger.warning("Could not download %s, trying %s", filestem, gbfilestem)
         try:
             fastafname = retrieve_asm_contigs(args, logger, gbfilestem, fmt=fmt)
+            hash_md5 = create_hash(fastafname)
         except NCBIDownloadException:
             fastafname = None
+
+    # Create label and class strings
+    genus, species = organism.split(" ", 1)
+    lbltxt = "%s\t%s_genomic\t%s %s %s" % (
+        hash_md5,
+        filestem,
+        genus[0] + ".",
+        species,
+        strain,
+    )
+    clstxt = "%s\t%s_genomic\t%s" % (hash_md5, filestem, organism)
+    logger.info("\tLabel: %s", lbltxt)
+    logger.info("\tClass: %s", clstxt)
 
     return (fastafname, clstxt, lbltxt, data["AssemblyAccession"])
 
