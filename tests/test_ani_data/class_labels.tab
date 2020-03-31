@@ -1,4 +1,4 @@
-NC_002696	C.crescentus
-NC_014100	C.segnis
-NC_011916	C.crescentus
-NC_010338	Caulobacter sp.
+fake_hash	NC_002696	C.crescentus
+fake_hash	NC_014100	C.segnis
+fake_hash	NC_011916	C.crescentus
+fake_hash	NC_010338	Caulobacter sp.

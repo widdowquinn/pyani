@@ -84,11 +84,11 @@ def clean_axis(axis):
 def add_dendrogram(dfr, fig, params, heatmap_gs, orientation="col"):
     """Return a dendrogram and corresponding gridspec, attached to the fig.
 
-    :param dfr:
-    :param fig:
-    :param params:
-    :param heatmap_gs:
-    :param orientation:
+    :param dfr:  Pandas DataFrame describing input data
+    :param fig:  matplotlib Fig that holds graphical output
+    :param params:  pyani_graphics.Params object
+    :param heatmap_gs:  matplotlib GridSpec for this dendrogram
+    :param orientation:  str, "row" or "col"
 
     Modifies the fig in-place. Orientation is either 'row' or 'col' and
     determines location and orientation of the rendered dendrogram.

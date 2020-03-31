@@ -173,6 +173,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         action="store",
         default=None,
         required=True,
+        type=Path,
         help="Output directory (required)",
     )
     parser.add_argument(
@@ -182,6 +183,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         action="store",
         default=None,
         required=True,
+        type=Path,
         help="Input directory name (required)",
     )
     parser.add_argument(
@@ -215,6 +217,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         dest="logfile",
         action="store",
         default=None,
+        type=Path,
         help="Logfile location",
     )
     parser.add_argument(
@@ -274,6 +277,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         dest="labels",
         action="store",
         default=None,
+        type=Path,
         help="Path to file containing sequence labels",
     )
     parser.add_argument(
@@ -281,6 +285,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         dest="classes",
         action="store",
         default=None,
+        type=Path,
         help="Path to file containing sequence classes",
     )
     parser.add_argument(
@@ -337,6 +342,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         dest="nucmer_exe",
         action="store",
         default=pyani_config.NUCMER_DEFAULT,
+        type=Path,
         help="Path to NUCmer executable",
     )
     parser.add_argument(
@@ -344,6 +350,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         dest="filter_exe",
         action="store",
         default=pyani_config.FILTER_DEFAULT,
+        type=Path,
         help="Path to delta-filter executable",
     )
     parser.add_argument(
@@ -351,6 +358,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         dest="blastn_exe",
         action="store",
         default=pyani_config.BLASTN_DEFAULT,
+        type=Path,
         help="Path to BLASTN+ executable",
     )
     parser.add_argument(
@@ -358,6 +366,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         dest="makeblastdb_exe",
         action="store",
         default=pyani_config.MAKEBLASTDB_DEFAULT,
+        type=Path,
         help="Path to BLAST+ makeblastdb executable",
     )
     parser.add_argument(
@@ -365,6 +374,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         dest="blastall_exe",
         action="store",
         default=pyani_config.BLASTALL_DEFAULT,
+        type=Path,
         help="Path to BLASTALL executable",
     )
     parser.add_argument(
@@ -372,6 +382,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         dest="formatdb_exe",
         action="store",
         default=pyani_config.FORMATDB_DEFAULT,
+        type=Path,
         help="Path to BLAST formatdb executable",
     )
     parser.add_argument(
@@ -466,7 +477,9 @@ def compress_delete_outdir(outdir: Path, logger: Logger) -> None:
 
 
 # Calculate ANIm for input
-def calculate_anim(args: Namespace, logger: Logger, infiles: List[Path], org_lengths: Dict) -> pyani_tools.ANIResults:
+def calculate_anim(
+    args: Namespace, logger: Logger, infiles: List[Path], org_lengths: Dict
+) -> pyani_tools.ANIResults:
     """Return ANIm result dataframes for files in input directory.
 
     :param args:  Namespace, command-line arguments
@@ -587,7 +600,9 @@ def calculate_tetra(logger: Logger, infiles: List[Path]) -> pd.DataFrame:
     return tetra_correlations
 
 
-def make_sequence_fragments(args: Namespace, logger: Logger, infiles: List[Path], blastdir: Path) -> Tuple[List, Dict]:
+def make_sequence_fragments(
+    args: Namespace, logger: Logger, infiles: List[Path], blastdir: Path
+) -> Tuple[List, Dict]:
     """Return tuple of fragment files, and fragment sizes.
 
     :param args:  Namespace of command-line arguments
@@ -609,7 +624,9 @@ def make_sequence_fragments(args: Namespace, logger: Logger, infiles: List[Path]
     return fragfiles, fraglengths
 
 
-def run_blast(args: Namespace, logger: Logger, infiles: List[Path], blastdir: Path) -> Tuple:
+def run_blast(
+    args: Namespace, logger: Logger, infiles: List[Path], blastdir: Path
+) -> Tuple:
     """Run BLAST commands for ANIb methods.
 
     :param args:  Namespace of command-line options
@@ -662,7 +679,9 @@ def run_blast(args: Namespace, logger: Logger, infiles: List[Path], blastdir: Pa
 
 
 # Calculate ANIb for input
-def unified_anib(args: Namespace, logger: Logger, infiles: List[Path], org_lengths: Dict[str, int]) -> pyani_tools.ANIResults:
+def unified_anib(
+    args: Namespace, logger: Logger, infiles: List[Path], org_lengths: Dict[str, int]
+) -> pyani_tools.ANIResults:
     """Calculate ANIb for files in input directory.
 
     :param args:  Namespace of command-line options
@@ -752,12 +771,11 @@ def write(args: Namespace, logger: Logger, results: pd.DataFrame) -> None:
         results.to_csv(out_csv, index=True, sep="\t")
     else:
         for dfr, filestem in results.data:
-            out_excel = args.outdirname, filestem + ".xlsx"
-            out_csv = args.outdirname, filestem + ".tab"
-            logger.info("\t%s", filestem)
+            stem = args.outdirname / filestem
+            logger.info("\t%s", stem)
             if args.write_excel:
-                dfr.to_excel(out_excel, index=True)
-            dfr.to_csv(out_csv, index=True, sep="\t")
+                dfr.to_excel(stem.with_suffix(".xlsx"), index=True)
+            dfr.to_csv(stem.with_suffix(".tab"), index=True, sep="\t")
 
 
 # Draw ANIb/ANIm/TETRA output
@@ -772,14 +790,15 @@ def draw(args: Namespace, logger: Logger, filestems: List[str], gformat: str) ->
     # Draw heatmaps
     for filestem in filestems:
         fullstem = args.outdirname / filestem
-        outfilename = fullstem + ".%s" % gformat
-        infilename = fullstem + ".tab"
+        outfilename = fullstem.with_suffix(".%s" % gformat)
+        infilename = fullstem.with_suffix(".tab")
         dfm = pd.read_csv(infilename, index_col=0, sep="\t")
         logger.info("Writing heatmap to %s", outfilename)
+        print(args.labels, args.classes)
         params = pyani_graphics.Params(
             params_mpl(dfm)[filestem],
-            pyani_tools.get_labels(args.labels),
-            pyani_tools.get_labels(args.classes),
+            pyani_tools.get_labels(args.labels, logger=logger),
+            pyani_tools.get_labels(args.classes, logger=logger),
         )
         if args.gmethod == "mpl":
             pyani_graphics.mpl.heatmap(
@@ -943,7 +962,9 @@ def test_scheduler(args: Namespace, logger: Logger) -> None:
 
 
 # Main function
-def run_main(argsin: Optional[Namespace] = None, logger: Optional[Logger] = None) -> int:
+def run_main(
+    argsin: Optional[Namespace] = None, logger: Optional[Logger] = None
+) -> int:
     """Run main process for average_nucleotide_identity.py script.
 
     :param argsin:  Namespace, command-line arguments
@@ -974,7 +995,9 @@ def run_main(argsin: Optional[Namespace] = None, logger: Optional[Logger] = None
         # Are we subsampling? If so, make the selection here
         if args.subsample:
             infiles = subsample_input(args, logger, infiles)
-            logger.info("Sampled input files:\n\t%s", "\n\t".join([str(_) for _ in infiles]))
+            logger.info(
+                "Sampled input files:\n\t%s", "\n\t".join([str(_) for _ in infiles])
+            )
 
         # Get lengths of input sequences
         logger.info("Processing input sequence lengths")

@@ -14,7 +14,10 @@
   - documentation is now available at [ReadTheDocs](https://pyani.readthedocs.io/en/development/)
   - papers citing or referring to `pyani` are now listed
 - `pyani download` (replacing `genbank_get_genomes_by_taxon.py`) allows use of an NCBI API key for faster/more stable downloads
+  - `genbank_get_genomes_by_taxon.py` label/class file output updated to include a hash, matching the `pyani download` output format
 - `pyani plot` now produces distribution plots in addition to heatmaps
+- A number of bug fixes were implemented, including:
+  - consistent handling of filenames as `Path`s
 
 ## v0.2.7.dev
 
