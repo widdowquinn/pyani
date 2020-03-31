@@ -274,7 +274,7 @@ def get_labels(filename: Path, logger: Logger = None) -> Dict:
     :param filename:  path to file containing tab-separated table of labels
     :param logger:  logging object
 
-    Input files should be formatted as <key>\t<label>, one pair per line.
+    Input files should be formatted as <hash>\t<key>\t<label>, one pair per line.
     """
     labeldict = {}
     if filename is not None:
@@ -285,11 +285,11 @@ def get_labels(filename: Path, logger: Logger = None) -> Dict:
             for line in ifh.readlines():
                 count += 1
                 try:
-                    key, label = line.strip().split("\t")
+                    hash, key, label = line.strip().split("\t")
                 except ValueError:
                     if logger:
                         logger.warning("Problem with class file: %s", filename)
-                        logger.warning("%d: %s", (count, line.strip()))
+                        logger.warning("line %d: %s", count, line.strip())
                         logger.warning("(skipping line)")
                     continue
                 else:

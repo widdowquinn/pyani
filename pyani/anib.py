@@ -330,7 +330,6 @@ def generate_blastdb_commands(
     :param blastdb_exe:  path to the makeblastdb executable
     :param mode:  str, ANIb analysis type (ANIb or ANIblastall)
     """
-    print(mode)
     if mode == "ANIb":
         construct_db_cmdline = construct_makeblastdb_cmd
     else:

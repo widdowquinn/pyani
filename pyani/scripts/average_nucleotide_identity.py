@@ -794,10 +794,11 @@ def draw(args: Namespace, logger: Logger, filestems: List[str], gformat: str) ->
         infilename = fullstem.with_suffix(".tab")
         dfm = pd.read_csv(infilename, index_col=0, sep="\t")
         logger.info("Writing heatmap to %s", outfilename)
+        print(args.labels, args.classes)
         params = pyani_graphics.Params(
             params_mpl(dfm)[filestem],
-            pyani_tools.get_labels(args.labels),
-            pyani_tools.get_labels(args.classes),
+            pyani_tools.get_labels(args.labels, logger=logger),
+            pyani_tools.get_labels(args.classes, logger=logger),
         )
         if args.gmethod == "mpl":
             pyani_graphics.mpl.heatmap(
