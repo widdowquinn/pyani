@@ -285,7 +285,7 @@ def get_labels(filename: Path, logger: Logger = None) -> Dict:
             for line in ifh.readlines():
                 count += 1
                 try:
-                    hash, key, label = line.strip().split("\t")
+                    hash_md5, key, label = line.strip().split("\t")
                 except ValueError:
                     if logger:
                         logger.warning("Problem with class file: %s", filename)
