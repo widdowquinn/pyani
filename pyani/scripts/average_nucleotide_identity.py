@@ -771,12 +771,11 @@ def write(args: Namespace, logger: Logger, results: pd.DataFrame) -> None:
         results.to_csv(out_csv, index=True, sep="\t")
     else:
         for dfr, filestem in results.data:
-            out_excel = args.outdirname, filestem + ".xlsx"
-            out_csv = args.outdirname, filestem + ".tab"
-            logger.info("\t%s", filestem)
+            stem = args.outdirname / filestem
+            logger.info("\t%s", stem)
             if args.write_excel:
-                dfr.to_excel(out_excel, index=True)
-            dfr.to_csv(out_csv, index=True, sep="\t")
+                dfr.to_excel(stem.with_suffix(".xlsx"), index=True)
+            dfr.to_csv(stem.with_suffix(".tab"), index=True, sep="\t")
 
 
 # Draw ANIb/ANIm/TETRA output
@@ -791,8 +790,8 @@ def draw(args: Namespace, logger: Logger, filestems: List[str], gformat: str) ->
     # Draw heatmaps
     for filestem in filestems:
         fullstem = args.outdirname / filestem
-        outfilename = fullstem + ".%s" % gformat
-        infilename = fullstem + ".tab"
+        outfilename = fullstem.with_suffix(".%s" % gformat)
+        infilename = fullstem.with_suffix(".tab")
         dfm = pd.read_csv(infilename, index_col=0, sep="\t")
         logger.info("Writing heatmap to %s", outfilename)
         params = pyani_graphics.Params(
