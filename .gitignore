@@ -44,6 +44,7 @@ output/
 # Coverage test output
 cover/
 .coverage
+.coverage.xml
 
 # iPython/Jupyter/R
 .ipynb_checkpoints
@@ -64,3 +65,6 @@ issue*/
 
 # VS Code configs
 .vscode
+
+# Static test configs
+.mypy_cache/
