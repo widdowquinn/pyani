@@ -48,7 +48,7 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
-from sqlalchemy import and_   # type: ignore
+from sqlalchemy import and_  # type: ignore
 from sqlalchemy import UniqueConstraint, create_engine, Table
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Boolean
 from sqlalchemy.ext.declarative import declarative_base  # type: ignore
@@ -394,7 +394,13 @@ def get_matrix_classes_for_run(session: Any, run_id: int) -> Dict[str, List]:
 
 
 def filter_existing_comparisons(
-    session, run, comparisons, program, version, fragsize: Optional[int] = None, maxmatch: Optional[bool] = None
+    session,
+    run,
+    comparisons,
+    program,
+    version,
+    fragsize: Optional[int] = None,
+    maxmatch: Optional[bool] = None,
 ) -> List:
     """Filter list of (Genome, Genome) comparisons for those not in the session db.
 
@@ -447,7 +453,7 @@ def add_run(session, method, cmdline, date, status, name):
     Creates a new Run object with the passed parameters, and returns it.
     """
     try:
-        run = Run(method="ANIb", cmdline=cmdline, date=date, status=status, name=name)
+        run = Run(method=method, cmdline=cmdline, date=date, status=status, name=name)
     except Exception:
         raise PyaniORMException(
             f"Could not create {method} run with command line: {cmdline}"
@@ -460,7 +466,9 @@ def add_run(session, method, cmdline, date, status, name):
     return run
 
 
-def add_run_genomes(session, run, indir: Path, classpath: Path, labelpath: Path) -> List:
+def add_run_genomes(
+    session, run, indir: Path, classpath: Path, labelpath: Path
+) -> List:
     """Add genomes for a run to the database.
 
     :param session:       live SQLAlchemy session of pyani database
