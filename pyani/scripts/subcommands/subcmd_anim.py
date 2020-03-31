@@ -216,7 +216,7 @@ def subcmd_anim(args: Namespace, logger: Logger) -> None:
     # Create output directories
     logger.info(f"Creating output directory {deltadir}")
     try:
-        deltadir.mkdir(exist_ok=True)
+        deltadir.mkdir(exist_ok=True, parents=True)
     except IOError:
         logger.error(
             f"Could not create output directory {deltadir} (exiting)", exc_info=True
