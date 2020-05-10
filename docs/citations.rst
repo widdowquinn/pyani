@@ -61,7 +61,8 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 
 * Albert *et al.* (2020) "Comparative Pangenomics of the Mammalian Gut Commensal *Bifidobacterium longum*" *Microorganisms* `doi:10.3390/microorganisms8010007 <https://doi.org/10.3390/microorganisms8010007>`_
 * Bisanz *et al.* (2020) "A Genomic Toolkit for the Mechanistic Dissection of Intractable Human Gut Bacteria" *Cell Host & Microbe* `doi:10.1016/j.chom.2020.04.006 <https://doi.org/10.1016/j.chom.2020.04.006>`_
-* Cunningham-Oakes *et al.* (2020) "Genome Sequence of *Pluralibacter gergoviae* ECO77, a Multireplicon Isolate of Industrial Origin" *Microbiol. Res. Ann.* `doi:0.1128/MRA.01561-19 <https://doi.org/0.1128/MRA.01561-19>`_
+* Cunningham-Oakes *et al.* (2020) "Genome Sequence of *Pluralibacter gergoviae* ECO77, a Multireplicon Isolate of Industrial Origin" *Microbiol. Res. Ann.* `doi:10.1128/MRA.01561-19 <https://doi.org/0.1128/MRA.01561-19>`_
+* Dangel *et al.* (2020) "*Corynebacterium silvaticum* sp. nov., a unique group of NTTB corynebacteria in wild boar and roe deer" *Int. J. Syst. Evol. Microb. `doi:10.1099/ijsem.0.004195 <https://doi.org/10.1099/ijsem.0.004195>`_
 * Déraspe *et al.* (2020) "Genome Sequence of a *Klebsiella pneumoniae* NDM-1 Producer Isolated in Quebec City" *Microbiol. Resour. Announc.* `doi:10.1128/MRA.00829-19 <https://doi.org/10.1128/MRA.00829-19>`_
 * Furrer *et al.* (2020) "Phage vB_BveM-Goe7 represents a new genus in the subfamily *Bastillevirinae*" *Arch. Virol.* `doi:10.1007/s00705-020-04546-1 <https://doi.org/10.1007/s00705-020-04546-1>`_
 * Hinger *et al.* (2020) "Phylogenomic Analyses of Members of the Widespread Marine Heterotrophic Genus *Pseudovibrio* Suggest Distinct Evolutionary Trajectories and a Novel Genus, *Polycladidibacter* gen. nov." *Appl. Env. Microbiol.* `doi:10.1128/AEM.02395-19 <https://doi.org/10.1128/AEM.02395-19>`_
