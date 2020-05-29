@@ -46,25 +46,43 @@ pytest -v
 Each command CMD available at the command line as pyani <CMD> is
 tested in its own class as a subclass of unittest.TestCase, where
 setUp() defines input/output files, a null logger (which is also
-picked up by nosetests), and a dictionary of command lines, keyed
+picked up by pytest), and a dictionary of command lines, keyed
 by test name, with values representing command-line options.
 
 For each test, command line options are defined in a Namespace and
 passed as the sole argument to the appropriate subcommand.
+
+As the download operations are slow, and subject to network issues,
+especially with CI, we mock the download operations.
 """
 
 import logging
-import unittest
 
 from argparse import Namespace
 from pathlib import Path
+from unittest import TestCase
+from unittest.mock import patch
 
 from pyani.scripts import subcommands
 
 
-class TestDownloadSubcommand(unittest.TestCase):
+class TestDownloadSubcommand(TestCase):
 
     """Class defining tests of the pyani download subcommand."""
+
+    @classmethod
+    def setup_class(cls):
+        """Set up mocking for class."""
+        # Mock patcher for downloads
+        cls.mock_subcmd_download_patcher = patch(
+            "pyani.scripts.subcommands.subcmd_download"
+        )
+        cls.mock_subcmd_download = cls.mock_subcmd_download_patcher.start()
+
+    @classmethod
+    def teardown_class(cls):
+        """Close down mocking for class."""
+        cls.mock_subcmd_download_patcher.stop()
 
     def setUp(self):
         """Configure parameters for tests."""
