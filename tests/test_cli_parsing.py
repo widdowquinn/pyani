@@ -45,16 +45,31 @@ pytest -v
 """
 
 import logging
-import unittest
 
 from pathlib import Path
+from unittest import TestCase
+from unittest.mock import patch
 
 from pyani.scripts import pyani_script
 
 
-class TestCLIParsing(unittest.TestCase):
+class TestCLIParsing(TestCase):
 
     """Class defining tests of pyani CLI parsing."""
+
+    @classmethod
+    def setup_class(cls):
+        """Set up mocking for class."""
+        # Mock patcher for downloads
+        cls.mock_subcmd_download_patcher = patch(
+            "pyani.scripts.subcommands.subcmd_download"
+        )
+        cls.mock_subcmd_download = cls.mock_subcmd_download_patcher.start()
+
+    @classmethod
+    def teardown_class(cls):
+        """Close down mocking for class."""
+        cls.mock_subcmd_download_patcher.stop()
 
     def setUp(self):
         """Set attributes for tests."""
