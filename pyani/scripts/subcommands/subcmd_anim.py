@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-#
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
-# Contact: leighton.pritchard@hutton.ac.uk
+#
+# Contact:
+# leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
-# Information and Computing Sciences,
-# James Hutton Institute,
-# Errol Road,
-# Invergowrie,
-# Dundee,
-# DD6 9LH,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# 161 Cathedral Street,
+# Glasgow,
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -39,10 +40,10 @@
 """Provides the anim subcommand for pyani."""
 
 import datetime
+import logging
 
 from argparse import Namespace
 from itertools import combinations
-from logging import Logger
 from pathlib import Path
 from typing import List, NamedTuple, Tuple
 
@@ -66,6 +67,7 @@ from pyani.pyani_orm import (
     get_session,
     update_comparison_matrices,
 )
+from pyani.pyani_tools import termcolor
 
 
 # Convenience struct describing a pairwise comparison job for the SQLAlchemy
@@ -128,11 +130,10 @@ class ProgParams(NamedTuple):
     maxmatch: bool
 
 
-def subcmd_anim(args: Namespace, logger: Logger) -> None:
+def subcmd_anim(args: Namespace) -> None:
     """Perform ANIm on all genome files in an input directory.
 
     :param args:  Namespace, command-line arguments
-    :param logger:  logging object
 
     Finds ANI by the ANIm method, as described in Richter et al (2009)
     Proc Natl Acad Sci USA 106: 19126-19131 doi:10.1073/pnas.0906412106.
@@ -157,8 +158,11 @@ def subcmd_anim(args: Namespace, logger: Logger) -> None:
     the output is gzip compressed. Once all runs are complete, the outputs
     for each comparison are concatenated into a single gzip archive.
     """
+    # Create logger
+    logger = logging.getLogger(__name__)
+
     # Announce the analysis
-    logger.info("Running ANIm analysis")
+    logger.info(termcolor("Running ANIm analysis", bold=True))
 
     # Get current nucmer version
     nucmer_version = anim.get_version(args.nucmer_exe)
@@ -273,36 +277,34 @@ def subcmd_anim(args: Namespace, logger: Logger) -> None:
 
     # Create list of NUCmer jobs for each comparison still to be performed
     logger.info("Creating NUCmer jobs for ANIm")
-    joblist = generate_joblist(comparisons_to_run, existingfiles, args, logger)
+    joblist = generate_joblist(comparisons_to_run, existingfiles, args)
     logger.info(f"Generated {len(joblist)} jobs, {len(comparisons_to_run)} comparisons")
 
     # Pass jobs to appropriate scheduler
     logger.info(f"Passing {len(joblist)} jobs to {args.scheduler}...")
-    run_anim_jobs(joblist, args, logger)
+    run_anim_jobs(joblist, args)
     logger.info("...jobs complete")
 
     # Process output and add results to database
     # This requires us to drop out of threading/multiprocessing: Python's SQLite3
     # interface doesn't allow sharing connections and cursors
     logger.info("Adding comparison results to database...")
-    update_comparison_results(joblist, run, session, nucmer_version, args, logger)
+    update_comparison_results(joblist, run, session, nucmer_version, args)
     update_comparison_matrices(session, run)
     logger.info("...database updated.")
 
 
 def generate_joblist(
-    comparisons: List[Tuple],
-    existingfiles: List[Path],
-    args: Namespace,
-    logger: Logger,
+    comparisons: List[Tuple], existingfiles: List[Path], args: Namespace,
 ) -> List[ComparisonJob]:
     """Return list of ComparisonJobs.
 
     :param comparisons:  list of (Genome, Genome) tuples
     :param existingfiles:  list of pre-existing nucmer output files
     :param args:  Namespace of command-line arguments for the run
-    :param logger:  logging object
     """
+    logger = logging.getLogger(__name__)
+
     joblist = []  # will hold ComparisonJob structs
     for idx, (query, subject) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
@@ -342,15 +344,14 @@ def generate_joblist(
     return joblist
 
 
-def run_anim_jobs(
-    joblist: List[ComparisonJob], args: Namespace, logger: Logger
-) -> None:
+def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
     """Pass ANIm nucmer jobs to the scheduler.
 
     :param joblist:           list of ComparisonJob namedtuples
     :param args:              command-line arguments for the run
-    :param logger:            logging output
     """
+    logger = logging.getLogger(__name__)
+
     if args.scheduler == "multiprocessing":
         logger.info("Running jobs with multiprocessing")
         if not args.workers:
@@ -358,7 +359,7 @@ def run_anim_jobs(
         else:
             logger.info("(using %d worker threads, if available)", args.workers)
         cumval = run_mp.run_dependency_graph(
-            [_.job for _ in joblist], workers=args.workers, logger=logger
+            [_.job for _ in joblist], workers=args.workers
         )
         if cumval > 0:
             logger.error(
@@ -372,7 +373,6 @@ def run_anim_jobs(
         logger.info("Setting jobarray group size to %d", args.sgegroupsize)
         run_sge.run_dependency_graph(
             [_.job for _ in joblist],
-            logger=logger,
             jgprefix=args.jobprefix,
             sgegroupsize=args.sgegroupsize,
             sgeargs=args.sgeargs,
@@ -380,12 +380,7 @@ def run_anim_jobs(
 
 
 def update_comparison_results(
-    joblist: List[ComparisonJob],
-    run,
-    session,
-    nucmer_version: str,
-    args: Namespace,
-    logger: Logger,
+    joblist: List[ComparisonJob], run, session, nucmer_version: str, args: Namespace,
 ) -> None:
     """Update the Comparison table with the completed result set.
 
@@ -394,10 +389,11 @@ def update_comparison_results(
     :param session:         active pyanidb session via ORM
     :param nucmer_version:  version of nucmer used for the comparison
     :param args:            command-line arguments for this run
-    :param logger:          logging output
 
     The Comparison table stores individual comparison results, one per row.
     """
+    logger = logging.getLogger(__name__)
+
     # Add individual results to Comparison table
     for job in tqdm(joblist, disable=args.disable_tqdm):
         logger.debug("\t%s vs %s", job.query.description, job.subject.description)
