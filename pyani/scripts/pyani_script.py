@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -9,16 +9,16 @@
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
+# 161 Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -39,19 +39,19 @@
 # THE SOFTWARE.
 """Implements the pyani script for classifying prokaryotic genomes."""
 
+import logging
 import sys
 import time
 
-from logging import Logger
 from typing import List, Optional
 
-from .logger import build_logger
+from .logger import config_logger
 from .parsers import parse_cmdline
 from .. import __version__
 
 
 # Main function
-def run_main(argv: Optional[List[str]] = None, logger: Optional[Logger] = None) -> int:
+def run_main(argv: Optional[List[str]] = None) -> int:
     """Run main process for pyani.py script.
 
     :param argv:
@@ -70,10 +70,10 @@ def run_main(argv: Optional[List[str]] = None, logger: Optional[Logger] = None) 
 
     # Set up logging
     time0 = time.time()
-    if logger is None:
-        logger = build_logger("pyani", args)
+    logger = logging.getLogger(__name__)
+    config_logger(args)
 
     # Run the subcommand
-    returnval = args.func(args, logger)
+    returnval = args.func(args)
     logger.info("Completed. Time taken: %.3f", (time.time() - time0))
     return returnval
