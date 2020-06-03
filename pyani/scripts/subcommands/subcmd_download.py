@@ -47,6 +47,7 @@ from collections import namedtuple
 from Bio import SeqIO
 
 from pyani import download
+from pyani.pyani_tools import termcolor
 from pyani.scripts import tools
 
 
@@ -57,12 +58,15 @@ def subcmd_download(args: Namespace) -> int:
     """
     # Create logger
     logger = logging.getLogger(__name__)
+    logger.info(termcolor("Downloading genomes from NCBI", "red"))
 
     # Create output directory, respecting force/noclobber
     if not args.dryrun:
         tools.make_outdir(args.outdir, args.force, args.noclobber)
     else:
-        logger.warning("\033[1;%32mDry run only: will not overwrite or download")
+        logger.warning(
+            termcolor("Dry run only: will not overwrite or download", "cyan")
+        )
 
     # Set Entrez email
     download.set_ncbi_email(args.email)
@@ -79,12 +83,12 @@ def subcmd_download(args: Namespace) -> int:
 
     # Get list of taxon IDs to download
     taxon_ids = download.split_taxa(args.taxon)
-    logger.info("Taxon IDs received: %s", taxon_ids)
+    logger.info(termcolor("Taxon IDs received: %s", "blue"), taxon_ids)
 
     # Get assembly UIDs for each taxon
     asm_dict = tools.make_asm_dict(taxon_ids, args.retries)
     for tid, uids in asm_dict.items():
-        logger.info(
+        logger.debug(
             "Taxon ID summary\n\tQuery: %s\n\tasm count: %s\n\tUIDs: %s",
             tid,
             len(uids),
@@ -107,10 +111,12 @@ def subcmd_download(args: Namespace) -> int:
     # Summary information is reported to the logger for each eSummary that
     # can be recovered
     for tid, uids in asm_dict.items():
-        logger.info("Downloading contigs for Taxon ID %s", uids)
+        logger.info(termcolor("Downloading contigs for Taxon ID %s", "blue"), uids)
         for uid in uids:
             # Obtain eSummary
-            logger.info("Get eSummary information for UID %s", uid)
+            logger.info(
+                termcolor("Retrieving eSummary information for UID %s", "cyan"), uid
+            )
             esummary, filestem = download.get_ncbi_esummary(uid, args.retries, api_key)
             uid_class = download.get_ncbi_classification(esummary)
 
@@ -127,7 +133,7 @@ def subcmd_download(args: Namespace) -> int:
                     f"Strain: {uid_class.strain}",
                 ]
             )
-            logger.info("eSummary information:\n\t%s", outstr)
+            logger.debug("eSummary information:\n\t%s", outstr)
             if args.dryrun:
                 logger.warning(
                     "(dry-run) skipping download of %s", esummary["AssemblyAccession"]
@@ -178,16 +184,16 @@ def subcmd_download(args: Namespace) -> int:
                     continue  # Move straight on to the next download
 
             # One of the downloads worked: report information
-            logger.info("Downloaded from URL: %s", dlstatus.url)
-            logger.info("Wrote assembly to: %s", dlstatus.outfname)
-            logger.info("Wrote MD5 hashes to: %s", dlstatus.outfhash)
+            logger.debug("Downloaded from URL: %s", dlstatus.url)
+            logger.debug("Wrote assembly to: %s", dlstatus.outfname)
+            logger.debug("Wrote MD5 hashes to: %s", dlstatus.outfhash)
 
             # Check hash for the download
             hashstatus = download.check_hash(dlstatus.outfname, dlstatus.outfhash)
-            logger.info("Local MD5 hash: %s", hashstatus.localhash)
-            logger.info("NCBI MD5 hash: %s", hashstatus.localhash)
+            logger.debug("Local MD5 hash: %s", hashstatus.localhash)
+            logger.debug("NCBI MD5 hash: %s", hashstatus.localhash)
             if hashstatus.passed:
-                logger.info("MD5 hash check passed")
+                logger.info(termcolor("MD5 hash check passed", "green"))
             else:
                 logger.warning("MD5 hash check failed. Please check and retry.")
 
@@ -196,14 +202,14 @@ def subcmd_download(args: Namespace) -> int:
             if ename.exists() and args.noclobber:
                 logger.warning("Output file %s exists, not extracting", ename)
             else:
-                logger.info("Extracting archive %s to %s", dlstatus.outfname, ename)
+                logger.debug("Extracting archive %s to %s", dlstatus.outfname, ename)
                 download.extract_contigs(dlstatus.outfname, ename)
 
             # Modify sequence ID header if Kraken option active
             if args.kraken:
                 logger.warning("Modifying downloaded sequence for Kraken compatibility")
                 seqdata = list(SeqIO.parse(ename, "fasta"))
-                logger.info("Modifying %s", ename)
+                logger.debug("Modifying %s", ename)
                 for seq in seqdata:
                     seq.id = "|".join(
                         [seq.id, "kraken:taxid", esummary["SpeciesTaxid"]]
@@ -211,10 +217,10 @@ def subcmd_download(args: Namespace) -> int:
                 SeqIO.write(seqdata, ename, "fasta")
 
             # Create MD5 hash for the downloaded contigs
-            logger.info("Creating local MD5 hash for %s", ename)
+            logger.debug("Creating local MD5 hash for %s", ename)
             hashfname = ename.with_suffix(".md5")
             datahash = download.create_hash(ename)
-            logger.info("Writing hash to %s", hashfname)
+            logger.debug("Writing hash to %s", hashfname)
             with open(hashfname, "w") as hfh:
                 hfh.write("\t".join([datahash, str(ename)]) + "\n")
             # Make label/class text
@@ -246,7 +252,9 @@ def subcmd_download(args: Namespace) -> int:
 
     # Report skipped genome list
     if skippedlist:
-        logger.warning("%s genome downloads were skipped", len(skippedlist))
+        logger.warning(
+            termcolor("%s genome downloads were skipped", "red"), len(skippedlist)
+        )
         for skipped in skippedlist:
             outstr = "\n\t".join(
                 [

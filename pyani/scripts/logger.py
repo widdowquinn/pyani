@@ -80,9 +80,9 @@ def config_logger(args: Optional[Namespace] = None) -> None:
     # Create and add STDERR handler
     errformatter = logging.Formatter("[%(levelname)s] [%(name)s]: %(message)s")
     errhandler = logging.StreamHandler(sys.stderr)
-    if args.verbose:
+    if args is not None and args.verbose:
         errhandler.setLevel(logging.INFO)
-    elif args.debug:
+    elif args is not None and args.debug:
         errhandler.setLevel(logging.DEBUG)
     else:
         errhandler.setLevel(logging.WARNING)
