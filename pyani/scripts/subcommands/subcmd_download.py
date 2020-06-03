@@ -62,7 +62,7 @@ def subcmd_download(args: Namespace) -> int:
     if not args.dryrun:
         tools.make_outdir(args.outdir, args.force, args.noclobber)
     else:
-        logger.warning("Dry run only: will not overwrite or download")
+        logger.warning("\033[1;%32mDry run only: will not overwrite or download")
 
     # Set Entrez email
     download.set_ncbi_email(args.email)

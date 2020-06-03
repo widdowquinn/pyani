@@ -166,25 +166,25 @@ def subcmd_anim(args: Namespace) -> None:
 
     # Get current nucmer version
     nucmer_version = anim.get_version(args.nucmer_exe)
-    logger.info(f"MUMMer nucmer version: {nucmer_version}")
+    logger.info("MUMMer nucmer version: %s", nucmer_version)
 
     # Use the provided name or make one for the analysis
     start_time = datetime.datetime.now()
     name = args.name or "_".join(["ANIm", start_time.isoformat()])
-    logger.info(f"Analysis name: {name}")
+    logger.info("Analysis name: %s", name)
 
     # Get connection to existing database. This may or may not have data
-    logger.info(f"Connecting to database {args.dbpath}")
+    logger.info("Connecting to database %s", args.dbpath)
     try:
         session = get_session(args.dbpath)
     except Exception:
         logger.error(
-            f"Could not connect to database {args.dbpath} (exiting)", exc_info=True
+            "Could not connect to database %s (exiting)", args.dbpath, exc_info=True
         )
         raise SystemExit(1)
 
     # Add information about this run to the database
-    logger.info(f"Adding run info to database {args.dbpath}...")
+    logger.info("Adding run info to database %s...", args.dbpath)
     try:
         run = add_run(
             session,
@@ -196,21 +196,21 @@ def subcmd_anim(args: Namespace) -> None:
         )
     except PyaniORMException:
         logger.error(
-            f"Could not add run {run} to the database (exiting)", exc_info=True
+            "Could not add run %s to the database (exiting)", run, exc_info=True
         )
         raise SystemExit(1)
-    logger.info(f"...added run ID: {run} to the database")
+    logger.info("...added run ID: %s to the database", run)
 
     # Identify input files for comparison, and populate the database
-    logger.info(f"Adding genomes for run {run} to database...")
+    logger.info("Adding genomes for run %s to database...", run)
     try:
         genome_ids = add_run_genomes(
             session, run, args.indir, args.classes, args.labels
         )
     except PyaniORMException:
-        logger.error(f"Could not add genomes to database for run {run} (exiting)")
+        logger.error("Could not add genomes to database for run %s (exiting)", run)
         raise SystemExit(1)
-    logger.info(f"\t...added genome IDs: {genome_ids}")
+    logger.info("\t...added genome IDs: %s", genome_ids)
 
     # Generate commandlines for NUCmer analysis and output compression
     logger.info("Generating ANIm command-lines")
@@ -218,26 +218,26 @@ def subcmd_anim(args: Namespace) -> None:
     logger.info("NUCmer output will be written temporarily to %s", deltadir)
 
     # Create output directories
-    logger.info(f"Creating output directory {deltadir}")
+    logger.info("Creating output directory %s", deltadir)
     try:
         deltadir.mkdir(exist_ok=True, parents=True)
     except IOError:
         logger.error(
-            f"Could not create output directory {deltadir} (exiting)", exc_info=True
+            "Could not create output directory %s (exiting)", deltadir, exc_info=True
         )
         raise SystemError(1)
 
     # Get list of genome IDs for this analysis from the database
     logger.info("Compiling genomes for comparison")
     genomes = run.genomes.all()
-    logger.info(f"Collected {len(genomes)} genomes for this run")
+    logger.info("Collected %s genomes for this run", len(genomes))
 
     # Generate all pair combinations of genome IDs as a list of (Genome, Genome) tuples
     logger.info(
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
     comparisons = list(combinations(tqdm(genomes, disable=args.disable_tqdm), 2))
-    logger.info(f"\t...total parwise comparisons to be performed: {len(comparisons)}")
+    logger.info("\t...total parwise comparisons to be performed: %s", len(comparisons))
 
     # Check for existing comparisons; if one has been done (for the same
     # software package, version, and setting) we add the comparison to this run,
@@ -247,7 +247,7 @@ def subcmd_anim(args: Namespace) -> None:
         session, run, comparisons, "nucmer", nucmer_version, None, args.maxmatch
     )
     logger.info(
-        f"\t...after check, still need to run {len(comparisons_to_run)} comparisons"
+        "\t...after check, still need to run %s comparisons", len(comparisons_to_run)
     )
 
     # If there are no comparisons to run, update the Run matrices and exit
@@ -265,23 +265,25 @@ def subcmd_anim(args: Namespace) -> None:
     if args.recovery:
         logger.warning("Entering recovery mode")
         logger.info(
-            f"\tIn this mode, existing comparison output from {deltadir} is reused"
+            "\tIn this mode, existing comparison output from %s is reused", deltadir
         )
         existingfiles = collect_existing_output(deltadir, "nucmer", args)
         logger.info(
-            f"\tIdentified {len(existingfiles)} existing output files for reuse"
+            "\tIdentified %s existing output files for reuse", len(existingfiles)
         )
     else:
         existingfiles = list()
-        logger.info(f"\tIdentified no existing output files")
+        logger.info("\tIdentified no existing output files")
 
     # Create list of NUCmer jobs for each comparison still to be performed
     logger.info("Creating NUCmer jobs for ANIm")
     joblist = generate_joblist(comparisons_to_run, existingfiles, args)
-    logger.info(f"Generated {len(joblist)} jobs, {len(comparisons_to_run)} comparisons")
+    logger.info(
+        "Generated %s jobs, %s comparisons", len(joblist), len(comparisons_to_run)
+    )
 
     # Pass jobs to appropriate scheduler
-    logger.info(f"Passing {len(joblist)} jobs to {args.scheduler}...")
+    logger.info("Passing %s jobs to %s...", len(joblist), args.scheduler)
     run_anim_jobs(joblist, args)
     logger.info("...jobs complete")
 
@@ -363,8 +365,7 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
         )
         if cumval > 0:
             logger.error(
-                "At least one NUCmer comparison failed. "
-                + "Please investigate (exiting)"
+                "At least one NUCmer comparison failed. Please investigate (exiting)"
             )
             raise PyaniException("Multiprocessing run failed in ANIm")
         logger.info("Multiprocessing run completed without error")

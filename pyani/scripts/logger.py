@@ -41,13 +41,26 @@
 
 import logging
 import logging.config
-
-# import sys
-# import time
+import re
+import sys
 
 from argparse import Namespace
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
+
+
+class NoColorFormatter(logging.Formatter):
+
+    """Log formatter that strips terminal colour escape codes from the log message."""
+
+    ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+    def format(self, record):
+        return "[%s] [%s]: %s" % (
+            record.levelname,
+            record.name,
+            re.sub(self.ANSI_RE, "", record.msg % record.args),
+        )
 
 
 def config_logger(args: Optional[Namespace] = None) -> None:
@@ -61,26 +74,20 @@ def config_logger(args: Optional[Namespace] = None) -> None:
     streams, and logging level.
     """
     # Default logger for this module
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(__package__)
+    logger.setLevel(logging.DEBUG)
 
-    # Dictionary defining base logging configuration for package.
-    # This could be moved to an asset file and imported.
-    logconf = {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "standard": {"format": "[%(name)s] [%(levelname)s]: %(message)s"},
-        },
-        "handlers": {
-            "stderr": {
-                "level": "WARNING",
-                "class": "logging.StreamHandler",
-                "formatter": "standard",
-                "stream": "ext://sys.stderr",
-            }
-        },
-        "loggers": {__package__: {"handlers": ["stderr"], "level": "DEBUG",},},
-    }  # type: Dict
+    # Create and add STDERR handler
+    errformatter = logging.Formatter("[%(levelname)s] [%(name)s]: %(message)s")
+    errhandler = logging.StreamHandler(sys.stderr)
+    if args.verbose:
+        errhandler.setLevel(logging.INFO)
+    elif args.debug:
+        errhandler.setLevel(logging.DEBUG)
+    else:
+        errhandler.setLevel(logging.WARNING)
+    errhandler.setFormatter(errformatter)
+    logger.addHandler(errhandler)
 
     # If args.logfile is provided, add a FileHandler for logfile
     if args is not None and args.logfile is not None:
@@ -95,24 +102,12 @@ def config_logger(args: Optional[Namespace] = None) -> None:
             )
             raise SystemExit(1)
 
-        # Add logfile configuration
-        logconf["handlers"]["logfile"] = {
-            "class": "logging.FileHandler",
-            "level": "INFO",
-            "formatter": "standard",
-            "filename": str(args.logfile),
-            "encoding": "utf8",
-        }
-        logconf["loggers"][__package__]["handlers"].append("logfile")
-
-    # Set reporting levels if args.verbose/args.debug flagged
-    if args is not None:
-        if args.verbose:
-            logconf["handlers"]["stderr"]["level"] = "INFO"
+        # Create logfile handler
+        logformatter = NoColorFormatter()
+        loghandler = logging.FileHandler(args.logfile, mode="w", encoding="utf8")
         if args.debug:
-            logconf["handlers"]["stderr"]["level"] = "DEBUG"
-            if "logfile" in logconf["handlers"]:
-                logconf["handlers"]["logfile"]["level"] = "DEBUG"
-
-    # Configure package-level logging
-    logging.config.dictConfig(logconf)
+            loghandler.setLevel(logging.DEBUG)
+        else:
+            loghandler.setLevel(logging.INFO)
+        loghandler.setFormatter(logformatter)
+        logger.addHandler(loghandler)
