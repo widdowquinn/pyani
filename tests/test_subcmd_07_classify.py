@@ -115,8 +115,8 @@ class TestClassifySubcommand(unittest.TestCase):
 
     def test_classify_defaults(self):
         """test classification with default settings"""
-        subcommands.subcmd_classify(self.argsdict["default"], self.logger)
+        subcommands.subcmd_classify(self.argsdict["default"])
 
     def test_classify_no_thresh(self):
         """test classification with no thresholds"""
-        subcommands.subcmd_classify(self.argsdict["no_threshold"], self.logger)
+        subcommands.subcmd_classify(self.argsdict["no_threshold"])

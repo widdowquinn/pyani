@@ -148,24 +148,24 @@ class TestReportSubcommand(unittest.TestCase):
 
     def test_runs(self):
         """Test reporting of runs in the database."""
-        subcommands.subcmd_report(self.argsdict["runs"], self.logger)
+        subcommands.subcmd_report(self.argsdict["runs"])
 
     def test_genomes(self):
         """Test reporting of genomes in the database."""
-        subcommands.subcmd_report(self.argsdict["genomes"], self.logger)
+        subcommands.subcmd_report(self.argsdict["genomes"])
 
     def test_runs_genomes(self):
         """Test reporting of runs/genomes in the database."""
-        subcommands.subcmd_report(self.argsdict["runs_genomes"], self.logger)
+        subcommands.subcmd_report(self.argsdict["runs_genomes"])
 
     def test_genomes_runs(self):
         """Test reporting of genomes_runs in the database."""
-        subcommands.subcmd_report(self.argsdict["genomes_runs"], self.logger)
+        subcommands.subcmd_report(self.argsdict["genomes_runs"])
 
     def test_results(self):
         """Test reporting of run results in the database."""
-        subcommands.subcmd_report(self.argsdict["run_results"], self.logger)
+        subcommands.subcmd_report(self.argsdict["run_results"])
 
     def test_matrices(self):
         """Test reporting of run matrices in the database."""
-        subcommands.subcmd_report(self.argsdict["run_matrices"], self.logger)
+        subcommands.subcmd_report(self.argsdict["run_matrices"])

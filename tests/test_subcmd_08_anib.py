@@ -120,4 +120,4 @@ class TestANIbsubcommand(unittest.TestCase):
 
     def test_anib(self):
         """Test anib run."""
-        subcommands.subcmd_anib(self.argsdict["anib"], self.logger)
+        subcommands.subcmd_anib(self.argsdict["anib"])
