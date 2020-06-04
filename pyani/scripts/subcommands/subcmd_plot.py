@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) The University of Strathclude 2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
 # leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
-# Strathclyde Institute of Pharmaceutical and Biomedical Sciences
-# The University of Strathclyde
-#  Cathedral Street
-# Glasgow
-#  G1 1XQ
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# 161 Cathedral Street,
+# Glasgow,
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
-# Copyright (c) 2017-2018 The James Hutton Institute
-# (c) The University of Strathclude 2019
+# Copyright (c) 2017-2019 The James Hutton Institute
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -40,10 +39,10 @@
 # THE SOFTWARE.
 """Provides the plot subcommand for pyani."""
 
+import logging
 import os
 
 from argparse import Namespace
-from logging import Logger
 from pathlib import Path
 from typing import Dict, List
 
@@ -51,7 +50,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from pyani import pyani_config, pyani_orm, pyani_graphics
-from pyani.pyani_tools import MatrixData
+from pyani.pyani_tools import termcolor, MatrixData
 
 
 # Distribution dictionary of matrix graphics methods
@@ -63,40 +62,41 @@ DISTMETHODS = {
 }
 
 
-def subcmd_plot(args: Namespace, logger: Logger) -> int:
+def subcmd_plot(args: Namespace) -> int:
     """Produce graphical output for an analysis.
 
     :param args:  Namespace of command-line arguments
-    :param logger:  logging object
 
     This is graphical output for representing the ANI analysis results, and
     takes the form of a heatmap, or heatmap with dendrogram.
     """
+    logger = logging.getLogger(__name__)
+
     # Announce what's going on to the user
-    logger.info("Generating graphical output for analyses")
-    logger.info(f"Writing output to: {args.outdir}")
+    logger.info(termcolor("Generating graphical output for analyses", "red"))
+    logger.info("Writing output to: %s", args.outdir)
     os.makedirs(args.outdir, exist_ok=True)
-    logger.info(f"Rendering method: {args.method}")
+    logger.info("Rendering method: %s", args.method)
 
     # Connect to database session
-    logger.info(f"Activating session for database: {args.dbpath}")
+    logger.debug("Activating session for database: %s", args.dbpath)
     session = pyani_orm.get_session(args.dbpath)
 
     # Parse output formats
     outfmts = args.formats.split(",")
-    logger.info(f"Requested output formats: {outfmts}")
+    logger.debug("Requested output formats: %s", outfmts)
 
     # Work on each run:
     run_ids = [int(run) for run in args.run_id.split(",")]
-    logger.info(f"Generating graphics for runs: {run_ids}")
+    logger.debug("Generating graphics for runs: %s", run_ids)
     for run_id in run_ids:
-        write_run_heatmaps(run_id, session, outfmts, args, logger)
+        write_run_heatmaps(run_id, session, outfmts, args)
 
     return 0
 
 
 def write_run_heatmaps(
-    run_id: int, session, outfmts: List[str], args: Namespace, logger: Logger
+    run_id: int, session, outfmts: List[str], args: Namespace
 ) -> None:
     """Write all heatmaps for a specified run to file.
 
@@ -104,11 +104,11 @@ def write_run_heatmaps(
     :param session:  Session, active SQLite session
     :param outfmts:  list of output format types
     :param args:  Namespace, command line arguments
-    :param logger:  logging object
     """
+    logger = logging.getLogger(__name__)
+
     # Get results matrices for the run
-    logger.info(f"Acquiring results for run {run_id}")
-    logger.info("\t...retrieving results matrices")
+    logger.debug("Retrieving results matrices for run %s", run_id)
     results = (
         session.query(pyani_orm.Run).filter(pyani_orm.Run.run_id == args.run_id).first()
     )
@@ -127,17 +127,13 @@ def write_run_heatmaps(
         ]
     ]:
         write_heatmap(
-            run_id, matdata, result_label_dict, result_class_dict, outfmts, args, logger
+            run_id, matdata, result_label_dict, result_class_dict, outfmts, args
         )
-        write_distribution(run_id, matdata, outfmts, args, logger)
+        write_distribution(run_id, matdata, outfmts, args)
 
 
 def write_distribution(
-    run_id: int,
-    matdata: MatrixData,
-    outfmts: List[str],
-    args: Namespace,
-    logger: Logger,
+    run_id: int, matdata: MatrixData, outfmts: List[str], args: Namespace,
 ) -> None:
     """Write distribution plots for each matrix type.
 
@@ -145,12 +141,13 @@ def write_distribution(
     :param matdata:  MatrixData object for this distribution plot
     :param args:  Namespace for command-line arguments
     :param outfmts:  list of output formats for files
-    :param logger:  logging object
     """
-    logger.info(f"Writing distribution plot for {matdata.name} matrix")
+    logger = logging.getLogger(__name__)
+
+    logger.info("Writing distribution plot for %s matrix", matdata.name)
     for fmt in outfmts:
         outfname = Path(args.outdir) / f"distribution_{matdata.name}_run{run_id}.{fmt}"
-        logger.info(f"\tWriting graphics to {outfname}")
+        logger.debug("\tWriting graphics to %s", outfname)
         DISTMETHODS[args.method](
             matdata.data,
             outfname,
@@ -166,7 +163,6 @@ def write_heatmap(
     result_classes: Dict,
     outfmts: List[str],
     args: Namespace,
-    logger: Logger,
 ) -> None:
     """Write a single heatmap for a pyani run.
 
@@ -176,13 +172,14 @@ def write_heatmap(
     :param result_classes: dict of result classes
     :param args:  Namespace for command-line arguments
     :param outfmts:  list of output formats for files
-    :param logger:  logging object
     """
-    logger.info(f"Writing {matdata.name} matrix heatmaps")
+    logger = logging.getLogger(__name__)
+
+    logger.info("Writing %s matrix heatmaps", matdata.name)
     cmap = pyani_config.get_colormap(matdata.data, matdata.name)
     for fmt in outfmts:
         outfname = Path(args.outdir) / f"matrix_{matdata.name}_run{run_id}.{fmt}"
-        logger.info(f"\tWriting graphics to {outfname}")
+        logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw heatmap
         GMETHODS[args.method](
