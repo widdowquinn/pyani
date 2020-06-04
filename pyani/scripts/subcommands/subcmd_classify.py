@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019
+# (c) The James Hutton Institute 2017-2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -9,16 +9,16 @@
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
+# 161 Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
-# Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2017-2019 The James Hutton Institute
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -39,16 +39,18 @@
 # THE SOFTWARE.
 """Provides the classify subcommand for pyani."""
 
+import logging
+
 from argparse import Namespace
-from logging import Logger
 from typing import Generator, NamedTuple
 
-import networkx as nx
+import networkx as nx  # pylint: disable=E0401
 import numpy as np
 
 from tqdm import tqdm
 
 from pyani import pyani_classify, pyani_orm
+from pyani.pyani_tools import termcolor
 
 
 class SubgraphData(NamedTuple):
@@ -60,23 +62,28 @@ class SubgraphData(NamedTuple):
     cliqueinfo: pyani_classify.Cliquesinfo
 
 
-def subcmd_classify(args: Namespace, logger: Logger) -> int:
+def subcmd_classify(args: Namespace) -> int:
     """Generate classifications for an analysis.
 
     :param args:  Namespace, command-line arguments
-    :param logger:  logging object
     """
+    logger = logging.getLogger(__name__)
+
     # Tell the user what's going on
-    logger.info(f"Generating classification for ANI run: {args.run_id}")
-    logger.info(f"\tWriting output to: {args.outdir}")
-    logger.info(f"\tCoverage threshold: {args.cov_min}")
-    logger.info(f"\tInitial minimum identity threshold: {args.id_min}")
+    logger.info(
+        termcolor("Generating classification for ANI run: %s", "red"), args.run_id
+    )
+    logger.info("\tWriting output to: %s", args.outdir)
+    logger.info(termcolor("\tCoverage threshold: %s", "cyan"), args.cov_min)
+    logger.info(
+        termcolor("\tInitial minimum identity threshold: %s", "cyan"), args.id_min
+    )
 
     # Get results data for the specified run
-    logger.info(f"Acquiring results for run: {args.run_id}")
-    logger.info(f"Connecting to database: {args.dbpath}")
+    logger.info("Acquiring results for run: %s", args.run_id)
+    logger.debug("Connecting to database: %s", args.dbpath)
     session = pyani_orm.get_session(args.dbpath)
-    logger.info("Retrieving results matrices")
+    logger.debug("Retrieving results matrices")
     results = (
         session.query(pyani_orm.Run).filter(pyani_orm.Run.run_id == args.run_id).first()
     )
@@ -87,12 +94,12 @@ def subcmd_classify(args: Namespace, logger: Logger) -> int:
     initgraph = pyani_classify.build_graph_from_results(
         results, result_label_dict, args.cov_min, args.id_min
     )
-    logger.info(
+    logger.debug(
         "Returned graph has %d nodes:\n\t%s",
         len(initgraph),
-        "\n\t".join([n for n in initgraph]),
+        "\n\t".join(n for n in initgraph),
     )
-    logger.info(
+    logger.debug(
         "Initial graph clique information:\n\t%s",
         pyani_classify.analyse_cliques(initgraph),
     )
@@ -102,11 +109,11 @@ def subcmd_classify(args: Namespace, logger: Logger) -> int:
     special_intervals = [_ for _ in subgraphs if _.cliqueinfo.all_k_complete]
     outstr = "\n\t".join([f"{_.interval}\t{_.cliqueinfo}" for _ in special_intervals])
     logger.info(
-        f"{len(special_intervals)} intervals with special property:\n\t{outstr}"
+        "%s intervals with special property:\n\t%s", len(special_intervals), outstr
     )
     if args.show_all:
         outstr = "\n\t".join([f"{_.interval}\t{_.cliqueinfo}" for _ in subgraphs])
-        logger.info(f"Subgraphs at all identity thresholds:\n\t{outstr}")
+        logger.debug("Subgraphs at all identity thresholds:\n\t%s", outstr)
 
     return 0
 

@@ -74,6 +74,13 @@ def build() -> ArgumentParser:
         help="report verbose progress to log",
     )
     parser.add_argument(
+        "--debug",
+        action="store_true",
+        dest="debug",
+        default=False,
+        help="report debug messages to log",
+    )
+    parser.add_argument(
         "--disable_tqdm",
         action="store_true",
         dest="disable_tqdm",

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -9,16 +9,16 @@
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
+# 161 Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -39,24 +39,28 @@
 # THE SOFTWARE.
 """Provides the createdb subcommand for pyani."""
 
+import logging
+
 from argparse import Namespace
-from logging import Logger
 
 from pyani import pyani_orm
 
 
-def subcmd_createdb(args: Namespace, logger: Logger) -> int:
+def subcmd_createdb(args: Namespace) -> int:
     """Create an empty pyani database.
 
     :param args:  Namespace, command-line arguments
     :param logger:  logging object
     """
+    # Create logger
+    logger = logging.getLogger(__name__)
+
     # If the database exists, raise an error rather than overwrite
     if args.dbpath.is_file():
         if not args.force:
-            logger.error(f"Database {args.dbpath} already exists (exiting)")
+            logger.error("Database %s already exists (exiting)", args.dbpath)
             raise SystemError(1)
-        logger.warning(f"Database {args.dbpath} already exists - overwriting")
+        logger.warning("Database %s already exists - overwriting", args.dbpath)
         args.dbpath.unlink()
 
     # If the path to the database doesn't exist, create it

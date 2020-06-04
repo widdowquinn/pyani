@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) The University of Strathclude 2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
 # leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
-# Strathclyde Institute of Pharmaceutical and Biomedical Sciences
-# The University of Strathclyde
-#  Cathedral Street
-# Glasgow
-#  G1 1XQ
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# 161 Cathedral Street,
+# Glasgow,
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
-# Copyright (c) 2017-2018 The James Hutton Institute
-# (c) The University of Strathclude 2019
+# Copyright (c) 2017-2019 The James Hutton Institute
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +39,9 @@
 # THE SOFTWARE.
 """Provides the report subcommand for pyani."""
 
+import logging
+
 from argparse import Namespace
-from logging import Logger
 from typing import List, NamedTuple
 from pathlib import Path
 
@@ -59,7 +59,7 @@ from pyani.pyani_orm import (
     get_matrix_labels_for_run,
     rungenome,
 )
-from pyani.pyani_tools import label_results_matrix, MatrixData
+from pyani.pyani_tools import label_results_matrix, termcolor, MatrixData
 
 
 class ReportParams(NamedTuple):
@@ -71,11 +71,10 @@ class ReportParams(NamedTuple):
     headers: List[str]  #  Column headers for table
 
 
-def subcmd_report(args: Namespace, logger: Logger) -> int:
+def subcmd_report(args: Namespace) -> int:
     """Present report on ANI results and/or database contents.
 
     :param args:  Namespace, command-line arguments
-    :param logger:  logging object
 
     The report subcommand takes any of several long options that do one of two
     things:
@@ -89,13 +88,15 @@ def subcmd_report(args: Namespace, logger: Logger) -> int:
     be modified by an 'excel' or 'html' format specifier, which writes outputs
     in that format, where possible.
     """
+    logger = logging.getLogger(__name__)
+
     # Output formats will apply across all tabular data requested
     # Expect comma-separated format arguments, and turn them into an iterable
     formats = process_formats(args)
-    logger.info(f"Creating output in formats: {formats}")
+    logger.info(termcolor("Creating report output in formats: %s", "red"), formats)
 
     # Declare which database is being used, and connect to session
-    logger.info(f"Using database: {args.dbpath}")
+    logger.debug("Using database: %s", args.dbpath)
     session = pyani_orm.get_session(args.dbpath)
 
     # Report runs in the database
@@ -104,7 +105,7 @@ def subcmd_report(args: Namespace, logger: Logger) -> int:
             Run.run_id, Run.name, Run.method, Run.date, Run.cmdline
         ).statement
         headers = ["run ID", "name", "method", "date run", "command-line"]
-        report(args, logger, session, formats, ReportParams("runs", statement, headers))
+        report(args, session, formats, ReportParams("runs", statement, headers))
 
     # Report genomes in the database
     if args.show_genomes:
@@ -116,9 +117,7 @@ def subcmd_report(args: Namespace, logger: Logger) -> int:
             Genome.length,
         ).statement
         headers = ["genome ID", "description", "path", "MD5 hash", "genome length"]
-        report(
-            args, logger, session, formats, ReportParams("genomes", statement, headers)
-        )
+        report(args, session, formats, ReportParams("genomes", statement, headers))
 
     # Report table of all genomes used for each run
     if args.show_runs_genomes:
@@ -156,11 +155,7 @@ def subcmd_report(args: Namespace, logger: Logger) -> int:
             "genome class",
         ]
         report(
-            args,
-            logger,
-            session,
-            formats,
-            ReportParams("runs_genomes", statement, headers),
+            args, session, formats, ReportParams("runs_genomes", statement, headers),
         )
 
     # Report table of all runs in which a genome is involved
@@ -199,19 +194,15 @@ def subcmd_report(args: Namespace, logger: Logger) -> int:
             "date run",
         ]
         report(
-            args,
-            logger,
-            session,
-            formats,
-            ReportParams("genomes_runs", statement, headers),
+            args, session, formats, ReportParams("genomes_runs", statement, headers),
         )
 
     # Report table of comparison results for the indicated runs
     if args.run_results:
         run_ids = [run_id.strip() for run_id in args.run_results.split(",")]
-        logger.info(f"Attempting to write results tables for runs: {run_ids}")
+        logger.debug("Attempting to write results tables for runs: %s", run_ids)
         for run_id in run_ids:
-            logger.info(f"Processing run ID {run_id}")
+            logger.debug("Processing run ID %s", run_id)
             genome_query = aliased(Genome, name="genome_query")
             genome_subject = aliased(Genome, name="genome_subject")
             statement = (
@@ -256,7 +247,6 @@ def subcmd_report(args: Namespace, logger: Logger) -> int:
             ]
             report(
                 args,
-                logger,
                 session,
                 formats,
                 ReportParams(f"results_{run_id}", statement, headers),
@@ -270,7 +260,7 @@ def subcmd_report(args: Namespace, logger: Logger) -> int:
     # our matrices directly, here
     if args.run_matrices:
         for run_id in [run_id.strip() for run_id in args.run_matrices.split(",")]:
-            logger.info(f"Extracting matrices for run {run_id}")
+            logger.debug("Extracting matrices for run %s", run_id)
             run = session.query(Run).filter(Run.run_id == run_id).first()
             matlabel_dict = get_matrix_labels_for_run(session, run_id)
             for matdata in [
@@ -283,7 +273,7 @@ def subcmd_report(args: Namespace, logger: Logger) -> int:
                     ("hadamard", run.df_hadamard, {}),
                 ]
             ]:
-                logger.info(f"Writing {matdata.name} results")
+                logger.debug("Writing %s results", matdata.name)
                 matrix = pd.read_json(matdata.data)
                 # Matrix rows and columns are labelled if there's a label dictionary,
                 # and take the dataframe index otherwise
@@ -303,20 +293,19 @@ def subcmd_report(args: Namespace, logger: Logger) -> int:
     return 0
 
 
-def report(
-    args: Namespace, logger: Logger, session, formats: List[str], params: ReportParams,
-) -> None:
+def report(args: Namespace, session, formats: List[str], params: ReportParams,) -> None:
     """Write tabular report of pyani runs from database.
 
     :param args:  Namespace of command-line arguments
-    :param logger:  logging object
     :param session:  SQLAlchemy database session
     :param formats:  list of output formats
     :param params:  ReportParams namedtuple
     """
+    logger = logging.getLogger(__name__)
+
     outfname = args.outdir / params.name
-    logger.info(
-        f"Writing table of pyani {params.name} from the database to {outfname}.*"
+    logger.debug(
+        "Writing table of pyani %s from the database to %s.*", params.name, outfname
     )
     data = pd.read_sql(params.statement, session.bind)
     data.columns = params.headers

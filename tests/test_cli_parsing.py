@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# (c) The James Hutton Institute 2018-2019
-# (c) University of Strathclyde 2019
+# (c) The James Hutton Institute 2017-2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -9,16 +9,16 @@
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
+# 161 Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
-# Copyright (c) 2018-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2017-2019 The James Hutton Institute
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -101,8 +101,8 @@ class TestCLIParsing(TestCase):
 
     def test_createdb(self):
         """Create empty test database."""
-        pyani_script.run_main(self.argsdict["createdb"], logger=self.logger)
+        pyani_script.run_main(self.argsdict["createdb"])
 
     def test_download(self):
         """Download a single genome."""
-        pyani_script.run_main(self.argsdict["download"], logger=self.logger)
+        pyani_script.run_main(self.argsdict["download"])

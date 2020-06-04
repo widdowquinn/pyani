@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2018-2019
-# (c) The University of Strathclyde 2019
+# (c) The University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -9,16 +9,16 @@
 # Leighton Pritchard,
 # Strathclyde Institute of Pharmacy and Biomedical Sciences
 # University of Strathclyde
-# Cathedral Street
-#  Glasgow
+# 161 Cathedral Street
+# Glasgow
 # Scotland,
-# G1 1XQ
+# G4 0RE
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2018-2019 The James Hutton Institute
-# Copyright (c) 2019 The University of Strathclyde
+# Copyright (c) 2019-2020 The University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

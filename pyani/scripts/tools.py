@@ -38,11 +38,11 @@
 # THE SOFTWARE.
 """Module providing functions in support of the pyani command-line scripts."""
 
+import logging
 import re
 import shutil
 
 from argparse import Namespace
-from logging import Logger
 from pathlib import Path
 from typing import Dict, List, NamedTuple
 
@@ -76,13 +76,12 @@ class DLFileData(NamedTuple):
 # =================
 
 # Create a directory (handling force/noclobber options)
-def make_outdir(outdir: Path, force: bool, noclobber: bool, logger: Logger) -> None:
+def make_outdir(outdir: Path, force: bool, noclobber: bool) -> None:
     """Create output directory (allows for force and noclobber).
 
     :param outdir:  Path, path to output directory
     :param force:
     :param noclobber:
-    :param logger:
 
     The intended outcomes are:
     outdir doesn't exist: create outdir
@@ -94,6 +93,9 @@ def make_outdir(outdir: Path, force: bool, noclobber: bool, logger: Logger) -> N
     So long as the outdir is created with this function, we need only check
     for args.noclobber elsewhere to see how to proceed when a file exists.
     """
+    # Create logger
+    logger = logging.getLogger(__name__)
+
     if outdir.is_dir():
         logger.warning("Output directory %s exists", outdir)
         if force and not noclobber:  # user forces directory reuse, and overwrite
@@ -133,7 +135,6 @@ def make_asm_dict(taxon_ids: List[str], retries: int) -> Dict:
 # Download the RefSeq genome and MD5 hash from NCBI
 def download_genome_and_hash(
     args: Namespace,
-    logger: Logger,
     dlfiledata: DLFileData,
     dltype: str = "RefSeq",
     disable_tqdm: bool = False,
@@ -141,7 +142,6 @@ def download_genome_and_hash(
     """Download genome and accompanying MD5 hash from NCBI.
 
     :param args:  Namespace for command-line arguments
-    :param logger:  logging object
     :param dlfiledata:  namedtuple of info for file to download
     :param dltype:  reference database to use: RefSeq or GenBank
     :param disable_tqdm:  disable progress bar
@@ -151,6 +151,9 @@ def download_genome_and_hash(
 
     We attempt to gracefully skip genomes with download errors.
     """
+    # Create logger
+    logger = logging.getLogger(__name__)
+
     if dltype == "GenBank":
         filestem = re.sub("^GCF_", "GCA_", dlfiledata.filestem)
     else:
@@ -165,11 +168,10 @@ def download_genome_and_hash(
     )
     # Pylint is confused by the content of dlstatus (a namedlist)
     if dlstatus.error is not None:  # pylint: disable=no-member
-        logger.warning(
-            "%s download failed: skipping!\n%s",
-            dltype,
-            dlstatus.error,  # pylint: disable=no-member
-        )
+        logger.warning("%s download failed: skipping!", dltype)
+        logger.debug(
+            "Exception raised:\n%s", dlstatus.error
+        )  # pylint: disable=no-member
         dlstatus.skipped = True
 
-    return dlstatus
+    return dlstatus  # pylint: disable=no-member

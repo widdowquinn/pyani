@@ -134,40 +134,40 @@ class TestPlotSubcommand(unittest.TestCase):
 
     def test_plot_mpl_pdf(self):
         """Test PDF output from Matplotlib."""
-        subcommands.subcmd_plot(self.argsdict["mpl_pdf"], self.logger)
+        subcommands.subcmd_plot(self.argsdict["mpl_pdf"])
         plt.close("all")
 
     def test_plot_mpl_png(self):
         """Test PNG output from Matplotlib."""
-        subcommands.subcmd_plot(self.argsdict["mpl_png"], self.logger)
+        subcommands.subcmd_plot(self.argsdict["mpl_png"])
         plt.close("all")
 
     def test_plot_mpl_svg(self):
         """Test SVG output from Matplotlib."""
-        subcommands.subcmd_plot(self.argsdict["mpl_svg"], self.logger)
+        subcommands.subcmd_plot(self.argsdict["mpl_svg"])
         plt.close("all")
 
     def test_plot_mpl_jpg(self):
         """Test JPG output from Matplotlib."""
-        subcommands.subcmd_plot(self.argsdict["mpl_jpg"], self.logger)
+        subcommands.subcmd_plot(self.argsdict["mpl_jpg"])
         plt.close("all")
 
     def test_plot_seaborn_pdf(self):
         """Test PDF output from Matplotlib."""
-        subcommands.subcmd_plot(self.argsdict["seaborn_pdf"], self.logger)
+        subcommands.subcmd_plot(self.argsdict["seaborn_pdf"])
         plt.close("all")
 
     def test_plot_seaborn_png(self):
         """Test PNG output from Matplotlib."""
-        subcommands.subcmd_plot(self.argsdict["seaborn_png"], self.logger)
+        subcommands.subcmd_plot(self.argsdict["seaborn_png"])
         plt.close("all")
 
     def test_plot_seaborn_svg(self):
         """Test SVG output from Matplotlib."""
-        subcommands.subcmd_plot(self.argsdict["seaborn_svg"], self.logger)
+        subcommands.subcmd_plot(self.argsdict["seaborn_svg"])
         plt.close("all")
 
     def test_plot_seaborn_jpg(self):
         """Test JPG output from Matplotlib."""
-        subcommands.subcmd_plot(self.argsdict["seaborn_jpg"], self.logger)
+        subcommands.subcmd_plot(self.argsdict["seaborn_jpg"])
         plt.close("all")

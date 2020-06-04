@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2013-2019
-# (c) The University of Strathclude 2019
+# (c) The University of Strathclude 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -10,16 +10,16 @@
 # Leighton Pritchard,
 # Strathclyde Institute of Pharmaceutical and Biomedical Sciences
 # The University of Strathclyde
-#  Cathedral Street
+# 161 Cathedral Street
 # Glasgow
-#  G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
-# Copyright (c) 2017-2018 The James Hutton Institute
-# (c) The University of Strathclude 2019
+# Copyright (c) 2013-2019 The James Hutton Institute
+# (c) The University of Strathclude 2019-2020
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -285,7 +285,7 @@ def get_labels(filename: Path, logger: Logger = None) -> Dict:
             for line in ifh.readlines():
                 count += 1
                 try:
-                    hash_md5, key, label = line.strip().split("\t")
+                    _, key, label = line.strip().split("\t")
                 except ValueError:
                     if logger:
                         logger.warning("Problem with class file: %s", filename)
@@ -330,3 +330,34 @@ def has_dependencies() -> Dependencies:
     return Dependencies(
         shutil.which("blastn"), shutil.which("blastall"), shutil.which("nucmer")
     )
+
+
+# Escape a string with terminal formatting codes
+def termcolor(
+    logstr: str, color: Optional[str] = None, bold: Optional[bool] = False
+) -> str:
+    """Return the passed logstr, wrapped in terminal colouring."""
+    # For terminal colouring
+    termcolors = {
+        "BLACK": 0,
+        "RED": 1,
+        "GREEN": 2,
+        "YELLOW": 3,
+        "BLUE": 4,
+        "MAGENTA": 5,
+        "CYAN": 6,
+        "WHITE": 7,
+    }
+    reset = "\033[0m"
+
+    # Colour the string
+    if isinstance(color, str) and color.upper() in termcolors:
+        logstr = f"\033[1;{30 + termcolors[color.upper()]}m{logstr}{reset}"
+
+    # Make the string bold
+    if bold is True:
+        logstr = f"\033[1m{logstr}"
+        if not logstr.endswith(reset):
+            logstr += reset
+
+    return logstr

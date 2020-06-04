@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-#
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
-# Contact: leighton.pritchard@hutton.ac.uk
+#
+# Contact:
+# leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
-# Information and Computing Sciences,
-# James Hutton Institute,
-# Errol Road,
-# Invergowrie,
-# Dundee,
-# DD6 9LH,
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# 161 Cathedral Street,
+# Glasgow,
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -40,11 +41,11 @@
 
 import datetime
 import json
+import logging
 import os
 
 from argparse import Namespace
 from itertools import permutations
-from logging import Logger
 from pathlib import Path
 from typing import List, Tuple
 
@@ -61,13 +62,13 @@ from pyani.pyani_orm import (
     get_session,
     update_comparison_matrices,
 )
+from pyani.pyani_tools import termcolor
 
 
-def subcmd_anib(args: Namespace, logger: Logger) -> None:
+def subcmd_anib(args: Namespace) -> None:
     """Perform ANIb on all genome files in an input directory.
 
     :param args:  Namespace, command-line arguments
-    :param logger:  logging object
 
     Finds ANI by the ANIb method, as described in Goris J, Konstantinidis KT,
     Klappenbach JA, Coenye T, Vandamme P, et al. (2007) DNA-DNA hybridization
@@ -88,29 +89,33 @@ def subcmd_anib(args: Namespace, logger: Logger) -> None:
 
     The calculated values are stored in the local SQLite3 database.
     """
-    logger.info("Running ANIm analysis")  # announce that we're starting
+    logger = logging.getLogger(__name__)
+
+    logger.info(
+        termcolor("Running ANIm analysis", "red")
+    )  # announce that we're starting
 
     # Get BLAST+ version - this will be used in the database entries
     blastn_version = anib.get_version(args.blastn_exe)
-    logger.info(f"BLAST+ blastn version: {blastn_version}")
+    logger.info(termcolor("BLAST+ blastn version: %s", "cyan"), blastn_version)
 
     # Use provided name, or make new one for this analysis
     start_time = datetime.datetime.now()
     name = args.name or "_".join(["ANIb", start_time.isoformat()])
-    logger.info(f"Analysis name: {name}")
+    logger.info("Analysis name: %s", name)
 
     # Connect to existing database (which may be "clean" or have old analyses)
-    logger.info(f"Connecting to database {args.dbpath}")
+    logger.debug("Connecting to database %s", args.dbpath)
     try:
         session = get_session(args.dbpath)
     except Exception:
         logger.error(
-            f"Could not connect to database {args.dbpath} (exiting)", exc_info=True
+            "Could not connect to database %s (exiting)", args.dbpath, exc_info=True
         )
         raise SystemExit(1)
 
     # Add information about this run to the database
-    logger.info(f"Adding run info to database {args.dbpath}...")
+    logger.debug("Adding run info to database %s...", args.dbpath)
     try:
         run = add_run(
             session,
@@ -123,28 +128,28 @@ def subcmd_anib(args: Namespace, logger: Logger) -> None:
     except PyaniORMException:
         logger.error("Could not add run to the database (exiting)", exc_info=True)
         raise SystemExit(1)
-    logger.info(f"\t...added run ID: {run} to the database")
+    logger.debug("\t...added run ID: %s to the database", run)
 
     # Identify input files for comparison, and populate the database
-    logger.info(f"Adding files for {run} to database...")
+    logger.debug("Adding files for %s to database...", run)
     try:
         genome_ids = add_run_genomes(
             session, run, args.indir, args.classes, args.labels
         )
     except PyaniORMException:
         logger.error(
-            f"Could not add genomes to database for run {run} (exiting)", exc_info=True
+            "Could not add genomes to database for run %s (exiting)", run, exc_info=True
         )
-    logger.info(f"\t...added genome IDs: {genome_ids}")
+    logger.debug("\t...added genome IDs: %s", genome_ids)
 
     # Get list of genomes for this analysis from the database
     logger.info("Compiling genomes for comparison")
     genomes = run.genomes.all()
-    logger.info(f"\tCollected {len(genomes)} genomes for this run")
+    logger.debug("\tCollected %s genomes for this run", len(genomes))
 
     # Create output directories. We create the main parent directory (args.outdir), but
     # also subdirectories for the BLAST databases,
-    logger.info(f"Creating output directory {args.outdir}")
+    logger.debug("Creating output directory %s", args.outdir)
     try:
         os.makedirs(args.outdir, exist_ok=True)
     except IOError:
@@ -154,13 +159,13 @@ def subcmd_anib(args: Namespace, logger: Logger) -> None:
         raise SystemError(1)
     fragdir = Path(str(args.outdir)) / "fragments"
     blastdbdir = Path(str(args.outdir)) / "blastdbs"
-    logger.info(f"\t...creating subdirectories")
+    logger.debug("\t...creating subdirectories")
     os.makedirs(fragdir, exist_ok=True)
     os.makedirs(blastdbdir, exist_ok=True)
 
     # Create a new sequence fragment file and a new BLAST+ database for each input genome,
     # and add this data to the database as a row in BlastDB
-    logger.info("Creating input sequence fragment files...")
+    logger.info("Creating input sequence fragment files")
     for genome in genomes:
         fragpath, fraglengths = fragment_fasta_file(
             Path(str(genome.path)), Path(str(fragdir)), args.fragsize
@@ -193,7 +198,12 @@ def subcmd_anib(args: Namespace, logger: Logger) -> None:
     # If there are no comparisons to run, update the Run matrices and exit
     # from this function
     if not comparisons_to_run:
-        logger.info("All comparison results present in database (skipping comparisons)")
+        logger.info(
+            termcolor(
+                "All comparison results present in database (skipping comparisons)",
+                "magenta",
+            )
+        )
         logger.info("Updating summary matrices with existing results")
         update_comparison_matrices(session, run)
         return
@@ -204,21 +214,21 @@ def subcmd_anib(args: Namespace, logger: Logger) -> None:
     # in the output directory.
     if args.recovery:
         logger.warning("Entering recovery mode...")
-        logger.info(
-            f"\tIn this mode, existing comparison output from {args.outdir} is reused"
+        logger.debug(
+            "\tIn this mode, existing comparison output from %s is reused", args.outdir
         )
         existingfiles = collect_existing_output(args.outdir, "blastn", args)
-        logger.info(
-            f"\tIdentified {len(existingfiles)} existing output files for reuse"
+        logger.debug(
+            "\tIdentified %s existing output files for reuse", len(existingfiles)
         )
     else:
         existingfiles = None
-        logger.info(f"\tIdentified no existing output files")
+        logger.debug(f"\tIdentified no existing output files")
 
     # Split the input genome files into contiguous fragments of the specified size,
     # as described in Goris et al. We create a new directory to hold sequence
     # fragments, away from the main genomes
-    logger.info(f"Splitting input genome files into {args.fragsize}nt fragments...")
+    logger.info("Splitting input genome files into %snt fragments...", args.fragsize)
     fragdir = Path(args.outdir) / "fragments"
     os.makedirs(fragdir, exist_ok=True)
     fragfiles, fraglens = anib.fragment_fasta_files(
@@ -226,14 +236,14 @@ def subcmd_anib(args: Namespace, logger: Logger) -> None:
         Path(args.outdir) / "fragments",
         args.fragsize,
     )
-    logger.info(f"...wrote {len(fragfiles)} fragment files to {fragdir}")
+    logger.debug("...wrote %s fragment files to %s", len(fragfiles), fragdir)
 
     # Create list of BLASTN jobs for each comparison still to be performed
     logger.info("Creating blastn jobs for ANIb...")
     joblist = generate_joblist(
-        comparisons_to_run, existingfiles, fragfiles, fraglens, args, logger
+        comparisons_to_run, existingfiles, fragfiles, fraglens, args
     )
-    logger.info(f"...created {len(joblist)} blastn jobs")
+    logger.debug(f"...created %s blastn jobs", len(joblist))
 
     raise NotImplementedError
 
@@ -244,7 +254,6 @@ def generate_joblist(
     fragfiles: List,
     fraglens: List,
     args: Namespace,
-    logger: Logger,
 ) -> NotImplementedError:
     """Return list of ComparisonJobs.
 
@@ -253,8 +262,8 @@ def generate_joblist(
     :param fragfiles:
     :param fraglens:
     :param args:  Namespace, command-line arguments
-    :param logger:  logging object
     """
+    # logger = logging.getLogger(__name__)
     raise NotImplementedError
 
 
