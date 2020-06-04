@@ -8,9 +8,9 @@
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
+# 161 Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
@@ -37,11 +37,11 @@
 # THE SOFTWARE.
 """Provides the listdeps subcommand for pyani."""
 
+import logging
 import platform
 import sys
 
 from argparse import Namespace
-from logging import INFO, Logger, StreamHandler
 
 from pyani.dependencies import (
     get_requirements,
@@ -51,17 +51,20 @@ from pyani.dependencies import (
 )
 
 
-def subcmd_listdeps(args: Namespace, logger: Logger) -> int:
+def subcmd_listdeps(args: Namespace) -> int:
     """Reports dependency versions to logger.
 
     :param args:  Namespace, received command-line arguments
-    :param logger:  logging object
     """
     # If the -v argument is provided, we don't want to have two
     # streams writing to STDOUT
+    logger = logging.getLogger(__name__)
+
+    # Adding this handler means we bypass the default logging
+    # formatter, and write straight to the terminal as stdout
     if not args.verbose:
-        handler = StreamHandler(sys.stdout)
-        handler.setLevel(INFO)
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(logging.INFO)
         logger.addHandler(handler)
 
     # System information

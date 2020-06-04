@@ -57,7 +57,6 @@ def run_main(argv: Optional[List[str]] = None) -> int:
     """Run main process for pyani.py script.
 
     :param argv:
-    :param logger:
     """
     # If we need to (i.e. a namespace isn't passed), parse the command-line
     if argv is None:
