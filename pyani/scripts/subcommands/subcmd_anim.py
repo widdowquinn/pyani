@@ -166,15 +166,15 @@ def subcmd_anim(args: Namespace) -> None:
 
     # Get current nucmer version
     nucmer_version = anim.get_version(args.nucmer_exe)
-    logger.info("MUMMer nucmer version: %s", nucmer_version)
+    logger.info(termcolor("MUMMer nucmer version: %s", "cyan"), nucmer_version)
 
     # Use the provided name or make one for the analysis
     start_time = datetime.datetime.now()
     name = args.name or "_".join(["ANIm", start_time.isoformat()])
-    logger.info("Analysis name: %s", name)
+    logger.info(termcolor("Analysis name: %s", "cyan"), name)
 
     # Get connection to existing database. This may or may not have data
-    logger.info("Connecting to database %s", args.dbpath)
+    logger.debug("Connecting to database %s", args.dbpath)
     try:
         session = get_session(args.dbpath)
     except Exception:
@@ -184,7 +184,7 @@ def subcmd_anim(args: Namespace) -> None:
         raise SystemExit(1)
 
     # Add information about this run to the database
-    logger.info("Adding run info to database %s...", args.dbpath)
+    logger.debug("Adding run info to database %s...", args.dbpath)
     try:
         run = add_run(
             session,
@@ -199,10 +199,10 @@ def subcmd_anim(args: Namespace) -> None:
             "Could not add run %s to the database (exiting)", run, exc_info=True
         )
         raise SystemExit(1)
-    logger.info("...added run ID: %s to the database", run)
+    logger.debug("...added run ID: %s to the database", run)
 
     # Identify input files for comparison, and populate the database
-    logger.info("Adding genomes for run %s to database...", run)
+    logger.debug("Adding genomes for run %s to database...", run)
     try:
         genome_ids = add_run_genomes(
             session, run, args.indir, args.classes, args.labels
@@ -210,15 +210,15 @@ def subcmd_anim(args: Namespace) -> None:
     except PyaniORMException:
         logger.error("Could not add genomes to database for run %s (exiting)", run)
         raise SystemExit(1)
-    logger.info("\t...added genome IDs: %s", genome_ids)
+    logger.debug("\t...added genome IDs: %s", genome_ids)
 
     # Generate commandlines for NUCmer analysis and output compression
     logger.info("Generating ANIm command-lines")
     deltadir = args.outdir / pyani_config.ALIGNDIR["ANIm"]
-    logger.info("NUCmer output will be written temporarily to %s", deltadir)
+    logger.debug("NUCmer output will be written temporarily to %s", deltadir)
 
     # Create output directories
-    logger.info("Creating output directory %s", deltadir)
+    logger.debug("Creating output directory %s", deltadir)
     try:
         deltadir.mkdir(exist_ok=True, parents=True)
     except IOError:
@@ -230,7 +230,7 @@ def subcmd_anim(args: Namespace) -> None:
     # Get list of genome IDs for this analysis from the database
     logger.info("Compiling genomes for comparison")
     genomes = run.genomes.all()
-    logger.info("Collected %s genomes for this run", len(genomes))
+    logger.debug("Collected %s genomes for this run", len(genomes))
 
     # Generate all pair combinations of genome IDs as a list of (Genome, Genome) tuples
     logger.info(
@@ -253,7 +253,12 @@ def subcmd_anim(args: Namespace) -> None:
     # If there are no comparisons to run, update the Run matrices and exit
     # from this function
     if not comparisons_to_run:
-        logger.info("All comparison results present in database (skipping comparisons)")
+        logger.info(
+            termcolor(
+                "All comparison results present in database (skipping comparisons)",
+                "magenta",
+            )
+        )
         logger.info("Updating summary matrices with existing results")
         update_comparison_matrices(session, run)
         return
@@ -264,26 +269,26 @@ def subcmd_anim(args: Namespace) -> None:
     # in the output directory.
     if args.recovery:
         logger.warning("Entering recovery mode")
-        logger.info(
+        logger.debug(
             "\tIn this mode, existing comparison output from %s is reused", deltadir
         )
         existingfiles = collect_existing_output(deltadir, "nucmer", args)
-        logger.info(
+        logger.debug(
             "\tIdentified %s existing output files for reuse", len(existingfiles)
         )
     else:
         existingfiles = list()
-        logger.info("\tIdentified no existing output files")
+        logger.debug("\tIdentified no existing output files")
 
     # Create list of NUCmer jobs for each comparison still to be performed
     logger.info("Creating NUCmer jobs for ANIm")
     joblist = generate_joblist(comparisons_to_run, existingfiles, args)
-    logger.info(
+    logger.debug(
         "Generated %s jobs, %s comparisons", len(joblist), len(comparisons_to_run)
     )
 
     # Pass jobs to appropriate scheduler
-    logger.info("Passing %s jobs to %s...", len(joblist), args.scheduler)
+    logger.debug("Passing %s jobs to %s...", len(joblist), args.scheduler)
     run_anim_jobs(joblist, args)
     logger.info("...jobs complete")
 
@@ -357,9 +362,9 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
     if args.scheduler == "multiprocessing":
         logger.info("Running jobs with multiprocessing")
         if not args.workers:
-            logger.info("(using maximum number of worker threads)")
+            logger.debug("(using maximum number of worker threads)")
         else:
-            logger.info("(using %d worker threads, if available)", args.workers)
+            logger.debug("(using %d worker threads, if available)", args.workers)
         cumval = run_mp.run_dependency_graph(
             [_.job for _ in joblist], workers=args.workers
         )
@@ -371,7 +376,7 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
         logger.info("Multiprocessing run completed without error")
     else:
         logger.info("Running jobs with SGE")
-        logger.info("Setting jobarray group size to %d", args.sgegroupsize)
+        logger.debug("Setting jobarray group size to %d", args.sgegroupsize)
         run_sge.run_dependency_graph(
             [_.job for _ in joblist],
             jgprefix=args.jobprefix,
@@ -422,5 +427,5 @@ def update_comparison_results(
         )
 
     # Populate db
-    logger.info("Committing results to database")
+    logger.debug("Committing results to database")
     session.commit()

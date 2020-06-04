@@ -101,17 +101,18 @@ def add_log_headers():
             "green",
         ),
         termcolor(
-            "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,", "white"
+            "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,",
+            "yellow",
         ),
         termcolor(
-            "\t& Toth, I.K. (2016) 'Genomics and taxonomy in diagnostics for", "white"
+            "\t& Toth, I.K. (2016) 'Genomics and taxonomy in diagnostics for", "yellow"
         ),
         termcolor(
-            "\tfood security: soft-rotting enterobacterial plant pathogens.'", "white"
+            "\tfood security: soft-rotting enterobacterial plant pathogens.'", "yellow"
         ),
         termcolor(
             "\tAnalytical Methods, 8(1), 12–24. http://doi.org/10.1039/C5AY02550H",
-            "white",
+            "yellow",
         ),
     ]
     for line in pyani_citation:

@@ -56,6 +56,7 @@ class NoColorFormatter(logging.Formatter):
     ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
     def format(self, record):
+        """Return logger message with terminal escapes removed."""
         return "[%s] [%s]: %s" % (
             record.levelname,
             record.name,
