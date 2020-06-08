@@ -92,6 +92,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Pang *et al.* (2020) "The Genomic Context for the Evolution and Transmission of Community-Associated *Staphylococcus aureus* ST59 Through the Food Chain" *Front. Microbiol.* `doi:10.3389/fmicb.2020.00422 <https://doi.org/10.3389/fmicb.2020.00422>`_
 * Pasanen *et al.* (2020) "*Pectobacterium parvum* sp. nov., having a Salmonella SPI-1-like Type III secretion system and low virulence" *Int. J. Syst. Evol. Microb.* `doi:10.1099/ijsem.0.004057 <https://doi.org/10.1099/ijsem.0.004057>`_
 * Rackaityte (2020) "Viable bacterial colonization is highly limited in the human intestine in utero" *Nature Medicine* `doi:10.1038/s41591-020-0761-3 <https://doi.org/10.1038/s41591-020-0761-3>`_
+* Rothen *et al.* (2020) "A simple, rapid typing method for *Streptococcus agalactiae* based on ribosomal subunit proteins by MALDI-TOF MS" *Sci. Reports* `doi:10.1038/s41598-020-65707-5 <https://doi.org/10.1038/s41598-020-65707-5>`_
 * Salgar-Chaparro *et al.* (2020) "Complete Genome Sequence of *Pseudomonas balearica* Strain EC28, an Iron-Oxidizing Bacterium Isolated from Corroded Steel" *Microbiol. Res. Ann.* `doi:10.1128/MRA.00275-20 <https://doi.org/10.1128/MRA.00275-20>`_
 * Strang (2020) "Genomic Insights and Ecological Adaptations of Deep-Subsurface and Near Subsurface *Thermococcus* Isolates and Near Subsurface *Thermococcus* Isolates" *WWU Graduate School Collection* `https://cedar.wwu.edu/wwuet/926 <https://cedar.wwu.edu/wwuet/926>`_
 * Thapa *et al.* (2020) "Genome‐wide analyses of Liberibacter species provides insights into evolution, phylogenetic relationships, and virulence factors" *Mol. Plant Path.* `doi:10.1111/mpp.12925  <https://doi.org/10.1111/mpp.12925>`_
@@ -101,9 +102,11 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Waleron *et al.* (2020) "*Arthrospiribacter ruber* gen. nov., sp. nov., a novel bacterium isolated from *Arthrospira* cultures" *Syst. Appl. Microbiol.* `doi:10.1016/j.syapm.2020.126072 <https://doi.org/10.1016/j.syapm.2020.126072>`_
 * Wang *et al.* (2020) "Comparative Genomics Analysis of *Lactobacillus ruminis* from Different Niches" *Genes* `doi:10.3390/genes11010070 <https://doi.org/10.3390/genes11010070>`_
 * Wang *et al.* (2020) "Complete genomic data of Burkholderia glumae strain GX associated with bacterial panicle blight of rice in China" *Plant Dis.* `doi:10.1094/PDIS-10-19-2265-A <https://doi.org/10.1094/PDIS-10-19-2265-A>`_
+* Weiser *et al.* (2020) "A Novel Inducible Prophage from *Burkholderia Vietnamiensis* G4 is Widely Distributed across the Species and Has Lytic Activity against Pathogenic Burkholderia" *Viruses* `doi:10.3390/v12060601 <https://doi.org/10.3390/v12060601>`_
 * Wist *et al.* (2020) "Phenotypic and Genotypic Traits of Vancomycin-Resistant *Enterococci* from Healthy Food- Producing Animals"  *Microorganisms* `doi:10.3390/microorganisms8020261 <https://doi.org/10.3390/microorganisms8020261>`_
 * Wu *et al.* (2020) "Toward a high-quality pan-genome landscape of *Bacillus subtilis* by removal of confounding strains" *Brief. Bioinf.* `doi:10.1093/bib/bbaa013 <https://doi.org/10.1093/bib/bbaa013>`_
 * Yang *et al.* (2020) "Isolation and Characterization of the Novel Phages vB_VpS_BA3 and vB_VpS_CA8 for Lysing *Vibrio parahaemolyticus*" *Front. Microbiol.* `doi:10.3389/fmicb.2020.00259 <https://doi.org/10.3389/fmicb.2020.00259>`_
+* Zhang *et al.* (2020) "A novel bacterial thiosulfate oxidation pathway provides a new clue about the formation of zero-valent sulfur in deep sea." *ISME J.* `doi:10.1038/s41396-020-0684-5 <https://doi.org/10.1038/s41396-020-0684-5>`_
 * Zhou *et al.* (2020) "Comparative analysis of *Lactobacillus gasseri* from Chinese subjects reveals a new species-level taxa" *BMC Genomics* `doi:10.1186/s12864-020-6527-y <https://doi.org/10.1186/s12864-020-6527-y>`_
 
 ^^^^
