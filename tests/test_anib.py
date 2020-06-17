@@ -48,11 +48,11 @@ import unittest
 from pathlib import Path
 
 import pandas as pd
-import pytest
+import pytest  # noqa: F401  # pylint: disable=unused-import
 
 from pandas.util.testing import assert_frame_equal
 
-from pyani import anib, pyani_files, pyani_tools
+from pyani import anib, pyani_files
 
 
 # Test legacy BLAST (blastall) command generation
@@ -85,13 +85,15 @@ def test_blastall_multiple(path_fna_two, tmp_path):
     cmds = anib.generate_blastn_commands(path_fna_two, tmp_path, mode="ANIblastall")
     expected = [
         (
-            f"blastall -p blastn -o {tmp_path / str(path_fna_two[0].stem + '_vs_' + path_fna_two[1].stem + '.blast_tab')} "
+            "blastall -p blastn -o "
+            f"{tmp_path / str(path_fna_two[0].stem + '_vs_' + path_fna_two[1].stem + '.blast_tab')} "
             f"-i {path_fna_two[0]} "
             f"-d {path_fna_two[1]} "
             "-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8"
         ),
         (
-            f"blastall -p blastn -o {tmp_path / str(path_fna_two[1].stem + '_vs_' + path_fna_two[0].stem + '.blast_tab')} "
+            "blastall -p blastn -o "
+            f"{tmp_path / str(path_fna_two[1].stem + '_vs_' + path_fna_two[0].stem + '.blast_tab')} "
             f"-i {path_fna_two[1]} "
             f"-d {path_fna_two[0]} "
             "-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8"
@@ -206,6 +208,26 @@ def test_formatdb_single(path_fna, tmp_path):
     assert cmd[0] == expected
 
 
+# Test FASTA file fragmentation for ANIb methods
+def test_fragment_files(path_fna_all, tmp_path, dir_tgt_fragments, fragment_length):
+    """Fragment files for ANIb/ANIblastall."""
+    result = anib.fragment_fasta_files(path_fna_all, tmp_path, fragment_length)
+    # Test that files are created
+    for outfname in result[0]:
+        assert outfname.is_file()
+
+    # Test that file contents are as expected
+    for fname in tmp_path.iterdir():
+        with fname.open("r") as ofh:
+            with (dir_tgt_fragments / fname.name).open("r") as tfh:
+                assert ofh.read() == tfh.read()
+
+    # # Test fragment lengths are in bounds
+    for _, fragdict in result[-1].items():
+        for _, fraglen in fragdict.items():
+            assert fraglen <= fragment_length
+
+
 # Test BLAST+ database formatting (makeblastdb) command generation
 def test_makeblastdb_multiple(path_fna_two, tmp_path):
     """Generate multiple BLAST+ makeblastdb command-lines."""
@@ -237,51 +259,6 @@ def test_makeblastdb_single(path_fna, tmp_path):
         f"-title {path_fna.stem} -out {tmp_path / path_fna.name}"
     )
     assert cmd[0] == expected
-
-
-class TestFragments(unittest.TestCase):
-
-    """Class defining tests of ANIb FASTA fragmentation."""
-
-    def setUp(self):
-        """Initialise parameters for tests."""
-        testdir = Path("tests")
-        self.outdir = testdir / "test_output" / "anib"
-        self.seqdir = testdir / "test_input" / "sequences"
-        self.infnames = [
-            self.seqdir / fname
-            for fname in (
-                "NC_002696.fna",
-                "NC_010338.fna",
-                "NC_011916.fna",
-                "NC_014100.fna",
-            )
-        ]
-        self.outfnames = [
-            self.outdir / fname
-            for fname in (
-                "NC_002696-fragments.fna",
-                "NC_010338-fragments.fna",
-                "NC_011916-fragments.fna",
-                "NC_014100-fragments.fna",
-            )
-        ]
-        self.fraglen = 1000
-        self.outdir.mkdir(exist_ok=True)
-
-    def test_fragment_files(self):
-        """Fragment files for ANIb/ANIblastall."""
-        result = anib.fragment_fasta_files(self.infnames, self.outdir, self.fraglen)
-        # Are files created?
-        for outfname in self.outfnames:
-            if not outfname.is_file():
-                raise AssertionError()
-
-        # Test fragment lengths
-        for _, fragdict in result[-1].items():
-            for _, fraglen in fragdict.items():
-                if not fraglen <= self.fraglen:
-                    raise AssertionError()
 
 
 class TestParsing(unittest.TestCase):
