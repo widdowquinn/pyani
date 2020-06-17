@@ -270,7 +270,8 @@ def test_parse_legacy_blastdir(anib_output_dir):
         anib_output_dir.legacyblastdir, orglengths, fraglengths, mode="ANIblastall"
     )
     assert_frame_equal(
-        result.percentage_identity, anib_output_dir.legacyblastresult,
+        result.percentage_identity.sort_index(1).sort_index(),
+        anib_output_dir.legacyblastresult.sort_index(1).sort_index(),
     )
 
 
@@ -282,7 +283,8 @@ def test_parse_blastdir(anib_output_dir):
         anib_output_dir.blastdir, orglengths, fraglengths, mode="ANIb"
     )
     assert_frame_equal(
-        result.percentage_identity, anib_output_dir.blastresult,
+        result.percentage_identity.sort_index(1).sort_index(),
+        anib_output_dir.blastresult.sort_index(1).sort_index(),
     )
 
 
