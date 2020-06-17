@@ -57,6 +57,22 @@ from pandas.util.testing import assert_frame_equal
 from pyani import anim, pyani_files, pyani_tools
 
 
+# Test MUMmer command generation
+def test_mummer_single(tmp_path):
+    """Generate single NUCmer/delta-filter command-line."""
+    cmds = anim.construct_nucmer_cmdline(
+        Path("file1.fna"), Path("file2.fna"), outdir=tmp_path
+    )
+    expected = (
+        f"nucmer --mum -p {tmp_path / 'nucmer_output' / 'file1_vs_file2'} file1.fna file2.fna",
+        (
+            f"delta_filter_wrapper.py delta-filter -1 {tmp_path / 'nucmer_output' / 'file1_vs_file2.delta'} "
+            f"{tmp_path / 'nucmer_output' / 'file1_vs_file2.filter'}"
+        ),
+    )
+    assert cmds == expected
+
+
 @pytest.mark.skipif(
     not pyani_tools.has_dependencies().mummer, reason="nucmer executable not available"
 )
@@ -144,17 +160,6 @@ class TestNUCmerCmdline(unittest.TestCase):
         ]
         self.outdir = testdir / "test_output" / "anim"
         self.indir = testdir / "test_input" / "anim"
-
-    def test_single_cmd_generation(self):
-        """Generate single abstract NUCmer/delta-filter command-line.
-
-        Tests that a single NUCmer/delta-filter command-line pair is
-        produced correctly
-        """
-        cmds = anim.construct_nucmer_cmdline(
-            Path("file1.fna"), Path("file2.fna"), outdir=self.outdir
-        )
-        self.assertEqual(cmds, (self.ntgt, self.ftgt))
 
     def test_maxmatch_cmd_generation(self):
         """Generate NUCmer command line with maxmatch."""
