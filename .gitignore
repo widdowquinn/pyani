@@ -30,6 +30,7 @@ docs/make.bat
 .mypy_cache/
 
 # Test output
+*.dataframe
 *.log
 tests/test_*_out/
 tests/test_*_output/
