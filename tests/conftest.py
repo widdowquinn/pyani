@@ -41,12 +41,35 @@
 """Pytest configuration file."""
 
 from pathlib import Path
+from typing import List, NamedTuple
 
+import pandas as pd
 import pytest
 
 # Path to tests, contains tests and data subdirectories
 TESTSPATH = Path(__file__).parents[0]
 FIXTUREPATH = TESTSPATH / "fixtures"
+
+
+class ANIbOutput(NamedTuple):
+
+    """Convenience struct for ANIb output."""
+
+    fragfile: Path
+    tabfile: Path
+    legacytabfile: Path
+
+
+class ANIbOutputDir(NamedTuple):
+
+    """Convenience struct for ANIb output."""
+
+    infiles: List[Path]
+    fragfiles: List[Path]
+    blastdir: Path
+    legacyblastdir: Path
+    blastresult: pd.DataFrame
+    legacyblastresult: pd.DataFrame
 
 
 @pytest.fixture
@@ -97,3 +120,47 @@ def path_fna_two(dir_seq):
 def path_fna_all(dir_seq):
     """Paths to all .fna sequence file in dir_seq."""
     return [_ for _ in dir_seq.iterdir() if _.is_file() and _.suffix == ".fna"]
+
+
+@pytest.fixture
+def anib_output(dir_anib_in):
+    """Namedtuple of example ANIb output.
+
+    fragfile - fragmented FASTA query file
+    tabfile  - BLAST+ tabular output
+    legacytabfile - blastall tabular output
+    """
+    return ANIbOutput(
+        dir_anib_in / "NC_002696-fragments.fna",
+        dir_anib_in / "NC_002696_vs_NC_011916.blast_tab",
+        dir_anib_in / "NC_002696_vs_NC_010338.blast_tab",
+    )
+
+
+@pytest.fixture
+def anib_output_dir(dir_anib_in):
+    """Namedtuple of example ANIB output - full directory.
+
+    infiles - list of FASTA query files
+    fragfiles - list of fragmented FASTA query files
+    blastdir - path to BLAST+ output data
+    legacyblastdir - path to blastall output data
+    blastresult - pd.DataFrame result for BLAST+
+    legacyblastresult - pd.DataFrame result for blastall
+    """
+    return ANIbOutputDir(
+        [
+            _
+            for _ in (dir_anib_in / "sequences").iterdir()
+            if _.is_file() and _.suffix == ".fna"
+        ],
+        [
+            _
+            for _ in (dir_anib_in / "fragfiles").iterdir()
+            if _.is_file() and _.suffix == ".fna"
+        ],
+        dir_anib_in / "blastn",
+        dir_anib_in / "blastall",
+        pd.read_csv(dir_anib_in / "dataframes" / "blastn_result.csv", index_col=0),
+        pd.read_csv(dir_anib_in / "dataframes" / "blastall_result.csv", index_col=0),
+    )

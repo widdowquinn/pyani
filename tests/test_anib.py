@@ -261,93 +261,44 @@ def test_makeblastdb_single(path_fna, tmp_path):
     assert cmd[0] == expected
 
 
-class TestParsing(unittest.TestCase):
+# Test output file parsing for ANIb methods
+def test_parse_legacy_blastdir(anib_output_dir):
+    """Parses directory of legacy BLAST output."""
+    orglengths = pyani_files.get_sequence_lengths(anib_output_dir.infiles)
+    fraglengths = anib.get_fraglength_dict(anib_output_dir.fragfiles)
+    result = anib.process_blast(
+        anib_output_dir.legacyblastdir, orglengths, fraglengths, mode="ANIblastall"
+    )
+    assert_frame_equal(
+        result.percentage_identity, anib_output_dir.legacyblastresult,
+    )
 
-    """Class defining tests of BLAST output parsing."""
 
-    def setUp(self):
-        """Set up test parameters."""
-        testdir = Path("tests")
-        self.indir = testdir / "test_input" / "anib"
-        self.seqdir = testdir / "test_input" / "sequences"
-        self.fragdir = testdir / "test_input/anib" / "fragfiles"
-        self.anibdir = testdir / "test_input/anib" / "blastn"
-        self.aniblastalldir = testdir / "test_input" / "anib" / "blastall"
-        self.fname_legacy = self.indir / "NC_002696_vs_NC_010338.blast_tab"
-        self.fname = self.indir / "NC_002696_vs_NC_011916.blast_tab"
-        self.fragfname = self.indir / "NC_002696-fragments.fna"
-        self.fraglens = 1000
-        self.infnames = [
-            self.seqdir / fname
-            for fname in (
-                "NC_002696.fna",
-                "NC_010338.fna",
-                "NC_011916.fna",
-                "NC_014100.fna",
-            )
-        ]
-        self.fragfiles = [
-            self.fragdir / fname
-            for fname in (
-                "NC_002696-fragments.fna",
-                "NC_010338-fragments.fna",
-                "NC_011916-fragments.fna",
-                "NC_014100-fragments.fna",
-            )
-        ]
-        self.anibtgt = pd.DataFrame(
-            [
-                [1.000_000, 0.796_974, 0.999_977, 0.837_285],
-                [0.795_958, 1.000_000, 0.795_917, 0.798_250],
-                [0.999_922, 0.795_392, 1.000_000, 0.837_633],
-                [0.836_780, 0.798_704, 0.836_823, 1.000_000],
-            ],
-            columns=["NC_002696", "NC_010338", "NC_011916", "NC_014100"],
-            index=["NC_002696", "NC_010338", "NC_011916", "NC_014100"],
-        )
-        self.aniblastalltgt = pd.DataFrame(
-            [
-                [1.000_000, 0.785_790, 0.999_977, 0.830_641],
-                [0.781_319, 1.000_000, 0.781_281, 0.782_723],
-                [0.999_937, 0.782_968, 1.000_000, 0.830_431],
-                [0.828_919, 0.784_533, 0.828_853, 1.000_000],
-            ],
-            columns=["NC_002696", "NC_010338", "NC_011916", "NC_014100"],
-            index=["NC_002696", "NC_010338", "NC_011916", "NC_014100"],
-        )
+def test_parse_blastdir(anib_output_dir):
+    """Parse directory of BLAST+ output."""
+    orglengths = pyani_files.get_sequence_lengths(anib_output_dir.infiles)
+    fraglengths = anib.get_fraglength_dict(anib_output_dir.fragfiles)
+    result = anib.process_blast(
+        anib_output_dir.blastdir, orglengths, fraglengths, mode="ANIb"
+    )
+    assert_frame_equal(
+        result.percentage_identity, anib_output_dir.blastresult,
+    )
 
-    def test_parse_blasttab(self):
-        """Parses ANIb .blast_tab output."""
-        fragdata = anib.get_fraglength_dict([self.fragfname])
-        result = anib.parse_blast_tab(self.fname, fragdata, mode="ANIb")
-        self.assertEqual(result, (4_016_551, 93, 99.997_693_577_050_029))
 
-    def test_parse_legacy_blasttab(self):
-        """Parses legacy .blast_tab output."""
-        # ANIblastall output
-        fragdata = anib.get_fraglength_dict([self.fragfname])
-        result = anib.parse_blast_tab(self.fname_legacy, fragdata, mode="ANIblastall")
-        self.assertEqual(result, (1_966_922, 406_104, 78.578_978_313_253_018))
+def test_parse_blasttab(anib_output):
+    """Parse ANIb BLAST+ .blast_tab output."""
+    fragdata = anib.get_fraglength_dict([anib_output.fragfile])
+    result = anib.parse_blast_tab(anib_output.tabfile, fragdata, mode="ANIb")
+    assert (a == b for a, b in zip(result, [4_016_551, 93, 99.997_693_577_050_029]))
 
-    def test_blastdir_processing(self):
-        """Parses directory of .blast_tab output."""
-        orglengths = pyani_files.get_sequence_lengths(self.infnames)
-        fraglengths = anib.get_fraglength_dict(self.fragfiles)
-        # ANIb
-        result = anib.process_blast(self.anibdir, orglengths, fraglengths, mode="ANIb")
-        assert_frame_equal(
-            result.percentage_identity.sort_index(1).sort_index(),
-            self.anibtgt.sort_index(1).sort_index(),
-        )
 
-    def test_legacy_blastdir_processing(self):
-        """Parses directory of legacy .blast_tab output."""
-        orglengths = pyani_files.get_sequence_lengths(self.infnames)
-        fraglengths = anib.get_fraglength_dict(self.fragfiles)
-        result = anib.process_blast(
-            self.aniblastalldir, orglengths, fraglengths, mode="ANIblastall"
-        )
-        assert_frame_equal(
-            result.percentage_identity.sort_index(1).sort_index(),
-            self.aniblastalltgt.sort_index(1).sort_index(),
-        )
+def test_parse_legacy_blasttab(anib_output):
+    """Parses ANIB legacy .blast_tab output."""
+    fragdata = anib.get_fraglength_dict([anib_output.fragfile])
+    result = anib.parse_blast_tab(
+        anib_output.legacytabfile, fragdata, mode="ANIblastall"
+    )
+    assert (
+        a == b for a, b in zip(result, [1_966_922, 406_104, 78.578_978_313_253_018])
+    )
