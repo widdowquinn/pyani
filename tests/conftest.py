@@ -273,6 +273,12 @@ def mummer_cmds_four(path_file_four):
 
 
 @pytest.fixture
+def path_concordance_jspecies():
+    """Path to JSpecies analysis output."""
+    return FIXTUREPATH / "concordance/jspecies_output.tab"
+
+
+@pytest.fixture
 def path_file_two():
     """Path to two arbitrary filenames."""
     return [Path(f"file{_:d}.fna") for _ in range(1, 3)]
@@ -305,6 +311,16 @@ def path_fna_all(dir_seq):
 
 
 @pytest.fixture
+def paths_concordance_fna():
+    """Path to FASTA inputs for concordance analysis."""
+    return [
+        _
+        for _ in (FIXTUREPATH / "concordance").iterdir()
+        if _.is_file() and _.suffix == ".fna"
+    ]
+
+
+@pytest.fixture
 def mock_single_genome_dl(monkeypatch):
     """Mocks remote database calls for single-genome downloads.
 
@@ -334,7 +350,8 @@ def mock_single_genome_dl(monkeypatch):
             "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
             "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
             FIXTUREPATH
-            / "single_genome_download/GCF_000011605.1_ASM1160v1_genomic.fna.gz",
+            / "single_genome_download"
+            / "GCF_000011605.1_ASM1160v1_genomic.fna.gz",
             FIXTUREPATH / "single_genome_download/GCF_000011605.1_ASM1160v1_hashes.txt",
             False,
             None,
@@ -343,3 +360,9 @@ def mock_single_genome_dl(monkeypatch):
     monkeypatch.setattr(download, "get_asm_uids", mock_asmuids)
     monkeypatch.setattr(download, "get_ncbi_esummary", mock_ncbi_esummary)
     monkeypatch.setattr(download, "retrieve_genome_and_hash", mock_genome_hash)
+
+
+@pytest.fixture
+def tolerance_anim():
+    """Tolerance for ANIm concordance comparisons."""
+    return 0.1

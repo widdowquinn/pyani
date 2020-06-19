@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -9,16 +9,16 @@
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
+# 161 Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -97,6 +97,49 @@ def parse_jspecies(infile):
     return dfs
 
 
+def test_anim_concordance(
+    paths_concordance_fna, path_concordance_jspecies, tolerance_anim, tmp_path
+):
+    """Check ANIm results are concordant with JSpecies."""
+    # Perform ANIm on the input directory contents
+    # We have to separate nucmer/delta-filter command generation
+    # because Travis-CI doesn't play nicely with changes we made
+    # for local SGE/OGE integration.
+    # This might be avoidable with a scheduler flag passed to
+    # jobgroup generation in the anim.py module. That's a TODO.
+    ncmds, fcmds = anim.generate_nucmer_commands(paths_concordance_fna, tmp_path)
+    (tmp_path / "nucmer_output").mkdir(exist_ok=True, parents=True)
+    run_mp.multiprocessing_run(ncmds)
+
+    # delta-filter commands need to be treated with care for
+    # Travis-CI. Our cluster won't take redirection or semicolon
+    # separation in individual commands, but the wrapper we wrote
+    # for this (delta_filter_wrapper.py) can't be called under
+    # Travis-CI. So we must deconstruct the commands below
+    dfcmds = [
+        " > ".join([" ".join(fcmd.split()[1:-1]), fcmd.split()[-1]]) for fcmd in fcmds
+    ]
+    run_mp.multiprocessing_run(dfcmds)
+
+    orglengths = pyani_files.get_sequence_lengths(paths_concordance_fna)
+
+    results = anim.process_deltadir(tmp_path / "nucmer_output", orglengths)
+    result_pid = results.percentage_identity
+    result_pid.to_csv(tmp_path / "pyani_anim.tab", sep="\t")
+
+    # Compare JSpecies output to results
+    result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
+    diffmat = (
+        result_pid.values - parse_jspecies(path_concordance_jspecies)["ANIm"].values
+    )
+    anim_diff = pd.DataFrame(
+        diffmat, index=result_pid.index, columns=result_pid.columns
+    )
+    anim_diff.to_csv(tmp_path / "pyani_anim_diff.tab", sep="\t")
+
+    assert anim_diff.abs().values.max() < tolerance_anim
+
+
 class TestConcordance(unittest.TestCase):
     """Class defining tests of pyani concordance with JSpecies."""
 
@@ -120,41 +163,6 @@ class TestConcordance(unittest.TestCase):
         self.fragsize = 1020
         self.outdir.mkdir(exist_ok=True)
         self.deltadir.mkdir(exist_ok=True)
-
-    def test_anim_concordance(self):
-        """Check ANIm results are concordant with JSpecies."""
-        # Perform ANIm on the input directory contents
-        # We have to separate nucmer/delta-filter command generation
-        # because Travis-CI doesn't play nicely with changes we made
-        # for local SGE/OGE integration.
-        # This might be avoidable with a scheduler flag passed to
-        # jobgroup generation in the anim.py module. That's a TODO.
-        ncmds, fcmds = anim.generate_nucmer_commands(self.infiles, self.outdir)
-        run_mp.multiprocessing_run(ncmds)
-
-        # delta-filter commands need to be treated with care for
-        # Travis-CI. Our cluster won't take redirection or semicolon
-        # separation in individual commands, but the wrapper we wrote
-        # for this (delta_filter_wrapper.py) can't be called under
-        # Travis-CI. So we must deconstruct the commands below
-        dfcmds = [
-            " > ".join([" ".join(fcmd.split()[1:-1]), fcmd.split()[-1]])
-            for fcmd in fcmds
-        ]
-        run_mp.multiprocessing_run(dfcmds)
-
-        results = anim.process_deltadir(self.deltadir, self.orglengths)
-        result_pid = results.percentage_identity
-        result_pid.to_csv(self.outdir / "pyani_anim.tab", sep="\t")
-
-        # Compare JSpecies output to results
-        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
-        diffmat = result_pid.values - self.target["ANIm"].values
-        anim_diff = pd.DataFrame(
-            diffmat, index=result_pid.index, columns=result_pid.columns
-        )
-        anim_diff.to_csv(self.outdir / "pyani_anim_diff.tab", sep="\t")
-        self.assertLess(anim_diff.abs().values.max(), self.tolerance["ANIm"])
 
     def test_anib_concordance(self):
         """Check ANIb results are concordant with JSpecies.
