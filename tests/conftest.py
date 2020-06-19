@@ -46,6 +46,10 @@ from typing import List, NamedTuple, Tuple
 import pandas as pd
 import pytest
 
+from pyani import download
+from pyani.download import ASMIDs, DLStatus
+
+
 # Path to tests, contains tests and data subdirectories
 TESTSPATH = Path(__file__).parents[0]
 FIXTUREPATH = TESTSPATH / "fixtures"
@@ -143,6 +147,26 @@ def anib_output_dir(dir_anib_in):
 
 
 @pytest.fixture
+def args_createdb(tmp_path):
+    """Command-line arguments for database creation."""
+    return ["createdb", "--dbpath", tmp_path / "pyanidb", "--force"]
+
+
+@pytest.fixture
+def args_single_genome_download(tmp_path):
+    """Command-line arguments for single genome download."""
+    return [
+        "download",
+        "-t",
+        "218491",
+        "--email",
+        email_address,
+        tmp_path,
+        "--force",
+    ]
+
+
+@pytest.fixture
 def delta_output_dir(dir_anim_in):
     """Namedtuple of example MUMmer .delta file output."""
     return DeltaDir(
@@ -186,6 +210,12 @@ def dir_targets():
 def dir_tgt_fragments(dir_targets):
     """Target files for FASTA file fragmentation."""
     return dir_targets / "fragments"
+
+
+@pytest.fixture
+def email_address():
+    """Dummy email address."""
+    return "pyani.tests@pyani.org"
 
 
 @pytest.fixture
@@ -272,3 +302,44 @@ def path_fna_two(dir_seq):
 def path_fna_all(dir_seq):
     """Paths to all .fna sequence file in dir_seq."""
     return [_ for _ in dir_seq.iterdir() if _.is_file() and _.suffix == ".fna"]
+
+
+@pytest.fixture
+def mock_single_genome_dl(monkeypatch):
+    """Mocks remote database calls for single-genome downloads.
+
+    This masks calls to the download module, for safe testing.
+    """
+
+    def mock_asmuids(*args, **kwargs):
+        """Mock download.get_asm_uids()."""
+        return ASMIDs("txid218491[Organism:exp]", 1, ["32728"])
+
+    def mock_ncbi_esummary(*args, **kwargs):
+        """Mock download.get_ncbi_esummary()."""
+        return (
+            {
+                "Taxid": "218491",
+                "SpeciesTaxid": "29471",
+                "AssemblyAccession": "GCF_000011605.1",
+                "AssemblyName": "ASM1160v1",
+                "SpeciesName": "Pectobacterium atrosepticum",
+            },
+            "GCF_000011605.1_ASM1160v1",
+        )
+
+    def mock_genome_hash(*args, **kwargs):
+        """Mock download.retrieve_genome_and_hash()."""
+        return DLStatus(
+            "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
+            "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
+            FIXTUREPATH
+            / "single_genome_download/GCF_000011605.1_ASM1160v1_genomic.fna.gz",
+            FIXTUREPATH / "single_genome_download/GCF_000011605.1_ASM1160v1_hashes.txt",
+            False,
+            None,
+        )
+
+    monkeypatch.setattr(download, "get_asm_uids", mock_asmuids)
+    monkeypatch.setattr(download, "get_ncbi_esummary", mock_ncbi_esummary)
+    monkeypatch.setattr(download, "retrieve_genome_and_hash", mock_genome_hash)

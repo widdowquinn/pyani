@@ -117,6 +117,7 @@ def subcmd_download(args: Namespace) -> int:
             logger.info(
                 termcolor("Retrieving eSummary information for UID %s", "cyan"), uid
             )
+            print("BORKBORK", download.get_ncbi_esummary(uid, args.retries, api_key))
             esummary, filestem = download.get_ncbi_esummary(uid, args.retries, api_key)
             uid_class = download.get_ncbi_classification(esummary)
 
