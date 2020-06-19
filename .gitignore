@@ -41,6 +41,7 @@ tests/test_JSpecies/C2/
 tests/test_JSpecies/C3/
 tests/test_JSpecies/Corynebacterium/
 tests/test_JSpecies/pyani_3_species/
+C_blochmannia*/
 	
 # SGE output
 stderr/
