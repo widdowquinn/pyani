@@ -81,41 +81,17 @@ def test_import_scipy():
     import scipy
 
 
-class TestDependencyExecutables(unittest.TestCase):
+def test_blastn_available(blastn_available):
+    """Test that BLAST+ is available."""
+    assert blastn_available
 
-    """Class defining tests of third-party executables"""
 
-    def test_run_blast(self):
-        """Test that BLAST+ is runnable."""
-        blastn_exe = pyani_config.BLASTN_DEFAULT
-        cmd = [str(blastn_exe), "-version"]
-        result = subprocess.run(
-            cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
-        )
-        print(result.stdout)
-        self.assertEqual(result.stdout[:6], b"blastn")
+@pytest.mark.xfail(reason="Optional third-party executable (blastall)")
+def test_run_blastall(blastall_available):
+    """Test that blastall is available."""
+    assert blastall_available
 
-    def test_run_blastall(self):
-        """Test that legacy BLAST is runnable."""
-        blastall_exe = pyani_config.BLASTALL_DEFAULT
-        cmd = str(blastall_exe)
-        # Can't use check=True, as blastall without arguments returns 1!
-        result = subprocess.run(
-            cmd,
-            shell=False,
-            check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print(result.stdout)
-        self.assertEqual(result.stdout[1:9], b"blastall")
 
-    def test_run_nucmer(self):
-        """Test that NUCmer is runnable."""
-        nucmer_exe = pyani_config.NUCMER_DEFAULT
-        cmd = [str(nucmer_exe), "--version"]
-        result = subprocess.run(
-            cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
-        )
-        print(result.stderr)  # NUCmer puts output to STDERR!
-        self.assertEqual(result.stderr[:6], b"nucmer")
+def test_run_nucmer(nucmer_available):
+    """Test that nucmer is available."""
+    assert nucmer_available

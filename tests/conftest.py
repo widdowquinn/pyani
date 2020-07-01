@@ -40,6 +40,8 @@
 # THE SOFTWARE.
 """Pytest configuration file."""
 
+import subprocess
+
 from pathlib import Path
 from typing import List, NamedTuple, Tuple
 
@@ -48,7 +50,7 @@ import pytest
 
 from pyani import download
 from pyani.download import ASMIDs, DLStatus
-
+from pyani.pyani_config import BLASTALL_DEFAULT, BLASTN_DEFAULT, NUCMER_DEFAULT
 
 # Path to tests, contains tests and data subdirectories
 TESTSPATH = Path(__file__).parents[0]
@@ -167,6 +169,37 @@ def args_single_genome_download(tmp_path):
 
 
 @pytest.fixture
+def blastall_available():
+    """Returns True if blastall can be run, False otherwise."""
+    cmd = str(BLASTALL_DEFAULT)
+    # Can't use check=True, as blastall without arguments returns 1!
+    try:
+        result = subprocess.run(
+            cmd,
+            shell=False,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except OSError:
+        return False
+    return result.stdout[1:9] == b"blastall"
+
+
+@pytest.fixture
+def blastn_available():
+    """Returns True if blastn can be run, False otherwise."""
+    cmd = [str(BLASTN_DEFAULT), "-version"]
+    try:
+        result = subprocess.run(
+            cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+        )
+    except OSError:
+        return False
+    return result.stdout[:6] == b"blastn"
+
+
+@pytest.fixture
 def delta_output_dir(dir_anim_in):
     """Namedtuple of example MUMmer .delta file output."""
     return DeltaDir(
@@ -273,6 +306,19 @@ def mummer_cmds_four(path_file_four):
 
 
 @pytest.fixture
+def nucmer_available():
+    """Test that nucmer is available."""
+    cmd = [str(NUCMER_DEFAULT), "--version"]
+    try:
+        result = subprocess.run(
+            cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+        )
+    except OSError:
+        return False
+    return result.stderr[:6] == b"nucmer"
+
+
+@pytest.fixture
 def path_concordance_jspecies():
     """Path to JSpecies analysis output."""
     return FIXTUREPATH / "concordance/jspecies_output.tab"
@@ -312,12 +358,85 @@ def path_fna_all(dir_seq):
 
 @pytest.fixture
 def paths_concordance_fna():
-    """Path to FASTA inputs for concordance analysis."""
+    """Paths to FASTA inputs for concordance analysis."""
     return [
         _
         for _ in (FIXTUREPATH / "concordance").iterdir()
         if _.is_file() and _.suffix == ".fna"
     ]
+
+
+@pytest.fixture(autouse=True)
+def skip_by_unavailable_executable(
+    request, blastall_available, blastn_available, nucmer_available
+):
+    """Skip test if executable is unavailable.
+
+    Use with @pytest.mark.skip_if_exe_missing("executable") decorator.
+    """
+    if request.node.get_closest_marker("skip_if_exe_missing"):
+        exe_name = request.node.get_closest_marker("skip_if_exe_missing").args[0]
+        tests = {
+            "blastall": blastall_available,
+            "blastn": blastn_available,
+            "nucmer": nucmer_available,
+        }
+        try:
+            if not tests[exe_name]:
+                pytest.skip(f"Skipped as {exe_name} not available")
+        except KeyError:  # Unknown executables are ignored
+            pytest.skip(f"Executable {exe_name} not recognised")
+
+
+@pytest.fixture
+def threshold_anib_lo_hi():
+    """Threshold for concordance comparison split between high and low identity.
+
+    When comparing ANIb results with ANIblastall results, we need to account for
+    the differing performances of BLASTN and BLASTN+ on more distantly-related
+    sequences. On closely-related sequences both methods give similar results;
+    for more distantly-related sequences, the results can be quite different. This
+    threshold is the percentage identity we consider to separate "close" from
+    "distant" related sequences.
+    """
+    return 90
+
+
+@pytest.fixture
+def tolerance_anib_hi():
+    """Tolerance for ANIb concordance comparisons.
+
+    This tolerance is for comparisons between "high identity" comparisons, i.e.
+    genomes having identity greater than threshold_anib_lo_hi in homologous regions.
+
+    These "within-species" level comparisons need to be more accurate
+    """
+    return 0.1
+
+
+@pytest.fixture
+def tolerance_anib_lo():
+    """Tolerance for ANIb concordance comparisons.
+
+    This tolerance is for comparisons between "low identity" comparisons, i.e.
+    genomes having identity less than threshold_anib_lo_hi in homologous regions.
+
+    These "intra-species" level comparisons vary more as a result of the change of
+    algorithm from BLASTN to BLASTN+ (megablast).
+    """
+    return 5
+
+
+@pytest.fixture
+def tolerance_anim():
+    """Tolerance for ANIm concordance comparisons."""
+    return 0.1
+
+
+@pytest.fixture
+def tolerance_tetra():
+    """Tolerance for TETRA concordance comparisons."""
+    return 0.1
 
 
 @pytest.fixture
@@ -360,9 +479,3 @@ def mock_single_genome_dl(monkeypatch):
     monkeypatch.setattr(download, "get_asm_uids", mock_asmuids)
     monkeypatch.setattr(download, "get_ncbi_esummary", mock_ncbi_esummary)
     monkeypatch.setattr(download, "retrieve_genome_and_hash", mock_genome_hash)
-
-
-@pytest.fixture
-def tolerance_anim():
-    """Tolerance for ANIm concordance comparisons."""
-    return 0.1
