@@ -43,7 +43,7 @@
 import subprocess
 
 from pathlib import Path
-from typing import List, NamedTuple, Tuple
+from typing import Dict, List, NamedTuple, Tuple
 
 import pandas as pd
 import pytest
@@ -51,6 +51,7 @@ import pytest
 from pyani import download
 from pyani.download import ASMIDs, DLStatus
 from pyani.pyani_config import BLASTALL_DEFAULT, BLASTN_DEFAULT, NUCMER_DEFAULT
+from pyani.pyani_tools import get_labels
 
 # Path to tests, contains tests and data subdirectories
 TESTSPATH = Path(__file__).parents[0]
@@ -93,6 +94,15 @@ class DeltaParsed(NamedTuple):
 
     filename: Path
     data: Tuple[int]
+
+
+class GraphicsTestInputs(NamedTuple):
+
+    """Convenience struct for graphics test inputs."""
+
+    filename: Path
+    labels: Dict[str, str]
+    classes: Dict[str, str]
 
 
 class MUMmerExample(NamedTuple):
@@ -228,6 +238,12 @@ def dir_anim_in():
 
 
 @pytest.fixture
+def dir_graphics_in():
+    """Input files for graphics tests."""
+    return FIXTUREPATH / "graphics"
+
+
+@pytest.fixture
 def dir_seq():
     """Sequence files for tests."""
     return FIXTUREPATH / "sequences"
@@ -255,6 +271,16 @@ def email_address():
 def fragment_length():
     """Fragment size for ANIb-related analyses."""
     return 1000
+
+
+@pytest.fixture
+def graphics_inputs(dir_graphics_in):
+    """Returns namedtuple of graphics inputs."""
+    return GraphicsTestInputs(
+        dir_graphics_in / "ANIm_percentage_identity.tab",
+        get_labels(dir_graphics_in / "labels.tab"),
+        get_labels(dir_graphics_in / "classes.tab"),
+    )
 
 
 @pytest.fixture

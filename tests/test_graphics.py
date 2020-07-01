@@ -58,59 +58,46 @@ TESTDIR = Path("tests")
 OUTDIR = TESTDIR / "test_graphics_output"
 
 
-def define_inputs():
-    """Return a dict of input files, keyed by file name option."""
-    return {
-        "infilename": TESTDIR / "target_ANIm_output" / "ANIm_percentage_identity.tab",
-        "labels": pyani_tools.get_labels(
-            TESTDIR / "test_ani_data" / "labels.tab", logger=None
-        ),
-        "classes": pyani_tools.get_labels(
-            TESTDIR / "test_ani_data" / "classes.tab", logger=None
-        ),
-    }
-
-
-def draw_format_method(fmt, mth):
+def draw_format_method(fmt, mth, graphics_inputs, tmp_path):
     """Render graphics format and method output."""
-    inputs = define_inputs()
-    outfilename = OUTDIR / f"{mth}.{fmt}"
-    stem = "ANIm_percentage_identity"
-    df = pd.read_csv(inputs["infilename"], index_col=0, sep="\t")
-    OUTDIR.mkdir(exist_ok=True)
+    df = pd.read_csv(graphics_inputs.filename, index_col=0, sep="\t")
     fn = {"mpl": pyani_graphics.mpl.heatmap, "seaborn": pyani_graphics.sns.heatmap}
     params = {"mpl": pyani_config.params_mpl, "seaborn": pyani_config.params_mpl}
     method_params = pyani_graphics.Params(
-        params[mth](df)[stem], inputs["labels"], inputs["classes"]
+        params[mth](df)["ANIm_percentage_identity"],
+        graphics_inputs.labels,
+        graphics_inputs.classes,
     )
-    fn[mth](df, outfilename, title=f"{mth}:{fmt} test", params=method_params)
+    fn[mth](
+        df, tmp_path / f"{mth}.{fmt}", title=f"{mth}:{fmt} test", params=method_params
+    )
 
 
-def test_png_mpl():
+def test_png_mpl(graphics_inputs, tmp_path):
     """Write .png graphics with mpl."""
-    draw_format_method("png", "mpl")
+    draw_format_method("png", "mpl", graphics_inputs, tmp_path)
 
 
-def test_svg_mpl():
+def test_svg_mpl(graphics_inputs, tmp_path):
     """Write .svg graphics with mpl."""
-    draw_format_method("svg", "mpl")
+    draw_format_method("svg", "mpl", graphics_inputs, tmp_path)
 
 
-def test_pdf_mpl():
+def test_pdf_mpl(graphics_inputs, tmp_path):
     """Write .pdf graphics with mpl."""
-    draw_format_method("pdf", "mpl")
+    draw_format_method("pdf", "mpl", graphics_inputs, tmp_path)
 
 
-def test_png_seaborn():
+def test_png_seaborn(graphics_inputs, tmp_path):
     """Write .png graphics with seaborn."""
-    draw_format_method("png", "seaborn")
+    draw_format_method("png", "seaborn", graphics_inputs, tmp_path)
 
 
-def test_svg_seaborn():
+def test_svg_seaborn(graphics_inputs, tmp_path):
     """Write .svg graphics with seaborn."""
-    draw_format_method("svg", "seaborn")
+    draw_format_method("svg", "seaborn", graphics_inputs, tmp_path)
 
 
-def test_pdf_seaborn():
+def test_pdf_seaborn(graphics_inputs, tmp_path):
     """Write .pdf graphics with seaborn."""
-    draw_format_method("pdf", "seaborn")
+    draw_format_method("pdf", "seaborn", graphics_inputs, tmp_path)

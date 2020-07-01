@@ -268,7 +268,7 @@ def make_asm_dict(taxon_ids: Iterable[str], retries: int) -> Dict:
 
 
 # Read sequence annotations in from file
-def get_labels(filename: Path, logger: Logger = None) -> Dict:
+def get_labels(filename: Path, logger: Optional[Logger] = None) -> Dict:
     r"""Return dictionary of alternative sequence labels, or None.
 
     :param filename:  path to file containing tab-separated table of labels
