@@ -68,11 +68,13 @@ def test_add_dependency(job_dummy_cmds):
     job1 = pyani_jobs.Job("dummy_with_dependency", job_dummy_cmds[0])
     job2 = pyani_jobs.Job("dummy_dependency", job_dummy_cmds[1])
     job1.add_dependency(job2)
-    assert job_dummy_cmds[0] == job1.script
-    assert 1 == len(job1.dependencies)
-
     dep = job1.dependencies[0]
-    assert job_dummy_cmds[1] == dep.script
+
+    assert (job_dummy_cmds[0], job_dummy_cmds[1], 1) == (
+        job1.script,
+        dep.script,
+        len(job1.dependencies),
+    )
 
 
 def test_remove_dependency(job_dummy_cmds):
@@ -80,12 +82,9 @@ def test_remove_dependency(job_dummy_cmds):
     job1 = pyani_jobs.Job("dummy_with_dependency", job_dummy_cmds[0])
     job2 = pyani_jobs.Job("dummy_dependency", job_dummy_cmds[1])
     job1.add_dependency(job2)
-    assert 1 == len(job1.dependencies)
-
     dep = job1.dependencies[0]
-    assert job_dummy_cmds[1] == dep.script
-
     job1.remove_dependency(dep)
+
     assert 0 == len(job1.dependencies)
 
 
@@ -98,8 +97,7 @@ def test_create_jobgroup(job_empty_script):
 def test_1d_jobgroup(job_scripts):
     """create dummy 1-parameter sweep jobgroup."""
     jobgroup = pyani_jobs.JobGroup("1d-sweep", "cat", arguments=job_scripts[0].params)
-    assert jobgroup.script == job_scripts[0].script
-    assert 3 == jobgroup.tasks
+    assert (jobgroup.script, 3) == (job_scripts[0].script, jobgroup.tasks)
 
 
 def test_2d_jobgroup(job_scripts):
@@ -107,8 +105,7 @@ def test_2d_jobgroup(job_scripts):
     jobgroup = pyani_jobs.JobGroup(
         "2d-sweep", "myprog", arguments=job_scripts[1].params
     )
-    assert jobgroup.script == job_scripts[1].script
-    assert 4 == jobgroup.tasks
+    assert (jobgroup.script, 4) == (job_scripts[1].script, jobgroup.tasks)
 
 
 def test_add_group_dependency(job_scripts):
@@ -116,11 +113,14 @@ def test_add_group_dependency(job_scripts):
     jg1 = pyani_jobs.JobGroup("1d-sweep", "cat", arguments=job_scripts[0].params)
     jg2 = pyani_jobs.JobGroup("2d-sweep", "myprog", arguments=job_scripts[1].params)
     jg2.add_dependency(jg1)
-    assert 4 == jg2.tasks
-    assert 1 == len(jg2.dependencies)
     dep = jg2.dependencies[0]
-    assert 3 == dep.tasks
-    assert "1d-sweep" == dep.name
+
+    assert (1, 3, 4, "1d-sweep") == (
+        len(jg2.dependencies),
+        dep.tasks,
+        jg2.tasks,
+        dep.name,
+    )
 
 
 def test_remove_group_dependency(job_scripts):
@@ -128,8 +128,7 @@ def test_remove_group_dependency(job_scripts):
     jg1 = pyani_jobs.JobGroup("1d-sweep", "cat", arguments=job_scripts[0].params)
     jg2 = pyani_jobs.JobGroup("2d-sweep", "myprog", arguments=job_scripts[1].params)
     jg2.add_dependency(jg1)
-    assert 1 == len(jg2.dependencies)
     dep = jg2.dependencies[0]
-    assert "1d-sweep" == dep.name
     jg2.remove_dependency(dep)
+
     assert 0 == len(jg2.dependencies)
