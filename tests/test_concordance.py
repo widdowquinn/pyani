@@ -52,6 +52,7 @@ import unittest
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from pyani import run_multiprocessing as run_mp
 from pyani import anib, anim, tetra, pyani_files
@@ -71,7 +72,7 @@ def parse_jspecies(infile):
     methods = ("ANIm", "ANIb", "Tetra")
     with open(infile, "r") as ifh:
         header, in_table = False, False
-        for line in [l.strip() for l in ifh.readlines() + ["\n"]]:
+        for line in [_.strip() for _ in ifh.readlines() + ["\n"]]:
             if line in methods and not in_table:
                 method, header = line, True
             elif header:
@@ -128,16 +129,10 @@ def test_anim_concordance(
     result_pid.to_csv(tmp_path / "pyani_anim.tab", sep="\t")
 
     # Compare JSpecies output to results
-    result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
-    diffmat = (
-        result_pid.values - parse_jspecies(path_concordance_jspecies)["ANIm"].values
-    )
-    anim_diff = pd.DataFrame(
-        diffmat, index=result_pid.index, columns=result_pid.columns
-    )
-    anim_diff.to_csv(tmp_path / "pyani_anim_diff.tab", sep="\t")
+    result_pid = (result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0).values
+    tgt_pid = parse_jspecies(path_concordance_jspecies)["ANIm"].values
 
-    assert anim_diff.abs().values.max() < tolerance_anim
+    assert result_pid - tgt_pid == pytest.approx(0, abs=tolerance_anim)
 
 
 class TestConcordance(unittest.TestCase):
