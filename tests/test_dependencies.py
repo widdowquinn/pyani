@@ -1,25 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# (c) The James Hutton Institute 2017-2019
-# (c) The University of Strathclude 2019
+# (c) The James Hutton Institute 2016-2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
 # leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
-# Strathclyde Institute of Pharmaceutical and Biomedical Sciences
-# The University of Strathclyde
-# Cathedral Street
-# Glasgow
-# G1 1XQ
+# Strathclyde Institute for Pharmacy and Biomedical Sciences,
+# 161 Cathedral Street,
+# Glasgow,
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
-# Copyright (c) 2017-2018 The James Hutton Institute
-# (c) The University of Strathclude 2019
+# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
