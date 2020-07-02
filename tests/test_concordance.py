@@ -74,14 +74,14 @@ def parse_jspecies(infile):
         header, in_table = False, False
         for line in [_.strip() for _ in ifh.readlines() + ["\n"]]:
             if line in methods and not in_table:
-                method, header = line, True
+                mth, header = line, True
             elif header:
                 columns = line.split("\t")
                 data = pd.DataFrame(index=columns, columns=columns)
                 in_table, header = True, False
             elif in_table:
                 if not line:
-                    dfs[method] = data.sort_index(axis=0).sort_index(axis=1)
+                    dfs[mth] = data.sort_index(axis=0).sort_index(axis=1)
                     in_table = False
                 else:
                     ldata = line.split("\t")
@@ -89,7 +89,7 @@ def parse_jspecies(infile):
                     for idx, val in enumerate(ldata[1:]):
                         if val != "---":
                             data[columns[idx]][row] = float(val)
-                        elif method.startswith("ANI"):
+                        elif mth.startswith("ANI"):
                             data[columns[idx]][row] = 100.0
                         else:
                             data[columns[idx]][row] = 1.0
