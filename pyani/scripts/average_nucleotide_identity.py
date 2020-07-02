@@ -487,7 +487,7 @@ def compress_delete_outdir(outdir: Path, logger: Logger) -> None:
 
 # Calculate ANIm for input
 def calculate_anim(
-    args: Namespace, logger: Logger, infiles: List[Path], org_lengths: Dict
+    args: Namespace, infiles: List[Path], org_lengths: Dict
 ) -> pyani_tools.ANIResults:
     """Return ANIm result dataframes for files in input directory.
 
@@ -512,6 +512,8 @@ def calculate_anim(
     percentage of whole genome), and similarity error cound for each pairwise
     comparison.
     """
+    logger = logging.getLogger(__name__)
+
     logger.info("Running ANIm")
     logger.info("Generating NUCmer command-lines")
     deltadir = args.outdirname / ALIGNDIR["ANIm"]
@@ -578,7 +580,7 @@ def calculate_anim(
 
 
 # Calculate TETRA for input
-def calculate_tetra(logger: Logger, infiles: List[Path]) -> pd.DataFrame:
+def calculate_tetra(infiles: List[Path]) -> pd.DataFrame:
     """Calculate TETRA for files in input directory.
 
     :param logger:  logging object
@@ -596,6 +598,8 @@ def calculate_tetra(logger: Logger, infiles: List[Path]) -> pd.DataFrame:
     assignment of genomic fragments. Env. Microbiol. 6(9): 938-947.
     doi:10.1111/j.1462-2920.2004.00624.x
     """
+    logger = logging.getLogger(__name__)
+
     logger.info("Running TETRA.")
     # First, find Z-scores
     logger.info("Calculating TETRA Z-scores for each sequence.")
@@ -689,7 +693,7 @@ def run_blast(
 
 # Calculate ANIb for input
 def unified_anib(
-    args: Namespace, logger: Logger, infiles: List[Path], org_lengths: Dict[str, int]
+    args: Namespace, infiles: List[Path], org_lengths: Dict[str, int]
 ) -> pyani_tools.ANIResults:
     """Calculate ANIb for files in input directory.
 
@@ -725,6 +729,8 @@ def unified_anib(
     each genome, for each pairwise comparison. These are written to the
     output directory in plain text tab-separated format.
     """
+    logger = logging.getLogger(__name__)
+
     logger.info("Running %s", args.method)
     blastdir = args.outdirname / ALIGNDIR[args.method]
     logger.info("Writing BLAST output to %s", blastdir)
@@ -760,7 +766,7 @@ def unified_anib(
 
 
 # Write ANIb/ANIm/TETRA output
-def write(args: Namespace, logger: Logger, results: pd.DataFrame) -> None:
+def write(args: Namespace, results: pd.DataFrame) -> None:
     """Write ANIb/ANIm/TETRA results to output directory.
 
     :param args:  Namespace, command-line arguments
@@ -771,10 +777,12 @@ def write(args: Namespace, logger: Logger, results: pd.DataFrame) -> None:
     True), and plain text tab-separated file in the output directory. The
     order of result output must be reflected in the order of filestems.
     """
+    logger = logging.getLogger(__name__)
+
     logger.info("Writing %s results to %s", args.method, args.outdirname)
     if args.method == "TETRA":
-        out_excel = args.outdirname / TETRA_FILESTEMS[0] + ".xlsx"
-        out_csv = args.outdirname / TETRA_FILESTEMS[0] + ".tab"
+        out_excel = (args.outdirname / TETRA_FILESTEMS[0]).with_suffix(".xlsx")
+        out_csv = (args.outdirname / TETRA_FILESTEMS[0]).with_suffix(".tab")
         if args.write_excel:
             results.to_excel(out_excel, index=True)
         results.to_csv(out_csv, index=True, sep="\t")
@@ -788,7 +796,7 @@ def write(args: Namespace, logger: Logger, results: pd.DataFrame) -> None:
 
 
 # Draw ANIb/ANIm/TETRA output
-def draw(args: Namespace, logger: Logger, filestems: List[str], gformat: str) -> None:
+def draw(args: Namespace, filestems: List[str], gformat: str) -> None:
     """Draw ANIb/ANIm/TETRA results.
 
     :param args:  Namespace, command-line arguments
@@ -796,6 +804,8 @@ def draw(args: Namespace, logger: Logger, filestems: List[str], gformat: str) ->
     :param filestems: - filestems for output files
     :param gformat: - the format for output graphics
     """
+    logger = logging.getLogger(__name__)
+
     # Draw heatmaps
     for filestem in filestems:
         fullstem = args.outdirname / filestem
@@ -889,7 +899,7 @@ def test_class_label_paths(args: Namespace, logger: Logger) -> None:
         raise SystemExit(1)
 
 
-def get_method(args: Namespace, logger: Logger) -> Tuple:
+def get_method(args: Namespace) -> Tuple:
     """Return function and config for the chosen method.
 
     :param args:  Namespace of command-line arguments
@@ -898,6 +908,8 @@ def get_method(args: Namespace, logger: Logger) -> Tuple:
     The dictionary defines pairs of method function and configurations,
     keyed by method name.
     """
+    logger = logging.getLogger(__name__)
+
     methods = {
         "ANIm": (calculate_anim, pyani_config.ANIM_FILESTEMS),
         "ANIb": (unified_anib, pyani_config.ANIB_FILESTEMS),
@@ -950,7 +962,7 @@ def run_main(argsin: Optional[Namespace] = None) -> int:
     # Ensure argument validity and get method function/config
     test_class_label_paths(args, logger)
     test_scheduler(args, logger)
-    method_function, method_config = get_method(args, logger)
+    method_function, method_config = get_method(args)
     make_outdirs(args)
 
     # Skip calculations (or not) depending on rerender option
@@ -983,10 +995,10 @@ def run_main(argsin: Optional[Namespace] = None) -> int:
         # and write out corresponding results.
         logger.info("Carrying out %s analysis", args.method)
         if args.method == "TETRA":
-            results = method_function(args, logger, infiles)
+            results = method_function(infiles)
         else:
-            results = method_function(args, logger, infiles, org_lengths)
-        write(args, logger, results)
+            results = method_function(args, infiles, org_lengths)
+        write(args, results)
 
     # Do we want graphical output?
     if args.graphics or args.rerender:
@@ -995,7 +1007,7 @@ def run_main(argsin: Optional[Namespace] = None) -> int:
         for gfmt in args.gformat.split(","):
             logger.info("Graphics format: %s", gfmt)
             logger.info("Graphics method: %s", args.gmethod)
-            draw(args, logger, method_config, gfmt)
+            draw(args, method_config, gfmt)
 
     # Close any open matplotlib figures
     plt.close("all")

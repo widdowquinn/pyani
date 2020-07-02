@@ -48,20 +48,9 @@ pytest ordering plug-in is used to guarantee that the download script
 tests are conducted first.
 """
 
-import logging
-import shutil
-
-from argparse import Namespace
-from collections import namedtuple
-from pathlib import Path
-from typing import Dict
-
 import pytest
 
-from pyani import anim, pyani_tools
 from pyani.scripts import average_nucleotide_identity, genbank_get_genomes_by_taxon
-
-from tools import modify_namespace, PyaniTestCase
 
 
 def test_legacy_genome_downloads(
@@ -80,7 +69,7 @@ def test_legacy_genome_downloads(
 
 
 @pytest.mark.skip_if_exe_missing("nucmer")
-def test_legacy_anim_seaborn(legacy_anim_sns_namespace):
+def test_legacy_anim_sns(legacy_anim_sns_namespace):
     r"""Use legacy script to run ANIm (seaborn output).
 
     average_nucleotide_identity.py \
@@ -107,117 +96,39 @@ def test_legacy_anim_mpl(legacy_anim_mpl_namespace):
     average_nucleotide_identity.run_main(legacy_anim_mpl_namespace)
 
 
-@pytest.mark.xfail(reason="legacy scripts not yet ready for test")
-class TestLegacyScripts(PyaniTestCase):
-    """Class defining tests of the pyani download subcommand."""
+@pytest.mark.skip_if_exe_missing("blastn")
+def test_legacy_anib_sns(legacy_anib_sns_namespace):
+    r"""Use legacy script to run ANIb (seaborn output).
 
-    def setUp(self):
-        """Configure parameters for tests."""
-        # Null logger instance
-        self.logger = logging.getLogger("TestLegacyScripts logger")
-        self.logger.addHandler(logging.NullHandler())
+    average_nucleotide_identity.py \
+        -l test_ANIb.log \
+        -i tests/test_output/legacy_scripts/C_blochmannia \
+        -o tests/test_output/legacy_scripts/ANIb_seaborn \
+        -g --gmethod seaborn --gformat pdf,png \
+        -f --jobprefix ANI
+    """
+    average_nucleotide_identity.run_main(legacy_anib_sns_namespace)
 
-        # Command-line namespaces
-        self.argsdict = {
-            "anim_mpl": modify_namespace(
-                self.base_ani,
-                {
-                    "outdirname": self.testdirs.outdir
-                    / f"ANIm_mpl_{anim.get_version()}",
-                    "gmethod": "mpl",
-                },
-            ),
-            "anib_seaborn": modify_namespace(
-                self.base_ani,
-                {"outdirname": self.testdirs.outdir / "ANIb_seaborn", "method": "ANIb"},
-            ),
-            "anib_mpl": modify_namespace(
-                self.base_ani,
-                {
-                    "outdirname": self.testdirs.outdir / "ANIb_mpl",
-                    "gmethod": "mpl",
-                    "method": "ANIb",
-                },
-            ),
-            "tetra_seaborn": modify_namespace(
-                self.base_ani,
-                {
-                    "outdirname": self.testdirs.outdir / "TETRA_seaborn",
-                    "method": "TETRA",
-                },
-            ),
-            "tetra_mpl": modify_namespace(
-                self.base_ani,
-                {
-                    "outdirname": self.testdirs.outdir / "TETRA_mpl",
-                    "gmethod": "mpl",
-                    "method": "TETRA",
-                },
-            ),
-        }
 
-    @pytest.mark.run(order=2)
-    @pytest.mark.run(order=2)
-    @pytest.mark.skipif(
-        not pyani_tools.has_dependencies().mummer,
-        reason="nucmer executable not available",
-    )
-    @pytest.mark.run(order=2)
-    @pytest.mark.skipif(
-        not pyani_tools.has_dependencies().blast,
-        reason="blastn executable not available",
-    )
-    def test_legacy_anib_seaborn(self):
-        r"""Use legacy script to run ANIb (seaborn output).
+@pytest.mark.skip_if_exe_missing("blastn")
+def test_legacy_anib_mpl(legacy_anib_mpl_namespace):
+    r"""Use legacy script to run ANIb (mpl output).
 
-        average_nucleotide_identity.py \
-            -l test_ANIb.log \
-            -i tests/test_output/legacy_scripts/C_blochmannia \
-            -o tests/test_output/legacy_scripts/ANIb_seaborn \
-            -g --gmethod seaborn --gformat pdf,png \
-            -f --jobprefix ANI
-        """
-        args = self.argsdict["anib_seaborn"]
-        average_nucleotide_identity.run_main(args, self.logger)
-        self.assertDirsEqual(
-            args.outdirname, self.testdirs.tgtdir / args.outdirname.name
-        )
+    average_nucleotide_identity.py \
+        -l test_ANIb.log \
+        -i tests/test_output/legacy_scripts/C_blochmannia \
+        -o tests/test_output/legacy_scripts/ANIb_mpl \
+        -g --gmethod mpl --gformat pdf,png \
+        -f --jobprefix ANI
+    """
+    average_nucleotide_identity.run_main(legacy_anib_mpl_namespace)
 
-    @pytest.mark.run(order=2)
-    @pytest.mark.skipif(
-        not pyani_tools.has_dependencies().blast,
-        reason="blastn executable not available",
-    )
-    def test_legacy_anib_mpl(self):
-        r"""Use legacy script to run ANIb (mpl output).
 
-        average_nucleotide_identity.py \
-            -l test_ANIb.log \
-            -i tests/test_output/legacy_scripts/C_blochmannia \
-            -o tests/test_output/legacy_scripts/ANIb_mpl \
-            -g --gmethod mpl --gformat pdf,png \
-            -f --jobprefix ANI
-        """
-        args = self.argsdict["anib_mpl"]
-        average_nucleotide_identity.run_main(args, self.logger)
-        self.assertDirsEqual(
-            args.outdirname, self.testdirs.tgtdir / args.outdirname.name
-        )
+def test_legacy_tetra_sns(legacy_tetra_sns_namespace):
+    r"""Use legacy script to run TETRA (seaborn output)."""
+    average_nucleotide_identity.run_main(legacy_tetra_sns_namespace)
 
-    @pytest.mark.run(order=2)
-    def test_legacy_tetra_seaborn(self):
-        r"""Use legacy script to run TETRA (seaborn output)."""
-        args = self.argsdict["tetra_seaborn"]
-        average_nucleotide_identity.run_main(args, self.logger)
-        self.assertDirsEqual(
-            args.outdirname, self.testdirs.tgtdir / args.outdirname.name
-        )
 
-    @pytest.mark.run(order=2)
-    def test_legacy_tetra_mpl(self):
-        r"""Use legacy script to run TETRA (mpl output)."""
-        args = self.argsdict["tetra_mpl"]
-        average_nucleotide_identity.run_main(args, self.logger)
-        self.assertDirsEqual(
-            args.outdirname, self.testdirs.tgtdir / args.outdirname.name
-        )
+def test_legacy_tetra_mpl(legacy_tetra_mpl_namespace):
+    r"""Use legacy script to run TETRA (mpl output)."""
+    average_nucleotide_identity.run_main(legacy_tetra_mpl_namespace)

@@ -409,6 +409,24 @@ def legacy_ani_namespace(tmp_path):
 
 
 @pytest.fixture
+def legacy_anib_sns_namespace(tmp_path, legacy_ani_namespace):
+    """Namespace for legacy ANIm script tests.
+
+    Uses the base namespace to run ANIm with seaborn output
+    """
+    return modify_namespace(legacy_ani_namespace, method="ANIb")
+
+
+@pytest.fixture
+def legacy_anib_mpl_namespace(tmp_path, legacy_ani_namespace):
+    """Namespace for legacy ANIm script tests.
+
+    Runs ANIm with matplotlib output
+    """
+    return modify_namespace(legacy_ani_namespace, gmethod="mpl", method="ANIb")
+
+
+@pytest.fixture
 def legacy_anim_sns_namespace(tmp_path, legacy_ani_namespace):
     """Namespace for legacy ANIm script tests.
 
@@ -443,6 +461,24 @@ def legacy_download_namespace(tmp_path):
         timeout=10,
         debug=False,
     )
+
+
+@pytest.fixture
+def legacy_tetra_sns_namespace(tmp_path, legacy_ani_namespace):
+    """Namespace for legacy ANIm script tests.
+
+    Uses the base namespace to run ANIm with seaborn output
+    """
+    return modify_namespace(legacy_ani_namespace, method="TETRA")
+
+
+@pytest.fixture
+def legacy_tetra_mpl_namespace(tmp_path, legacy_ani_namespace):
+    """Namespace for legacy ANIm script tests.
+
+    Uses the base namespace to run ANIm with mpl output
+    """
+    return modify_namespace(legacy_ani_namespace, method="TETRA", gmethod="mpl")
 
 
 @pytest.fixture
