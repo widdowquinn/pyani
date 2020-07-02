@@ -46,6 +46,7 @@ import sys
 import traceback
 import urllib.request
 
+from dataclasses import dataclass
 from pathlib import Path
 from subprocess import CompletedProcess
 from typing import Any, List, NamedTuple, Optional, Tuple
@@ -106,7 +107,8 @@ class Hashstatus(NamedTuple):
     filehash: str
 
 
-class DLStatus(NamedTuple):
+@dataclass
+class DLStatus:
 
     """Download status data."""
 
