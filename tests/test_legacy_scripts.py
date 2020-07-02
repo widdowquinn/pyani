@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -9,16 +9,16 @@
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
+# 161 Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -69,6 +69,22 @@ Executables = namedtuple(
 
 # Convenience struct for test directories
 TestDirs = namedtuple("TestDirs", "outdir tgtdir dldir")
+
+
+def test_legacy_genome_downloads(
+    legacy_download_namespace, mock_legacy_single_genome_dl
+):
+    r"""Use legacy script to download genomes; mocks file downloading.
+
+    Emulates:
+
+    genbank_get_genomes_by_taxon.py \
+        -o tests/test_output/legacy_scripts/C_blochmannia_legacy \
+        --email emailme@my.email.domain \
+        -t 203804 -f
+    """
+    genbank_get_genomes_by_taxon.run_main(legacy_download_namespace)
+    # self.assertDirsEqual(self.testdirs.dldir, self.testdirs.tgtdir / "C_blochmannia_legacy")
 
 
 @pytest.mark.xfail(reason="legacy scripts not yet ready for test")

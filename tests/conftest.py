@@ -42,6 +42,7 @@
 
 import subprocess
 
+from argparse import Namespace
 from pathlib import Path
 from typing import Dict, List, NamedTuple, Tuple
 
@@ -52,6 +53,7 @@ from pyani import download
 from pyani.download import ASMIDs, DLStatus
 from pyani.pyani_config import BLASTALL_DEFAULT, BLASTN_DEFAULT, NUCMER_DEFAULT
 from pyani.pyani_tools import get_labels
+from pyani.scripts import genbank_get_genomes_by_taxon
 
 # Path to tests, contains tests and data subdirectories
 TESTSPATH = Path(__file__).parents[0]
@@ -341,6 +343,25 @@ def job_scripts():
 
 
 @pytest.fixture
+def legacy_download_namespace(tmp_path):
+    """Namespace for legacy download script tests."""
+    return Namespace(
+        outdirname=tmp_path,
+        taxon="203804",
+        verbose=False,
+        force=True,
+        noclobber=False,
+        logfile=None,
+        format="fasta",
+        email="pyani@pyani.tests",
+        retries=20,
+        batchsize=10000,
+        timeout=10,
+        debug=False,
+    )
+
+
+@pytest.fixture
 def mummer_cmds_four(path_file_four):
     """Example MUMmer commands (four files)."""
     return MUMmerExample(
@@ -562,3 +583,32 @@ def mock_single_genome_dl(monkeypatch):
     monkeypatch.setattr(download, "get_asm_uids", mock_asmuids)
     monkeypatch.setattr(download, "get_ncbi_esummary", mock_ncbi_esummary)
     monkeypatch.setattr(download, "retrieve_genome_and_hash", mock_genome_hash)
+
+
+@pytest.fixture
+def mock_legacy_single_genome_dl(monkeypatch):
+    """Mocks remote database calls for single-genome downloads.
+
+    This masks calls to functions in genbank_get_genomes_by_taxon, for safe testing.
+
+    This will be deprecated once the genbank_get_genomes_by_taxon.py script is
+    converted to use the pyani.download module.
+    """
+
+    def mock_asmuids(*args, **kwargs):
+        """Mock genbank_get_genomes_by_taxon.get_asm_uids()."""
+        return ["32728"]
+
+    def mock_ncbi_asm(*args, **kwargs):
+        """Mock genbank_get_genomes_by_taxon.get_ncbi_asm()."""
+        return (
+            Path(
+                "tests/test_output/legacy_scripts/C_blochmannia_legacy/GCF_000011605.1_ASM1160v1_genomic.fna"
+            ),
+            "8b0cab310cb638c977d453ff06eceb64\tGCF_000011605.1_ASM1160v1_genomic\tPectobacterium atrosepticum",
+            "8b0cab310cb638c977d453ff06eceb64\tGCF_000011605.1_ASM1160v1_genomic\tP. atrosepticum SCRI1043",
+            "GCF_000011605.1",
+        )
+
+    monkeypatch.setattr(genbank_get_genomes_by_taxon, "get_asm_uids", mock_asmuids)
+    monkeypatch.setattr(genbank_get_genomes_by_taxon, "get_ncbi_asm", mock_ncbi_asm)
