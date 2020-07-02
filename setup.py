@@ -66,8 +66,8 @@ with Path("pyani/__init__.py").open() as ifh:
             version = match.group("version")
             break
 
-if sys.version_info <= (3, 0):
-    sys.stderr.write("ERROR: pyani requires Python 3 " + "or above...exiting.\n")
+if sys.version_info <= (3, 6):
+    sys.stderr.write("ERROR: pyani requires Python 3.7 or above...exiting.\n")
     sys.exit(1)
 
 setuptools.setup(
