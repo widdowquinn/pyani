@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# (c) The James Hutton Institute 2013-2019
-# (c) University of Strathclyde 2019
+# (c) The James Hutton Institute 2016-2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -9,16 +9,16 @@
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
+# 161 Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
-# Copyright (c) 2013-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -123,6 +123,7 @@ o Rpy2 (http://rpy.sourceforge.net/rpy2.html)
 """
 
 import json
+import logging
 import os
 import random
 import shutil
@@ -152,8 +153,7 @@ from pyani import (
 from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
 from pyani.pyani_config import params_mpl, ALIGNDIR, FRAGSIZE, TETRA_FILESTEMS
-
-from pyani.scripts import logger as pyani_logger
+from pyani.scripts.logger import config_logger
 
 
 # Process command-line arguments
@@ -193,6 +193,13 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         action="store_true",
         default=False,
         help="Give verbose output",
+    )
+    parser.add_argument(
+        "--debug",
+        dest="debug",
+        action="store_true",
+        default=False,
+        help="Report debug messages",
     )
     parser.add_argument(
         "-f",
@@ -434,7 +441,7 @@ def last_exception() -> str:
 
 
 # Create output directory if it doesn't exist
-def make_outdirs(args: Namespace, logger: Logger):
+def make_outdirs(args: Namespace):
     """Make the output directory, if required.
 
     :param args:  Namespace of command-line options
@@ -448,6 +455,8 @@ def make_outdirs(args: Namespace, logger: Logger):
         If args.noclobber is set True, use the existing output directory,
         and keep any existing output
     """
+    logger = logging.getLogger(__name__)
+
     if args.outdirname.exists():
         if not args.force:  # crash out if directory exists
             logger.error(f"Output directory {args.outdirname} exists (exiting)")
@@ -457,7 +466,7 @@ def make_outdirs(args: Namespace, logger: Logger):
         else:  # args.force only is set - delete
             logger.info(f"FORCE set, removing existing {args.outdirname}")
             shutil.rmtree(args.outdirname)
-    args.outdirname.mkdir(exist_ok=True)
+    args.outdirname.mkdir(exist_ok=True, parents=True)
 
     # TETRA needs directories for alignment output files
     if args.method != "TETRA":
@@ -864,43 +873,6 @@ def process_arguments(args: Optional[Namespace]) -> Namespace:
     return args
 
 
-def build_logger(args: Namespace, logger: Optional[Logger]) -> Logger:
-    """Return a logging object for the script.
-
-    :param args:  Namespace of command-line arguments
-    :param logger:  Expected to be None, but may be logging object
-    """
-    if logger is None:
-        logger = pyani_logger.build_logger("average_nucleotide_identity.py", args)
-
-    # Have we got an input and output directory? If not, exit.
-    if args.indirname is None:
-        logger.error("No input directory name (exiting)")
-        raise SystemExit(1)
-    logger.info("Input directory: %s", args.indirname)
-    if args.outdirname is None:
-        logger.error("No output directory name (exiting)")
-        raise SystemExit(1)
-    if args.rerender:  # Rerendering, we want to overwrite graphics
-        args.force, args.noclobber = True, True
-    make_outdirs(args, logger)
-    logger.info("Output directory: %s", args.outdirname)
-
-    # Check for the presence of space characters in any of the input filenames
-    # or output directory. If we have any, abort here and now.
-    filenames = [args.outdirname] + list(args.indirname.iterdir())
-    for fname in filenames:
-        if " " in str(fname.resolve()):
-            logger.error(
-                "File or directory %s contains whitespace. "
-                "This will cause issues with MUMmer and BLAST (exiting).",
-                fname,
-            )
-            raise SystemExit(1)
-
-    return logger
-
-
 def test_class_label_paths(args: Namespace, logger: Logger) -> None:
     """Raise error and exit if label and class files exist.
 
@@ -962,9 +934,7 @@ def test_scheduler(args: Namespace, logger: Logger) -> None:
 
 
 # Main function
-def run_main(
-    argsin: Optional[Namespace] = None, logger: Optional[Logger] = None
-) -> int:
+def run_main(argsin: Optional[Namespace] = None) -> int:
     """Run main process for average_nucleotide_identity.py script.
 
     :param argsin:  Namespace, command-line arguments
@@ -974,12 +944,14 @@ def run_main(
 
     # Process command-line and build logger
     args = process_arguments(argsin)
-    logger = build_logger(args, logger)
+    logger = logging.getLogger(__name__)
+    config_logger(args)
 
     # Ensure argument validity and get method function/config
     test_class_label_paths(args, logger)
     test_scheduler(args, logger)
     method_function, method_config = get_method(args, logger)
+    make_outdirs(args)
 
     # Skip calculations (or not) depending on rerender option
     if args.rerender:
