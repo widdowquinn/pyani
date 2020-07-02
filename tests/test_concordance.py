@@ -180,8 +180,10 @@ def test_anib_concordance(
     lo_target = tgt_pid.mask(tgt_pid >= threshold_anib_lo_hi).fillna(0).values
     hi_target = tgt_pid.mask(tgt_pid < threshold_anib_lo_hi).fillna(0).values
 
-    assert lo_result - lo_target == pytest.approx(0, abs=tolerance_anib_lo)
-    assert hi_result - hi_target == pytest.approx(0, abs=tolerance_anib_hi)
+    assert (lo_result - lo_target, hi_result - hi_target) == (
+        pytest.approx(0, abs=tolerance_anib_lo),
+        pytest.approx(0, abs=tolerance_anib_hi),
+    )
 
 
 @pytest.mark.skip_if_exe_missing("blastall")
