@@ -48,9 +48,153 @@ pytest ordering plug-in is used to guarantee that the download script
 tests are conducted first.
 """
 
+import copy
+
+from argparse import Namespace
+from pathlib import Path
+
 import pytest
 
+from pyani.pyani_config import (
+    BLASTALL_DEFAULT,
+    BLASTN_DEFAULT,
+    FILTER_DEFAULT,
+    FORMATDB_DEFAULT,
+    MAKEBLASTDB_DEFAULT,
+    NUCMER_DEFAULT,
+)
 from pyani.scripts import average_nucleotide_identity, genbank_get_genomes_by_taxon
+
+
+def modify_namespace(namespace: Namespace, **kwargs):
+    """Update arguments in a passed Namespace.
+
+    :param namespace:       argparse.Namespace object
+    :param args:            dict of argument: value pairs
+
+    The expected usage pattern is, for a command-line application with many
+    or complex arguments, to define a base argparse.Namespace object, then
+    change only a few arguments, specific to a test. This function takes
+    a base namespace and a dictionary of argument: value pairs, and
+    returns the modified namespace.
+    """
+    new_namespace = copy.deepcopy(namespace)
+    for argname, argval in kwargs.items():
+        setattr(new_namespace, argname, argval)
+    return new_namespace
+
+
+@pytest.fixture
+def legacy_ani_namespace(path_fixtures_base, tmp_path):
+    """Base namespace for legacy average_nucleotide_identity.py tests."""
+    return Namespace(
+        outdirname=tmp_path,
+        indirname=path_fixtures_base / "legacy" / "ANI_input",
+        verbose=False,
+        debug=False,
+        force=True,
+        fragsize=1020,
+        logfile=Path("test_ANIm.log"),
+        skip_nucmer=False,
+        skip_blastn=False,
+        noclobber=False,
+        nocompress=False,
+        graphics=True,
+        gformat="pdf,png",
+        gmethod="seaborn",
+        labels=path_fixtures_base / "legacy" / "ANI_input" / "labels.txt",
+        classes=path_fixtures_base / "legacy" / "ANI_input" / "classes.txt",
+        method="ANIm",
+        scheduler="multiprocessing",
+        workers=None,
+        sgeargs=None,
+        sgegroupsize=10000,
+        maxmatch=False,
+        nucmer_exe=NUCMER_DEFAULT,
+        filter_exe=FILTER_DEFAULT,
+        blastn_exe=BLASTN_DEFAULT,
+        blastall_exe=BLASTALL_DEFAULT,
+        makeblastdb_exe=MAKEBLASTDB_DEFAULT,
+        formatdb_exe=FORMATDB_DEFAULT,
+        write_excel=False,
+        rerender=False,
+        subsample=None,
+        seed=None,
+        jobprefix="ANI",
+    )
+
+
+@pytest.fixture
+def legacy_anib_sns_namespace(tmp_path, legacy_ani_namespace):
+    """Namespace for legacy ANIm script tests.
+
+    Uses the base namespace to run ANIm with seaborn output
+    """
+    return modify_namespace(legacy_ani_namespace, method="ANIb")
+
+
+@pytest.fixture
+def legacy_anib_mpl_namespace(tmp_path, legacy_ani_namespace):
+    """Namespace for legacy ANIm script tests.
+
+    Runs ANIm with matplotlib output
+    """
+    return modify_namespace(legacy_ani_namespace, gmethod="mpl", method="ANIb")
+
+
+@pytest.fixture
+def legacy_anim_sns_namespace(tmp_path, legacy_ani_namespace):
+    """Namespace for legacy ANIm script tests.
+
+    Uses the base namespace to run ANIm with seaborn output
+    """
+    return legacy_ani_namespace
+
+
+@pytest.fixture
+def legacy_anim_mpl_namespace(tmp_path, legacy_ani_namespace):
+    """Namespace for legacy ANIm script tests.
+
+    Runs ANIm with matplotlib output
+    """
+    return modify_namespace(legacy_ani_namespace, gmethod="mpl")
+
+
+@pytest.fixture
+def legacy_download_namespace(tmp_path):
+    """Namespace for legacy download script tests."""
+    return Namespace(
+        outdirname=tmp_path,
+        taxon="203804",
+        verbose=False,
+        force=True,
+        noclobber=False,
+        logfile=None,
+        format="fasta",
+        email="pyani@pyani.tests",
+        retries=20,
+        batchsize=10000,
+        timeout=10,
+        debug=False,
+    )
+
+
+@pytest.fixture
+def legacy_tetra_sns_namespace(tmp_path, legacy_ani_namespace):
+    """Namespace for legacy ANIm script tests.
+
+    Uses the base namespace to run ANIm with seaborn output
+    """
+    return modify_namespace(legacy_ani_namespace, method="TETRA")
+
+
+@pytest.fixture
+def legacy_tetra_mpl_namespace(tmp_path, legacy_ani_namespace):
+    """Namespace for legacy ANIm script tests.
+
+    Uses the base namespace to run ANIm with mpl output
+    """
+    return modify_namespace(legacy_ani_namespace, method="TETRA", gmethod="mpl")
 
 
 def test_legacy_genome_downloads(
