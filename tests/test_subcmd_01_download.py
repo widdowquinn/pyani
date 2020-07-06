@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019
+# (c) The University of Strathclude 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
 # leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
-# Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
-# Glasgow,
-# G1 1XQ
+# Strathclyde Institute of Pharmaceutical and Biomedical Sciences
+# The University of Strathclyde
+# 161 Cathedral Street
+# Glasgow
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# (c) The University of Strathclude 2019-2020
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -89,8 +90,8 @@ class TestDownloadSubcommand(TestCase):
         testdir = Path("tests")
         self.outdir = testdir / "test_output" / "subcmd_download"
         self.krakendir = testdir / "test_output" / "subcmd_download_kraken"
-        self.outdir.mkdir(exist_ok=True)
-        self.krakendir.mkdir(exist_ok=True)
+        self.outdir.mkdir(exist_ok=True, parents=True)
+        self.krakendir.mkdir(exist_ok=True, parents=True)
         self.api_keypath = Path("~/.ncbi/api_key")
 
         # Null logger instance
