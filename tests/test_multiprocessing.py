@@ -49,46 +49,54 @@ import unittest
 
 from pathlib import Path
 
-from pyani import run_multiprocessing, pyani_jobs, anib
+import pytest
+
+from pyani.anib import fragment_fasta_files, make_blastcmd_builder, make_job_graph
+from pyani.pyani_jobs import Job
+from pyani.run_multiprocessing import (
+    multiprocessing_run,
+    populate_cmdsets,
+    run_dependency_graph,
+)
 
 
-class TestMultiprocessing(unittest.TestCase):
+@pytest.fixture
+def mp_cmdlist():
+    """List of commands to be run using the multiprocessing interface."""
+    return [
+        'for i in %s; do echo "Thread %d: value ${i}"; done'
+        % (" ".join([str(e) for e in range(v)]), v)
+        for v in range(5)
+    ]
 
-    """Class defining tests of pyani's multiprocessing module."""
 
-    def setUp(self):
-        """Define parameters and arguments for tests."""
-        self.cmdlist = [
-            'for i in %s; do echo "Thread %d: value ${i}"; done'
-            % (" ".join([str(e) for e in range(v)]), v)
-            for v in range(5)
-        ]
-        self.cmds = ["ls -ltrh", "echo ${PWD}"]
-        testdir = Path("tests")
-        self.seqdir = testdir / "test_input" / "sequences"
-        self.outdir = testdir / "test_output" / "multiprocessing"
-        self.infiles = [_ for _ in self.seqdir.iterdir()][:2]
-        self.fraglen = 1000
-        self.outdir.mkdir(exist_ok=True)
+@pytest.fixture
+def mp_dummy_cmds():
+    """Dummy commands for building command sets."""
+    return ["ls -ltrh", "echo ${PWD}"]
 
-    def test_multiprocessing_run(self):
-        """Test that multiprocessing() runs basic jobs."""
-        result = run_multiprocessing.multiprocessing_run(self.cmdlist)
-        self.assertEqual(0, result)
 
-    def test_cmdsets(self):
-        """Test that module builds command sets."""
-        job1 = pyani_jobs.Job("dummy_with_dependency", self.cmds[0])
-        job2 = pyani_jobs.Job("dummy_dependency", self.cmds[1])
-        job1.add_dependency(job2)
-        cmdsets = run_multiprocessing.populate_cmdsets(job1, list(), depth=1)
-        target = [{cmd} for cmd in self.cmds]
-        self.assertEqual(cmdsets, target)
+def test_multiprocessing_run(mp_cmdlist):
+    """Test that multiprocessing() runs basic jobs."""
+    result = multiprocessing_run(mp_cmdlist)
+    assert 0 == result
 
-    def test_dependency_graph_run(self):
-        """Test that module runs dependency graph."""
-        fragresult = anib.fragment_fasta_files(self.infiles, self.outdir, self.fraglen)
-        blastcmds = anib.make_blastcmd_builder("ANIb", self.outdir)
-        jobgraph = anib.make_job_graph(self.infiles, fragresult[0], blastcmds)
-        result = run_multiprocessing.run_dependency_graph(jobgraph)
-        self.assertEqual(0, result)
+
+def test_cmdsets(mp_dummy_cmds):
+    """Test that module builds command sets."""
+    job1 = Job("dummy_with_dependency", mp_dummy_cmds[0])
+    job2 = Job("dummy_dependency", mp_dummy_cmds[1])
+    job1.add_dependency(job2)
+    cmdsets = populate_cmdsets(job1, list(), depth=1)
+    target = [{cmd} for cmd in mp_dummy_cmds]
+    assert cmdsets == target
+
+
+@pytest.mark.skip_if_exe_missing("blastn")
+def test_dependency_graph_run(path_fna_two, fragment_length, tmp_path):
+    """Test that module runs dependency graph."""
+    fragresult = fragment_fasta_files(path_fna_two, tmp_path, fragment_length)
+    blastcmds = make_blastcmd_builder("ANIb", tmp_path)
+    jobgraph = make_job_graph(path_fna_two, fragresult[0], blastcmds)
+    result = run_dependency_graph(jobgraph)
+    assert 0 == result

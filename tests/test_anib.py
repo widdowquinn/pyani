@@ -276,15 +276,6 @@ def test_formatdb_single(path_fna, tmp_path):
 def test_fragment_files(path_fna_all, tmp_path, dir_tgt_fragments, fragment_length):
     """Fragment files for ANIb/ANIblastall."""
     result = anib.fragment_fasta_files(path_fna_all, tmp_path, fragment_length)
-    # Test that files are created
-    for outfname in result[0]:
-        assert outfname.is_file()
-
-    # Test that file contents are as expected
-    for fname in tmp_path.iterdir():
-        with fname.open("r") as ofh:
-            with (dir_tgt_fragments / fname.name).open("r") as tfh:
-                assert ofh.read() == tfh.read()
 
     # # Test fragment lengths are in bounds
     for _, fragdict in result[-1].items():

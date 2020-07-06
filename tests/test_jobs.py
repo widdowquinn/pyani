@@ -46,9 +46,68 @@ These tests are intended to be run from the repository root using:
 pytest -v
 """
 
-import unittest
+from typing import Dict, NamedTuple
+
+import pytest
 
 from pyani import pyani_jobs
+
+
+class JobScript(NamedTuple):
+
+    """Convenience struct for job script creation tests."""
+
+    params: Dict[str, str]
+    script: str
+
+
+@pytest.fixture
+def job_dummy_cmds():
+    """Dummy commands for testing job creation."""
+    return ["ls -ltrh", "echo ${PWD}"]
+
+
+@pytest.fixture
+def job_empty_script():
+    """Empty script for testing job creation."""
+    return 'let "TASK_ID=$SGE_TASK_ID - 1"\n\n\n\n'
+
+
+@pytest.fixture
+def job_scripts():
+    """Return two JobScript namedtuples for testing job creation."""
+    return (
+        JobScript(
+            {"-f": ["file1", "file2", "file3"]},
+            "".join(
+                [
+                    'let "TASK_ID=$SGE_TASK_ID - 1"\n',
+                    "-f_ARRAY=( file1 file2 file3  )\n\n",
+                    'let "-f_INDEX=$TASK_ID % 3"\n',
+                    "-f=${-f_ARRAY[$-f_INDEX]}\n",
+                    'let "TASK_ID=$TASK_ID / 3"\n\n',
+                    "cat\n",
+                ]
+            ),
+        ),
+        JobScript(
+            {"-f": ["file1", "file2"], "--format": ["fmtA", "fmtB"]},
+            "".join(
+                [
+                    'let "TASK_ID=$SGE_TASK_ID - 1"\n',
+                    "--format_ARRAY=( fmtA fmtB  )\n",
+                    "-f_ARRAY=( file1 file2  )\n\n",
+                    'let "--format_INDEX=$TASK_ID % 2"\n',
+                    "--format=${--format_ARRAY[$--format_INDEX]}\n",
+                    'let "TASK_ID=$TASK_ID / 2"\n',
+                    'let "-f_INDEX=$TASK_ID % 2"\n',
+                    "-f=${-f_ARRAY[$-f_INDEX]}\n",
+                    'let "TASK_ID=$TASK_ID / 2"\n\n',
+                    "myprog\n",
+                ]
+            ),
+        ),
+    )
 
 
 def test_create_job():
