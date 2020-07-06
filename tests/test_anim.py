@@ -47,6 +47,7 @@ pytest -v
 import os
 
 from pathlib import Path
+from typing import List, NamedTuple, Tuple
 
 import pandas as pd
 import pytest
@@ -54,6 +55,96 @@ import pytest
 from pandas.util.testing import assert_frame_equal
 
 from pyani import anim, pyani_files, pyani_tools
+
+
+class DeltaDir(NamedTuple):
+
+    """Convenience struct for MUMmer .delta file and associated parsed output."""
+
+    seqdir: Path
+    deltadir: Path
+    deltaresult: pd.DataFrame
+
+
+class DeltaParsed(NamedTuple):
+
+    """Convenience struct for MUMmer .delta file and associated parsed output."""
+
+    filename: Path
+    data: Tuple[int]
+
+
+class MUMmerExample(NamedTuple):
+
+    """Convenience struct for MUMmer command-line examples."""
+
+    infiles: List[Path]
+    ncmds: List[str]
+    fcmds: List[str]
+
+
+@pytest.fixture
+def delta_output_dir(dir_anim_in):
+    """Namedtuple of example MUMmer .delta file output."""
+    return DeltaDir(
+        dir_anim_in / "sequences",
+        dir_anim_in / "deltadir",
+        pd.read_csv(dir_anim_in / "dataframes" / "deltadir_result.csv", index_col=0),
+    )
+
+
+@pytest.fixture
+def deltafile_parsed(dir_anim_in):
+    """Example parsed deltafile data."""
+    return DeltaParsed(dir_anim_in / "test.delta", (4074001, 2191))
+
+
+@pytest.fixture
+def mummer_cmds_four(path_file_four):
+    """Example MUMmer commands (four files)."""
+    return MUMmerExample(
+        path_file_four,
+        [
+            "nucmer --mum -p nucmer_output/file1_vs_file2 file1.fna file2.fna",
+            "nucmer --mum -p nucmer_output/file1_vs_file3 file1.fna file3.fna",
+            "nucmer --mum -p nucmer_output/file1_vs_file4 file1.fna file4.fna",
+            "nucmer --mum -p nucmer_output/file2_vs_file3 file2.fna file3.fna",
+            "nucmer --mum -p nucmer_output/file2_vs_file4 file2.fna file4.fna",
+            "nucmer --mum -p nucmer_output/file3_vs_file4 file3.fna file4.fna",
+        ],
+        [
+            (
+                "delta_filter_wrapper.py delta-filter -1 "
+                "nucmer_output/file1_vs_file2.delta "
+                "nucmer_output/file1_vs_file2.filter"
+            ),
+            (
+                "delta_filter_wrapper.py delta-filter -1 "
+                "nucmer_output/file1_vs_file3.delta "
+                "nucmer_output/file1_vs_file3.filter"
+            ),
+            (
+                "delta_filter_wrapper.py delta-filter -1 "
+                "nucmer_output/file1_vs_file4.delta "
+                "nucmer_output/file1_vs_file4.filter"
+            ),
+            (
+                "delta_filter_wrapper.py delta-filter -1 "
+                "nucmer_output/file2_vs_file3.delta "
+                "nucmer_output/file2_vs_file3.filter"
+            ),
+            (
+                "delta_filter_wrapper.py delta-filter -1 "
+                "nucmer_output/file2_vs_file4.delta "
+                "nucmer_output/file2_vs_file4.filter"
+            ),
+            (
+                "delta_filter_wrapper.py delta-filter -1 "
+                "nucmer_output/file3_vs_file4.delta "
+                "nucmer_output/file3_vs_file4.filter"
+            ),
+        ],
+    )
 
 
 # Test .delta output file processing

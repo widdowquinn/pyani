@@ -98,6 +98,73 @@ def parse_jspecies(infile):
     return dfs
 
 
+@pytest.fixture
+def paths_concordance_fna(path_fixtures_base):
+    """Paths to FASTA inputs for concordance analysis."""
+    return [
+        _
+        for _ in (path_fixtures_base / "concordance").iterdir()
+        if _.is_file() and _.suffix == ".fna"
+    ]
+
+
+@pytest.fixture
+def path_concordance_jspecies(path_fixtures_base):
+    """Path to JSpecies analysis output."""
+    return path_fixtures_base / "concordance/jspecies_output.tab"
+
+
+@pytest.fixture
+def threshold_anib_lo_hi():
+    """Threshold for concordance comparison split between high and low identity.
+
+    When comparing ANIb results with ANIblastall results, we need to account for
+    the differing performances of BLASTN and BLASTN+ on more distantly-related
+    sequences. On closely-related sequences both methods give similar results;
+    for more distantly-related sequences, the results can be quite different. This
+    threshold is the percentage identity we consider to separate "close" from
+    "distant" related sequences.
+    """
+    return 90
+
+
+@pytest.fixture
+def tolerance_anib_hi():
+    """Tolerance for ANIb concordance comparisons.
+
+    This tolerance is for comparisons between "high identity" comparisons, i.e.
+    genomes having identity greater than threshold_anib_lo_hi in homologous regions.
+
+    These "within-species" level comparisons need to be more accurate
+    """
+    return 0.1
+
+
+@pytest.fixture
+def tolerance_anib_lo():
+    """Tolerance for ANIb concordance comparisons.
+
+    This tolerance is for comparisons between "low identity" comparisons, i.e.
+    genomes having identity less than threshold_anib_lo_hi in homologous regions.
+
+    These "intra-species" level comparisons vary more as a result of the change of
+    algorithm from BLASTN to BLASTN+ (megablast).
+    """
+    return 5
+
+
+@pytest.fixture
+def tolerance_anim():
+    """Tolerance for ANIm concordance comparisons."""
+    return 0.1
+
+
+@pytest.fixture
+def tolerance_tetra():
+    """Tolerance for TETRA concordance comparisons."""
+    return 0.1
+
+
 @pytest.mark.skip_if_exe_missing("nucmer")
 def test_anim_concordance(
     paths_concordance_fna, path_concordance_jspecies, tolerance_anim, tmp_path

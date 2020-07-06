@@ -50,12 +50,31 @@ error. They can also be recovered with the -s option.
 import pandas as pd
 
 from pathlib import Path
+from typing import Dict, NamedTuple
 
-from pyani import pyani_graphics, pyani_config, pyani_tools
+import pytest
+
+from pyani import pyani_config, pyani_graphics
+from pyani.pyani_tools import get_labels
 
 
-TESTDIR = Path("tests")
-OUTDIR = TESTDIR / "test_graphics_output"
+class GraphicsTestInputs(NamedTuple):
+
+    """Convenience struct for graphics test inputs."""
+
+    filename: Path
+    labels: Dict[str, str]
+    classes: Dict[str, str]
+
+
+@pytest.fixture
+def graphics_inputs(dir_graphics_in):
+    """Returns namedtuple of graphics inputs."""
+    return GraphicsTestInputs(
+        dir_graphics_in / "ANIm_percentage_identity.tab",
+        get_labels(dir_graphics_in / "labels.tab"),
+        get_labels(dir_graphics_in / "classes.tab"),
+    )
 
 
 def draw_format_method(fmt, mth, graphics_inputs, tmp_path):

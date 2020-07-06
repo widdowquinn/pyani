@@ -48,8 +48,30 @@ import logging
 
 from pathlib import Path
 
+import pytest
+
 from pyani import pyani_orm
 from pyani.scripts import pyani_script
+
+
+@pytest.fixture
+def args_createdb(tmp_path):
+    """Command-line arguments for database creation."""
+    return ["createdb", "--dbpath", tmp_path / "pyanidb", "--force"]
+
+
+@pytest.fixture
+def args_single_genome_download(email_address, tmp_path):
+    """Command-line arguments for single genome download."""
+    return [
+        "download",
+        "-t",
+        "218491",
+        "--email",
+        email_address,
+        tmp_path,
+        "--force",
+    ]
 
 
 def test_createdb(args_createdb, monkeypatch):

@@ -44,6 +44,7 @@ pytest -v
 """
 
 from pathlib import Path
+from typing import List, NamedTuple
 
 import pandas as pd
 import pytest  # noqa: F401  # pylint: disable=unused-import
@@ -51,6 +52,71 @@ import pytest  # noqa: F401  # pylint: disable=unused-import
 from pandas.util.testing import assert_frame_equal
 
 from pyani import anib, pyani_files
+
+
+class ANIbOutput(NamedTuple):
+
+    """Convenience struct for ANIb output."""
+
+    fragfile: Path
+    tabfile: Path
+    legacytabfile: Path
+
+
+class ANIbOutputDir(NamedTuple):
+
+    """Convenience struct for ANIb output."""
+
+    infiles: List[Path]
+    fragfiles: List[Path]
+    blastdir: Path
+    legacyblastdir: Path
+    blastresult: pd.DataFrame
+    legacyblastresult: pd.DataFrame
+
+
+@pytest.fixture
+def anib_output(dir_anib_in):
+    """Namedtuple of example ANIb output.
+
+    fragfile - fragmented FASTA query file
+    tabfile  - BLAST+ tabular output
+    legacytabfile - blastall tabular output
+    """
+    return ANIbOutput(
+        dir_anib_in / "NC_002696-fragments.fna",
+        dir_anib_in / "NC_002696_vs_NC_011916.blast_tab",
+        dir_anib_in / "NC_002696_vs_NC_010338.blast_tab",
+    )
+
+
+@pytest.fixture
+def anib_output_dir(dir_anib_in):
+    """Namedtuple of example ANIb output - full directory.
+
+    infiles - list of FASTA query files
+    fragfiles - list of fragmented FASTA query files
+    blastdir - path to BLAST+ output data
+    legacyblastdir - path to blastall output data
+    blastresult - pd.DataFrame result for BLAST+
+    legacyblastresult - pd.DataFrame result for blastall
+    """
+    return ANIbOutputDir(
+        [
+            _
+            for _ in (dir_anib_in / "sequences").iterdir()
+            if _.is_file() and _.suffix == ".fna"
+        ],
+        [
+            _
+            for _ in (dir_anib_in / "fragfiles").iterdir()
+            if _.is_file() and _.suffix == ".fna"
+        ],
+        dir_anib_in / "blastn",
+        dir_anib_in / "blastall",
+        pd.read_csv(dir_anib_in / "dataframes" / "blastn_result.csv", index_col=0),
+        pd.read_csv(dir_anib_in / "dataframes" / "blastall_result.csv", index_col=0),
+    )
 
 
 # Test legacy BLAST (blastall) command generation
