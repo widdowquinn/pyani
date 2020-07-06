@@ -1,24 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019
+# (c) The University of Strathclude 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
 # leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
-# Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
-# Glasgow,
-# G1 1XQ
+# Strathclyde Institute of Pharmaceutical and Biomedical Sciences
+# The University of Strathclyde
+# 161 Cathedral Street
+# Glasgow
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# (c) The University of Strathclude 2019-2020
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +54,12 @@ import pandas as pd
 
 from pandas.util.testing import assert_frame_equal
 
-from pyani import tetra
+from pyani.tetra import (
+    calculate_correlations,
+    calculate_tetra_zscore,
+    calculate_tetra_zscores,
+    tetra_clean,
+)
 
 
 def ordered(obj):
@@ -65,34 +71,27 @@ def ordered(obj):
     return obj
 
 
-class TestTETRA(unittest.TestCase):
+def test_tetraclean():
+    """Detect unambiguous IUPAC symbols correctly."""
+    assert (
+        tetra_clean("ACGTYACGTACNGTACGWTACGT"),
+        tetra_clean("ACGTACGTACGTACGTACGTAC"),
+    ) == (False, True)
 
-    """Class defining tests of TETRA algorithm."""
 
-    def setUp(self):
-        """Define parameters and values for tests."""
-        testdir = Path("tests")
-        self.indir = testdir / "test_input" / "tetra"
-        self.tgtdir = testdir / "test_targets" / "tetra"
-        self.seqdir = testdir / "test_input" / "sequences"
-        self.infile = self.seqdir / "NC_002696.fna"
-        self.infiles = [_ for _ in self.seqdir.iterdir()]
+def test_zscore(dir_seq, dir_targets):
+    """Test that TETRA Z-score calculated correctly."""
+    tetra_z = calculate_tetra_zscore(dir_seq / "NC_002696.fna")
+    with (dir_targets / "tetra" / "zscore.json").open("r") as ifh:
+        target = json.load(ifh)
+    assert ordered(tetra_z) == ordered(target)
 
-    def test_tetraclean(self):
-        """Detect unambiguous IUPAC symbols correctly."""
-        self.assertFalse(tetra.tetra_clean("ACGTYACGTACNGTACGWTACGT"))
-        self.assertTrue(tetra.tetra_clean("ACGTACGTACGTACGTACGTAC"))
 
-    def test_zscore(self):
-        """Test that TETRA Z-score calculated correctly."""
-        tetra_z = tetra.calculate_tetra_zscore(self.infile)
-        with (self.tgtdir / "zscore.json").open("r") as ifh:
-            target = json.load(ifh)
-        self.assertEqual(ordered(tetra_z), ordered(target))
-
-    def test_correlations(self):
-        """Test that TETRA correlation calculated correctly."""
-        infiles = ordered(self.infiles)[:2]  # only test a single correlation
-        corr = tetra.calculate_correlations(tetra.calculate_tetra_zscores(infiles))
-        target = pd.read_csv(self.tgtdir / "correlation.tab", sep="\t", index_col=0)
-        assert_frame_equal(corr, target)
+def test_correlations(path_fna_all, dir_targets):
+    """Test that TETRA correlation calculated correctly."""
+    infiles = ordered(path_fna_all)[:2]  # only test a single correlation
+    corr = calculate_correlations(calculate_tetra_zscores(infiles))
+    target = pd.read_csv(
+        dir_targets / "tetra" / "correlation.tab", sep="\t", index_col=0
+    )
+    assert_frame_equal(corr, target)
