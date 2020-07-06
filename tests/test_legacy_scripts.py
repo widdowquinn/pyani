@@ -64,24 +64,7 @@ from pyani.pyani_config import (
     NUCMER_DEFAULT,
 )
 from pyani.scripts import average_nucleotide_identity, genbank_get_genomes_by_taxon
-
-
-def modify_namespace(namespace: Namespace, **kwargs):
-    """Update arguments in a passed Namespace.
-
-    :param namespace:       argparse.Namespace object
-    :param args:            dict of argument: value pairs
-
-    The expected usage pattern is, for a command-line application with many
-    or complex arguments, to define a base argparse.Namespace object, then
-    change only a few arguments, specific to a test. This function takes
-    a base namespace and a dictionary of argument: value pairs, and
-    returns the modified namespace.
-    """
-    new_namespace = copy.deepcopy(namespace)
-    for argname, argval in kwargs.items():
-        setattr(new_namespace, argname, argval)
-    return new_namespace
+from tools import modify_namespace
 
 
 @pytest.fixture

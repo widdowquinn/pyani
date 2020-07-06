@@ -49,29 +49,20 @@ import pandas as pd
 import pytest
 
 from pyani import download
-from pyani.download import ASMIDs, DLStatus
+from pyani.download import ASMIDs, DLStatus, get_ncbi_esummary
 from pyani.pyani_config import (
     BLASTALL_DEFAULT,
     BLASTN_DEFAULT,
     NUCMER_DEFAULT,
     FRAGSIZE,
 )
-from pyani.scripts import genbank_get_genomes_by_taxon
+from pyani.scripts import genbank_get_genomes_by_taxon, tools as script_tools
 
 # Path to tests, contains tests and data subdirectories
 # This conftest.py file should be found in the top directory of the tests
 # module. The fixture data should be in a subdirectory named fixtures
 TESTSPATH = Path(__file__).parents[0]
 FIXTUREPATH = TESTSPATH / "fixtures"
-
-
-class MUMmerExample(NamedTuple):
-
-    """Convenience struct for MUMmer command-line examples."""
-
-    infiles: List[Path]
-    ncmds: List[str]
-    fcmds: List[str]
 
 
 @pytest.fixture

@@ -106,16 +106,25 @@ class Hashstatus(NamedTuple):
     filehash: str
 
 
-class DLStatus(NamedTuple):
+class DLStatus:
 
     """Download status data."""
 
-    url: str
-    hashurl: str
-    outfname: Path
-    outfhash: Path
-    skipped: bool
-    error: Optional[str]
+    def __init__(
+        self,
+        url: str,
+        hashurl: str,
+        outfname: Path,
+        outfhash: Path,
+        skipped: bool,
+        error: Optional[str] = None,
+    ):
+        self.url = url
+        self.hashurl = hashurl
+        self.outfname = outfname
+        self.outfhash = outfhash
+        self.skipped = skipped
+        self.error = error
 
 
 def last_exception() -> str:
