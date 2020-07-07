@@ -55,3 +55,7 @@ walkthrough: clean_walkthrough
 	# pyani report --run_results 2 --formats html,excel,stdout C_blochmannia_ANIb/
 	# pyani report --run_matrices 2 --formats html,excel,stdout C_blochmannia_ANIb/
 	# pyani plot --formats png,pdf --method seaborn C_blochmannia_ANIb 2	
+
+uml:
+	pyreverse -o pdf -p pyani pyani
+	pyreverse -o dot -p pyani pyani
