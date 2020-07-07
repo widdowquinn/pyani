@@ -87,4 +87,11 @@ def build() -> ArgumentParser:
         default=False,
         help="Turn off tqdm progress bar",
     )
+    parser.add_argument(
+        "--citation",
+        action="store_true",
+        dest="citation",
+        default=False,
+        help="Display pyani citation after run",
+    )
     return parser

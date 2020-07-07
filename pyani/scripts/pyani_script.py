@@ -52,6 +52,27 @@ from .parsers import parse_cmdline
 from .. import __version__
 
 
+CITATION_INFO = [
+    termcolor(
+        "If you use pyani in your work, please cite the following publication:",
+        "green",
+    ),
+    termcolor(
+        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,", "yellow",
+    ),
+    termcolor(
+        "\t& Toth, I.K. (2016) 'Genomics and taxonomy in diagnostics for", "yellow"
+    ),
+    termcolor(
+        "\tfood security: soft-rotting enterobacterial plant pathogens.'", "yellow"
+    ),
+    termcolor(
+        "\tAnalytical Methods, 8(1), 12–24. http://doi.org/10.1039/C5AY02550H",
+        "yellow",
+    ),
+]
+
+
 # Main function
 def run_main(argv: Optional[List[str]] = None) -> int:
     """Run main process for pyani.py script.
@@ -85,6 +106,11 @@ def run_main(argv: Optional[List[str]] = None) -> int:
     logger.info(
         termcolor("Completed. Time taken: %.3f", bold=True), (time.time() - time0)
     )
+
+    # Was citation info requested?
+    if args.citation:
+        sys.stdout.write("\n".join(CITATION_INFO) + "\n\n")
+
     return returnval
 
 
@@ -94,27 +120,7 @@ def add_log_headers():
 
     # Add citation information to log
     logger.info(termcolor("CITATION INFO", bold=True))
-    pyani_citation = [
-        termcolor(
-            "If you use pyani in your work, please cite the following publication:",
-            "green",
-        ),
-        termcolor(
-            "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,",
-            "yellow",
-        ),
-        termcolor(
-            "\t& Toth, I.K. (2016) 'Genomics and taxonomy in diagnostics for", "yellow"
-        ),
-        termcolor(
-            "\tfood security: soft-rotting enterobacterial plant pathogens.'", "yellow"
-        ),
-        termcolor(
-            "\tAnalytical Methods, 8(1), 12–24. http://doi.org/10.1039/C5AY02550H",
-            "yellow",
-        ),
-    ]
-    for line in pyani_citation:
+    for line in CITATION_INFO:
         logger.info(line)
 
     # Add dependency citations
