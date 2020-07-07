@@ -325,7 +325,8 @@ def parse_api_key(args: Namespace) -> Optional[str]:
         logger.warning("API path %s not a valid file. Not using API key.", api_path)
         api_key = None
     else:
-        api_key = download.parse_api_key(api_path)
+        with api_path.open() as ifh:
+            api_key = ifh.readline().strip()
         logger.info("API key recovered from %s", api_path)
 
     return api_key

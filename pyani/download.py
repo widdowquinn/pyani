@@ -173,19 +173,6 @@ def set_ncbi_email(email: str) -> None:
     Entrez.tool = "pyani.py"
 
 
-def parse_api_key(api_path: Path) -> str:
-    """Parse the contents of the file for NCBI API key.
-
-    :param api_path:  Path, location of NCBI API key
-
-    This function expects that the indicated file contains a single line
-    (perhaps with a newline) containing no data other than an NCBI API key.
-    """
-    with api_path.open() as ifh:
-        api_key = ifh.readline().strip()
-    return api_key
-
-
 def download_genome_and_hash(
     outdir: Path,
     timeout: int,
