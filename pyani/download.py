@@ -216,7 +216,7 @@ def download_genome_and_hash(
 
 
 def entrez_retry(func):
-    """Retry the wrapped function up to 'retries' times."""
+    """Decorator to retry the wrapped function up to 'retries' times."""
 
     def wrapper(*args, retries=1, **kwargs):
         tries, success = 0, False
@@ -227,14 +227,14 @@ def entrez_retry(func):
             except (HTTPError, URLError):
                 tries += 1
         if not success:
-            raise NCBIDownloadException("Too many Entrez failures (limit: %s)", retries)
+            raise NCBIDownloadException(f"Too many Entrez failures (limit: {retries})")
         return Entrez.read(output, validate=False)
 
     return wrapper
 
 
 def entrez_batch(func):
-    """Compile the expected batches from the wrapped function into a single set of results.
+    """Decorator to compile batches from the wrapped function into a single set of results.
 
     The entrez_batch decorator should go outside the entrez_retry decorator.
     """
