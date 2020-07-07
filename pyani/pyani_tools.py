@@ -60,7 +60,7 @@ import pandas as pd  # type: ignore
 
 from Bio import SeqIO  # type: ignore
 
-from . import pyani_config, download
+from pyani import pyani_config
 
 
 class MatrixData(NamedTuple):
@@ -250,21 +250,6 @@ class BLASTcmds:
 
 # UTILITY FUNCTIONS
 # =================
-
-# Make a dictionary of assembly download info
-def make_asm_dict(taxon_ids: Iterable[str], retries: int) -> Dict:
-    """Return dict of assembly UIDs, keyed by each passed taxon ID.
-
-    :param taxon_ids:  Iterable of NCBI taxonomy IDs
-    :param retries:  Number of Entrez retry attempts
-    """
-    asm_dict = dict()
-
-    for tid in taxon_ids:
-        asm_uids = download.get_asm_uids(tid, retries)
-        asm_dict[tid] = asm_uids.asm_ids
-
-    return asm_dict
 
 
 # Read sequence annotations in from file

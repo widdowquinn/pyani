@@ -39,6 +39,7 @@
 """Module providing functions useful for downloading genomes from NCBI."""
 
 import hashlib
+import logging
 import re
 import shlex
 import subprocess
@@ -46,14 +47,17 @@ import sys
 import traceback
 import urllib.request
 
+from namedlist import namedlist
+
 from pathlib import Path
 from subprocess import CompletedProcess
-from typing import Any, List, NamedTuple, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 from urllib.error import HTTPError, URLError
 
 from Bio import Entrez  # type: ignore
 from tqdm import tqdm  # type: ignore
 
+from pyani.pyani_tools import termcolor
 
 # Regular expression for NCBI taxon numbers
 TAXONREGEX = re.compile(r"([0-9]\,?){1,}")
@@ -97,6 +101,15 @@ class Classification(NamedTuple):
     strain: str
 
 
+class DLFileData(NamedTuple):
+
+    """Convenience struct for file download data."""
+
+    filestem: str
+    ftpstem: str
+    suffix: str
+
+
 class Hashstatus(NamedTuple):
 
     """Status report on file hash comparison."""
@@ -133,6 +146,24 @@ def last_exception() -> str:
     return "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
 
+def make_asm_dict(taxon_ids: List[str], retries: int) -> Dict:
+    """Return a dict of assembly UIDs, keyed by passed taxon IDs.
+
+    :param taxon_ids:
+    :param retries:
+
+    Takes the passed list of taxon IDs and calls get_asm_uids to generate
+    a dictionary linking each taxon ID to a list of assembly IDs at NCBI.
+    """
+    asm_dict = dict()
+
+    for tid in taxon_ids:
+        asm_uids = get_asm_uids(tid, retries)
+        asm_dict[tid] = asm_uids.asm_ids
+
+    return asm_dict
+
+
 def set_ncbi_email(email: str) -> None:
     """Set contact email for NCBI.
 
@@ -153,6 +184,48 @@ def parse_api_key(api_path: Path) -> str:
     with api_path.open() as ifh:
         api_key = ifh.readline().strip()
     return api_key
+
+
+def download_genome_and_hash(
+    outdir: Path,
+    timeout: int,
+    dlfiledata: DLFileData,
+    dltype: str = "RefSeq",
+    disable_tqdm: bool = False,
+) -> namedlist:
+    """Download genome and accompanying MD5 hash from NCBI.
+
+    :param args:  Namespace for command-line arguments
+    :param outdir:  Path to output directory for downloads
+    :param timeout:  int: timeout for download attempt
+    :param dlfiledata:  namedtuple of info for file to download
+    :param dltype:  reference database to use: RefSeq or GenBank
+    :param disable_tqdm:  disable progress bar
+
+    This function tries the (assumed to be passed) RefSeq FTP URL first and,
+    if that fails, then attempts to download the corresponding GenBank data.
+
+    We attempt to gracefully skip genomes with download errors.
+    """
+    # Create logger
+    logger = logging.getLogger(__name__)
+
+    if dltype == "GenBank":
+        filestem = re.sub("^GCF_", "GCA_", dlfiledata.filestem)
+    else:
+        filestem = dlfiledata.filestem
+    dlstatus = retrieve_genome_and_hash(
+        filestem, dlfiledata.suffix, dlfiledata.ftpstem, outdir, timeout, disable_tqdm,
+    )
+    # Pylint is confused by the content of dlstatus (a namedlist)
+    if dlstatus.error is not None:  # pylint: disable=no-member
+        logger.warning(termcolor("%s download failed: skipping!", "magenta"), dltype)
+        logger.debug(
+            "Exception raised:\n%s", dlstatus.error
+        )  # pylint: disable=no-member
+        dlstatus.skipped = True
+
+    return dlstatus  # pylint: disable=no-member
 
 
 # Get results from NCBI web history, in batches

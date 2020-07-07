@@ -48,7 +48,7 @@ from Bio import SeqIO
 
 from pyani import download
 from pyani.pyani_tools import termcolor
-from pyani.scripts import tools
+from pyani.scripts import make_outdir
 
 
 def subcmd_download(args: Namespace) -> int:
@@ -61,11 +61,12 @@ def subcmd_download(args: Namespace) -> int:
     logger.info(termcolor("Downloading genomes from NCBI", "red"))
 
     # Create output directory, respecting force/noclobber
-    tools.make_outdir(args.outdir, args.force, args.noclobber)
     if args.dryrun:
         logger.warning(
             termcolor("Dry run only: will not overwrite or download", "cyan")
         )
+    else:
+        make_outdir(args.outdir, args.force, args.noclobber)
 
     # Set Entrez email
     download.set_ncbi_email(args.email)
@@ -85,7 +86,7 @@ def subcmd_download(args: Namespace) -> int:
     logger.info(termcolor("Taxon IDs received: %s", "blue"), taxon_ids)
 
     # Get assembly UIDs for each taxon
-    asm_dict = tools.make_asm_dict(taxon_ids, args.retries)
+    asm_dict = download.make_asm_dict(taxon_ids, args.retries)
     for tid, uids in asm_dict.items():
         logger.debug(
             "Taxon ID summary\n\tQuery: %s\n\tasm count: %s\n\tUIDs: %s",
@@ -142,13 +143,17 @@ def subcmd_download(args: Namespace) -> int:
 
             # Obtain URLs, trying the RefSeq filestem first, then GenBank if
             # there's a failure
-            dlfiledata = tools.DLFileData(
+            dlfiledata = download.DLFileData(
                 filestem, "ftp://ftp.ncbi.nlm.nih.gov/genomes/all", "genomic.fna.gz"
             )
             logger.info("Retrieving URLs for %s", filestem)
             # Try RefSeq first
-            dlstatus = tools.download_genome_and_hash(
-                args, dlfiledata, dltype="RefSeq", disable_tqdm=args.disable_tqdm,
+            dlstatus = download.download_genome_and_hash(
+                args.outdir,
+                args.timeout,
+                dlfiledata,
+                dltype="RefSeq",
+                disable_tqdm=args.disable_tqdm,
             )
             # RefSeq failed, try GenBank
             # Pylint is confused by the content of dlstatus (a namedlist)
@@ -165,8 +170,12 @@ def subcmd_download(args: Namespace) -> int:
                 )
                 logger.warning("RefSeq failed. Trying GenBank alternative assembly")
                 # Try GenBank assembly
-                dlstatus = tools.download_genome_and_hash(
-                    args, dlfiledata, dltype="GenBank", disable_tqdm=args.disable_tqdm,
+                dlstatus = download.download_genome_and_hash(
+                    args.outdir,
+                    args.timeout,
+                    dlfiledata,
+                    dltype="GenBank",
+                    disable_tqdm=args.disable_tqdm,
                 )
                 # Pylint is confused by the content of dlstatus (a namedlist)
                 if dlstatus.skipped:  # pylint: disable=no-member
@@ -234,21 +243,22 @@ def subcmd_download(args: Namespace) -> int:
             )
 
     # Write class and label files
-    classfname = args.outdir / args.classfname
-    logger.info("Writing classes file to %s", classfname)
-    if classfname.exists() and args.noclobber:
-        logger.warning("Class file %s exists, not overwriting", classfname)
-    else:
-        with open(classfname, "w") as ofh:
-            ofh.write("\n".join(classes) + "\n")
+    if not args.dryrun:
+        classfname = args.outdir / args.classfname
+        logger.info("Writing classes file to %s", classfname)
+        if classfname.exists() and args.noclobber:
+            logger.warning("Class file %s exists, not overwriting", classfname)
+        else:
+            with open(classfname, "w") as ofh:
+                ofh.write("\n".join(classes) + "\n")
 
-    labelfname = args.outdir / args.labelfname
-    logger.info("Writing labels file to %s", labelfname)
-    if labelfname.exists() and args.noclobber:
-        logger.warning("Labels file %s exists, not overwriting", labelfname)
-    else:
-        with open(labelfname, "w") as ofh:
-            ofh.write("\n".join(labels) + "\n")
+        labelfname = args.outdir / args.labelfname
+        logger.info("Writing labels file to %s", labelfname)
+        if labelfname.exists() and args.noclobber:
+            logger.warning("Labels file %s exists, not overwriting", labelfname)
+        else:
+            with open(labelfname, "w") as ofh:
+                ofh.write("\n".join(labels) + "\n")
 
     # Report skipped genome list
     if skippedlist:

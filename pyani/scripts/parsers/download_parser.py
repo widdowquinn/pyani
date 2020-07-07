@@ -119,6 +119,7 @@ def build(
     parser.add_argument(
         "--timeout",
         dest="timeout",
+        type=int,
         action="store",
         default=10,
         help="Timeout for URL connection (s)",
