@@ -215,58 +215,57 @@ def download_genome_and_hash(
     return dlstatus  # pylint: disable=no-member
 
 
-# Get results from NCBI web history, in batches
-def entrez_batch_webhistory(
-    record, expected, batchsize, retries, *fnargs, **fnkwargs
-) -> List[str]:
-    """Recover the Entrez data from a prior NCBI webhistory search.
+def entrez_retry(func):
+    """Retry the wrapped function up to 'retries' times."""
 
-    :param record:  Entrez webhistory record
-    :param expected:  number of expected search returns
-    :param batchsize:  how many search returns to retrieve in a batch
-    :param retries:  int
-    :param *fnargs:  arguments to Efetch
-    :param **fnkwargs:  keyword arguments to Efetch
+    def wrapper(*args, retries=1, **kwargs):
+        tries, success = 0, False
+        while not success and tries < retries:
+            try:
+                output = func(*args, **kwargs)
+                success = True
+            except (HTTPError, URLError):
+                tries += 1
+        if not success:
+            raise NCBIDownloadException("Too many Entrez failures (limit: %s)", retries)
+        return Entrez.read(output, validate=False)
 
-    Recovers results in batches of defined size, using Efetch.
-    Returns all results as a list.
+    return wrapper
+
+
+def entrez_batch(func):
+    """Compile the expected batches from the wrapped function into a single set of results.
+
+    The entrez_batch decorator should go outside the entrez_retry decorator.
     """
-    results = []  # type: List[Any]
-    for start in range(0, expected, batchsize):
-        batch_handle = entrez_retry(
-            Entrez.efetch,
-            retries,
-            retstart=start,
-            retmax=batchsize,
-            webenv=record["WebEnv"],
-            query_key=record["QueryKey"],
-            *fnargs,
-            **fnkwargs,
-        )
-        batch_record = Entrez.read(batch_handle, validate=False)
-        results.extend(batch_record)
-    return results
+
+    def wrapper(*args, expected=None, batchsize=None, **kwargs):
+        if expected is None or batchsize is None:
+            raise ValueError("Expected result count and batchsize must be supplied")
+        results = []  # type: List[Any]
+        for start in range(0, expected, batchsize):
+            # We expect a parsed output
+            output = func(*args, retstart=start, retmax=batchsize, **kwargs)
+            results.extend(output)
+        return results
+
+    return wrapper
 
 
-# Retry an Entrez query a specified number of times
-def entrez_retry(func, retries, *fnargs, **fnkwargs):
-    """Retry the passed function up to the number of times specified.
+@entrez_batch
+@entrez_retry
+def entrez_batched_webhistory(*args, **kwargs):
+    return Entrez.efetch(**kwargs)
 
-    :param func:  function to be executed
-    :param retries:  int, number of times to retry function execution
-    :param *fnargs:  optional arguments to passed function
-    :param **fnkwargs:  optional keyword arguments to passed function
-    """
-    tries, success = 0, False
-    while not success and tries < retries:
-        try:
-            output = func(*fnargs, **fnkwargs)
-            success = True
-        except (HTTPError, URLError):
-            tries += 1
-    if not success:
-        raise NCBIDownloadException("Too many Entrez failures")
-    return output
+
+@entrez_retry
+def entrez_esearch(*args, **kwargs):
+    return Entrez.esearch(**kwargs)
+
+
+@entrez_retry
+def entrez_esummary(*args, **kwargs):
+    return Entrez.esummary(*args, **kwargs)
 
 
 # Split a list of taxon ids into components, checking for correct formatting
@@ -299,15 +298,20 @@ def get_asm_uids(taxon_uid: str, retries: int) -> ASMIDs:
 
     # Perform initial search for assembly UIDs with taxon ID as query.
     # Use NCBI history for the search.
-    handle = entrez_retry(
-        Entrez.esearch, retries, db="assembly", term=query, format="xml", usehistory="y"
+    record = entrez_esearch(
+        retries=retries, db="assembly", term=query, format="xml", usehistory="y"
     )
-    record = Entrez.read(handle, validate=False)
     result_count = int(record["Count"])
 
     # Recover assembly UIDs from the web history
-    asm_ids = entrez_batch_webhistory(
-        record, result_count, 250, retries, db="assembly", retmode="xml"
+    asm_ids = entrez_batched_webhistory(
+        expected=result_count,
+        batchsize=250,
+        retries=retries,
+        webenv=record["WebEnv"],
+        query_key=record["QueryKey"],
+        db="assembly",
+        retmode="xml",
     )
 
     return ASMIDs(query, result_count, asm_ids)
@@ -340,16 +344,8 @@ def get_ncbi_esummary(asm_uid, retries, api_key=None) -> Tuple:
     :param api_key:
     """
     # Obtain full eSummary data for the assembly
-    summary = Entrez.read(
-        entrez_retry(
-            Entrez.esummary,
-            retries,
-            db="assembly",
-            id=asm_uid,
-            report="full",
-            api_key=api_key,
-        ),
-        validate=False,
+    summary = entrez_esummary(
+        retries=retries, db="assembly", id=asm_uid, report="full", api_key=api_key
     )
 
     # Extract filestem from assembly data
