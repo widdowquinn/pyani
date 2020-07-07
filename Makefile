@@ -58,4 +58,3 @@ walkthrough: clean_walkthrough
 
 uml:
 	pyreverse -o pdf -p pyani pyani
-	pyreverse -o dot -p pyani pyani
