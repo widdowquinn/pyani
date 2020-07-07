@@ -98,6 +98,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Pierry *et al.* (2020) "High-quality draft genome sequence resources of eight *Xylella fastidiosa* strains isolated from citrus, coffee, plum and hibiscus in South America" *Phytopathology* `doi:10.1094/PHYTO-05-20-0162-A <https://doi.org/10.1094/PHYTO-05-20-0162-A>`_
 * Pierry *et al.* (2020) "Genetic Diversity of *Xylella fastidiosa* Plasmids Assessed by Comparative Genomics" *Trop. Plant Path.* `doi:doi.org/10.1007/s40858-020-00359-4 <https://doi.org/doi.org/10.1007/s40858-020-00359-4>`_
 * Rackaityte (2020) "Viable bacterial colonization is highly limited in the human intestine in utero" *Nature Medicine* `doi:10.1038/s41591-020-0761-3 <https://doi.org/10.1038/s41591-020-0761-3>`_
+* Roach *et al.* (2020) "Whole genome sequencing of Peruvian *Klebsiella pneumoniae* identifies novel plasmid vectors bearing carbapenem resistance gene NDM-1" *Open Forum Inf. Dis.* `doi:10.1093/ofid/ofaa266/5866602 <https://doi.org/10.1093/ofid/ofaa266/5866602>`_
 * Rothen *et al.* (2020) "A simple, rapid typing method for *Streptococcus agalactiae* based on ribosomal subunit proteins by MALDI-TOF MS" *Sci. Reports* `doi:10.1038/s41598-020-65707-5 <https://doi.org/10.1038/s41598-020-65707-5>`_
 * Ryngajłło *et al.* (2020) "Towards control of cellulose biosynthesis by *Komagataeibacter* using systems-level and strain engineering strategies: current progress and perspectives" *Appl. Microbil. Biotech. `doi:10.1007/s00253-020-10671-3 <https://doi.org/10.1007/s00253-020-10671-3>`_
 * Salgar-Chaparro *et al.* (2020) "Complete Genome Sequence of *Pseudomonas balearica* Strain EC28, an Iron-Oxidizing Bacterium Isolated from Corroded Steel" *Microbiol. Res. Ann.* `doi:10.1128/MRA.00275-20 <https://doi.org/10.1128/MRA.00275-20>`_
@@ -114,6 +115,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Wu *et al.* (2020) "Toward a high-quality pan-genome landscape of *Bacillus subtilis* by removal of confounding strains" *Brief. Bioinf.* `doi:10.1093/bib/bbaa013 <https://doi.org/10.1093/bib/bbaa013>`_
 * Yang *et al.* (2020) "Isolation and Characterization of the Novel Phages vB_VpS_BA3 and vB_VpS_CA8 for Lysing *Vibrio parahaemolyticus*" *Front. Microbiol.* `doi:10.3389/fmicb.2020.00259 <https://doi.org/10.3389/fmicb.2020.00259>`_
 * Zhang *et al.* (2020) "A novel bacterial thiosulfate oxidation pathway provides a new clue about the formation of zero-valent sulfur in deep sea." *ISME J.* `doi:10.1038/s41396-020-0684-5 <https://doi.org/10.1038/s41396-020-0684-5>`_
+* Zhang *et al.* (2020) "*Deinococcus detaillensis* sp. nov., isolated from humus soil in Antarctica" *Arch. Microbiol.* `doi:10.1007/s00203-020-01920-0 <https://doi.org/10.1007/s00203-020-01920-0>`_
 * Zhou *et al.* (2020) "Comparative analysis of *Lactobacillus gasseri* from Chinese subjects reveals a new species-level taxa" *BMC Genomics* `doi:10.1186/s12864-020-6527-y <https://doi.org/10.1186/s12864-020-6527-y>`_
 
 ^^^^
