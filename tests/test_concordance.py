@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -9,16 +9,16 @@
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
+# 161 Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,7 @@ import unittest
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from pyani import run_multiprocessing as run_mp
 from pyani import anib, anim, tetra, pyani_files
@@ -63,7 +64,7 @@ def parse_jspecies(infile):
     The function expects a single file containing (legacy) ANIb,
     ANIm, and TETRA output.
 
-    - infile        path to JSpecies output file
+    :param infile:  path to JSpecies output file
 
     This is an ugly function!
     """
@@ -71,16 +72,16 @@ def parse_jspecies(infile):
     methods = ("ANIm", "ANIb", "Tetra")
     with open(infile, "r") as ifh:
         header, in_table = False, False
-        for line in [l.strip() for l in ifh.readlines() + ["\n"]]:
+        for line in [_.strip() for _ in ifh.readlines() + ["\n"]]:
             if line in methods and not in_table:
-                method, header = line, True
+                mth, header = line, True
             elif header:
                 columns = line.split("\t")
                 data = pd.DataFrame(index=columns, columns=columns)
                 in_table, header = True, False
             elif in_table:
                 if not line:
-                    dfs[method] = data.sort_index(axis=0).sort_index(axis=1)
+                    dfs[mth] = data.sort_index(axis=0).sort_index(axis=1)
                     in_table = False
                 else:
                     ldata = line.split("\t")
@@ -88,7 +89,7 @@ def parse_jspecies(infile):
                     for idx, val in enumerate(ldata[1:]):
                         if val != "---":
                             data[columns[idx]][row] = float(val)
-                        elif method.startswith("ANI"):
+                        elif mth.startswith("ANI"):
                             data[columns[idx]][row] = 100.0
                         else:
                             data[columns[idx]][row] = 1.0
@@ -97,150 +98,205 @@ def parse_jspecies(infile):
     return dfs
 
 
-class TestConcordance(unittest.TestCase):
-    """Class defining tests of pyani concordance with JSpecies."""
+@pytest.fixture
+def paths_concordance_fna(path_fixtures_base):
+    """Paths to FASTA inputs for concordance analysis."""
+    return [
+        _
+        for _ in (path_fixtures_base / "concordance").iterdir()
+        if _.is_file() and _.suffix == ".fna"
+    ]
 
-    def setUp(self):
-        """Set values and parameters for tests."""
-        testdir = Path("tests")
-        self.indir = testdir / "test_input" / "concordance"
-        self.outdir = testdir / "test_output" / "concordance"
-        self.tgtdir = testdir / "test_targets" / "concordance"
-        self.deltadir = self.outdir / "nucmer_output"
-        self.infiles = pyani_files.get_fasta_files(self.indir)
-        self.orglengths = pyani_files.get_sequence_lengths(self.infiles)
-        self.target = parse_jspecies(self.tgtdir / "jspecies_output.tab")
-        self.tolerance = {
-            "ANIm": 0.1,
-            "ANIb_lo": 5,
-            "ANIb_hi": 0.1,
-            "ANIblastall": 0.1,
-            "TETRA": 0.1,
-        }
-        self.fragsize = 1020
-        self.outdir.mkdir(exist_ok=True)
-        self.deltadir.mkdir(exist_ok=True)
 
-    def test_anim_concordance(self):
-        """Check ANIm results are concordant with JSpecies."""
-        # Perform ANIm on the input directory contents
-        # We have to separate nucmer/delta-filter command generation
-        # because Travis-CI doesn't play nicely with changes we made
-        # for local SGE/OGE integration.
-        # This might be avoidable with a scheduler flag passed to
-        # jobgroup generation in the anim.py module. That's a TODO.
-        ncmds, fcmds = anim.generate_nucmer_commands(self.infiles, self.outdir)
-        run_mp.multiprocessing_run(ncmds)
+@pytest.fixture
+def path_concordance_jspecies(path_fixtures_base):
+    """Path to JSpecies analysis output."""
+    return path_fixtures_base / "concordance/jspecies_output.tab"
 
-        # delta-filter commands need to be treated with care for
-        # Travis-CI. Our cluster won't take redirection or semicolon
-        # separation in individual commands, but the wrapper we wrote
-        # for this (delta_filter_wrapper.py) can't be called under
-        # Travis-CI. So we must deconstruct the commands below
-        dfcmds = [
-            " > ".join([" ".join(fcmd.split()[1:-1]), fcmd.split()[-1]])
-            for fcmd in fcmds
-        ]
-        run_mp.multiprocessing_run(dfcmds)
 
-        results = anim.process_deltadir(self.deltadir, self.orglengths)
-        result_pid = results.percentage_identity
-        result_pid.to_csv(self.outdir / "pyani_anim.tab", sep="\t")
+@pytest.fixture
+def threshold_anib_lo_hi():
+    """Threshold for concordance comparison split between high and low identity.
 
-        # Compare JSpecies output to results
-        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
-        diffmat = result_pid.values - self.target["ANIm"].values
-        anim_diff = pd.DataFrame(
-            diffmat, index=result_pid.index, columns=result_pid.columns
-        )
-        anim_diff.to_csv(self.outdir / "pyani_anim_diff.tab", sep="\t")
-        self.assertLess(anim_diff.abs().values.max(), self.tolerance["ANIm"])
+    When comparing ANIb results with ANIblastall results, we need to account for
+    the differing performances of BLASTN and BLASTN+ on more distantly-related
+    sequences. On closely-related sequences both methods give similar results;
+    for more distantly-related sequences, the results can be quite different. This
+    threshold is the percentage identity we consider to separate "close" from
+    "distant" related sequences.
+    """
+    return 90
 
-    def test_anib_concordance(self):
-        """Check ANIb results are concordant with JSpecies.
 
-        We expect ANIb results to be quite different, as the BLASTN
-        algorithm changed substantially between BLAST and BLAST+
-        """
-        # Perform ANIb on the input directory contents
-        outdir = self.outdir / "blastn"
-        outdir.mkdir(exist_ok=True)
-        fragfiles, fraglengths = anib.fragment_fasta_files(
-            self.infiles, outdir, self.fragsize
-        )
-        jobgraph = anib.make_job_graph(
-            self.infiles, fragfiles, anib.make_blastcmd_builder("ANIb", outdir)
-        )
-        self.assertEqual(0, run_mp.run_dependency_graph(jobgraph))
-        results = anib.process_blast(outdir, self.orglengths, fraglengths, mode="ANIb")
-        result_pid = results.percentage_identity
-        result_pid.to_csv(self.outdir / "pyani_anib.tab", sep="\t")
+@pytest.fixture
+def tolerance_anib_hi():
+    """Tolerance for ANIb concordance comparisons.
 
-        # Compare JSpecies output to results. We do this in two blocks,
-        # masked according to whether the expected result is greater than
-        # 90% identity, or less than that threshold.
-        # The complete difference matrix is written to output, though
-        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
-        lo_result = result_pid.mask(result_pid >= 90).fillna(0)
-        hi_result = result_pid.mask(result_pid < 90).fillna(0)
-        lo_target = self.target["ANIb"].mask(self.target["ANIb"] >= 90).fillna(0)
-        hi_target = self.target["ANIb"].mask(self.target["ANIb"] < 90).fillna(0)
-        lo_diffmat = lo_result.values - lo_target.values
-        hi_diffmat = hi_result.values - hi_target.values
-        diffmat = result_pid.values - self.target["ANIb"].values
-        lo_diff = pd.DataFrame(
-            lo_diffmat, index=result_pid.index, columns=result_pid.columns
-        )
-        hi_diff = pd.DataFrame(
-            hi_diffmat, index=result_pid.index, columns=result_pid.columns
-        )
-        anib_diff = pd.DataFrame(
-            diffmat, index=result_pid.index, columns=result_pid.columns
-        )
-        anib_diff.to_csv(self.outdir / "pyani_anib_diff.tab", sep="\t")
-        self.assertLess(lo_diff.abs().values.max(), self.tolerance["ANIb_lo"])
-        self.assertLess(hi_diff.abs().values.max(), self.tolerance["ANIb_hi"])
+    This tolerance is for comparisons between "high identity" comparisons, i.e.
+    genomes having identity greater than threshold_anib_lo_hi in homologous regions.
 
-    def test_aniblastall_concordance(self):
-        """Check ANIblastall results are concordant with JSpecies."""
-        # Perform ANIblastall on the input directory contents
-        outdir = self.outdir / "blastall"
-        outdir.mkdir(exist_ok=True)
-        fragfiles, fraglengths = anib.fragment_fasta_files(
-            self.infiles, outdir, self.fragsize
-        )
-        jobgraph = anib.make_job_graph(
-            self.infiles, fragfiles, anib.make_blastcmd_builder("ANIblastall", outdir)
-        )
-        self.assertEqual(0, run_mp.run_dependency_graph(jobgraph))
-        results = anib.process_blast(
-            outdir, self.orglengths, fraglengths, mode="ANIblastall"
-        )
-        result_pid = results.percentage_identity
-        result_pid.to_csv(self.outdir / "pyani_aniblastall.tab", sep="\t")
+    These "within-species" level comparisons need to be more accurate
+    """
+    return 0.1
 
-        # Compare JSpecies output to results
-        result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
-        diffmat = result_pid.values - self.target["ANIb"].values
-        aniblastall_diff = pd.DataFrame(
-            diffmat, index=result_pid.index, columns=result_pid.columns
-        )
-        aniblastall_diff.to_csv(self.outdir / "pyani_aniblastall_diff.tab", sep="\t")
-        self.assertLess(
-            aniblastall_diff.abs().values.max(), self.tolerance["ANIblastall"]
-        )
 
-    def test_tetra_concordance(self):
-        """Check TETRA results are concordant with JSpecies."""
-        # Perform TETRA analysis
-        zscores = dict()
-        for filename in self.infiles:
-            zscores[filename.stem] = tetra.calculate_tetra_zscore(filename)
-        results = tetra.calculate_correlations(zscores)
-        results.to_csv(self.outdir / "pyani_tetra.tab", sep="\t")
+@pytest.fixture
+def tolerance_anib_lo():
+    """Tolerance for ANIb concordance comparisons.
 
-        # Compare JSpecies output
-        diffmat = results.values - self.target["Tetra"].values
-        tetra_diff = pd.DataFrame(diffmat, index=results.index, columns=results.columns)
-        tetra_diff.to_csv(self.outdir / "pyani_tetra_diff.tab", sep="\t")
-        self.assertLess(tetra_diff.abs().values.max(), self.tolerance["TETRA"])
+    This tolerance is for comparisons between "low identity" comparisons, i.e.
+    genomes having identity less than threshold_anib_lo_hi in homologous regions.
+
+    These "intra-species" level comparisons vary more as a result of the change of
+    algorithm from BLASTN to BLASTN+ (megablast).
+    """
+    return 5
+
+
+@pytest.fixture
+def tolerance_anim():
+    """Tolerance for ANIm concordance comparisons."""
+    return 0.1
+
+
+@pytest.fixture
+def tolerance_tetra():
+    """Tolerance for TETRA concordance comparisons."""
+    return 0.1
+
+
+@pytest.mark.skip_if_exe_missing("nucmer")
+def test_anim_concordance(
+    paths_concordance_fna, path_concordance_jspecies, tolerance_anim, tmp_path
+):
+    """Check ANIm results are concordant with JSpecies."""
+    # Perform ANIm on the input directory contents
+    # We have to separate nucmer/delta-filter command generation
+    # because Travis-CI doesn't play nicely with changes we made
+    # for local SGE/OGE integration.
+    # This might be avoidable with a scheduler flag passed to
+    # jobgroup generation in the anim.py module. That's a TODO.
+    ncmds, fcmds = anim.generate_nucmer_commands(paths_concordance_fna, tmp_path)
+    (tmp_path / "nucmer_output").mkdir(exist_ok=True, parents=True)
+    run_mp.multiprocessing_run(ncmds)
+
+    # delta-filter commands need to be treated with care for
+    # Travis-CI. Our cluster won't take redirection or semicolon
+    # separation in individual commands, but the wrapper we wrote
+    # for this (delta_filter_wrapper.py) can't be called under
+    # Travis-CI. So we must deconstruct the commands below
+    dfcmds = [
+        " > ".join([" ".join(fcmd.split()[1:-1]), fcmd.split()[-1]]) for fcmd in fcmds
+    ]
+    run_mp.multiprocessing_run(dfcmds)
+
+    orglengths = pyani_files.get_sequence_lengths(paths_concordance_fna)
+
+    results = anim.process_deltadir(tmp_path / "nucmer_output", orglengths)
+    result_pid = results.percentage_identity
+    result_pid.to_csv(tmp_path / "pyani_anim.tab", sep="\t")
+
+    # Compare JSpecies output to results
+    result_pid = (result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0).values
+    tgt_pid = parse_jspecies(path_concordance_jspecies)["ANIm"].values
+
+    assert result_pid - tgt_pid == pytest.approx(0, abs=tolerance_anim)
+
+
+@pytest.mark.skip_if_exe_missing("blastn")
+def test_anib_concordance(
+    paths_concordance_fna,
+    path_concordance_jspecies,
+    tolerance_anib_hi,
+    tolerance_anib_lo,
+    threshold_anib_lo_hi,
+    fragment_length,
+    tmp_path,
+):
+    """Check ANIb results are concordant with JSpecies.
+
+    We expect ANIb results to be quite different, as the BLASTN
+    algorithm changed substantially between BLAST and BLAST+ (the
+    megaBLAST algorithm is now the default for BLASTN)
+    """
+    # Get lengths of input genomes
+    orglengths = pyani_files.get_sequence_lengths(paths_concordance_fna)
+
+    # Build and run BLAST jobs
+    fragfiles, fraglengths = anib.fragment_fasta_files(
+        paths_concordance_fna, tmp_path, fragment_length
+    )
+    jobgraph = anib.make_job_graph(
+        paths_concordance_fna, fragfiles, anib.make_blastcmd_builder("ANIb", tmp_path)
+    )
+    assert 0 == run_mp.run_dependency_graph(jobgraph)  # Jobs must run correctly
+
+    # Process BLAST output
+    result_pid = anib.process_blast(
+        tmp_path, orglengths, fraglengths, mode="ANIb"
+    ).percentage_identity
+
+    # Compare JSpecies output to results. We do this in two blocks,
+    # masked according to whether the expected result is greater than
+    # a threshold separating "low" from "high" identity comparisons.
+    result_pid = result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0
+    lo_result = result_pid.mask(result_pid >= threshold_anib_lo_hi).fillna(0).values
+    hi_result = result_pid.mask(result_pid < threshold_anib_lo_hi).fillna(0).values
+
+    tgt_pid = parse_jspecies(path_concordance_jspecies)["ANIb"]
+    lo_target = tgt_pid.mask(tgt_pid >= threshold_anib_lo_hi).fillna(0).values
+    hi_target = tgt_pid.mask(tgt_pid < threshold_anib_lo_hi).fillna(0).values
+
+    assert (lo_result - lo_target, hi_result - hi_target) == (
+        pytest.approx(0, abs=tolerance_anib_lo),
+        pytest.approx(0, abs=tolerance_anib_hi),
+    )
+
+
+@pytest.mark.skip_if_exe_missing("blastall")
+def test_aniblastall_concordance(
+    paths_concordance_fna,
+    path_concordance_jspecies,
+    tolerance_anib_hi,
+    fragment_length,
+    tmp_path,
+):
+    """Check ANIblastall results are concordant with JSpecies."""
+    # Get lengths of input genomes
+    orglengths = pyani_files.get_sequence_lengths(paths_concordance_fna)
+
+    # Perform ANIblastall on the input directory contents
+    fragfiles, fraglengths = anib.fragment_fasta_files(
+        paths_concordance_fna, tmp_path, fragment_length
+    )
+    jobgraph = anib.make_job_graph(
+        paths_concordance_fna,
+        fragfiles,
+        anib.make_blastcmd_builder("ANIblastall", tmp_path),
+    )
+    assert 0 == run_mp.run_dependency_graph(jobgraph)  # Jobs must run correctly
+
+    # Process BLAST output
+    result_pid = anib.process_blast(
+        tmp_path, orglengths, fraglengths, mode="ANIblastall"
+    ).percentage_identity
+
+    # Compare JSpecies output to results
+    result_pid = (result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0).values
+    tgt_pid = parse_jspecies(path_concordance_jspecies)["ANIb"].values
+    assert result_pid - tgt_pid == pytest.approx(0, abs=tolerance_anib_hi)
+
+
+def test_tetra_concordance(
+    paths_concordance_fna, path_concordance_jspecies, tolerance_tetra, tmp_path
+):
+    """Check TETRA results are concordant with JSpecies."""
+    # Perform TETRA analysis
+    zscores = dict()
+    for filename in paths_concordance_fna:
+        zscores[filename.stem] = tetra.calculate_tetra_zscore(filename)
+    results = tetra.calculate_correlations(zscores).values
+
+    # Compare JSpecies output
+    tgt_mat = parse_jspecies(path_concordance_jspecies)["Tetra"].values
+    assert results - tgt_mat == pytest.approx(0, abs=tolerance_tetra)

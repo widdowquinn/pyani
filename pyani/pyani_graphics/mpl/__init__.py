@@ -120,11 +120,15 @@ def add_dendrogram(dfr, fig, params, heatmap_gs, orientation="col"):
         height_ratios=height_ratios,
     )
     dend_axes = fig.add_subplot(gspec[0, 0])
+    if len(list(params.labels.values())) == 0:
+        labels = None
+    else:
+        labels = list(params.labels.values())
     dend = sch.dendrogram(
         sch.linkage(dists, method="complete"),
         color_threshold=np.inf,
         orientation=orient,
-        labels=list(params.labels.values()),
+        labels=labels,
         get_leaves=True,
     )
     clean_axis(dend_axes)
@@ -204,10 +208,12 @@ def add_colorbar(dfr, fig, dend, params, orientation="row"):
     # colourbar
     cblist = []
     for name in [str(_) for _ in dfr.index[dend["dendrogram"]["leaves"]]]:
-        try:
+        if name in params.classes:
             cblist.append(classdict[params.classes[name]])
-        except KeyError:
+        elif name in classdict:
             cblist.append(classdict[name])
+        else:  # Catches genomes with no assigned class
+            cblist.append(0)
     colbar = pd.Series(cblist)
 
     # Create colourbar axis - could capture if needed

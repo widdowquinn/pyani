@@ -61,9 +61,8 @@ def subcmd_download(args: Namespace) -> int:
     logger.info(termcolor("Downloading genomes from NCBI", "red"))
 
     # Create output directory, respecting force/noclobber
-    if not args.dryrun:
-        tools.make_outdir(args.outdir, args.force, args.noclobber)
-    else:
+    tools.make_outdir(args.outdir, args.force, args.noclobber)
+    if args.dryrun:
         logger.warning(
             termcolor("Dry run only: will not overwrite or download", "cyan")
         )
@@ -118,6 +117,7 @@ def subcmd_download(args: Namespace) -> int:
                 termcolor("Retrieving eSummary information for UID %s", "cyan"), uid
             )
             esummary, filestem = download.get_ncbi_esummary(uid, args.retries, api_key)
+            logger.debug("NCBI eSummary:\n%s\n%s", esummary, filestem)
             uid_class = download.get_ncbi_classification(esummary)
 
             # Report summary

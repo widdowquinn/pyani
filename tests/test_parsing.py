@@ -1,24 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019
+# (c) The University of Strathclude 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
 # leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
-# Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
-# Glasgow,
-# G1 1XQ
+# Strathclyde Institute of Pharmaceutical and Biomedical Sciences
+# The University of Strathclyde
+# 161 Cathedral Street
+# Glasgow
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# (c) The University of Strathclude 2019-2020
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -44,27 +45,10 @@ These tests are intended to be run from the repository root using:
 pytest -v
 """
 
-import unittest
-
-from pathlib import Path
-
-from pyani import anim
-
-# Work out where we are. We need to do this to find related data files
-# for testing
-curdir = Path(__file__).parent.resolve()
-
-# Path to test .delta file
-DELTAFILE = curdir / "test_ani_data" / "NC_002696_vs_NC_011916.delta"
+from pyani.anim import parse_delta
 
 
-class TestIntermediateParsing(unittest.TestCase):
-
-    """Test parsing of intermediate files."""
-
-    def test_anim_delta(self):
-        """Test parsing of NUCmer delta file."""
-        aln, sim = anim.parse_delta(DELTAFILE)
-        self.assertEqual(aln, 4074001)
-        self.assertEqual(sim, 2191)
-        print("Alignment length: {0}\nSimilarity Errors: {1}".format(aln, sim))
+def test_anim_delta(dir_anim_in):
+    """Test parsing of NUCmer delta file."""
+    aln, sim = parse_delta(dir_anim_in / "NC_002696_vs_NC_011916.delta")
+    assert (aln, sim) == (4074001, 2191)

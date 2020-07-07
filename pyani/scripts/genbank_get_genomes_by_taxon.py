@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -9,16 +9,16 @@
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
+# 161 Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -108,6 +108,13 @@ def parse_cmdline(argv=None):
         action="store_true",
         default=False,
         help="Give verbose output",
+    )
+    parser.add_argument(
+        "--debug",
+        dest="debug",
+        action="store_true",
+        default=False,
+        help="Report debugging output",
     )
     parser.add_argument(
         "-f",
@@ -287,13 +294,10 @@ def entrez_batch_webhistory(args, record, expected, batchsize, *fnargs, **fnkwar
     Recovery is performed in in batches of defined size, using Efetch.
     Returns all results as a list.
     """
-    logger = logging.getLogger(__name__)
-
     results = []
     for start in range(0, expected, batchsize):
         batch_handle = entrez_retry(
             args,
-            logger,
             Entrez.efetch,
             retstart=start,
             retmax=batchsize,
@@ -325,13 +329,7 @@ def get_asm_uids(args, taxon_uid):
     # Perform initial search for assembly UIDs with taxon ID as query.
     # Use NCBI history for the search.
     handle = entrez_retry(
-        args,
-        logger,
-        Entrez.esearch,
-        db="assembly",
-        term=query,
-        format="xml",
-        usehistory="y",
+        args, Entrez.esearch, db="assembly", term=query, format="xml", usehistory="y",
     )
     record = Entrez.read(handle, validate=False)
     result_count = int(record["Count"])
@@ -339,7 +337,7 @@ def get_asm_uids(args, taxon_uid):
 
     # Recover assembly UIDs from the web history
     asm_ids = entrez_batch_webhistory(
-        args, logger, record, result_count, 250, db="assembly", retmode="xml"
+        args, record, result_count, 250, db="assembly", retmode="xml"
     )
     logger.info("Identified %d unique assemblies", len(asm_ids))
     return asm_ids
@@ -387,9 +385,7 @@ def get_ncbi_asm(args, asm_uid, fmt="fasta"):
 
     # Obtain full eSummary data for the assembly
     summary = Entrez.read(
-        entrez_retry(
-            args, logger, Entrez.esummary, db="assembly", id=asm_uid, report="full"
-        ),
+        entrez_retry(args, Entrez.esummary, db="assembly", id=asm_uid, report="full"),
         validate=False,
     )
 
@@ -415,7 +411,7 @@ def get_ncbi_asm(args, asm_uid, fmt="fasta"):
     # Download and extract genome assembly
     hash_md5 = None
     try:
-        fastafname = retrieve_asm_contigs(args, logger, filestem, fmt=fmt)
+        fastafname = retrieve_asm_contigs(args, filestem, fmt=fmt)
         hash_md5 = create_hash(fastafname)
     except NCBIDownloadException:
         # This is a little hacky. Sometimes, RefSeq assemblies are
@@ -427,7 +423,7 @@ def get_ncbi_asm(args, asm_uid, fmt="fasta"):
         gbfilestem = re.sub("^GCF_", "GCA_", filestem)
         logger.warning("Could not download %s, trying %s", filestem, gbfilestem)
         try:
-            fastafname = retrieve_asm_contigs(args, logger, gbfilestem, fmt=fmt)
+            fastafname = retrieve_asm_contigs(args, gbfilestem, fmt=fmt)
             hash_md5 = create_hash(fastafname)
         except NCBIDownloadException:
             fastafname = None

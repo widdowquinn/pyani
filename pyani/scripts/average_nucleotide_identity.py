@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# (c) The James Hutton Institute 2013-2019
-# (c) University of Strathclyde 2019
+# (c) The James Hutton Institute 2016-2019
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -9,16 +9,16 @@
 #
 # Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
-# Cathedral Street,
+# 161 Cathedral Street,
 # Glasgow,
-# G1 1XQ
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
-# Copyright (c) 2013-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2016-2019 The James Hutton Institute
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -123,6 +123,7 @@ o Rpy2 (http://rpy.sourceforge.net/rpy2.html)
 """
 
 import json
+import logging
 import os
 import random
 import shutil
@@ -152,8 +153,7 @@ from pyani import (
 from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
 from pyani.pyani_config import params_mpl, ALIGNDIR, FRAGSIZE, TETRA_FILESTEMS
-
-from pyani.scripts import logger as pyani_logger
+from pyani.scripts.logger import config_logger
 
 
 # Process command-line arguments
@@ -193,6 +193,13 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         action="store_true",
         default=False,
         help="Give verbose output",
+    )
+    parser.add_argument(
+        "--debug",
+        dest="debug",
+        action="store_true",
+        default=False,
+        help="Report debug messages",
     )
     parser.add_argument(
         "-f",
@@ -434,7 +441,7 @@ def last_exception() -> str:
 
 
 # Create output directory if it doesn't exist
-def make_outdirs(args: Namespace, logger: Logger):
+def make_outdirs(args: Namespace):
     """Make the output directory, if required.
 
     :param args:  Namespace of command-line options
@@ -448,6 +455,8 @@ def make_outdirs(args: Namespace, logger: Logger):
         If args.noclobber is set True, use the existing output directory,
         and keep any existing output
     """
+    logger = logging.getLogger(__name__)
+
     if args.outdirname.exists():
         if not args.force:  # crash out if directory exists
             logger.error(f"Output directory {args.outdirname} exists (exiting)")
@@ -457,7 +466,7 @@ def make_outdirs(args: Namespace, logger: Logger):
         else:  # args.force only is set - delete
             logger.info(f"FORCE set, removing existing {args.outdirname}")
             shutil.rmtree(args.outdirname)
-    args.outdirname.mkdir(exist_ok=True)
+    args.outdirname.mkdir(exist_ok=True, parents=True)
 
     # TETRA needs directories for alignment output files
     if args.method != "TETRA":
@@ -478,7 +487,7 @@ def compress_delete_outdir(outdir: Path, logger: Logger) -> None:
 
 # Calculate ANIm for input
 def calculate_anim(
-    args: Namespace, logger: Logger, infiles: List[Path], org_lengths: Dict
+    args: Namespace, infiles: List[Path], org_lengths: Dict
 ) -> pyani_tools.ANIResults:
     """Return ANIm result dataframes for files in input directory.
 
@@ -503,6 +512,8 @@ def calculate_anim(
     percentage of whole genome), and similarity error cound for each pairwise
     comparison.
     """
+    logger = logging.getLogger(__name__)
+
     logger.info("Running ANIm")
     logger.info("Generating NUCmer command-lines")
     deltadir = args.outdirname / ALIGNDIR["ANIm"]
@@ -569,7 +580,7 @@ def calculate_anim(
 
 
 # Calculate TETRA for input
-def calculate_tetra(logger: Logger, infiles: List[Path]) -> pd.DataFrame:
+def calculate_tetra(infiles: List[Path]) -> pd.DataFrame:
     """Calculate TETRA for files in input directory.
 
     :param logger:  logging object
@@ -587,6 +598,8 @@ def calculate_tetra(logger: Logger, infiles: List[Path]) -> pd.DataFrame:
     assignment of genomic fragments. Env. Microbiol. 6(9): 938-947.
     doi:10.1111/j.1462-2920.2004.00624.x
     """
+    logger = logging.getLogger(__name__)
+
     logger.info("Running TETRA.")
     # First, find Z-scores
     logger.info("Calculating TETRA Z-scores for each sequence.")
@@ -680,7 +693,7 @@ def run_blast(
 
 # Calculate ANIb for input
 def unified_anib(
-    args: Namespace, logger: Logger, infiles: List[Path], org_lengths: Dict[str, int]
+    args: Namespace, infiles: List[Path], org_lengths: Dict[str, int]
 ) -> pyani_tools.ANIResults:
     """Calculate ANIb for files in input directory.
 
@@ -716,6 +729,8 @@ def unified_anib(
     each genome, for each pairwise comparison. These are written to the
     output directory in plain text tab-separated format.
     """
+    logger = logging.getLogger(__name__)
+
     logger.info("Running %s", args.method)
     blastdir = args.outdirname / ALIGNDIR[args.method]
     logger.info("Writing BLAST output to %s", blastdir)
@@ -751,7 +766,7 @@ def unified_anib(
 
 
 # Write ANIb/ANIm/TETRA output
-def write(args: Namespace, logger: Logger, results: pd.DataFrame) -> None:
+def write(args: Namespace, results: pd.DataFrame) -> None:
     """Write ANIb/ANIm/TETRA results to output directory.
 
     :param args:  Namespace, command-line arguments
@@ -762,10 +777,12 @@ def write(args: Namespace, logger: Logger, results: pd.DataFrame) -> None:
     True), and plain text tab-separated file in the output directory. The
     order of result output must be reflected in the order of filestems.
     """
+    logger = logging.getLogger(__name__)
+
     logger.info("Writing %s results to %s", args.method, args.outdirname)
     if args.method == "TETRA":
-        out_excel = args.outdirname / TETRA_FILESTEMS[0] + ".xlsx"
-        out_csv = args.outdirname / TETRA_FILESTEMS[0] + ".tab"
+        out_excel = (args.outdirname / TETRA_FILESTEMS[0]).with_suffix(".xlsx")
+        out_csv = (args.outdirname / TETRA_FILESTEMS[0]).with_suffix(".tab")
         if args.write_excel:
             results.to_excel(out_excel, index=True)
         results.to_csv(out_csv, index=True, sep="\t")
@@ -779,7 +796,7 @@ def write(args: Namespace, logger: Logger, results: pd.DataFrame) -> None:
 
 
 # Draw ANIb/ANIm/TETRA output
-def draw(args: Namespace, logger: Logger, filestems: List[str], gformat: str) -> None:
+def draw(args: Namespace, filestems: List[str], gformat: str) -> None:
     """Draw ANIb/ANIm/TETRA results.
 
     :param args:  Namespace, command-line arguments
@@ -787,6 +804,8 @@ def draw(args: Namespace, logger: Logger, filestems: List[str], gformat: str) ->
     :param filestems: - filestems for output files
     :param gformat: - the format for output graphics
     """
+    logger = logging.getLogger(__name__)
+
     # Draw heatmaps
     for filestem in filestems:
         fullstem = args.outdirname / filestem
@@ -864,43 +883,6 @@ def process_arguments(args: Optional[Namespace]) -> Namespace:
     return args
 
 
-def build_logger(args: Namespace, logger: Optional[Logger]) -> Logger:
-    """Return a logging object for the script.
-
-    :param args:  Namespace of command-line arguments
-    :param logger:  Expected to be None, but may be logging object
-    """
-    if logger is None:
-        logger = pyani_logger.build_logger("average_nucleotide_identity.py", args)
-
-    # Have we got an input and output directory? If not, exit.
-    if args.indirname is None:
-        logger.error("No input directory name (exiting)")
-        raise SystemExit(1)
-    logger.info("Input directory: %s", args.indirname)
-    if args.outdirname is None:
-        logger.error("No output directory name (exiting)")
-        raise SystemExit(1)
-    if args.rerender:  # Rerendering, we want to overwrite graphics
-        args.force, args.noclobber = True, True
-    make_outdirs(args, logger)
-    logger.info("Output directory: %s", args.outdirname)
-
-    # Check for the presence of space characters in any of the input filenames
-    # or output directory. If we have any, abort here and now.
-    filenames = [args.outdirname] + list(args.indirname.iterdir())
-    for fname in filenames:
-        if " " in str(fname.resolve()):
-            logger.error(
-                "File or directory %s contains whitespace. "
-                "This will cause issues with MUMmer and BLAST (exiting).",
-                fname,
-            )
-            raise SystemExit(1)
-
-    return logger
-
-
 def test_class_label_paths(args: Namespace, logger: Logger) -> None:
     """Raise error and exit if label and class files exist.
 
@@ -917,7 +899,7 @@ def test_class_label_paths(args: Namespace, logger: Logger) -> None:
         raise SystemExit(1)
 
 
-def get_method(args: Namespace, logger: Logger) -> Tuple:
+def get_method(args: Namespace) -> Tuple:
     """Return function and config for the chosen method.
 
     :param args:  Namespace of command-line arguments
@@ -926,6 +908,8 @@ def get_method(args: Namespace, logger: Logger) -> Tuple:
     The dictionary defines pairs of method function and configurations,
     keyed by method name.
     """
+    logger = logging.getLogger(__name__)
+
     methods = {
         "ANIm": (calculate_anim, pyani_config.ANIM_FILESTEMS),
         "ANIb": (unified_anib, pyani_config.ANIB_FILESTEMS),
@@ -962,9 +946,7 @@ def test_scheduler(args: Namespace, logger: Logger) -> None:
 
 
 # Main function
-def run_main(
-    argsin: Optional[Namespace] = None, logger: Optional[Logger] = None
-) -> int:
+def run_main(argsin: Optional[Namespace] = None) -> int:
     """Run main process for average_nucleotide_identity.py script.
 
     :param argsin:  Namespace, command-line arguments
@@ -974,12 +956,14 @@ def run_main(
 
     # Process command-line and build logger
     args = process_arguments(argsin)
-    logger = build_logger(args, logger)
+    logger = logging.getLogger(__name__)
+    config_logger(args)
 
     # Ensure argument validity and get method function/config
     test_class_label_paths(args, logger)
     test_scheduler(args, logger)
-    method_function, method_config = get_method(args, logger)
+    method_function, method_config = get_method(args)
+    make_outdirs(args)
 
     # Skip calculations (or not) depending on rerender option
     if args.rerender:
@@ -1011,10 +995,10 @@ def run_main(
         # and write out corresponding results.
         logger.info("Carrying out %s analysis", args.method)
         if args.method == "TETRA":
-            results = method_function(args, logger, infiles)
+            results = method_function(infiles)
         else:
-            results = method_function(args, logger, infiles, org_lengths)
-        write(args, logger, results)
+            results = method_function(args, infiles, org_lengths)
+        write(args, results)
 
     # Do we want graphical output?
     if args.graphics or args.rerender:
@@ -1023,7 +1007,7 @@ def run_main(
         for gfmt in args.gformat.split(","):
             logger.info("Graphics format: %s", gfmt)
             logger.info("Graphics method: %s", args.gmethod)
-            draw(args, logger, method_config, gfmt)
+            draw(args, method_config, gfmt)
 
     # Close any open matplotlib figures
     plt.close("all")

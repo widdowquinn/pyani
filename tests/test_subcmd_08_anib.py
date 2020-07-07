@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# (c) The James Hutton Institute 2017-2019
-#
+# (c) The James Hutton Institute 2013-2019
+# (c) The University of Strathclude 2019-2020
 # Author: Leighton Pritchard
-# Contact: leighton.pritchard@hutton.ac.uk
+#
+# Contact:
+# leighton.pritchard@strath.ac.uk
 #
 # Leighton Pritchard,
-# Information and Computing Sciences,
-# James Hutton Institute,
-# Errol Road,
-# Invergowrie,
-# Dundee,
-# DD6 9LH,
+# Strathclyde Institute of Pharmaceutical and Biomedical Sciences
+# The University of Strathclyde
+# 161 Cathedral Street
+# Glasgow
+# G4 0RE
 # Scotland,
 # UK
 #
 # The MIT License
 #
-# Copyright (c) 2017-2019 The James Hutton Institute
+# Copyright (c) 2013-2019 The James Hutton Institute
+# (c) The University of Strathclude 2019-2020
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -77,6 +79,7 @@ LabelPaths = namedtuple("LabelPaths", "classes labels")
 
 @pytest.mark.xfail(reason="ANIb is not currently fully implemented")
 class TestANIbsubcommand(unittest.TestCase):
+
     """Class defining tests of the pyani anib subcommand."""
 
     def setUp(self):

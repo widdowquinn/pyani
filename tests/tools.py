@@ -233,11 +233,11 @@ def ordered(obj):
         return obj
 
 
-def modify_namespace(namespace, args):
+def modify_namespace(namespace, **kwargs):
     """Update arguments in a passed Namespace.
 
     :param namespace:       argparse.Namespace object
-    :param args:            dict of argument: value pairs
+    :param kwargs:          keyworded arguments
 
     The expected usage pattern is, for a command-line application with many
     or complex arguments, to define a base argparse.Namespace object, then
@@ -246,6 +246,6 @@ def modify_namespace(namespace, args):
     returns the modified namespace.
     """
     new_namespace = copy.deepcopy(namespace)
-    for argname, argval in args.items():
+    for argname, argval in kwargs.items():
         setattr(new_namespace, argname, argval)
     return new_namespace

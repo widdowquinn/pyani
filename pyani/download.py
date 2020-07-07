@@ -48,12 +48,11 @@ import urllib.request
 
 from pathlib import Path
 from subprocess import CompletedProcess
-from typing import Any, List, NamedTuple, Tuple
+from typing import Any, List, NamedTuple, Optional, Tuple
 from urllib.error import HTTPError, URLError
 
 from Bio import Entrez  # type: ignore
 from tqdm import tqdm  # type: ignore
-from namedlist import namedlist  # type: ignore
 
 
 # Regular expression for NCBI taxon numbers
@@ -105,6 +104,27 @@ class Hashstatus(NamedTuple):
     passed: bool
     localhash: str
     filehash: str
+
+
+class DLStatus:
+
+    """Download status data."""
+
+    def __init__(
+        self,
+        url: str,
+        hashurl: str,
+        outfname: Path,
+        outfhash: Path,
+        skipped: bool,
+        error: Optional[str] = None,
+    ):
+        self.url = url
+        self.hashurl = hashurl
+        self.outfname = outfname
+        self.outfhash = outfhash
+        self.skipped = skipped
+        self.error = error
 
 
 def last_exception() -> str:
@@ -393,7 +413,7 @@ def retrieve_genome_and_hash(
     outdir: Path,
     timeout: int,
     disable_tqdm: bool = False,
-) -> namedlist:
+) -> DLStatus:
     """Download genome contigs and MD5 hash data from NCBI.
 
     :param filestem:
@@ -403,7 +423,6 @@ def retrieve_genome_and_hash(
     :param timeout:
     :param disable_tqdm:  Boolean, show tqdm progress bar?
     """
-    DLStatus = namedlist("DLStatus", "url hashurl outfname outfhash skipped error")
     skipped = False  # Flag - set True if we skip download for existing file
     error = None  # Text of last-raised error
 

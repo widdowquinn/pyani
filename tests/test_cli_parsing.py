@@ -47,62 +47,46 @@ pytest -v
 import logging
 
 from pathlib import Path
-from unittest import TestCase
-from unittest.mock import patch
 
+import pytest
+
+from pyani import pyani_orm
 from pyani.scripts import pyani_script
 
 
-class TestCLIParsing(TestCase):
+@pytest.fixture
+def args_createdb(tmp_path):
+    """Command-line arguments for database creation."""
+    return ["createdb", "--dbpath", tmp_path / "pyanidb", "--force"]
 
-    """Class defining tests of pyani CLI parsing."""
 
-    @classmethod
-    def setup_class(cls):
-        """Set up mocking for class."""
-        # Mock patcher for downloads
-        cls.mock_subcmd_download_patcher = patch(
-            "pyani.scripts.subcommands.subcmd_download"
-        )
-        cls.mock_subcmd_download = cls.mock_subcmd_download_patcher.start()
+@pytest.fixture
+def args_single_genome_download(email_address, tmp_path):
+    """Command-line arguments for single genome download."""
+    return [
+        "download",
+        "-t",
+        "218491",
+        "--email",
+        email_address,
+        tmp_path,
+        "--force",
+    ]
 
-    @classmethod
-    def teardown_class(cls):
-        """Close down mocking for class."""
-        cls.mock_subcmd_download_patcher.stop()
 
-    def setUp(self):
-        """Set attributes for tests."""
-        testdir = Path("tests")
-        self.indir = testdir / "test_input" / "sequences"
-        self.outdir = testdir / "test_output" / "parsertests"
-        self.downloadpath = self.outdir / "downloads"
+def test_createdb(args_createdb, monkeypatch):
+    """Create empty test database."""
 
-        self.email = "pyani@pyani.org"
-        self.testdbpath = testdir / "test_output" / "parsertests" / "testdb"
+    def mock_return_none(*args, **kwargs):
+        return None
 
-        # Lists of command-line arguments for each tests
-        self.argsdict = {
-            "createdb": ["createdb", "--dbpath", self.testdbpath, "--force"],
-            "download": [
-                "download",
-                "-t",
-                "218491",
-                "--email",
-                self.email,
-                self.downloadpath,
-                "--force",
-            ],
-        }
+    monkeypatch.setattr(pyani_orm, "create_db", mock_return_none)
+    pyani_script.run_main(args_createdb)
 
-        # Null logger for testing
-        self.logger = logging.getLogger("TestCLIParsing logger")
-        self.logger.addHandler(logging.NullHandler())
 
-    def test_createdb(self):
-        """Create empty test database."""
-        pyani_script.run_main(self.argsdict["createdb"])
+def test_download_single_genome(args_single_genome_download, mock_single_genome_dl):
+    """Download a single genome.
 
-    def test_download(self):
-        """Download a single genome."""
-        pyani_script.run_main(self.argsdict["download"])
+    We mock the remote database access
+    """
+    pyani_script.run_main(args_single_genome_download)
