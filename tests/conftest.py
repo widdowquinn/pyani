@@ -56,7 +56,7 @@ from pyani.pyani_config import (
     NUCMER_DEFAULT,
     FRAGSIZE,
 )
-from pyani.scripts import genbank_get_genomes_by_taxon, tools as script_tools
+from pyani.scripts import genbank_get_genomes_by_taxon
 
 # Path to tests, contains tests and data subdirectories
 # This conftest.py file should be found in the top directory of the tests

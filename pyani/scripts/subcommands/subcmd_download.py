@@ -43,12 +43,293 @@ import logging
 
 from argparse import Namespace
 from collections import namedtuple
+from typing import Dict, List, NamedTuple, Optional, Tuple
 
 from Bio import SeqIO
 
 from pyani import download
 from pyani.pyani_tools import termcolor
-from pyani.scripts import tools
+from pyani.scripts import make_outdir
+
+
+class Skipped(NamedTuple):
+
+    """Convenience struct for holding information about skipped genomes."""
+
+    taxon_id: str
+    accession: str
+    organism: str
+    strain: str
+    url: str
+    dltype: str
+
+
+def configure_entrez(args: Namespace) -> Optional[str]:
+    """Configure Entrez email, return API key.
+
+    :param args:  Namespace, command-line arguments
+
+    Returns None if no API key found
+    """
+    logger = logging.getLogger(__name__)
+
+    download.set_ncbi_email(args.email)
+    logger.info("Setting Entrez email address: %s", args.email)
+    return parse_api_key(args)
+
+
+def dl_info_to_str(esummary, uid_class) -> str:
+    """Return descriptive string for passed download data.
+
+    :param esummary:
+    :param uid_class:
+    """
+    return "\n\t".join(
+        [
+            f"Species Taxid: {esummary['SpeciesTaxid']}",
+            f"TaxID: {esummary['Taxid']}",
+            f"Accession: {esummary['AssemblyAccession']}",
+            f"Name: {esummary['AssemblyName']}",
+            f"Organism: {uid_class.organism}",
+            f"Genus: {uid_class.genus}",
+            f"Species: {uid_class.species}",
+            f"Strain: {uid_class.strain}",
+        ]
+    )
+
+
+def download_data(
+    args: Namespace, api_key: Optional[str], asm_dict: Dict[str, List],
+) -> Tuple[List, List, List]:
+    """Download the accessions indicated in the passed dictionary.
+
+    :param args:  Namespace of command-line arguments
+    :param api_key:  str, API key for NCBI downloads
+    :param asm_dict:  dictionary of assembly UIDs to download, keyed by taxID
+
+    Returns lists of information about downloaded genome classes and labels, and a
+    list of skipped downloads (as Skipped objects).
+    """
+    logger = logging.getLogger(__name__)
+
+    classes, labels, skippedlist = [], [], []
+
+    for tid, uids in asm_dict.items():
+        logger.info(termcolor("Downloading contigs for Taxon ID %s", "blue"), uids)
+        for uid in uids:
+            # Obtain eSummary for each assembly UID
+            logger.info(
+                termcolor("Retrieving eSummary information for UID %s", "cyan"), uid
+            )
+            esummary, filestem = download.get_ncbi_esummary(uid, args.retries, api_key)
+            uid_class = download.get_ncbi_classification(esummary)
+            logger.debug(
+                "eSummary information (%s):\n\t%s",
+                filestem,
+                dl_info_to_str(esummary, uid_class),
+            )
+            if args.dryrun:
+                logger.warning(
+                    "(dry-run) skipping download of %s", esummary["AssemblyAccession"]
+                )
+                continue
+
+            # Download genome for UID, and extract compressed files
+            dlstatus, skipped_genomes = download_genome(
+                args, filestem, tid, uid, uid_class
+            )
+            skippedlist.extend(skipped_genomes)
+            if not dlstatus.skipped:
+                extract_genomes(args, dlstatus, esummary)
+                labeltxt, classtxt = hash_genomes(args, dlstatus, filestem, uid_class)
+                classes.append(classtxt)
+                labels.append(labeltxt)
+                logger.info(
+                    "Label and class file entries\n\tLabel: %s\n\tClass: %s",
+                    labeltxt,
+                    classtxt,
+                )
+
+    return classes, labels, skippedlist
+
+
+def extract_genomes(args: Namespace, dlstatus: download.DLStatus, esummary) -> None:
+    """Extract genome files in passed dlstatus.
+
+    :param args:  Namespace of command-line arguments
+    :param dlstatus:
+    :param esummary:
+    """
+    logger = logging.getLogger(__name__)
+
+    # Extract downloaded files
+    ename = dlstatus.outfname.with_suffix("")  # should strip only last suffix
+    if ename.exists() and args.noclobber:
+        logger.warning("Output file %s exists, not extracting", ename)
+    else:
+        logger.debug("Extracting archive %s to %s", dlstatus.outfname, ename)
+        download.extract_contigs(dlstatus.outfname, ename)
+
+    # Modify sequence ID header if Kraken option active
+    if args.kraken:
+        logger.warning("Modifying downloaded sequence for Kraken compatibility")
+        seqdata = list(SeqIO.parse(ename, "fasta"))
+        logger.debug("Modifying %s", ename)
+        for seq in seqdata:
+            seq.id = "|".join([seq.id, "kraken:taxid", esummary["SpeciesTaxid"]])
+        SeqIO.write(seqdata, ename, "fasta")
+
+
+def hash_genomes(
+    args: Namespace, dlstatus: download.DLStatus, filestem: str, uid_class
+) -> Tuple[str, str]:
+    """Hash genome files in passed dlstatus.
+
+    :param args:  Namespace of command-line arguments
+    :param dlstatus:
+    :param filestem:  str, filestem for output
+    :param uid_class:
+    """
+    logger = logging.getLogger(__name__)
+
+    # Create MD5 hash for the downloaded contigs
+    ename = dlstatus.outfname.with_suffix("")  # should strip only last suffix
+    logger.debug("Creating local MD5 hash for %s", ename)
+    hashfname = ename.with_suffix(".md5")
+    datahash = download.create_hash(ename)
+    logger.debug("Writing hash to %s", hashfname)
+    with open(hashfname, "w") as hfh:
+        hfh.write("\t".join([datahash, str(ename)]) + "\n")
+    # Make label/class text
+    labeltxt, classtxt = download.create_labels(uid_class, filestem, datahash)
+    return labeltxt, classtxt
+
+
+def download_genome(args: Namespace, filestem: str, tid: str, uid: str, uid_class):
+    """Download single genome data to output directory.
+
+    :param args:  Namespace, command-line arguments
+    :param filestem:  str, output filestem
+    :param tid:  str, taxonID
+    :param uid:  str, assembly UID
+    :param uid_class:
+    """
+    logger = logging.getLogger(__name__)
+
+    skippedlist = []
+    refseq_status, genbank_status = True, True  # set False if skipped
+
+    dlfiledata = download.DLFileData(
+        filestem, "ftp://ftp.ncbi.nlm.nih.gov/genomes/all", "genomic.fna.gz"
+    )
+    logger.info("Retrieving URLs for %s", filestem)
+    # Try RefSeq first
+    dlstatus = download.download_genome_and_hash(
+        args.outdir,
+        args.timeout,
+        dlfiledata,
+        dltype="RefSeq",
+        disable_tqdm=args.disable_tqdm,
+    )
+    # Pylint is confused by the content of dlstatus (a namedlist)
+    if dlstatus.skipped:  # pylint: disable=no-member
+        skippedlist.append(
+            Skipped(
+                tid,
+                uid,
+                uid_class.organism,
+                uid_class.strain,
+                dlstatus.url,  # pylint: disable=no-member
+                "RefSeq",
+            )
+        )
+        refseq_status = False
+
+    # RefSeq fails, so try GenBank
+    if refseq_status is False:
+        logger.warning(
+            termcolor("RefSeq failed. Trying GenBank alternative assembly", "magenta")
+        )
+        # Try GenBank assembly
+        dlstatus = download.download_genome_and_hash(
+            args.outdir,
+            args.timeout,
+            dlfiledata,
+            dltype="GenBank",
+            disable_tqdm=args.disable_tqdm,
+        )
+        # Pylint is confused by the content of dlstatus (a namedlist)
+        if dlstatus.skipped:  # pylint: disable=no-member
+            skippedlist.append(
+                Skipped(
+                    tid,
+                    uid,
+                    uid_class.organism,
+                    uid_class.strain,
+                    dlstatus.url,
+                    "GenBank",
+                )
+            )
+            genbank_status = False
+            logger.warning(termcolor("GenBank failed.", "magenta"))
+
+    if genbank_status or refseq_status:
+        # One of the downloads worked: report information
+        logger.debug("Downloaded from URL: %s", dlstatus.url)
+        logger.debug("Wrote assembly to: %s", dlstatus.outfname)
+        logger.debug("Wrote MD5 hashes to: %s", dlstatus.outfhash)
+
+        # Check hash for the download
+        hashstatus = download.check_hash(dlstatus.outfname, dlstatus.outfhash)
+        logger.debug("Local MD5 hash: %s", hashstatus.localhash)
+        logger.debug("NCBI MD5 hash: %s", hashstatus.localhash)
+        if hashstatus.passed:
+            logger.info(termcolor("MD5 hash check passed", "green"))
+        else:
+            logger.warning("MD5 hash check failed. Please check and retry.")
+
+    return dlstatus, skippedlist
+
+
+def get_tax_asm_dict(args: Namespace) -> Dict[str, List]:
+    """Return dictionary of assembly UIDs to download, keyed by taxID.
+
+    :param args:  Namespace of command-line arguments
+    """
+    logger = logging.getLogger(__name__)
+
+    taxon_ids = download.split_taxa(args.taxon)
+    logger.info(termcolor("Taxon IDs received: %s", "blue"), taxon_ids)
+    asm_dict = download.make_asm_dict(taxon_ids, args.retries)
+    for tid, uids in asm_dict.items():
+        logger.debug(
+            "Taxon ID summary\n\tQuery: %s\n\tasm count: %s\n\tUIDs: %s",
+            tid,
+            len(uids),
+            uids,
+        )
+    return asm_dict
+
+
+def parse_api_key(args: Namespace) -> Optional[str]:
+    """Returns NCBI API key if present, None otherwise.
+
+    :param args:  Namespace of command-line arguments
+
+    Checks for key in args.api_keypath.
+    """
+    logger = logging.getLogger(__name__)
+
+    api_path = args.api_keypath.expanduser()
+    if not api_path.is_file():
+        logger.warning("API path %s not a valid file. Not using API key.", api_path)
+        api_key = None
+    else:
+        with api_path.open() as ifh:
+            api_key = ifh.readline().strip()
+        logger.info("API key recovered from %s", api_path)
+
+    return api_key
 
 
 def subcmd_download(args: Namespace) -> int:
@@ -61,194 +342,38 @@ def subcmd_download(args: Namespace) -> int:
     logger.info(termcolor("Downloading genomes from NCBI", "red"))
 
     # Create output directory, respecting force/noclobber
-    tools.make_outdir(args.outdir, args.force, args.noclobber)
     if args.dryrun:
         logger.warning(
             termcolor("Dry run only: will not overwrite or download", "cyan")
         )
-
-    # Set Entrez email
-    download.set_ncbi_email(args.email)
-    logger.info("Setting Entrez email address: %s", args.email)
-
-    # Parse Entrez API key, if provided
-    api_path = args.api_keypath.expanduser()
-    if not api_path.is_file():
-        logger.warning("API path %s not a valid file. Not using API key.", api_path)
-        api_key = None
     else:
-        api_key = download.parse_api_key(api_path)
-        logger.info("API key recovered from %s", api_path)
+        make_outdir(args.outdir, args.force, args.noclobber)
 
-    # Get list of taxon IDs to download
-    taxon_ids = download.split_taxa(args.taxon)
-    logger.info(termcolor("Taxon IDs received: %s", "blue"), taxon_ids)
+    api_key = configure_entrez(args)  # set up email/get API key
+    asm_dict = get_tax_asm_dict(args)  # dictionary of assembly UIDs for download
 
-    # Get assembly UIDs for each taxon
-    asm_dict = tools.make_asm_dict(taxon_ids, args.retries)
-    for tid, uids in asm_dict.items():
-        logger.debug(
-            "Taxon ID summary\n\tQuery: %s\n\tasm count: %s\n\tUIDs: %s",
-            tid,
-            len(uids),
-            uids,
-        )
-
-    # Compile outputs to write class and label files, and a list of
-    # skipped downloads (and define a helper tuple for collating skipped
-    # genome information)
-    classes = []
-    labels = []
-    skippedlist = []
-    Skipped = namedtuple("Skipped", "taxon_id accession organism strain url dltype")
-
-    # Download contigs and hashes for each assembly UID in the list
-    # On completion of this loop, each assembly in the list will either be
-    # downloaded or skipped (with skipped genome information preserved in
-    # skippedlist), and class/label info will be collated, ready for writing
-    # to file.
-    # Summary information is reported to the logger for each eSummary that
-    # can be recovered
-    for tid, uids in asm_dict.items():
-        logger.info(termcolor("Downloading contigs for Taxon ID %s", "blue"), uids)
-        for uid in uids:
-            # Obtain eSummary
-            logger.info(
-                termcolor("Retrieving eSummary information for UID %s", "cyan"), uid
-            )
-            esummary, filestem = download.get_ncbi_esummary(uid, args.retries, api_key)
-            logger.debug("NCBI eSummary:\n%s\n%s", esummary, filestem)
-            uid_class = download.get_ncbi_classification(esummary)
-
-            # Report summary
-            outstr = "\n\t".join(
-                [
-                    f"Species Taxid: {esummary['SpeciesTaxid']}",
-                    f"TaxID: {esummary['Taxid']}",
-                    f"Accession: {esummary['AssemblyAccession']}",
-                    f"Name: {esummary['AssemblyName']}",
-                    f"Organism: {uid_class.organism}",
-                    f"Genus: {uid_class.genus}",
-                    f"Species: {uid_class.species}",
-                    f"Strain: {uid_class.strain}",
-                ]
-            )
-            logger.debug("eSummary information:\n\t%s", outstr)
-            if args.dryrun:
-                logger.warning(
-                    "(dry-run) skipping download of %s", esummary["AssemblyAccession"]
-                )
-                continue
-
-            # Obtain URLs, trying the RefSeq filestem first, then GenBank if
-            # there's a failure
-            dlfiledata = tools.DLFileData(
-                filestem, "ftp://ftp.ncbi.nlm.nih.gov/genomes/all", "genomic.fna.gz"
-            )
-            logger.info("Retrieving URLs for %s", filestem)
-            # Try RefSeq first
-            dlstatus = tools.download_genome_and_hash(
-                args, dlfiledata, dltype="RefSeq", disable_tqdm=args.disable_tqdm,
-            )
-            # RefSeq failed, try GenBank
-            # Pylint is confused by the content of dlstatus (a namedlist)
-            if dlstatus.skipped:  # pylint: disable=no-member
-                skippedlist.append(
-                    Skipped(
-                        tid,
-                        uid,
-                        uid_class.organism,
-                        uid_class.strain,
-                        dlstatus.url,  # pylint: disable=no-member
-                        "RefSeq",
-                    )
-                )
-                logger.warning("RefSeq failed. Trying GenBank alternative assembly")
-                # Try GenBank assembly
-                dlstatus = tools.download_genome_and_hash(
-                    args, dlfiledata, dltype="GenBank", disable_tqdm=args.disable_tqdm,
-                )
-                # Pylint is confused by the content of dlstatus (a namedlist)
-                if dlstatus.skipped:  # pylint: disable=no-member
-                    skippedlist.append(
-                        Skipped(
-                            tid,
-                            uid,
-                            uid_class.organism,
-                            uid_class.strain,
-                            dlstatus.url,
-                            "GenBank",
-                        )
-                    )
-                    logger.warning("GenBank failed.")
-                    continue  # Move straight on to the next download
-
-            # One of the downloads worked: report information
-            logger.debug("Downloaded from URL: %s", dlstatus.url)
-            logger.debug("Wrote assembly to: %s", dlstatus.outfname)
-            logger.debug("Wrote MD5 hashes to: %s", dlstatus.outfhash)
-
-            # Check hash for the download
-            hashstatus = download.check_hash(dlstatus.outfname, dlstatus.outfhash)
-            logger.debug("Local MD5 hash: %s", hashstatus.localhash)
-            logger.debug("NCBI MD5 hash: %s", hashstatus.localhash)
-            if hashstatus.passed:
-                logger.info(termcolor("MD5 hash check passed", "green"))
-            else:
-                logger.warning("MD5 hash check failed. Please check and retry.")
-
-            # Extract downloaded files
-            ename = dlstatus.outfname.with_suffix("")  # should strip only last suffix
-            if ename.exists() and args.noclobber:
-                logger.warning("Output file %s exists, not extracting", ename)
-            else:
-                logger.debug("Extracting archive %s to %s", dlstatus.outfname, ename)
-                download.extract_contigs(dlstatus.outfname, ename)
-
-            # Modify sequence ID header if Kraken option active
-            if args.kraken:
-                logger.warning("Modifying downloaded sequence for Kraken compatibility")
-                seqdata = list(SeqIO.parse(ename, "fasta"))
-                logger.debug("Modifying %s", ename)
-                for seq in seqdata:
-                    seq.id = "|".join(
-                        [seq.id, "kraken:taxid", esummary["SpeciesTaxid"]]
-                    )
-                SeqIO.write(seqdata, ename, "fasta")
-
-            # Create MD5 hash for the downloaded contigs
-            logger.debug("Creating local MD5 hash for %s", ename)
-            hashfname = ename.with_suffix(".md5")
-            datahash = download.create_hash(ename)
-            logger.debug("Writing hash to %s", hashfname)
-            with open(hashfname, "w") as hfh:
-                hfh.write("\t".join([datahash, str(ename)]) + "\n")
-            # Make label/class text
-            labeltxt, classtxt = download.create_labels(uid_class, filestem, datahash)
-            classes.append(classtxt)
-            labels.append(labeltxt)
-            logger.info(
-                "Label and class file entries\n\tLabel: %s\n\tClass: %s",
-                labeltxt,
-                classtxt,
-            )
+    # Download contigs and hashes for each assembly UID in the dictionary
+    # Collect class and label information for each downloaded genome, plus a list
+    # of skipped genome data
+    classes, labels, skippedlist = download_data(args, api_key, asm_dict)
 
     # Write class and label files
-    classfname = args.outdir / args.classfname
-    logger.info("Writing classes file to %s", classfname)
-    if classfname.exists() and args.noclobber:
-        logger.warning("Class file %s exists, not overwriting", classfname)
-    else:
-        with open(classfname, "w") as ofh:
-            ofh.write("\n".join(classes) + "\n")
+    if not args.dryrun:
+        classfname = args.outdir / args.classfname
+        logger.info("Writing classes file to %s", classfname)
+        if classfname.exists() and args.noclobber:
+            logger.warning("Class file %s exists, not overwriting", classfname)
+        else:
+            with open(classfname, "w") as ofh:
+                ofh.write("\n".join(classes) + "\n")
 
-    labelfname = args.outdir / args.labelfname
-    logger.info("Writing labels file to %s", labelfname)
-    if labelfname.exists() and args.noclobber:
-        logger.warning("Labels file %s exists, not overwriting", labelfname)
-    else:
-        with open(labelfname, "w") as ofh:
-            ofh.write("\n".join(labels) + "\n")
+        labelfname = args.outdir / args.labelfname
+        logger.info("Writing labels file to %s", labelfname)
+        if labelfname.exists() and args.noclobber:
+            logger.warning("Labels file %s exists, not overwriting", labelfname)
+        else:
+            with open(labelfname, "w") as ofh:
+                ofh.write("\n".join(labels) + "\n")
 
     # Report skipped genome list
     if skippedlist:

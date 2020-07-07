@@ -180,21 +180,6 @@ def legacy_tetra_mpl_namespace(tmp_path, legacy_ani_namespace):
     return modify_namespace(legacy_ani_namespace, method="TETRA", gmethod="mpl")
 
 
-def test_legacy_genome_downloads(
-    legacy_download_namespace, mock_legacy_single_genome_dl
-):
-    r"""Use legacy script to download genomes; mocks file downloading.
-
-    Otherwise emulates a command such as:
-
-    genbank_get_genomes_by_taxon.py \
-        -o tests/fixtures/legacy/ANI_input \
-        --email emailme@my.email.domain \
-        -t 203804 -f
-    """
-    genbank_get_genomes_by_taxon.run_main(legacy_download_namespace)
-
-
 @pytest.mark.skip_if_exe_missing("nucmer")
 def test_legacy_anim_sns(legacy_anim_sns_namespace):
     r"""Use legacy script to run ANIm (seaborn output).
@@ -259,3 +244,18 @@ def test_legacy_tetra_sns(legacy_tetra_sns_namespace):
 def test_legacy_tetra_mpl(legacy_tetra_mpl_namespace):
     r"""Use legacy script to run TETRA (mpl output)."""
     average_nucleotide_identity.run_main(legacy_tetra_mpl_namespace)
+
+
+def test_legacy_genome_downloads(
+    legacy_download_namespace, mock_legacy_single_genome_dl
+):
+    r"""Use legacy script to download genomes; mocks file downloading.
+
+    Otherwise emulates a command such as:
+
+    genbank_get_genomes_by_taxon.py \
+        -o tests/fixtures/legacy/ANI_input \
+        --email emailme@my.email.domain \
+        -t 203804 -f
+    """
+    genbank_get_genomes_by_taxon.run_main(legacy_download_namespace)
