@@ -241,7 +241,7 @@ def parse_delta(filename: Path) -> Tuple[int, int]:
     - start on target
     - end on target
     - error count (non-identical, plus indels)
-    - similarity errors (non-positive match scores)
+    - similarity errors (non-positive match scores) [unless using promer this is equal to the previous]
     - stop codons (always zero for nucmer)
     """
     aln_length, sim_errors = 0, 0
@@ -251,9 +251,10 @@ def parse_delta(filename: Path) -> Tuple[int, int]:
         # We only process lines with seven columns:
         if len(line) == 7:
             aln_length += abs(int(line[1]) - int(line[0]) + 1)
-            indels = int(line[4]) - int(line[5])
-            aln_length -= indels
             sim_errors += int(line[5])
+        if len(line) == 1 and int(line[0]) < 0:
+            # Add one to the alignment length for each gap introduced in the reference
+            aln_length += 1
     return aln_length, sim_errors
 
 
