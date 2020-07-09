@@ -5,3 +5,4 @@
 - [ytanizaw](https://github.com/ytanizaw)
 - [Will Trimble](https://github.com/wltrimbl)
 - [Rob Davey](https://github.com/froggleston)
+- [Balázs Brankovics](https://github.com/b-brankovics)
