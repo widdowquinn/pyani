@@ -96,7 +96,7 @@ def delta_output_dir(dir_anim_in):
 @pytest.fixture
 def deltafile_parsed(dir_anim_in):
     """Example parsed deltafile data."""
-    return DeltaParsed(dir_anim_in / "test.delta", (4074001, 2191))
+    return DeltaParsed(dir_anim_in / "test.delta", (4074148, 2191))
 
 
 @pytest.fixture

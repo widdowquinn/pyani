@@ -51,4 +51,4 @@ from pyani.anim import parse_delta
 def test_anim_delta(dir_anim_in):
     """Test parsing of NUCmer delta file."""
     aln, sim = parse_delta(dir_anim_in / "NC_002696_vs_NC_011916.delta")
-    assert (aln, sim) == (4074001, 2191)
+    assert (aln, sim) == (4074148, 2191)

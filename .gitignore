@@ -67,3 +67,7 @@ venv-*
 
 # Ignore mypy config
 .mypy_cache
+
+# Extra documentation output
+classes_pyani.pdf
+packages_pyani.pdf

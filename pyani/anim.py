@@ -235,26 +235,64 @@ def parse_delta(filename: Path) -> Tuple[int, int]:
     aligned uniquely-matched region, and returns the cumulative total for
     each as a tuple.
 
+    Similarity errors are defined in the .delta file spec (see below) as
+    non-positive match scores. For NUCmer output, this is identical to the
+    number of errors (non-identities and indels).
+
     Delta file format has seven numbers in the lines of interest:
+    see http://mummer.sourceforge.net/manual/ for specification
+
     - start on query
     - end on query
     - start on target
     - end on target
     - error count (non-identical, plus indels)
-    - similarity errors (non-positive match scores) [unless using promer this is equal to the previous]
+    - similarity errors (non-positive match scores)
+        [NOTE: with PROmer this is equal to error count]
     - stop codons (always zero for nucmer)
+
+    To calculate alignment length, we take the length of the aligned region of
+    the reference (no gaps), and process the delta information. This takes the
+    form of one value per line, following the header sequence. Positive values
+    indicate an insertion in the reference; negative values a deletion in the
+    reference (i.e. an insertion in the query). The total length of the alignment
+    is then:
+
+    reference_length + insertions - deletions
+
+    For example:
+
+    A = ABCDACBDCAC$
+    B = BCCDACDCAC$
+    Delta = (1, -3, 4, 0)
+    A = ABC.DACBDCAC$
+    B = .BCCDAC.DCAC$
+
+    A is the reference and has length 11. There are two insertions (positive delta),
+    and one deletion (negative delta). Alignment length is then 11 + 1 = 12.
     """
-    aln_length, sim_errors = 0, 0
-    for line in [l.strip().split() for l in filename.open("r").readlines()]:
+    in_aln, aln_length, sim_errors = False, 0, 0
+    for line in [_.strip().split() for _ in filename.open("r").readlines()]:
         if line[0] == "NUCMER" or line[0].startswith(">"):  # Skip headers
             continue
-        # We only process lines with seven columns:
+        # Lines with seven columns are alignment region headers:
         if len(line) == 7:
-            aln_length += abs(int(line[1]) - int(line[0]) + 1)
-            sim_errors += int(line[5])
-        if len(line) == 1 and int(line[0]) < 0:
-            # Add one to the alignment length for each gap introduced in the reference
-            aln_length += 1
+            aln_length += abs(int(line[1]) - int(line[0])) + 1  # reference length
+            sim_errors += int(line[4])  # count of non-identities and indels
+            in_aln = True
+        # Lines with a single column (following a header) report numbers of symbols
+        # until next insertion (+ve) or deletion (-ve) in the reference; one line per
+        # insertion/deletion; the alignment always ends with 0
+        if in_aln and line[0].startswith("0"):
+            in_aln = False
+        elif in_aln:
+            # Add one to the alignment length for each reference insertion; subtract
+            # one for each deletion
+            val = int(line[0])
+            if val < 1:  # deletion in reference
+                aln_length += 1
+            elif val == 0:  # ends the alignment entry
+                in_aln = False
     return aln_length, sim_errors
 
 
