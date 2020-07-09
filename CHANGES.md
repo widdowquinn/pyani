@@ -18,6 +18,10 @@
 - `pyani plot` now produces distribution plots in addition to heatmaps
 - A number of bug fixes were implemented, including:
   - consistent handling of filenames as `Path`s
+  - alignment length calculation for ANIm was corrected
+- major refactoring of code ported from v0.2
+  - static typing implemented
+- testing converted to `pytest` conventions from `unittest`
 
 ## v0.2.7.dev
 
