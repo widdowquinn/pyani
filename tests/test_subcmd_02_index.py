@@ -83,7 +83,7 @@ class TestIndexSubcommand(unittest.TestCase):
         """Test indexing of downloaded files."""
         # Create index
         print(self.argsdict["index"])
-        subcommands.subcmd_index(self.argsdict["index"], self.logger)
+        subcommands.subcmd_index(self.argsdict["index"])
 
         # Check class and label files
         for fname in ("labels.txt", "classes.txt"):
