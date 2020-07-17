@@ -43,7 +43,7 @@ from argparse import Namespace
 from logging import Logger
 
 
-def subcmd_aniblastall(args: Namespace, logger: Logger):
+def subcmd_aniblastall(args: Namespace):
     """Perform ANIblastall on all genome files in an input directory.
 
     :param args:
