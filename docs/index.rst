@@ -58,6 +58,7 @@ Description
 
 Installing the ``pyani`` Python package also installs the program ``pyani``, which enables command-line based analysis of genomes. Results are stored in a private `SQLite3`_ database local to the machine, which permits addition of genomes to a previous analysis without having to recalculate all previously-performed comparisons, facilitating incremental  analysis and visualisation, and enabling incremental maintenance of results for a taxonomic group as new genome sequences become available.
 
+If you use ``pyani`` in your work, we would be grateful if you could please cite us as indicated on the :ref:`Citations <pyani-citations>` page.
 
 ----------------------------------------------
 Reporting problems and requesting improvements
