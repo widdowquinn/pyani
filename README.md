@@ -1,17 +1,30 @@
 # README.md (pyani)
 
-[![pyani PyPi version](https://img.shields.io/pypi/v/pyani.svg "PyPi version")](https://pypi.python.org/pypi/pyani)
-[![pyani licence](https://img.shields.io/pypi/l/pyani.svg "PyPi licence")](https://github.com/widdowquinn/pyani/blob/master/LICENSE)
-[![CircleCI](https://circleci.com/gh/widdowquinn/pyani/tree/master.svg?style=shield)](https://circleci.com/gh/widdowquinn/pyani/tree/master)
-[![pyani codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/development.svg)](https://codecov.io/github/widdowquinn/pyani)
+[![CircleCI](https://circleci.com/gh/widdowquinn/pyani.svg)](https://circleci.com/gh/widdowquinn/pyani/tree/master)
+[![codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)](https://codecov.io/github/widdowquinn/pyani)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/f3e56b2bf118471aabf09514a3e6af75)](https://www.codacy.com/manual/widdowquinn/pyani?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/pyani&amp;utm_campaign=Badge_Grade)
+[![CodeFactor](https://www.codefactor.io/repository/github/widdowquinn/pyani/badge)](https://www.codefactor.io/repository/github/widdowquinn/pyani)
+[![documentation](https://readthedocs.org/projects/pyani/badge/?version=latest)](https://pyani.readthedocs.io/en/latest/?badge=latest)
+[![pyani sourcerank](https://img.shields.io/librariesio/sourcerank/pypi/pyani.svg?logo=koding&logoColor=white)](https://libraries.io/pypi/pyani)
+
+[![pyani PyPi version](https://img.shields.io/pypi/v/pyani "PyPI version")](https://pypi.python.org/pypi/pyani)
+[![pyani licence](https://img.shields.io/pypi/l/pyani "PyPI licence")](https://github.com/widdowquinn/pyani/blob/master/LICENSE)
+[![pyani PyPi version](https://img.shields.io/pypi/format/pyani "PyPI format")](https://pypi.python.org/pypi/pyani)
+[![pyani PyPi version](https://img.shields.io/pypi/pyversions/pyani "Python versions")](https://pypi.python.org/pypi/pyani)
+[![pyani PyPi version](https://img.shields.io/pypi/dm/pyani "PyPI downloads")](https://pypi.python.org/pypi/pyani)
 
 [![GitHub Issues](https://img.shields.io/github/issues-closed/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/widdowquinn/pyani.svg)](https://github.com/widdowquinn/pyani/stargazers)
 [![Code Style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f3e56b2bf118471aabf09514a3e6af75)](https://www.codacy.com/app/widdowquinn/pyani?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/pyani&amp;utm_campaign=Badge_Grade)
-[![CodeFactor](https://www.codefactor.io/repository/github/widdowquinn/pyani/badge)](https://www.codefactor.io/repository/github/widdowquinn/pyani)
-[![pyani sourcerank](https://img.shields.io/librariesio/sourcerank/pypi/pyani.svg?logo=koding&logoColor=white)](https://libraries.io/pypi/pyani)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/pyani/badges/version.svg)](https://anaconda.org/bioconda/pyani)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/pyani/badges/latest_release_date.svg)](https://anaconda.org/bioconda/pyani)
+
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/pyani/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/pyani/badges/downloads.svg)](https://anaconda.org/bioconda/pyani)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/pyani/badges/platforms.svg)](https://anaconda.org/bioconda/pyani)
+
+
 
 <!-- TOC -->
 
