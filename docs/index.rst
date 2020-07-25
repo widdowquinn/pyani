@@ -15,12 +15,15 @@ Build information
     :target: https://circleci.com/gh/widdowquinn/pyani/tree/development
 .. image:: https://img.shields.io/codecov/c/github/widdowquinn/pyani.svg?style=flat-square
     :target: https://codecov.org/widdowquinn/pyani
-.. image:: https://readthedocs.org/projects/pyani/badge/?version=latest
-    :target: https://pyani.readthedocs.io/en/latest/?badge=latest
 .. image:: https://api.codacy.com/project/badge/Grade/f3e56b2bf118471aabf09514a3e6af75
     :target: https://www.codacy.com/app/widdowquinn/pyani?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/pyani&amp;utm_campaign=Badge_Grade
+.. image:: https://www.codefactor.io/repository/github/widdowquinn/pyani/badge
+    :target: https://www.codefactor.io/repository/github/widdowquinn/pyani
+.. image:: https://readthedocs.org/projects/pyani/badge/?version=latest
+    :target: https://pyani.readthedocs.io/en/latest/?badge=latest
 .. image:: https://img.shields.io/librariesio/sourcerank/pypi/pyani.svg?logo=koding&logoColor=white
     :target: https://libraries.io/pypi/pyani
+
 
 ------------------------------
 ``PyPI`` version and Licensing
@@ -30,7 +33,11 @@ Build information
     :target: https://pypi.python.org/pypi/pyani
 .. image:: https://img.shields.io/pypi/l/pyani.svg?style=flat-square
     :target: https://pypi.python.org/pypi/pyani
-.. image:: https://img.shields.io/pypi/dm/pyani.svg?label=pypi%20downloads&logo=python&logoColor=white
+.. image:: https://img.shields.io/pypi/format/pyani
+    :target: https://pypi.org/project/pyani/
+.. image:: https://img.shields.io/pypi/pyversions/pyani
+    :target: https://pypi.org/project/pyani/
+.. image:: https://img.shields.io/pypi/dm/pyani
     :target: https://pypi.org/project/pyani/
 
 -----------------
