@@ -1,6 +1,6 @@
 # README.md (pyani)
 
-[![CircleCI](https://circleci.com/gh/widdowquinn/pyani.svg)](https://circleci.com/gh/widdowquinn/pyani/tree/master)
+[![CircleCI](https://circleci.com/gh/widdowquinn/pyani.svg?style=shield)](https://circleci.com/gh/widdowquinn/pyani/tree/master)
 [![codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)](https://codecov.io/github/widdowquinn/pyani)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f3e56b2bf118471aabf09514a3e6af75)](https://www.codacy.com/manual/widdowquinn/pyani?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/pyani&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/widdowquinn/pyani/badge)](https://www.codefactor.io/repository/github/widdowquinn/pyani)
