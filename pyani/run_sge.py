@@ -43,10 +43,10 @@ jobs.
 """
 
 import itertools
+import logging
 import os
 
 from collections import defaultdict
-from logging import Logger
 from pathlib import Path
 from typing import Dict, Generator, Iterable, List, Optional, Set
 
@@ -73,9 +73,13 @@ def build_joblist(jobgraph) -> List:
 
     :param jobgraph:
     """
+    logger = logging.getLogger(__name__)
+    
     jobset = set()  # type: Set
     for job in jobgraph:
         jobset = populate_jobset(job, jobset, depth=1)
+
+    logger.debug("built jobset: %s", jobset)
     return list(jobset)
 
 
@@ -111,7 +115,6 @@ def compile_jobgroups_from_joblist(
 # Run a job dependency graph, with SGE
 def run_dependency_graph(
     jobgraph,
-    logger: Optional[Logger] = None,
     jgprefix: str = "ANIm_SGE_JG",
     sgegroupsize: int = 10000,
     sgeargs: Optional[str] = None,
@@ -120,7 +123,6 @@ def run_dependency_graph(
 
     :param jobgraph: list of jobs, which may have dependencies.
     :param verbose: flag for multiprocessing verbosity
-    :param logger: a logger module logger (optional)
     :param jgprefix: a prefix for the submitted jobs, in the scheduler
     :param sgegroupsize: the maximum size for an array job submission
     :param sgeargs: additional arguments to qsub
@@ -131,22 +133,26 @@ def run_dependency_graph(
     the dependency graph into two lists of corresponding jobs, and
     run the corresponding nucmer jobs before the delta-filter jobs.
     """
+    logger = logging.getLogger(__name__)
+
+    logger.debug("Received jobgraph with %d jobs", len(jobgraph))
+    
+    
     jobs_main = []  # Can be run first, before deps
     jobs_deps = []  # Depend on the main jobs
 
     # Try to be informative by telling the user what jobs will run
     dep_count = 0  # how many dependencies are there
-    if logger:
-        logger.info("Jobs to run with scheduler")
-        for job in jobgraph:
-            logger.info("{0}: {1}".format(job.name, job.command))
-            jobs_main.append(job)
-            if job.dependencies:
-                dep_count += len(job.dependencies)
-                for dep in job.dependencies:
-                    logger.info("\t[^ depends on: %s (%s)]", dep.name, dep.command)
-                    jobs_deps.append(dep)
-        logger.info("There are %d job dependencies" % dep_count)
+    logger.info("Jobs to run with scheduler")
+    for job in jobgraph:
+        logger.info("{0}: {1}".format(job.name, job.command))
+        jobs_main.append(job)
+        if job.dependencies:
+            dep_count += len(job.dependencies)
+            for dep in job.dependencies:
+                logger.info("\t[^ depends on: %s (%s)]", dep.name, dep.command)
+                jobs_deps.append(dep)
+    logger.info("There are %d job dependencies" % dep_count)
     # Clear dependencies in main group
     for job in jobs_main:
         job.dependencies = []
@@ -156,8 +162,7 @@ def run_dependency_graph(
     # the queue.
     # We split the main and dependent jobs into separate JobGroups.
     # These JobGroups are paired, in order
-    if logger:
-        logger.info("Compiling main and dependent jobs into separate JobGroups")
+    logger.info("Compiling main and dependent jobs into separate JobGroups")
     maingroups = compile_jobgroups_from_joblist(
         jobs_main, jgprefix + "_main", sgegroupsize
     )
@@ -171,14 +176,12 @@ def run_dependency_graph(
     jobgroups = maingroups + depgroups
 
     # Send jobs to scheduler
-    if logger:
-        logger.info("Running jobs with scheduler...")
-        logger.info("Jobs passed to scheduler in order:")
-        for job in jobgroups:
-            logger.info("\t%s" % job.name)
+    logger.info("Running jobs with scheduler...")
+    logger.info("Jobs passed to scheduler in order:")
+    for job in jobgroups:
+        logger.info("\t%s" % job.name)
     build_and_submit_jobs(Path.cwd(), jobgroups, sgeargs)
-    if logger:
-        logger.info("Waiting for SGE-submitted jobs to finish (polling)")
+    logger.info("Waiting for SGE-submitted jobs to finish (polling)")
     for job in jobgroups:
         job.wait()
 
@@ -268,6 +271,9 @@ def submit_safe_jobs(
     :param jobs:  iterable of Job objects
     :param sgeargs:  str, additional arguments for qsub
     """
+    logger = logging.getLogger(__name__)
+    logger.debug("Received %s jobs", len(jobs))
+    
     # Loop over each job, constructing SGE command-line based on job settings
     for job in jobs:
         job.out = root_dir / "stdout"
@@ -275,7 +281,7 @@ def submit_safe_jobs(
 
         # Add the job name, current working directory, and SGE stdout/stderr
         # directories to the SGE command line
-        args = f" -N {job.name} " % (job.name)
+        args = f" -N {job.name} "
         args += " -cwd "
         args += f" -o {job.out} -e {job.err} "
 
