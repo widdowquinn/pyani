@@ -83,7 +83,7 @@ jobs:
       - codecov/upload:
           file: .coverage.xml
 
-  test-3_7:
+  test-3_6:
     <<: *test-template
     docker:
       - image: circleci/python:3.6.8
