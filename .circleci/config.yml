@@ -14,6 +14,18 @@ workflows:
       - test-3_8
       - test-3_7
       - test-3_6
+  weekly:
+    triggers:
+      - schedule:
+        cron: "0 0 * * 6"
+        filters:
+          branches:
+            only:
+              - master
+    jobs:
+      - test-3_8
+      - test-3_7
+      - test-3_6
 
 jobs:
   test-3_8: &test-template
