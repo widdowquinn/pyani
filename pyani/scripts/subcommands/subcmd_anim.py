@@ -358,7 +358,8 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
     :param args:              command-line arguments for the run
     """
     logger = logging.getLogger(__name__)
-
+    logger.debug("Scheduler: %s", args.scheduler)
+    
     if args.scheduler == "multiprocessing":
         logger.info("Running jobs with multiprocessing")
         if not args.workers:
@@ -374,15 +375,19 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
             )
             raise PyaniException("Multiprocessing run failed in ANIm")
         logger.info("Multiprocessing run completed without error")
-    else:
+    elif args.scheduler.lower() == "sge":
         logger.info("Running jobs with SGE")
         logger.debug("Setting jobarray group size to %d", args.sgegroupsize)
+        logger.debug("Joblist contains %d jobs", len(joblist))
         run_sge.run_dependency_graph(
             [_.job for _ in joblist],
             jgprefix=args.jobprefix,
             sgegroupsize=args.sgegroupsize,
             sgeargs=args.sgeargs,
         )
+    else:
+        logger.error(termcolor("Scheduler %s not recognised", "red"), args.scheduler)
+        raise SystemError(1)
 
 
 def update_comparison_results(
