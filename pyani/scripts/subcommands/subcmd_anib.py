@@ -218,12 +218,17 @@ def subcmd_anib(args: Namespace) -> None:
             "\tIn this mode, existing comparison output from %s is reused", args.outdir
         )
         existingfiles = collect_existing_output(args.outdir, "blastn", args)
-        logger.debug(
-            "\tIdentified %s existing output files for reuse", len(existingfiles)
-        )
+        if existingfiles:
+            logger.debug(
+                "\tIdentified %s existing output files for reuse, %s (etc)",
+                len(existingfiles),
+                existingfiles[0],
+            )
+        else:
+            logger.debug(f"\tIdentified no existing output files")
     else:
-        existingfiles = None
-        logger.debug(f"\tIdentified no existing output files")
+        existingfiles = list()
+        logger.debug("\tAssuming no pre-existing output files")
 
     # Split the input genome files into contiguous fragments of the specified size,
     # as described in Goris et al. We create a new directory to hold sequence
