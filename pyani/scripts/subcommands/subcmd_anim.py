@@ -273,12 +273,17 @@ def subcmd_anim(args: Namespace) -> None:
             "\tIn this mode, existing comparison output from %s is reused", deltadir
         )
         existingfiles = collect_existing_output(deltadir, "nucmer", args)
-        logger.debug(
-            "\tIdentified %s existing output files for reuse", len(existingfiles)
-        )
+        if existingfiles:
+            logger.debug(
+                "\tIdentified %s existing output files for reuse: %s (etc)",
+                len(existingfiles),
+                existingfiles[0],
+            )
+        else:
+            logger.debug("\tIdentified no existing output files")
     else:
         existingfiles = list()
-        logger.debug("\tIdentified no existing output files")
+        logger.debug("\tAssuming no pre-existing output files")
 
     # Create list of NUCmer jobs for each comparison still to be performed
     logger.info("Creating NUCmer jobs for ANIm")
@@ -302,7 +307,7 @@ def subcmd_anim(args: Namespace) -> None:
 
 
 def generate_joblist(
-    comparisons: List[Tuple], existingfiles: List[Path], args: Namespace,
+    comparisons: List[Tuple], existingfiles: List[Path], args: Namespace
 ) -> List[ComparisonJob]:
     """Return list of ComparisonJobs.
 
@@ -311,6 +316,8 @@ def generate_joblist(
     :param args:  Namespace of command-line arguments for the run
     """
     logger = logging.getLogger(__name__)
+
+    existingfiles = set(existingfiles)  # Path objects hashable
 
     joblist = []  # will hold ComparisonJob structs
     for idx, (query, subject) in enumerate(
@@ -335,11 +342,11 @@ def generate_joblist(
         # If we're in recovery mode, we don't want to repeat a computational
         # comparison that already exists, so we check whether the ultimate
         # output is in the set of existing files and, if not, we add the jobs
-        # TODO: something faster than a list search (dict or set?)
+
         # The comparisons collections always gets updated, so that results are
         # added to the database whether they come from recovery mode or are run
         # in this call of the script.
-        if args.recovery and outfname.name in existingfiles:
+        if args.recovery and outfname in existingfiles:
             logger.debug("Recovering output from %s, not building job", outfname)
         else:
             logger.debug("Building job")
@@ -359,7 +366,7 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
     """
     logger = logging.getLogger(__name__)
     logger.debug("Scheduler: %s", args.scheduler)
-    
+
     if args.scheduler == "multiprocessing":
         logger.info("Running jobs with multiprocessing")
         if not args.workers:
@@ -391,7 +398,7 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
 
 
 def update_comparison_results(
-    joblist: List[ComparisonJob], run, session, nucmer_version: str, args: Namespace,
+    joblist: List[ComparisonJob], run, session, nucmer_version: str, args: Namespace
 ) -> None:
     """Update the Comparison table with the completed result set.
 
