@@ -225,7 +225,8 @@ def construct_nucmer_cmdline(
     fname1, fname2 = Path(fname1), Path(fname2)
 
     # Compile commands
-    outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"]
+    outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"] / fname1.stem
+    outsubdir.mkdir(exist_ok=True)
     outprefix = outsubdir / f"{fname1.stem}_vs_{fname2.stem}"
     if maxmatch:
         mode = "--maxmatch"
@@ -338,7 +339,15 @@ def process_deltadir(
     """
     # Process directory to identify input files - as of v0.2.4 we use the
     # .filter files that result from delta-filter (1:1 alignments)
-    deltafiles = pyani_files.get_input_files(delta_dir, ".filter")
+    deltafiles = sorted(delta_dir.glob("*/*.filter"))
+    import sys
+
+    sys.exit(f"{delta_dir} has {len(deltafiles)} files to load")
+    if not deltafiles:
+        sys.exit(f"{delta_dir} empty? No filter files found")
+    if not logger:
+        logger = logging.getLogger(__name__)
+    logger.debug(f"Found {len(deltafiles)} filter files in {delta_dir}")
 
     # Hold data in ANIResults object
     results = ANIResults(list(org_lengths.keys()), "ANIm")
@@ -376,6 +385,7 @@ def process_deltadir(
                 logger.warning(
                     "Total alignment length reported in %s is zero!", deltafile
                 )
+            sys.exit("Zero length alignment!")
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
 
