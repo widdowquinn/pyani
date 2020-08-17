@@ -190,10 +190,9 @@ def collect_existing_output(dirpath: Path, program: str, args: Namespace) -> Lis
     # Obtain collection of expected output files already present in directory
     if program == "nucmer":
         if args.nofilter:
-            suffix = ".delta"
+            pattern = "*/*.delta"
         else:
-            suffix = ".filter"
+            pattern = "*/*.filter"
     elif program == "blastn":
-        suffix = ".blast_tab"
-    existingfiles = [fname for fname in dirpath.iterdir() if fname.suffix == suffix]
-    return existingfiles
+        pattern = "*.blast_tab"
+    return sorted(dirpath.glob(pattern))
