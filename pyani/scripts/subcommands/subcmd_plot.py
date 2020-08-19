@@ -114,6 +114,7 @@ def write_run_heatmaps(
     )
     result_label_dict = pyani_orm.get_matrix_labels_for_run(session, args.run_id)
     result_class_dict = pyani_orm.get_matrix_classes_for_run(session, args.run_id)
+    logger.debug(f"Have {len(result_label_dict)} labels and {len(result_class_dict)} classes")
 
     # Write heatmap for each results matrix
     for matdata in [
