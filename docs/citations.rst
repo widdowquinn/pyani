@@ -60,6 +60,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 ^^^^
 
 * Albert *et al.* (2020) "Comparative Pangenomics of the Mammalian Gut Commensal *Bifidobacterium longum*" *Microorganisms* `doi:10.3390/microorganisms8010007 <https://doi.org/10.3390/microorganisms8010007>`_
+* Bech *et al.* (2020) "Marine Sediments Hold an Untapped Potential for Novel Taxonomic and Bioactive Bacterial Diversity" *mSystems* `doi:/10.1128/mSystems.00782-20 <https://doi.org//10.1128/mSystems.00782-20>`_
 * Bisanz *et al.* (2020) "A Genomic Toolkit for the Mechanistic Dissection of Intractable Human Gut Bacteria" *Cell Host & Microbe* `doi:10.1016/j.chom.2020.04.006 <https://doi.org/10.1016/j.chom.2020.04.006>`_
 * Bridel *et al.* (2020) "Genetic diversity and population structure of *Tenacibaculum maritimum*, a serious bacterial pathogen of marine fish: from genome comparisons to high throughput MALDI-TOF typing" *Vet. Res.* `doi:10.1186/s13567-020-00782-0 <https://doi.org/10.1186/s13567-020-00782-0>`_
 * Brock *et al.* (2020) "Endosymbiotic adaptations in three new bacterial species associated with *Dictyostelium discoideum*: *Paraburkholderia agricolaris* sp. nov., *Paraburkholderia hayleyella* sp. nov., and *Paraburkholderia bonniea* sp. nov" *PeerJ* `doi:10.7717/peerj.9151 <https://doi.org/10.7717/peerj.9151>`_
@@ -75,6 +76,9 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Friedrich *et al.* (2020) "First Complete Genome Sequences of *Janthinobacterium lividum* EIF1 and EIF2 and their Comparative Genome Analysis" *Genome Biol. Evol.* `doi:10.1093/gbe/evaa148 <https://doi.org/10.1093/gbe/evaa148>`_
 * Furrer *et al.* (2020) "Phage vB_BveM-Goe7 represents a new genus in the subfamily *Bastillevirinae*" *Arch. Virol.* `doi:10.1007/s00705-020-04546-1 <https://doi.org/10.1007/s00705-020-04546-1>`_
 * Gabor *et al.* (2020) "A New Species of Genus *Pseudomonas*" United States Patent Application 20200216503 `20200216503 <http://www.freepatentsonline.com/y2020/0216503.html>`_
+* Gardon *et al.* (2020) "A drift‐barrier model drives the genomic landscape of a structured bacterial population" *Molecular Ecol.* `doi:10.1111/mec.15628 <https://doi.org/10.1111/mec.15628>`_
+* Girard *et al.* (2020) "Reliable Identification of Environmental *Pseudomonas* Isolates Using the *rpoD* Gene" *Microorganisms* `doi:10.3390/microorganisms8081166 <https://doi.org/10.3390/microorganisms8081166>`_
+* González-Dominici *et al.* (2020) "Genome Analysis and Genomic Comparison of the Novel Species *Arthrobacter ipsi* Reveal Its Potential Protective Role in Its Bark Beetle Host" *Microbial Ecol.* `doi:10.1007/s00248-020-01593-8 <https://doi.org/10.1007/s00248-020-01593-8>`_
 * Hempel *et al.* (2020) "Complete Genome Sequence of *Bacillus velezensis* Strain S4, Isolated from Biochar-Treated Soil" *Microbiol. Res. Ann.* `doi:10.1128/MRA.00352-20 <https://doi.org/10.1128/MRA.00352-20>`_
 * Hinger *et al.* (2020) "Phylogenomic Analyses of Members of the Widespread Marine Heterotrophic Genus *Pseudovibrio* Suggest Distinct Evolutionary Trajectories and a Novel Genus, *Polycladidibacter* gen. nov." *Appl. Env. Microbiol.* `doi:10.1128/AEM.02395-19 <https://doi.org/10.1128/AEM.02395-19>`_
 * Hollensteiner *et al.* (2020) "Genome Sequence of *Komagataeibacter saccharivorans* Strain JH1, Isolated from Fruit Flies" *Microbiol. Res. Announc.* `doi:10.1128/MRA.00098-20 <https://doi.org/10.1128/MRA.00098-20>`_
@@ -117,6 +121,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Ryngajłło *et al.* (2020) "Towards control of cellulose biosynthesis by *Komagataeibacter* using systems-level and strain engineering strategies: current progress and perspectives" *Appl. Microbil. Biotech.* `doi:10.1007/s00253-020-10671-3 <https://doi.org/10.1007/s00253-020-10671-3>`_
 * Salgar-Chaparro *et al.* (2020) "Complete Genome Sequence of *Pseudomonas balearica* Strain EC28, an Iron-Oxidizing Bacterium Isolated from Corroded Steel" *Microbiol. Res. Ann.* `doi:10.1128/MRA.00275-20 <https://doi.org/10.1128/MRA.00275-20>`_
 * Salgar-Chaparro *et al.* (2020) " Draft Genome Sequence of *Enterobacter roggenkampii* Strain OS53, Isolated from Corroded Pipework at an Offshore Oil Production Facility" *Microbiol. Res. Ann.* `doi:10.1128/MRA.00583-20 <https://doi.org/10.1128/MRA.00583-20>`_
+* Salgar-Chaparro *et al.* (2020) "Complete Genome Sequence of *Shewanella chilikensis* Strain DC57, Isolated from Corroded Seal Rings at a Floating Oil Production System in Australia" *Microbiol. Res. Announc.* `doi:0.1128/MRA.00584-20 <https://doi.org/0.1128/MRA.00584-20>`_
 * Strang (2020) "Genomic Insights and Ecological Adaptations of Deep-Subsurface and Near Subsurface *Thermococcus* Isolates and Near Subsurface *Thermococcus* Isolates" *WWU Graduate School Collection* `https://cedar.wwu.edu/wwuet/926 <https://cedar.wwu.edu/wwuet/926>`_
 * Taparia *et al.* (2020) "Molecular characterization of *Pseudomonas* from *Agaricus bisporus* caps reveal novel blotch pathogens in Western Europe" *BMC Genomics* `doi:10.1186/s12864-020-06905-3 <https://doi.org/10.1186/s12864-020-06905-3>`_
 * Thapa *et al.* (2020) "Genome‐wide analyses of Liberibacter species provides insights into evolution, phylogenetic relationships, and virulence factors" *Mol. Plant Path.* `doi:10.1111/mpp.12925  <https://doi.org/10.1111/mpp.12925>`_
@@ -133,6 +138,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Yang *et al.* (2020) "Isolation and Characterization of the Novel Phages vB_VpS_BA3 and vB_VpS_CA8 for Lysing *Vibrio parahaemolyticus*" *Front. Microbiol.* `doi:10.3389/fmicb.2020.00259 <https://doi.org/10.3389/fmicb.2020.00259>`_
 * Zhang *et al.* (2020) "A novel bacterial thiosulfate oxidation pathway provides a new clue about the formation of zero-valent sulfur in deep sea." *ISME J.* `doi:10.1038/s41396-020-0684-5 <https://doi.org/10.1038/s41396-020-0684-5>`_
 * Zhang *et al.* (2020) "*Deinococcus detaillensis* sp. nov., isolated from humus soil in Antarctica" *Arch. Microbiol.* `doi:10.1007/s00203-020-01920-0 <https://doi.org/10.1007/s00203-020-01920-0>`_
+* Zhang *et al.* (2020) "Chloramphenicol biodegradation by enriched bacterial consortia and isolated strain *Sphingomonas* sp. CL5.1: The reconstruction of a novel biodegradation pathway" *Water Res.* `doi:10.1016/j.watres.2020.116397 <https://doi.org/10.1016/j.watres.2020.116397>`_
 * Zhou *et al.* (2020) "Comparative analysis of *Lactobacillus gasseri* from Chinese subjects reveals a new species-level taxa" *BMC Genomics* `doi:10.1186/s12864-020-6527-y <https://doi.org/10.1186/s12864-020-6527-y>`_
 
 ^^^^
