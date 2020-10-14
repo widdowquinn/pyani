@@ -59,14 +59,17 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 2020
 ^^^^
 
+* Akob *et al.* (2020) "Mixotrophic Iron-Oxidizing *Thiomonas* Isolates from an Acid Mine Drainage-Affected Creek" *App. Env. Microbiol.* `doi:10.1128/AEM.01424-20 <https://doi.org/10.1128/AEM.01424-20>`_
 * Albert *et al.* (2020) "Comparative Pangenomics of the Mammalian Gut Commensal *Bifidobacterium longum*" *Microorganisms* `doi:10.3390/microorganisms8010007 <https://doi.org/10.3390/microorganisms8010007>`_
 * Bech *et al.* (2020) "Marine Sediments Hold an Untapped Potential for Novel Taxonomic and Bioactive Bacterial Diversity" *mSystems* `doi:/10.1128/mSystems.00782-20 <https://doi.org//10.1128/mSystems.00782-20>`_
 * Bisanz *et al.* (2020) "A Genomic Toolkit for the Mechanistic Dissection of Intractable Human Gut Bacteria" *Cell Host & Microbe* `doi:10.1016/j.chom.2020.04.006 <https://doi.org/10.1016/j.chom.2020.04.006>`_
 * Bridel *et al.* (2020) "Genetic diversity and population structure of *Tenacibaculum maritimum*, a serious bacterial pathogen of marine fish: from genome comparisons to high throughput MALDI-TOF typing" *Vet. Res.* `doi:10.1186/s13567-020-00782-0 <https://doi.org/10.1186/s13567-020-00782-0>`_
 * Brock *et al.* (2020) "Endosymbiotic adaptations in three new bacterial species associated with *Dictyostelium discoideum*: *Paraburkholderia agricolaris* sp. nov., *Paraburkholderia hayleyella* sp. nov., and *Paraburkholderia bonniea* sp. nov" *PeerJ* `doi:10.7717/peerj.9151 <https://doi.org/10.7717/peerj.9151>`_
+* Busch *et al.* (2020) "Using affinity propagation clustering for identifying bacterial clades and subclades with whole-genome sequences of *Francisella tularensis*" *PLoS Neg. Trop. Dis.* `doi:10.1371/journal.pntd.0008018 <https://doi.org/10.1371/journal.pntd.0008018>`_
 * Cassaniti *et al.* (2020) "Authors' response: COVID-19: how accurate are seroprevalence studies?" *Eurosurveillance* `doi:10.2807/1560-7917.ES.2020.25.30.2001437 <https://doi.org/10.2807/1560-7917.ES.2020.25.30.2001437>`_
 * Chibani *et al.* (2020) "Genomic variation among closely related *Vibrio alginolyticus* strains is located on mobile genetic elements" *BMC Genomics* `doi:10.1186/s12864-020-6735-5 <https://doi.org/10.1186/s12864-020-6735-5>`_
 * Christman *et al.* (2020) "Novel clostridial lineages recovered from metagenomes of a hot oil reservoir" *Sci. Rep.* `doi:10.1038/s41598-020-64904-6 <https://doi.org/10.1038/s41598-020-64904-6>`_
+* Christman *et al.* (2020) "Methanogens Within a High Salinity Oil Reservoir From the Gulf of Mexico" *Front. Microbiol.* `doi:10.3389/fmicb.2020.570714 <https://doi.org/10.3389/fmicb.2020.570714>`_
 * Cunningham-Oakes *et al.* (2020) "Genome Sequence of *Pluralibacter gergoviae* ECO77, a Multireplicon Isolate of Industrial Origin" *Microbiol. Res. Ann.* `doi:10.1128/MRA.01561-19 <https://doi.org/0.1128/MRA.01561-19>`_
 * Dam *et al.* (2020) "Targeted Cell Sorting Combined With Single Cell Genomics Captures Low Abundant Microbial Dark Matter With Higher Sensitivity Than Metagenomics" *Front. Microbiol.* `doi:10.3389/fmicb.2020.01377 <https://doi.org/10.3389/fmicb.2020.01377>`_
 * Damnjanovich *et al.* (2020) "Bacteriophage genotyping using BOXA repetitive-PCR" *BMC Microbiol.* `doi:10.1186/s12866-020-01770-2 <https://doi.org/10.1186/s12866-020-01770-2>`_
@@ -93,6 +96,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Jung *et al.* (2020) "Genome Analysis of *Enterococcus mundtii* Pe103, a Human Gut-Originated Pectinolytic Bacterium" *Curr. Microbiol.* `doi:10.1007/s00284-020-01932-5 <https://doi.org/10.1007/s00284-020-01932-5>`_
 * Kim *et al.* (2020) "Genome analysis of *Lactobacillus plantarum* subsp. *plantarum* KCCP11226 reveals a well-conserved C30 carotenoid biosynthetic pathway" *3 Biotech.* `doi:10.1007/s13205-020-2149-y <https://doi.org/10.1007/s13205-020-2149-y>`_
 * Kim *et al.* (2020) "Comparative Genomics Determines Strain-Dependent Secondary Metabolite Production in *Streptomyces venezuelae* Strains" *Biomolecules* `doi:10.3390/biom10060864 <https://doi.org/10.3390/biom10060864>`_
+* Kroll *et al.* (2020) "Microbiota supplementation with *Bifidobacterium* and *Lactobacillus* modifies the preterm infant gut microbiota and metabolome: an observational study" *Cell Reports Medicine* `doi:10.1016/j.xcrm.2020.100077 <https://doi.org/10.1016/j.xcrm.2020.100077>`_
 * Kuleshov *et al.* (2020) "Whole genome sequencing of *Borrelia miyamotoi* isolate Izh-4: reference for a complex bacterial genome" *BMC Genomics* `doi:10.1186/s12864-019-6388-4 <https://doi.org/10.1186/s12864-019-6388-4>`_
 * Kumar *et al.* (2020) "Phylogenetic Relationship Among Brackishwater *Vibrio* Species" *Evol. Bioinf.* `doi:10.1177/1176934320903288 <https://doi.org/10.1177/1176934320903288>`_
 * La China *et al.* (2020) "Genome sequencing and phylogenetic analysis of K1G4: a new *Komagataeibacter* strain producing bacterial cellulose from different carbon sources" *Biotech. Lett.* `doi:10.1007/s10529-020-02811-6 <https://doi.org/10.1007/s10529-020-02811-6>`_
