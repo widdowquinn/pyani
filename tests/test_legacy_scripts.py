@@ -48,8 +48,6 @@ pytest ordering plug-in is used to guarantee that the download script
 tests are conducted first.
 """
 
-import copy
-
 from argparse import Namespace
 from pathlib import Path
 

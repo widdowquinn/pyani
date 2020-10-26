@@ -64,7 +64,7 @@ from Bio import Entrez, SeqIO
 
 from pyani import __version__
 from pyani.download import create_hash
-from pyani.scripts.logger import config_logger
+from pyani.logger import config_logger
 
 
 class NCBIDownloadException(Exception):

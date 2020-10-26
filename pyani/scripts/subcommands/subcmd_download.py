@@ -42,7 +42,6 @@
 import logging
 
 from argparse import Namespace
-from collections import namedtuple
 from typing import Dict, List, NamedTuple, Optional, Tuple
 
 from Bio import SeqIO
@@ -121,13 +120,28 @@ def download_data(
             logger.info(
                 termcolor("Retrieving eSummary information for UID %s", "cyan"), uid
             )
-            esummary, filestem = download.get_ncbi_esummary(uid, args.retries, api_key)
+            try:
+                esummary, filestem = download.get_ncbi_esummary(
+                    uid, args.retries, api_key
+                )
+            except download.NCBIDownloadException:
+                logger.warning(
+                    termcolor("Skipping download of record for UID %s", "red"),
+                    uid,
+                    exc_info=True,
+                )
+                skippedlist.append(
+                    Skipped(tid, uid, "", "", None, "RefSeq",)
+                )  # pylint: disable=no-member
+                continue
+
             uid_class = download.get_ncbi_classification(esummary)
             logger.debug(
                 "eSummary information (%s):\n\t%s",
                 filestem,
                 dl_info_to_str(esummary, uid_class),
             )
+
             if args.dryrun:
                 logger.warning(
                     "(dry-run) skipping download of %s", esummary["AssemblyAccession"]
@@ -239,8 +253,8 @@ def download_genome(args: Namespace, filestem: str, tid: str, uid: str, uid_clas
                 uid,
                 uid_class.organism,
                 uid_class.strain,
-                dlstatus.url,  # pylint: disable=no-member
-                "RefSeq",
+                dlstatus.url,
+                "RefSeq",  # pylint: disable=no-member
             )
         )
         refseq_status = False

@@ -153,7 +153,7 @@ from pyani import (
 from pyani import run_multiprocessing as run_mp
 from pyani import run_sge
 from pyani.pyani_config import params_mpl, ALIGNDIR, FRAGSIZE, TETRA_FILESTEMS
-from pyani.scripts.logger import config_logger
+from pyani.logger import config_logger
 
 
 # Process command-line arguments
@@ -547,7 +547,6 @@ def calculate_anim(
             logger.info("Jobarray group size set to %d", args.sgegroupsize)
             run_sge.run_dependency_graph(
                 joblist,
-                logger=logger,
                 jgprefix=args.jobprefix,
                 sgegroupsize=args.sgegroupsize,
                 sgeargs=args.sgeargs,
@@ -673,7 +672,7 @@ def run_blast(
                 logger.info("All multiprocessing jobs complete.")
         elif args.scheduler == "SGE":
             logger.info("Running dependency graph with SGE")
-            run_sge.run_dependency_graph(jobgraph, logger=logger)
+            run_sge.run_dependency_graph(jobgraph)
         else:
             logger.error(f"Scheduler {args.scheduler} not recognised (exiting)")
             raise SystemError(1)

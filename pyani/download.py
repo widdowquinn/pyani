@@ -343,13 +343,26 @@ def get_ncbi_esummary(asm_uid, retries, api_key=None) -> Tuple:
     :param retries:
     :param api_key:
     """
+    logger = logging.getLogger(__name__)
+
     # Obtain full eSummary data for the assembly
     summary = entrez_esummary(
         retries=retries, db="assembly", id=asm_uid, report="full", api_key=api_key
     )
 
     # Extract filestem from assembly data
-    data = summary["DocumentSummarySet"]["DocumentSummary"][0]
+    try:
+        data = summary["DocumentSummarySet"]["DocumentSummary"][0]
+    except (IndexError, KeyError):
+        # Something has gone awry with the download
+        logger.warning(
+            termcolor("Could not get eSummary for UID %s", "red"),
+            asm_uid,
+            exc_info=True,
+        )
+        logger.warning(termcolor("Data recovered:\n%s", "magenta"), data)
+        raise NCBIDownloadException(f"Could not get NCBI eSummary for UID {asm_uid}")
+
     filestem = extract_filestem(data)
 
     return (data, filestem)
