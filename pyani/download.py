@@ -360,7 +360,6 @@ def get_ncbi_esummary(asm_uid, retries, api_key=None) -> Tuple:
             asm_uid,
             exc_info=True,
         )
-        logger.warning(termcolor("Data recovered:\n%s", "magenta"), data)
         raise NCBIDownloadException(f"Could not get NCBI eSummary for UID {asm_uid}")
 
     filestem = extract_filestem(data)
