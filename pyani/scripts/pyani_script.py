@@ -45,9 +45,9 @@ import time
 
 from typing import List, Optional
 
+from pyani.logger import config_logger
 from pyani.pyani_tools import termcolor
 
-from .logger import config_logger
 from .parsers import parse_cmdline
 from .. import __version__
 
