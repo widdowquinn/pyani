@@ -117,7 +117,8 @@ class Job(object):
         while not self.finished:
             time.sleep(interval)
             interval = min(2.0 * interval, 60)
-            self.finished = os.system(f"qstat -j {self.name} > /dev/null")
+            #self.finished = os.system(f"qstat -j {self.name} > /dev/null")
+            self.finished = os.system(f"squeue -j {self.name} > /dev/null")
 
 
 class JobGroup(object):
@@ -222,4 +223,4 @@ class JobGroup(object):
         while not self.finished:
             time.sleep(interval)
             interval = min(2 * interval, 60)
-            self.finished = os.system("qstat -j %s > /dev/null" % (self.name))
+            self.finished = os.system("squeue -j %s > /dev/null" % (self.name))
