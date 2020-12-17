@@ -151,7 +151,7 @@ from pyani import (
     __version__,
 )
 from pyani import run_multiprocessing as run_mp
-from pyani import run_sge
+from pyani import run_sge, run_slurm
 from pyani.pyani_config import params_mpl, ALIGNDIR, FRAGSIZE, TETRA_FILESTEMS
 from pyani.logger import config_logger
 
@@ -309,7 +309,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         dest="scheduler",
         action="store",
         default="multiprocessing",
-        choices=["multiprocessing", "SGE"],
+        choices=["multiprocessing", "SGE", "SLURM"],
         help="Job scheduler (default multiprocessing, i.e. locally)",
     )
     parser.add_argument(
@@ -322,16 +322,16 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         "(default zero, meaning use all available cores)",
     )
     parser.add_argument(
-        "--SGEgroupsize",
+        "--groupsize",
         dest="sgegroupsize",
         action="store",
         default=10000,
         type=int,
-        help="Number of jobs to place in an SGE array group " "(default 10000)",
+        help="Number of jobs to place in an hpc array group " "(default 10000)",
     )
     parser.add_argument(
-        "--SGEargs",
-        dest="sgeargs",
+        "--hpcargs",
+        dest="schedulerargs",
         action="store",
         default=None,
         type=str,
@@ -425,7 +425,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         dest="jobprefix",
         action="store",
         default="ANI",
-        help="Prefix for SGE jobs (default ANI).",
+        help="Prefix for SGE/SLURM jobs (default ANI).",
     )
     # Parse arguments
     if argv is None:
@@ -543,13 +543,13 @@ def calculate_anim(
             else:
                 logger.info("All multiprocessing jobs complete.")
         else:
-            logger.info("Running jobs with SGE")
+            logger.info("Running jobs with ", args.scheduler)
             logger.info("Jobarray group size set to %d", args.sgegroupsize)
             run_sge.run_dependency_graph(
                 joblist,
                 jgprefix=args.jobprefix,
                 sgegroupsize=args.sgegroupsize,
-                sgeargs=args.sgeargs,
+                schedulerargs=args.schedulerargs,
             )
     else:
         logger.warning("Skipping NUCmer run (as instructed)!")
@@ -672,6 +672,9 @@ def run_blast(
                 logger.info("All multiprocessing jobs complete.")
         elif args.scheduler == "SGE":
             logger.info("Running dependency graph with SGE")
+            run_sge.run_dependency_graph(jobgraph)
+        elif args.scheduler.upper() == "SLURM":
+            logger.info("Running dependency graph with SLURM")
             run_sge.run_dependency_graph(jobgraph)
         else:
             logger.error(f"Scheduler {args.scheduler} not recognised (exiting)")
@@ -934,7 +937,7 @@ def test_scheduler(args: Namespace, logger: Logger) -> None:
 
     Exits if the scheduler is invalid
     """
-    schedulers = ["multiprocessing", "SGE"]
+    schedulers = ["multiprocessing", "SGE", "SLURM"]
     if args.scheduler not in schedulers:
         logger.error(
             f"Valid schedulers are: {'; '.join(schedulers)}\n"

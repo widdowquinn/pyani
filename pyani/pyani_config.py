@@ -54,7 +54,7 @@ MAKEBLASTDB_DEFAULT = Path("makeblastdb")
 BLASTALL_DEFAULT = Path("blastall")
 FORMATDB_DEFAULT = Path("formatdb")
 QSUB_DEFAULT = Path("qsub")
-
+SLURM_DEFAULT = Path("sbatch")
 # Stems for output files
 ANIM_FILESTEMS = (
     "ANIm_alignment_lengths",

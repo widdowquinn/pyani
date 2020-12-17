@@ -36,7 +36,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""Code to run a set of command-line jobs using SGE/Grid Engine.
+"""Code to run a set of command-line jobs using SLURM
 
 For parallelisation on multi-node system, we use some custom code to submit
 jobs.
@@ -67,7 +67,7 @@ def split_seq(iterable: Iterable, size: int) -> Generator:
         item = list(itertools.islice(elm, size))
 
 
-# Build a list of SGE jobs from a graph
+# Build a list of SLURM jobs from a graph
 def build_joblist(jobgraph) -> List:
     """Return a list of jobs, from a passed jobgraph.
 
@@ -90,8 +90,8 @@ def compile_jobgroups_from_joblist(
     """Return list of jobgroups, rather than list of jobs.
 
     :param joblist:
-    :param jgprefix:  str, prefix for SGE jobgroup
-    :param sgegroupsize:  int, number of jobs in each SGE jobgroup
+    :param jgprefix:  str, prefix for SLRUM jobgroup
+    :param sgegroupsize:  int, number of jobs in each SLURM jobgroup
     """
     jobcmds = defaultdict(list)  # type: Dict[str, List[str]]
     for job in joblist:
@@ -112,14 +112,14 @@ def compile_jobgroups_from_joblist(
     return jobgroups
 
 
-# Run a job dependency graph, with SGE
+# Run a job dependency graph, with SLURM
 def run_dependency_graph(
     jobgraph,
-    jgprefix: str = "ANIm_SGE_JG",
-    sgegroupsize: int = 10000,
+    jgprefix: str = "ANIm_SLURM_JG",
+    sgegroupsize: int = 1000,  # changed to 1000 from 10000
     schedulerargs: Optional[str] = None,
 ) -> None:
-    """Create and runs SGE scripts for jobs based on passed jobgraph.
+    """Create and runs SLURM scripts for jobs based on passed jobgraph.
 
     :param jobgraph: list of jobs, which may have dependencies.
     :param verbose: flag for multiprocessing verbosity
@@ -181,7 +181,7 @@ def run_dependency_graph(
     for job in jobgroups:
         logger.info("\t%s" % job.name)
     build_and_submit_jobs(Path.cwd(), jobgroups, schedulerargs)
-    logger.info("Waiting for SGE-submitted jobs to finish (polling)")
+    logger.info("Waiting for SLURM-submitted jobs to finish (polling)")
     for job in jobgroups:
         job.wait()
 
@@ -213,8 +213,8 @@ def build_directories(root_dir: Path) -> None:
     subdirectories have the following roles:
 
         jobs             Stores the scripts for each job
-        stderr           Stores the stderr output from SGE
-        stdout           Stores the stdout output from SGE
+        stderr           Stores the stderr output from SLURM
+        stdout           Stores the stdout output from SLURM
         output           Stores output (if the scripts place the output here)
 
     - root_dir   Path to the top-level directory for creation of subdirectories
@@ -265,7 +265,7 @@ def extract_submittable_jobs(waiting: List) -> List:
 def submit_safe_jobs(
     root_dir: Path, jobs: Iterable, schedulerargs: Optional[str] = None
 ) -> None:
-    """Submit passed list of jobs to SGE server with dir as root for output.
+    """Submit passed list of jobs to SLURM server with dir as root for output.
 
     :param root_dir:  path to output directory
     :param jobs:  iterable of Job objects
@@ -274,18 +274,19 @@ def submit_safe_jobs(
     logger = logging.getLogger(__name__)
     logger.debug("Received %s jobs", len(jobs))
     
-    # Loop over each job, constructing SGE command-line based on job settings
+    # Loop over each job, constructing SLURM command-line based on job settings
     for job in jobs:
         job.out = root_dir / "stdout"
         job.err = root_dir / "stderr"
 
-        # Add the job name, current working directory, and SGE stdout/stderr
-        # directories to the SGE command line
-        args = f" -N {job.name} "
-        args += " -cwd "
+        # Add the job name, current working directory, and SLURM stdout/stderr
+        # directories to the SLURM command line
+        #args = f" -N {job.name} "
+        args += f" -J {job.name}"
+        #args += " -cwd "  # not required in slurm
         args += f" -o {job.out} -e {job.err} "
 
-        # If a queue is specified, add this to the SGE command line
+        # If a queue is specified, add this to the SLURM command line
         # LP: This has an undeclared variable, not sure why - delete?
         # if job.queue is not None and job.queue in local_queues:
         #    args += local_queues[job.queue]
@@ -297,15 +298,18 @@ def submit_safe_jobs(
         # If there are dependencies for this job, hold the job until they are
         # complete
         if job.dependencies:
-            args += "-hold_jid "
+            #args += "-hold_jid "
+            args += " --dependency=afterok:"
             for dep in job.dependencies:
                 args += dep.name + ","
             args = args[:-1]
 
-        # Build the qsub SGE commandline (passing local environment)
-        qsubcmd = f"{pyani_config.QSUB_DEFAULT} -V {args} {job.scriptpath}"
+        # Build the qsub SLURM commandline (passing local environment)
+        #qsubcmd = f"{pyani_config.QSUB_DEFAULT} -V {args} {job.scriptpath}"
+        slurmcmd = f"{pyani_config.SLURM_DEFAULT} {args} {job.scriptpath}"
         if schedulerargs is not None:
-            qsubcmd = f"{qsubcmd} {schedulerargs}"
+            #qsubcmd = f"{qsubcmd} {schedulerargs}"
+            slurmcmd = f"{slurmcmd} {slurmargs}"
         # We've considered Bandit warnings B404,B603 and silence
         # subprocess.call(qsubcmd, shell=False)  # nosec
         os.system(qsubcmd)
@@ -313,7 +317,7 @@ def submit_safe_jobs(
 
 
 def submit_jobs(root_dir: Path, jobs: Iterable, schedulerargs: Optional[str] = None) -> None:
-    """Submit passed jobs to SGE server with passed directory as root.
+    """Submit passed jobs to SLURM server with passed directory as root.
 
     :param root_dir:  path to output directory
     :param jobs:  list of Job objects
@@ -334,13 +338,13 @@ def submit_jobs(root_dir: Path, jobs: Iterable, schedulerargs: Optional[str] = N
 def build_and_submit_jobs(
     root_dir: Path, jobs: Iterable, schedulerargs: Optional[str] = None
 ) -> None:
-    """Submit passed iterable of Job objects to SGE.
+    """Submit passed iterable of Job objects to SLURM.
 
-    :param root_dir:  root directory for SGE and job output
+    :param root_dir:  root directory for SLURM and job output
     :param jobs:  list of Job objects, describing each job to be submitted
     :param schedulerargs:  str, additional arguments to qsub
 
-    This places SGE's output in the passed root directory
+    This places SLURM's output in the passed root directory
     """
     # If the passed set of jobs is not a list, turn it into one. This makes the
     # use of a single JobGroup a little more intutitive
@@ -350,4 +354,4 @@ def build_and_submit_jobs(
     # Build and submit the passed jobs
     build_directories(root_dir)  # build all necessary directories
     build_job_scripts(root_dir, jobs)  # build job scripts
-    submit_jobs(root_dir, jobs, schedulerargs)  # submit the jobs to SGE
+    submit_jobs(root_dir, jobs, schedulerargs)  # submit the jobs to SLURM
