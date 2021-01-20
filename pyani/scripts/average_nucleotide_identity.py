@@ -151,7 +151,8 @@ from pyani import (
     __version__,
 )
 from pyani import run_multiprocessing as run_mp
-from pyani import run_sge, run_slurm
+#from pyani import run_sge
+from pyani import run_slurm
 from pyani.pyani_config import params_mpl, ALIGNDIR, FRAGSIZE, TETRA_FILESTEMS
 from pyani.logger import config_logger
 
@@ -545,7 +546,7 @@ def calculate_anim(
         else:
             logger.info("Running jobs with ", args.scheduler)
             logger.info("Jobarray group size set to %d", args.sgegroupsize)
-            run_sge.run_dependency_graph(
+            run_slurm.run_dependency_graph(
                 joblist,
                 jgprefix=args.jobprefix,
                 sgegroupsize=args.sgegroupsize,
@@ -672,10 +673,10 @@ def run_blast(
                 logger.info("All multiprocessing jobs complete.")
         elif args.scheduler == "SGE":
             logger.info("Running dependency graph with SGE")
-            run_sge.run_dependency_graph(jobgraph)
+            run_slurm.run_dependency_graph(jobgraph)
         elif args.scheduler.upper() == "SLURM":
             logger.info("Running dependency graph with SLURM")
-            run_sge.run_dependency_graph(jobgraph)
+            run_slurm.run_dependency_graph(jobgraph)
         else:
             logger.error(f"Scheduler {args.scheduler} not recognised (exiting)")
             raise SystemError(1)
@@ -815,7 +816,7 @@ def draw(args: Namespace, filestems: List[str], gformat: str) -> None:
         infilename = fullstem.with_suffix(".tab")
         dfm = pd.read_csv(infilename, index_col=0, sep="\t")
         logger.info("Writing heatmap to %s", outfilename)
-        print(args.labels, args.classes)
+        #print(args.labels, args.classes)
         params = pyani_graphics.Params(
             params_mpl(dfm)[filestem],
             pyani_tools.get_labels(args.labels, logger=logger),
@@ -958,6 +959,7 @@ def run_main(argsin: Optional[Namespace] = None) -> int:
 
     # Process command-line and build logger
     args = process_arguments(argsin)
+    
     logger = logging.getLogger(__name__)
     config_logger(args)
 
@@ -1020,3 +1022,6 @@ def run_main(argsin: Optional[Namespace] = None) -> int:
 
     # Exit
     return 0
+
+if __name__=="__main__":
+    run_main()

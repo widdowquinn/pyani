@@ -56,7 +56,7 @@ def build() -> ArgumentParser:
         dest="scheduler",
         action="store",
         default="multiprocessing",
-        choices=["multiprocessing", "SGE"],
+        choices=["multiprocessing", "SGE", "SLURM"],
         help="Job scheduler (default multiprocessing, " + "i.e. locally)",
     )
     parser.add_argument(
@@ -69,7 +69,8 @@ def build() -> ArgumentParser:
         "(default zero, meaning use all available cores)",
     )
     parser.add_argument(
-        "--SGEgroupsize",
+        #"--SGEgroupsize",
+        "--groupsize",
         dest="sgegroupsize",
         action="store",
         default=10000,
@@ -77,12 +78,13 @@ def build() -> ArgumentParser:
         help="Number of jobs to place in an SGE array group " "(default 10000)",
     )
     parser.add_argument(
-        "--SGEargs",
+        #"--SGEargs",
+        "--hpcargs",
         dest="sgeargs",
         action="store",
         default=None,
         type=str,
-        help="Additional arguments for qsub",
+        help="Additional arguments for qsub/sbatch",
     )
     parser.add_argument(
         "--jobprefix",

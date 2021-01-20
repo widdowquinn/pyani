@@ -55,6 +55,7 @@ from pyani import (
     pyani_config,
     pyani_jobs,
     run_sge,
+    run_slurm,
     run_multiprocessing as run_mp,
 )
 from pyani.pyani_files import collect_existing_output
@@ -375,16 +376,24 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
             )
             raise PyaniException("Multiprocessing run failed in ANIm")
         logger.info("Multiprocessing run completed without error")
-    elif args.scheduler.lower() == "sge":
-        logger.info("Running jobs with SGE")
+    elif args.scheduler.lower() == "sge" or args.scheduler.lower() == "slurm":
+        logger.info("Running jobs with ", args.scheduler)
         logger.debug("Setting jobarray group size to %d", args.sgegroupsize)
         logger.debug("Joblist contains %d jobs", len(joblist))
-        run_sge.run_dependency_graph(
-            [_.job for _ in joblist],
-            jgprefix=args.jobprefix,
-            sgegroupsize=args.sgegroupsize,
-            sgeargs=args.sgeargs,
-        )
+        if args.scheduler.lower() == "sge":
+            run_sge.run_dependency_graph(
+                [_.job for _ in joblist],
+                jgprefix=args.jobprefix,
+                sgegroupsize=args.sgegroupsize,
+                sgeargs=args.sgeargs,
+            )
+        elif args.scheduler.lower() == "slurm":
+            run_slurm.run_dependency_graph(
+                [_.job for _ in joblist],
+                jgprefix=args.jobprefix,
+                sgegroupsize=args.sgegroupsize,
+                #sgeargs=args.sgeargs,
+            )
     else:
         logger.error(termcolor("Scheduler %s not recognised", "red"), args.scheduler)
         raise SystemError(1)
