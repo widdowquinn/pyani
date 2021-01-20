@@ -117,24 +117,7 @@ class Job(object):
         while not self.finished:
             time.sleep(interval)
             interval = min(2.0 * interval, 60)
-            #self.finished = os.system(f"qstat -j {self.name} > /dev/null")
-
-            cmd = "which qsub"
-            cmd_out = get_cmd_output(cmd)
-            if cmd_out != "":  # hpc is SGE
-                self.finished = os.system(f"qstat -j {self.name} > /dev/null")
-
-            cmd = "which sbatch"
-            cmd_out = get_cmd_output(cmd)
-            if cmd_out != "":  # hpc is SLURM
-                print("class job; squeue -n %s" % (self.name), "finished? ", self.finished)
-                cmd = "squeue -n %s | tail -n+2 | wc -l" % (self.name)
-                count = get_cmd_output(cmd)
-
-                if int(count) == 0:
-                    self.finished = True
-                    print("Finished ", self.finished)
-
+             self.finished = os.system(f"qstat -j {self.name} > /dev/null")
 
 class JobGroup(object):
 
