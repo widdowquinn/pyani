@@ -98,8 +98,9 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
     result = subprocess.run(
         cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
     )
-    match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
-    version = match.group()  # type: ignore
+    #match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
+    #version = match.group()  # type: ignore
+    version = str(result.stdout, "utf-8")
     return f"{platform.system()}_{version}"
 
 

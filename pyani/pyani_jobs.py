@@ -62,7 +62,7 @@ This code is essentially a frozen and cut-down version of pysge
 
 import os
 import time
-
+import subprocess
 from typing import Any, Dict, List, Optional
 
 from .pyani_config import SGE_WAIT
@@ -118,7 +118,13 @@ class Job(object):
             time.sleep(interval)
             interval = min(2.0 * interval, 60)
             #self.finished = os.system(f"qstat -j {self.name} > /dev/null")
-            self.finished = os.system(f"squeue -j {self.name} > /dev/null")
+            print("class job; squeue -n {self.name}")
+            cmd = "squeue -n %s | tail -n+2 | wc -l" % (self.name)
+            jobcount=subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+            count, err = jobcount.communicate()
+            if int(str(count, 'utf-8')) == 0:
+                self.finished = True
+            #self.finished = os.system(f"squeue -n {self.name} > /dev/null")
 
 
 class JobGroup(object):
@@ -145,7 +151,7 @@ class JobGroup(object):
         For example, to use a command 'my_cmd' with the arguments
         '-foo' and '-bar' having values 1, 2, 3, 4 and 'a', 'b', 'c', 'd' in
         all combinations, respectively, you would pass
-        command='my_cmd $SGE_TASK_ID -foo $fooargs -bar $barargs'
+        command='my_cmd $SLURM_TASK_ID -foo $fooargs -bar $barargs'
         arguments='{'fooargs': ['1','2','3','4'],
                     'barargs': ['a','b','c','d']}
         """
@@ -162,13 +168,13 @@ class JobGroup(object):
         self.generate_script()  # Make SGE script for sweep/array
 
     def generate_script(self) -> None:
-        """Create the SGE script that will run the jobs in the JobGroup."""
+        """Create the SLURM script that will run the jobs in the JobGroup."""
         self.script = ""  # type: str
         total = 1  # total number of jobs in this group
 
-        # for now, SGE_TASK_ID becomes TASK_ID, but we base it at zero
-        self.script += """let "TASK_ID=$SGE_TASK_ID - 1"\n"""
-
+        # for now, SLURM_TASK_ID becomes TASK_ID, but we base it at zero
+        #self.script += """let "TASK_ID=$SLURM_TASK_ID - 1"\n"""
+        self.script += """let "TASK_ID=$SLURM_ARRAY_TASK_ID - 1"\n"""
         # build the array definitions
         for key in sorted(self.arguments.keys()):
             # The keys are sorted for py3.5 compatibility with tests
@@ -223,4 +229,12 @@ class JobGroup(object):
         while not self.finished:
             time.sleep(interval)
             interval = min(2 * interval, 60)
-            self.finished = os.system("squeue -j %s > /dev/null" % (self.name))
+            print("class jobgroup; squeue -n %s" % (self.name), "finished? ", self.finished)
+            cmd = "squeue -n %s | tail -n+2 | wc -l" % (self.name)
+            jobcount=subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+            count, err = jobcount.communicate()
+            
+            if int(str(count, 'utf-8')) == 0:
+                self.finished = True
+                print("Finished ", self.finished)
+            #self.finished = os.system("squeue -n %s > /dev/null" % (self.name))

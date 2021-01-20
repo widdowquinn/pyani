@@ -45,6 +45,7 @@ jobs.
 import itertools
 import logging
 import os
+import subprocess
 
 from collections import defaultdict
 from pathlib import Path
@@ -282,9 +283,9 @@ def submit_safe_jobs(
         # Add the job name, current working directory, and SLURM stdout/stderr
         # directories to the SLURM command line
         #args = f" -N {job.name} "
-        args += f" -J {job.name}"
+        args = f" -J {job.name}"
         #args += " -cwd "  # not required in slurm
-        args += f" -o {job.out} -e {job.err} "
+        #args += f" -o {job.out} -e {job.err} "   # removing this code as the same output/err filename generates error in slurm
 
         # If a queue is specified, add this to the SLURM command line
         # LP: This has an undeclared variable, not sure why - delete?
@@ -293,26 +294,43 @@ def submit_safe_jobs(
 
         # If the job is actually a JobGroup, add the task numbering argument
         if isinstance(job, JobGroup):
-            args += f"-t 1:{job.tasks} "
-
+            #args += f"-t 1:{job.tasks} "
+            args += f" --array=1-{job.tasks} "
         # If there are dependencies for this job, hold the job until they are
         # complete
         if job.dependencies:
             #args += "-hold_jid "
             args += " --dependency=afterok:"
             for dep in job.dependencies:
-                args += dep.name + ","
+                # get the jobid using the jobname
+                squeue_cmd_for_jobid = "squeue -n " + dep.name + " | grep -v JOBID | awk '{print $1}'  | sed 's/_/ /' | awk '{print $1}' | sort | uniq",
+                squeue_jobid = subprocess.Popen(squeue_cmd_for_jobid, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                
+                jobid, err = squeue_jobid.communicate()
+                jobid = str(jobid, 'utf-8').strip()
+                #args += dep.name + ","
+                if jobid != "":
+                	args += jobid + ","
             args = args[:-1]
 
-        # Build the qsub SLURM commandline (passing local environment)
+	
+        # Build the sbatch SLURM commandline (passing local environment)
         #qsubcmd = f"{pyani_config.QSUB_DEFAULT} -V {args} {job.scriptpath}"
-        slurmcmd = f"{pyani_config.SLURM_DEFAULT} {args} {job.scriptpath}"
+        slurmcmd = f"{pyani_config.SLURM_DEFAULT} {args} {job.scriptpath}".strip()
         if schedulerargs is not None:
             #qsubcmd = f"{qsubcmd} {schedulerargs}"
             slurmcmd = f"{slurmcmd} {slurmargs}"
         # We've considered Bandit warnings B404,B603 and silence
         # subprocess.call(qsubcmd, shell=False)  # nosec
-        os.system(qsubcmd)
+        #os.system(qsubcmd)
+        print("running command", slurmcmd)
+        os.system(slurmcmd)
+        
+       # out = subprocess.Popen(slurmcmd, stdout=PIPE, stderr=PIPE, shell=True)
+       # jobSubmitOutput = out.stdout.read()
+       # if "Submitted batch job" in jobSubmitOutput:
+       #    jobid = jobSubmitOutput.split()[3]
+
         job.submitted = True  # Set the job's submitted flag to True
 
 
