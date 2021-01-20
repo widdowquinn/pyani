@@ -106,7 +106,7 @@ def compile_jobgroups_from_joblist(
             sge_jobcmdlist = [f'"{jc}"' for jc in sublist]
             jobgroups.append(
                 JobGroup(
-                    f"{jgprefix}_{count}", "$cmds", arguments={"cmds": sge_jobcmdlist}
+                    f"{jgprefix}_{count}", "$cmds", arguments={"cmds": sge_jobcmdlist}, scheduler="sge"
                 )
             )
     return jobgroups

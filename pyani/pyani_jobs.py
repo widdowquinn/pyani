@@ -62,7 +62,7 @@ This code is essentially a frozen and cut-down version of pysge
 
 import os
 import time
-import subprocess
+from subprocess import Popen, PIPE
 from typing import Any, Dict, List, Optional
 
 from .pyani_config import SGE_WAIT
@@ -118,13 +118,22 @@ class Job(object):
             time.sleep(interval)
             interval = min(2.0 * interval, 60)
             #self.finished = os.system(f"qstat -j {self.name} > /dev/null")
-            print("class job; squeue -n {self.name}")
-            cmd = "squeue -n %s | tail -n+2 | wc -l" % (self.name)
-            jobcount=subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-            count, err = jobcount.communicate()
-            if int(str(count, 'utf-8')) == 0:
-                self.finished = True
-            #self.finished = os.system(f"squeue -n {self.name} > /dev/null")
+
+            cmd = "which qsub"
+            cmd_out = get_cmd_output(cmd)
+            if cmd_out != "":  # hpc is SGE
+                self.finished = os.system(f"qstat -j {self.name} > /dev/null")
+
+            cmd = "which sbatch"
+            cmd_out = get_cmd_output(cmd)
+            if cmd_out != "":  # hpc is SLURM
+                print("class job; squeue -n %s" % (self.name), "finished? ", self.finished)
+                cmd = "squeue -n %s | tail -n+2 | wc -l" % (self.name)
+                count = get_cmd_output(cmd)
+
+                if int(count) == 0:
+                    self.finished = True
+                    print("Finished ", self.finished)
 
 
 class JobGroup(object):
@@ -135,8 +144,10 @@ class JobGroup(object):
         self,
         name: str,
         command: str,
+        scheduler: str,
         queue: Optional[str] = None,
         arguments: Optional[Dict[str, List[Any]]] = None,
+        
     ) -> None:
         """Instantiate a JobGroup object.
 
@@ -161,6 +172,7 @@ class JobGroup(object):
         self.dependencies = []  # type: List[Any]
         self.submitted = False  # type: bool
         self.finished = False  # type: int
+        self.scheduler = scheduler
         if arguments is not None:
             self.arguments = arguments  # Dictionary of arguments for command
         else:
@@ -229,12 +241,23 @@ class JobGroup(object):
         while not self.finished:
             time.sleep(interval)
             interval = min(2 * interval, 60)
-            print("class jobgroup; squeue -n %s" % (self.name), "finished? ", self.finished)
-            cmd = "squeue -n %s | tail -n+2 | wc -l" % (self.name)
-            jobcount=subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-            count, err = jobcount.communicate()
             
-            if int(str(count, 'utf-8')) == 0:
-                self.finished = True
-                print("Finished ", self.finished)
-            #self.finished = os.system("squeue -n %s > /dev/null" % (self.name))
+            if self.scheduler.lower() == "sge" :  # hpc is SGE
+                self.finished = os.system("qstat -j %s > /dev/null" % (self.name))
+
+            elif self.scheduler.lower() == "slurm" :  # hpc is SLURM
+                print("Scheduler slurm: squeue -n %s" % (self.name), "finished? ", self.finished)
+                cmd = "squeue -n %s | tail -n+2 | wc -l" % (self.name)
+                count = get_cmd_output(cmd)
+            
+                if int(count) == 0:
+                    self.finished = True
+                    print("Finished ", self.finished)
+
+def get_cmd_output(cmd):
+    
+    """ call subprocess popen to get command stdout """
+
+    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    out, error =  p.communicate()
+    return str(out, 'utf-8')
