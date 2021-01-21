@@ -152,7 +152,7 @@ from pyani import (
 )
 from pyani import run_multiprocessing as run_mp
 #from pyani import run_sge
-from pyani import run_slurm
+from pyani import run_sge, run_slurm
 from pyani.pyani_config import params_mpl, ALIGNDIR, FRAGSIZE, TETRA_FILESTEMS
 from pyani.logger import config_logger
 
@@ -671,9 +671,12 @@ def run_blast(
                 )
             else:
                 logger.info("All multiprocessing jobs complete.")
-        elif args.scheduler == "SGE" or args.scheduler.upper() == "SLURM":
+        elif args.scheduler == "SGE":
             logger.info("Running dependency graph with SGE")
             run_sge.run_dependency_graph(jobgraph)
+        elif args.scheduler.upper() == "SLURM":
+            logger.info("Running dependency graph with SLURM")
+            run_slurm.run_dependency_graph(jobgraph)
         else:
             logger.error(f"Scheduler {args.scheduler} not recognised (exiting)")
             raise SystemError(1)
