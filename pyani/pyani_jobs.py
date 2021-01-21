@@ -117,7 +117,7 @@ class Job(object):
         while not self.finished:
             time.sleep(interval)
             interval = min(2.0 * interval, 60)
-             self.finished = os.system(f"qstat -j {self.name} > /dev/null")
+            self.finished = os.system(f"qstat -j {self.name} > /dev/null")
 
 class JobGroup(object):
 
