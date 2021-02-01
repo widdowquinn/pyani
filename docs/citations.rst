@@ -56,6 +56,26 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 (If I've missed out your paper, please do put in a pull request on ``GitHub`` or get in touch and I'll be happy to add it!)
 
 ^^^^
+2021
+^^^^
+
+* Abdullah *et al.* (2021) "Comparative analysis of whole genome sequences of *Leptospira* spp. from RefSeq database provide interspecific divergence and repertoire of virulence factors" *bioRxiv* `doi:10.1101/2021.01.12.426470 <https://doi.org/10.1101/2021.01.12.426470>`_
+* Gallardo-Benavente *et al.* (2021) "Genomics Insights into *Pseudomonas* sp. CG01: An Antarctic Cadmium-Resistant Strain Capable of Biosynthesizing CdS Nanoparticles Using Methionine as S-Source" *genes* `doi:10.3390/genes12020187 <https://doi.org/10.3390/genes12020187>`_
+* Huang *et al.* (2021) "Phenotypic properties and genotyping analysis of *Bacillus cereus* group isolates from dairy and potato products" *LWT* `doi:10.1016/j.lwt.2021.110853 <https://doi.org/10.1016/j.lwt.2021.110853>`_
+* Lee *et al.* (2021) "*Bifidobacterium bifidum* strains synergize with immune checkpoint inhibitors to reduce tumour burden in mice" *Nat. Microbiol.* `doi:10.1038/s41564-020-00831-6 <https://doi.org/10.1038/s41564-020-00831-6>`_
+* Liu *et al.* (2021) "*Corynebacterium anserum* sp. nov., isolated from the faeces of greater white-fronted geese (*Anser albifrons*) at Poyang Lake, PR China" *Int. J. Syst. Evol. Microbiol.* `doi:10.1099/ijsem.0.004637 <https://doi.org/10.1099/ijsem.0.004637>`_
+* Luo *et al.* (2021) "Isolation and characterization of new phage vB_CtuP_A24 and application to control *Cronobacter* spp. in infant milk formula and lettuce" *Food Res. Int.* `doi:10.1016/j.foodres.2021.110109 <https://doi.org/10.1016/j.foodres.2021.110109>`_
+* Ma *et al.* (2021) "Identification of *Pectobacterium versatile* causing blackleg of potato in New York State" *Plant Disease* `doi:10.1094/PDIS-09-20-2089-RE <https://doi.oprg/10.1094/PDIS-09-20-2089-RE>`_
+* Öhrman *et al.* (2021) "Reorganized Genomic Taxonomy of Francis*ellaceae Enables Design of Robust Environmental PCR Assays for Detection of *Francisella tularensis*" *Microorganisms* `doi:10.3390/microorganisms9010146 <https://doi.org/10.3390/microorganisms9010146>`_
+* Öhrman *et al.* (2021) "Complete Genome Sequence of *Francisella* sp. Strain LA11-2445 (FDC406), a Novel *Francisella* Species Isolated from a Human Skin Lesion" *Micro. Res. Ann.* `doi:10.1128/MRA.01233-20 <https://doi.org/10.1128/MRA.01233-20>`_
+* Pais *et al.* (2021) "Genomic sequencing of different sequevars of *Ralstonia solanacearum* belonging to the Moko ecotype" *Genet. Mol. Bol.* `doi:10.1590/1678-4685-gmb-2020-0172 <https://doi.org/10.1590/1678-4685-gmb-2020-0172>`_
+* Reichler *et al.* (2021) "Identification, subtyping, and tracking of dairy spoilage-associated *Pseudomonas* by sequencing the *ileS* gene" *J. Dairy Sci.* `doi:10.3168/jds.2020-19283 <https://doi.org/10.3168/jds.2020-19283>`_
+* Singh *et al.* (2021) "Enrichment and description of novel bacteria performing syntrophic propionate oxidation at high ammonia level" *Env. Micro.* `doi:10.1111/1462-2920.15388 <https://doi.org/10.1111/1462-2920.15388>`_
+* Singh *et al.* (2021) "Genome-based reclassification of *Amycolatopsis eurytherma* as a later heterotypic synonym of *Amycolatopsis thermoflava*" *Int. J. Syst. Evol. Microbiol." `doi:10.1099/ijsem.0.004642 <https://doi.org/10.1099/ijsem.0.004642>`_
+* Young *et al.* (2021) "Defining the *Rhizobium leguminosarum* Species Complex" *genes* `doi:10.3390/genes12010111 <https://doi.org/10.3390/genes12010111>`_
+* Zvi-Kedem *et al.* (2021) "The worm affair: Genetic diversity in two species of symbionts that co-occur in tubeworms from the Mediterranean Sea" *bioRxiv* `doi:10.1101/2021.01.27.428081 <https://doi.org/10.1101/2021.01.27.428081>`_
+
+^^^^
 2020
 ^^^^
 
@@ -67,6 +87,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Bridel *et al.* (2020) "Genetic diversity and population structure of *Tenacibaculum maritimum*, a serious bacterial pathogen of marine fish: from genome comparisons to high throughput MALDI-TOF typing" *Vet. Res.* `doi:10.1186/s13567-020-00782-0 <https://doi.org/10.1186/s13567-020-00782-0>`_
 * Brock *et al.* (2020) "Endosymbiotic adaptations in three new bacterial species associated with *Dictyostelium discoideum*: *Paraburkholderia agricolaris* sp. nov., *Paraburkholderia hayleyella* sp. nov., and *Paraburkholderia bonniea* sp. nov" *PeerJ* `doi:10.7717/peerj.9151 <https://doi.org/10.7717/peerj.9151>`_
 * Busch *et al.* (2020) "Using affinity propagation clustering for identifying bacterial clades and subclades with whole-genome sequences of *Francisella tularensis*" *PLoS Neg. Trop. Dis.* `doi:10.1371/journal.pntd.0008018 <https://doi.org/10.1371/journal.pntd.0008018>`_
+* Cai *et al.* (2020) "Comparative genomics of *Klebsiella michiganensis* BD177 and related members of *Klebsiella* sp. reveal the symbiotic relationship with *Bactrocera dorsalis*" *BMC Genetics* `doi:10.1186/s12863-020-00945-0 <https://doi.org/10.1186/s12863-020-00945-0>`_
 * Cassaniti *et al.* (2020) "Authors' response: COVID-19: how accurate are seroprevalence studies?" *Eurosurveillance* `doi:10.2807/1560-7917.ES.2020.25.30.2001437 <https://doi.org/10.2807/1560-7917.ES.2020.25.30.2001437>`_
 * Chibani *et al.* (2020) "Genomic variation among closely related *Vibrio alginolyticus* strains is located on mobile genetic elements" *BMC Genomics* `doi:10.1186/s12864-020-6735-5 <https://doi.org/10.1186/s12864-020-6735-5>`_
 * Christman *et al.* (2020) "Novel clostridial lineages recovered from metagenomes of a hot oil reservoir" *Sci. Rep.* `doi:10.1038/s41598-020-64904-6 <https://doi.org/10.1038/s41598-020-64904-6>`_
@@ -83,11 +104,13 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Elcheninov *et al.* (2020) "*Thermogemmata fonticola* gen. nov., sp. nov., the first thermophilic planctomycete of the order *Gemmatales* from a Kamchatka hot spring" *Syst. App. Micro.* `doi:10.1016/j.syapm.2020.126157 <https://doi.org/10.1016/j.syapm.2020.126157>`_
 * Feng *et al.* (2020) "Phylogenetic and genomic analysis reveals high genomic openness and genetic diversity of *Clostridium perfringens*" *Microb. Gen.* `doi:10.1099/mgen.0.000441 <https://doi.org/10.1099/mgen.0.000441>`_
 * Ferrerira *et al.* "Genome-based reclassification of *Azospirillum brasilense* Sp245 as the type strain of *Azospirillum baldaniorum* sp. nov" *Int. J. Syst. Evol. Micro.* `doi:10.1099/ijsem.0.004517 <https://doi.org/10.1099/ijsem.0.004517>`_
+* Fishbein *et al.* (2020) "Randomized Controlled Trial of Oral Vancomycin Treatment in *Clostridioides difficile*-Colonized Patients" *mSphere* `doi:10.1128/mSphere.01296-20 <https://doi.org/10.1128/mSphere.01296-20>`_
 * France *et al.* (2020) "Complete Genome Sequences of Six *Lactobacillus iners* Strains Isolated from the Human Vagina" *Microbiol. Res. Ann.* `doi:10.1128/MRA.00234-20 <https://doi.org/10.1128/MRA.00234-20>`_
 * Freitas *et al.* (2020) "Yeast communities associated with cacti in Brazil and the description of *Kluyveromyces starmeri* sp. nov. based on phylogenomic analyses" *Yeast* `doi:10.1002/yea.3528 <https://doi.org/10.1002/yea.3528>`_
 * Friedrich *et al.* (2020) "First Complete Genome Sequences of *Janthinobacterium lividum* EIF1 and EIF2 and their Comparative Genome Analysis" *Genome Biol. Evol.* `doi:10.1093/gbe/evaa148 <https://doi.org/10.1093/gbe/evaa148>`_
 * Furrer *et al.* (2020) "Phage vB_BveM-Goe7 represents a new genus in the subfamily *Bastillevirinae*" *Arch. Virol.* `doi:10.1007/s00705-020-04546-1 <https://doi.org/10.1007/s00705-020-04546-1>`_
 * Gabor *et al.* (2020) "A New Species of Genus *Pseudomonas*" United States Patent Application 20200216503 `20200216503 <http://www.freepatentsonline.com/y2020/0216503.html>`_
+* Gai *et al.* (2020) "The Genome Sequence of the Citrus Melanose Pathogen *Diaporthe citri* and Two Citrus related *Diaporthe* species" *Phytopathology* `doi:10.1094/PHYTO-08-20-0376-SC <https://doi.org/10.1094/PHYTO-08-20-0376-SC>`_
 * Gardon *et al.* (2020) "A drift‐barrier model drives the genomic landscape of a structured bacterial population" *Molecular Ecol.* `doi:10.1111/mec.15628 <https://doi.org/10.1111/mec.15628>`_
 * Girard *et al.* (2020) "Reliable Identification of Environmental *Pseudomonas* Isolates Using the *rpoD* Gene" *Microorganisms* `doi:10.3390/microorganisms8081166 <https://doi.org/10.3390/microorganisms8081166>`_
 * González-Dominici *et al.* (2020) "Genome Analysis and Genomic Comparison of the Novel Species *Arthrobacter ipsi* Reveal Its Potential Protective Role in Its Bark Beetle Host" *Microbial Ecol.* `doi:10.1007/s00248-020-01593-8 <https://doi.org/10.1007/s00248-020-01593-8>`_
