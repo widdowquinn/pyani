@@ -671,12 +671,17 @@ def run_blast(
                 )
             else:
                 logger.info("All multiprocessing jobs complete.")
+            print ("multiprocessing scheduler : cumval ", cumval)
         elif args.scheduler == "SGE":
             logger.info("Running dependency graph with SGE")
             run_sge.run_dependency_graph(jobgraph)
+            cumval = 0
+            logger.info("All SGE jobs complete.")
         elif args.scheduler.upper() == "SLURM":
             logger.info("Running dependency graph with SLURM")
             run_slurm.run_dependency_graph(jobgraph)
+            cumval = 0
+            logger.info("All SLURM jobs complete.")
         else:
             logger.error(f"Scheduler {args.scheduler} not recognised (exiting)")
             raise SystemError(1)
