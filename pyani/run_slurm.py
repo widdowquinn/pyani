@@ -303,7 +303,7 @@ def submit_safe_jobs(
             args += " --dependency=afterok:"
             for dep in job.dependencies:
                 # get the jobid using the jobname
-                squeue_cmd_for_jobid = "squeue -n " + dep.name + " | grep -v JOBID | awk '{print $1}'  | sed 's/_/ /' | awk '{print $1}' | sort | uniq",
+                squeue_cmd_for_jobid = "squeue -n " + dep.name + " | grep -v JOBID | awk '{print $1}'  | sed 's/_/ /' | awk '{print $1}' | sort | uniq"
                 squeue_jobid = subprocess.Popen(squeue_cmd_for_jobid, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 
                 jobid, err = squeue_jobid.communicate()
