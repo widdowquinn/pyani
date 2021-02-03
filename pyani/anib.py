@@ -438,15 +438,6 @@ def construct_blastn_cmdline(
     with open("jobs/" + fname, 'w') as fh:
         fh.write(command + "\n")
     return "bash ./jobs/" + fname
-    """
-    return (
-        f"{blastn_exe} -out {prefix}.blast_tab -query {fname1} -db {fname2} "
-        "-xdrop_gap_final 150 -dust no -evalue 1e-15 -max_target_seqs 1 -outfmt "
-        " '6 qseqid sseqid length mismatch pident nident qlen slen "
-        "qstart qend sstart send positive ppos gaps' "
-        "-task blastn"
-    )
-    """
 
 # Generate single BLASTALL command line
 def construct_blastall_cmdline(
