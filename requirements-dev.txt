@@ -10,4 +10,5 @@ pydocstyle
 pylint
 pytest
 pytest-cov
+rstcheck
 sphinx
