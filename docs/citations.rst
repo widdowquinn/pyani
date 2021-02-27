@@ -61,6 +61,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 
 * Abdullah *et al.* (2021) "Comparative analysis of whole genome sequences of *Leptospira* spp. from RefSeq database provide interspecific divergence and repertoire of virulence factors" *bioRxiv* `doi:10.1101/2021.01.12.426470 <https://doi.org/10.1101/2021.01.12.426470>`_
 * Biffignandi *et al* (2021) "Genome of *Superficieibacter maynardsmithii*, a novel, antibiotic susceptible representative of *Enterobacteriaceae*" *G3* `doi:10.1093/g3journal/jkab019 <https://doi.org/10.1093/g3journal/jkab019>`_
+* Boeuf *et al.* (2021) "Meta-pangenomics Reveals Depth-dependent Shifts in Metabolic Potential for the Ubiquitous Marine Bacterial SAR324 Lineage" *Research Squared* `doi:10.21203/rs.3.rs-225427/v1 <https://doi.org/10.21203/rs.3.rs-225427/v1>`_
 * Chew *et al.* (2021) "First isolation of *Candida oceani* from a clinical specimen" *Antonie van Leeuwenhoek* `doi:10.1007/s10482-020-01512-4 <https://doi.org/10.1007/s10482-020-01512-4>`_
 * Friedrich *et al.* (2021) "Complete Genome Sequence of *Stenotrophomonas indicatrix* DAIF1" *Micro Res. Ann.* `doi:10.1128/MRA.01484-20 <https://doi.org/10.1128/MRA.01484-20>`_
 * Gallardo-Benavente *et al.* (2021) "Genomics Insights into *Pseudomonas* sp. CG01: An Antarctic Cadmium-Resistant Strain Capable of Biosynthesizing CdS Nanoparticles Using Methionine as S-Source" *genes* `doi:10.3390/genes12020187 <https://doi.org/10.3390/genes12020187>`_
