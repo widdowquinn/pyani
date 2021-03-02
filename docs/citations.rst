@@ -86,6 +86,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Vargas-Peralta *et al.* (2021) "Identification of *Pectobacterium* species isolated from the soft rot of tetecho (*Neobuxbaumia tetetzo*), a columnar cactus, and associated metagenomics" *bioRxiv* `doi:10.1101/2021.02.01.429127 <https://doi.org/10.1101/2021.02.01.429127>`_
 * Vincent *et al.* (2021) "AsaGEI2d: a new variant of a genomic island identified in a group of *Aeromonas salmonicida* subsp. *salmonicida* isolated from France, which bears the pAsa7 plasmid" *FEMS Micro. Lett.* `doi:10.1093/femsle/fnab021 <https://doi.org/10.1093/femsle/fnab021>`_
 * Young *et al.* (2021) "Defining the *Rhizobium leguminosarum* Species Complex" *genes* `doi:10.3390/genes12010111 <https://doi.org/10.3390/genes12010111>`_
+* Zeng *et al.* (2021) "Novel phage vB_CtuP_B1 for controlling *Cronobacter malonaticus* and *Cronobacter turicensis* in ready-to-eat lettuce and powered infant formula" *Food Res. Int.* `doi:10.1016/j.foodres.2021.110255 <https://doi.org/10.1016/j.foodres.2021.110255>`_
 * Zvi-Kedem *et al.* (2021) "The worm affair: Genetic diversity in two species of symbionts that co-occur in tubeworms from the Mediterranean Sea" *bioRxiv* `doi:10.1101/2021.01.27.428081 <https://doi.org/10.1101/2021.01.27.428081>`_
 
 ^^^^
