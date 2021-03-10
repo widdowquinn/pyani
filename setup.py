@@ -109,6 +109,7 @@ setuptools.setup(
         "pandas",
         "scipy",
         "seaborn",
+        "sqlalchemy",
         "tqdm",
     ],
     classifiers=[
