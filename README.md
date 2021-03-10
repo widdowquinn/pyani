@@ -32,6 +32,7 @@
   - [Overview](#overview)
   - [Installation](#installation)
     - [IMPORTANT NOTICE](#important-notice)
+    - [Documentation for stable version `pyani` v0.2.x](#documentation-for-stable-version-pyani-v02x)
     - [`conda`](#conda)
     - [`pip`](#pip)
     - [Third-party tools](#third-party-tools)
@@ -75,7 +76,7 @@
 
 **THIS REPOSITORY DEFAULT BRANCH CONTAINS A DEVELOPMENT VERSION OF `PYANI` (v0.3+). IT HAS A DIFFERENT COMMAND-LINE INTERFACE THAN THE STABLE `PYANI` VERSION (v0.2.x).**
 
-### Documentation for stable version `pyani` v0.2.x
+### Documentation for stable version `pyani` v0.2.x
 
 - [`pyani` v0.2.x Documentation](./README_v_0_2_x.md)
 
