@@ -31,12 +31,14 @@
 - [README.md (pyani)](#readmemd-pyani)
   - [Overview](#overview)
   - [Installation](#installation)
-    - [`pip3`](#pip3)
-    - [`bioconda`](#bioconda)
-    - [Installing legacy BLAST](#installing-legacy-blast)
+    - [IMPORTANT NOTICE](#important-notice)
+    - [`conda`](#conda)
+    - [`pip`](#pip)
+    - [Third-party tools](#third-party-tools)
+    - [NOTE: Installing legacy BLAST](#note-installing-legacy-blast)
   - [Citing `pyani`](#citing-pyani)
-  - [Documentation](#documentation)
-    - [Older documentation](#older-documentation)
+  - [Documentation (v0.3)](#documentation-v03)
+    - [Older documentation (v0.2)](#older-documentation-v02)
   - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
   - [Contributing](#contributing)
   - [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
@@ -69,43 +71,53 @@
 
 ## Installation
 
-The easiest way to install `pyani` is to use `pip3` or `bioconda`:
+### IMPORTANT NOTICE
 
-### `pip3`
+**THIS REPOSITORY DEFAULT BRANCH CONTAINS A DEVELOPMENT VERSION OF `PYANI` (v0.3+). IT HAS A DIFFERENT COMMAND-LINE INTERFACE THAN THE STABLE `PYANI` VERSION (v0.2.x).**
+
+### Documentation for stable version `pyani` v0.2.x
+
+- [`pyani` v0.2.x Documentation](./README_v_0_2_x.md)
+
+**IF YOU WISH TO INSTALL THE STABLE VERSION OF `PYANI`, PLEASE FOLLOW THESE INSTRUCTIONS FOR INSTALLING v0.2.x**
+
+The easiest way to install `pyani` v0.2 is to use `conda` or  `pip`. `conda` is recommended for the simplest installation of third-party tool dependencies (`mummer` and `BLAST`/`BLAST+`).
+
+### `conda`
+
+You will need to install the `bioconda` channel, following instructions at [https://bioconda.github.io/user/install.html](https://bioconda.github.io/user/install.html). Then, to create a new environment for `pyani` and install the program, issue the following command:
+
+```bash
+conda create --name pyani_env python=3.8 -y
+conda activate pyani_env
+conda install pyani
+```
+
+### `pip`
+
+`pip` will install `pyani` and its Python dependencies, but not the third-party tools.
 
 ```bash
 pip3 install pyani
 ```
 
-From version 0.1.3.2 onwards, this should also install all the required Python package dependencies. Prior to this version (i.e. 0.1.3.1 and earlier), you can acquire these dependencies with `pip -r`, and pointing at `requirements.txt` from this repository:
+### Third-party tools
+
+Three alignment packages are required, to use all of `pyani`'s methods: `mummer`, `BLAST+`, and legacy `BLAST`.
+
+The simplest route to obtaining these tools is to use `conda`/`bioconda`:
 
 ```bash
-pip3 install -r requirements.txt
-pip3 install -r requirements-pip.txt
+conda install mummer blast legacy-blast -y
 ```
 
-### `bioconda`
+But they can also be installed by following instructions from the tools' own websites.
 
-With a working `anaconda` installation, install the `bioconda` and `conda-forge` channels:
+- **BLAST+** (for `anib`) [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
+- **legacy BLAST** (for `aniblastall`) [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/)
+- **MUMmer** (for `anim`) [http://mummer.sourceforge.net/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/)
 
-```bash
-conda config --add channels defaults
-conda config --add channels bioconda
-conda config --add channels conda-forge
-```
-
-Then install `pyani`:
-
-```bash
-conda install pyani
-```
-
-**NOTE:** The current `conda` version is *behind* the development version and has a different command-line interface. Documentation for the `conda` version (0.2.x) can be found at the link below:
-
-- [https://github.com/widdowquinn/pyani/blob/master/README_v_0_2_x.md](https://github.com/widdowquinn/pyani/blob/master/README_v_0_2_x.md)
-
-
-### Installing legacy BLAST
+### NOTE: Installing legacy BLAST
 
 The NCBI legacy `BLAST` package is deprecated and not recommended. However, if you wish to use `pyani blastall` or the `ANIblastall` method with the legacy `pyani` interface, you will require a locally-installed copy of this package. This is one of the packages linked in the `requirements-thirdparty.txt` file.
 
@@ -113,15 +125,19 @@ The NCBI legacy `BLAST` package is deprecated and not recommended. However, if y
 
 A guide to citing `pyani` is included in the file [`CITATIONS`](CITATIONS)
 
-## Documentation
+## Documentation (v0.3)
 
 This `README.md` file provides a quick overview and walkthrough for **THE DEVELOPMENT VERSION (v0.3+) OF `pyani`**, and full documentation can be found at the link below:
 
 - [`pyani` v0.3+ Documentation](https://readthedocs.org/projects/pyani/)
 
-### Older documentation
+**THIS README AND THE DOCUMENTATION AT `READTHEDOCS` REFERS TO A DEVELOPMENT VERSION OF `PYANI` (v0.3+). IT HAS A DIFFERENT COMMAND-LINE INTERFACE THAN THE STABLE `PYANI` VERSION (v0.2.x).**
 
-If you are using an older version of `pyani` (v0.2.x), then please note that the command-line API has changed, and documentation for this version can be found at the following page:
+**THE STABLE VERSION OF `PYANI` (v0.2) DOES NOT HAVE THE `pyani` COMMAND**
+
+### Older documentation (v0.2)
+
+If you are using the stable version of `pyani` (v0.2.x), then please note that the command-line API has changed, and documentation for this version can be found at the following page:
 
 - [`pyani` v0.2.x Documentation](./README_v_0_2_x.md)
 
