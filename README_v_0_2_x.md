@@ -47,12 +47,11 @@ The easiest way to install `pyani` v0.2 is to use `conda` or  `pip`. `conda` is 
 
 ### `conda`
 
-You will need to install the `bioconda` channel, following instructions at [https://bioconda.github.io/user/install.html](https://bioconda.github.io/user/install.html).
+You will need to install the `bioconda` channel, following instructions at [https://bioconda.github.io/user/install.html](https://bioconda.github.io/user/install.html). Then, to create a new environment for `pyani` and install the program, issue the following command:
 
 ```bash
 conda create --name pyani_env python=3.8 -y
 conda activate pyani_env
-conda install mummer blast legacy-blast -y
 conda install pyani
 ```
 
@@ -133,12 +132,17 @@ python setup.py install
 
 Three alignment packages are required, to use all of `pyani`'s methods: `mummer`, `BLAST+`, and legacy `BLAST`.
 
-The simplest route to obtaining these tools is to use `conda`/`bioconda`. But they can be installed by following instructions from the tools' own websites.
+The simplest route to obtaining these tools is to use `conda`/`bioconda`:
+
+```bash
+conda install mummer blast legacy-blast -y
+```
+
+But they can also be installed by following instructions from the tools' own websites.
 
 - **BLAST+** (for `anib`) [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
 - **legacy BLAST** (for `aniblastall`) [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/)
 - **MUMmer** (for `anim`) [http://mummer.sourceforge.net/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/)
-
 ## Testing `pyani`
 
 The `pyani` repository includes tests that can be run with `pytest` (including coverage measurement using `pytest-cov) with the following command, executed from the repository root directory:
