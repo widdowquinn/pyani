@@ -31,12 +31,15 @@
 - [README.md (pyani)](#readmemd-pyani)
   - [Overview](#overview)
   - [Installation](#installation)
-    - [`pip3`](#pip3)
-    - [`bioconda`](#bioconda)
-    - [Installing legacy BLAST](#installing-legacy-blast)
+    - [IMPORTANT NOTICE](#important-notice)
+    - [Documentation for stable version `pyani` v0.2.x](#documentation-for-stable-version-pyani-v02x)
+    - [`conda`](#conda)
+    - [`pip`](#pip)
+    - [Third-party tools](#third-party-tools)
+    - [NOTE: Installing legacy BLAST](#note-installing-legacy-blast)
   - [Citing `pyani`](#citing-pyani)
-  - [Documentation](#documentation)
-    - [Older documentation](#older-documentation)
+  - [Documentation (v0.3)](#documentation-v03)
+    - [Older documentation (v0.2)](#older-documentation-v02)
   - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
   - [Contributing](#contributing)
   - [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
@@ -69,43 +72,53 @@
 
 ## Installation
 
-The easiest way to install `pyani` is to use `pip3` or `bioconda`:
+### IMPORTANT NOTICE
 
-### `pip3`
+**THIS REPOSITORY DEFAULT BRANCH CONTAINS A DEVELOPMENT VERSION OF `PYANI` (v0.3+). IT HAS A DIFFERENT COMMAND-LINE INTERFACE THAN THE STABLE `PYANI` VERSION (v0.2.x).**
+
+### Documentation for stable version `pyani` v0.2.x
+
+- [`pyani` v0.2.x Documentation](./README_v_0_2_x.md)
+
+**IF YOU WISH TO INSTALL THE STABLE VERSION OF `PYANI`, PLEASE FOLLOW THESE INSTRUCTIONS FOR INSTALLING v0.2.x**
+
+The easiest way to install `pyani` v0.2 is to use `conda` or  `pip`. `conda` is recommended for the simplest installation of third-party tool dependencies (`mummer` and `BLAST`/`BLAST+`).
+
+### `conda`
+
+You will need to install the `bioconda` channel, following instructions at [https://bioconda.github.io/user/install.html](https://bioconda.github.io/user/install.html). Then, to create a new environment for `pyani` and install the program, issue the following command:
+
+```bash
+conda create --name pyani_env python=3.8 -y
+conda activate pyani_env
+conda install pyani
+```
+
+### `pip`
+
+`pip` will install `pyani` and its Python dependencies, but not the third-party tools.
 
 ```bash
 pip3 install pyani
 ```
 
-From version 0.1.3.2 onwards, this should also install all the required Python package dependencies. Prior to this version (i.e. 0.1.3.1 and earlier), you can acquire these dependencies with `pip -r`, and pointing at `requirements.txt` from this repository:
+### Third-party tools
+
+Three alignment packages are required, to use all of `pyani`'s methods: `mummer`, `BLAST+`, and legacy `BLAST`. (*Note that it is not necessary to install all three tools to use `pyani`. You need only install the tools that are required for the method you wish to use.*)
+
+The simplest route to obtaining these tools is to use `conda`/`bioconda`:
 
 ```bash
-pip3 install -r requirements.txt
-pip3 install -r requirements-pip.txt
+conda install mummer blast legacy-blast -y
 ```
 
-### `bioconda`
+But they can also be installed by following instructions from the tools' own websites.
 
-With a working `anaconda` installation, install the `bioconda` and `conda-forge` channels:
+- **BLAST+** (for `anib`) [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
+- **legacy BLAST** (for `aniblastall`) [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/)
+- **MUMmer** (for `anim`) [http://mummer.sourceforge.net/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/)
 
-```bash
-conda config --add channels defaults
-conda config --add channels bioconda
-conda config --add channels conda-forge
-```
-
-Then install `pyani`:
-
-```bash
-conda install pyani
-```
-
-**NOTE:** The current `conda` version is *behind* the development version and has a different command-line interface. Documentation for the `conda` version (0.2.x) can be found at the link below:
-
-- [https://github.com/widdowquinn/pyani/blob/master/README_v_0_2_x.md](https://github.com/widdowquinn/pyani/blob/master/README_v_0_2_x.md)
-
-
-### Installing legacy BLAST
+### NOTE: Installing legacy BLAST
 
 The NCBI legacy `BLAST` package is deprecated and not recommended. However, if you wish to use `pyani blastall` or the `ANIblastall` method with the legacy `pyani` interface, you will require a locally-installed copy of this package. This is one of the packages linked in the `requirements-thirdparty.txt` file.
 
@@ -113,21 +126,25 @@ The NCBI legacy `BLAST` package is deprecated and not recommended. However, if y
 
 A guide to citing `pyani` is included in the file [`CITATIONS`](CITATIONS)
 
-## Documentation
+## Documentation (v0.3)
 
 This `README.md` file provides a quick overview and walkthrough for **THE DEVELOPMENT VERSION (v0.3+) OF `pyani`**, and full documentation can be found at the link below:
 
 - [`pyani` v0.3+ Documentation](https://readthedocs.org/projects/pyani/)
 
-### Older documentation
+**THIS README AND THE DOCUMENTATION AT `READTHEDOCS` REFERS TO A DEVELOPMENT VERSION OF `PYANI` (v0.3+). IT HAS A DIFFERENT COMMAND-LINE INTERFACE THAN THE STABLE `PYANI` VERSION (v0.2.x).**
 
-If you are using an older version of `pyani` (v0.2.x), then please note that the command-line API has changed, and documentation for this version can be found at the following page:
+**THE STABLE VERSION OF `PYANI` (v0.2) DOES NOT HAVE THE `pyani` COMMAND**
+
+### Older documentation (v0.2)
+
+If you are using `pyani` v0.2.x, then please note that the command-line API has changed, and documentation for this version can be found at the following page:
 
 - [`pyani` v0.2.x Documentation](./README_v_0_2_x.md)
 
 ## Bugs, issues, problems and questions
 
-If wou would like to report a bug or problem with `pyani`, or ask a question of the developer(s), please raise an issue at the link below:
+If you would like to report a bug or problem with `pyani`, or ask a question of the developer(s), please raise an issue at the link below:
 
 - [`pyani` Issues page](https://github.com/widdowquinn/pyani/issues)
 
@@ -159,7 +176,7 @@ pyani download C_blochmannia --email my.email@my.domain -t 203804 -v -l C_blochm
 
 The first argument is the output directory into which the downloaded genomes will be written (`C_blochmannia`). To download anything from NCBI we must provide an email address (`--email my.email@my.domain`), and to specify which taxon subtree we want to download we provide the taxon ID (`-t 203804`).
 
-Here we have also requested verbose output (`-v`), and write a log file for reproducible research/diagnosing bugs and errors (`-l C_blochmannia_dl.log`).
+Here we also request verbose output (`-v`), and write a log file for reproducible research/diagnosing bugs and errors (`-l C_blochmannia_dl.log`).
 
 This produces a new subdirectory (`C_blochmannia`) with the following contents:
 
@@ -283,7 +300,7 @@ Once an analysis is run, the results are placed in a local `SQLite` database, wh
 - `--genomes_runs`: for each genome in the database, also list the analysis results it participates in
 - `--run_results`: show all the pairwise comparison results for a named run (run IDs can be obtained with the `--runs` argument
 
-The report tables are written to a named directory (compulsory argument), and are written by default `.tab` plain-text format, but HTML and Excel format can alos be requested with the `--formats` argument:
+The report tables are written to a named directory (compulsory argument), and are written by default to a `.tab` plain-text format, but HTML and Excel format can also be requested with the `--formats` argument:
 
 ```bash
 $ pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel,stdout
@@ -301,7 +318,7 @@ C_blochmannia_ANIm/
 └── runs.xlsx
 ```
 
-To see all the pairwise results for an individual run, the run ID must be provided. It is possible to get results for more than one run ID by providing a comma-separated list of run IDs (though each run's results will be provided in a separate file):
+To see all of the pairwise results for an individual run, the run ID must be provided. It is possible to get results for more than one run ID by providing a comma-separated list of run IDs (though each run's results will be provided in a separate file):
 
 ```bash
 $ pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
@@ -493,7 +510,7 @@ INFO: Done.
 
 **NOTE:** You must provide a valid email to identify yourself to NCBI for troubleshooting.
 
-The number of attempted retries for each download, and the size of a batch download can be modified. By default, the script will attempt 20 download retries, and obtain sequences in batches of 10000.
+The number of attempted retries for each download, and the size of a batch download can be modified. By default, the script will attempt 20 download retries, and obtain sequences in batches of 10,000.
 
 ## DEPENDENCIES
 
@@ -532,21 +549,21 @@ ANI is proposed to be the appropriate *in silico* substitute for DNA-DNA hybridi
 
 All ANI methods follow the basic algorithm:
 
-- Align the genome of organism 1 against that of organism 2, and identify the matching regions
-- Calculate the percentage nucleotide identity of the matching regions, as an average for all matching regions
+- Align the genome of organism 1 against that of organism 2, and identify the matching regions.
+- Calculate the percentage nucleotide identity of the matching regions, as an average for all matching regions.
 
 Methods differ on: (1) what alignment algorithm is used, and the choice of parameters (this affects the aligned region boundaries); (2) what the input is for alignment (typically either fragments of fixed size, or the most complete assembly available).
 
-- **ANIm**: uses MUMmer (NUCmer) to align the input sequences.
+- **ANIm**: uses MUMmer (NUCmer) to align the input sequences
 - **ANIb**: uses BLASTN+ to align 1020nt fragments of the input sequences
-- **ANIblastall**: uses legacy BLASTN to align 1020nt fragments of the input sequences
+- **ANIblastall**: uses legacy BLASTN to align 10al20nt fragments of the input sequences
 - **TETRA**: calculates tetranucleotide frequencies of each input sequence
 
-The algorithms takes as input correctly-formatted FASTA multiple sequence files. All sequences for a single organism should be contained in only one sequence file. Although it is possible to provide new labels for each input genome, for rendering graphical output, the names of these files are used for identification so it is best to name them sensibly.
+The algorithms take as input correctly-formatted FASTA multiple sequence files. All sequences for a single organism should be contained in only one sequence file. Although it is possible to provide new labels for each input genome for rendering graphical output, the names of these files are used for identification so it is best to name them sensibly.
 
 Output is written to a named directory. The output files differ depending on the chosen ANI method.
 
-- **ANIm**: MUMmer/NUCmer .delta files, describing each pairwise sequence alignment. Output as tab-separated plain text format tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIm).
+- **ANIm**: MUMmer/NUCmer `.delta` files, describing each pairwise sequence alignment. Output as tab-separated plain text format tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIm).
 - **ANIb** and **ANIblastall**: FASTA sequences describing 1020nt fragments of each input sequence; BLAST nucleotide databases - one for each set of fragments; and BLASTN output files (tab-separated tabular format plain text) - one for each pairwise comparison of input sequences. Output as tab-separated plain text tables describing: alignment coverage; total alignment lengths; similarity errors; and percentage identity (ANIb or ANIblastall).
 - **TETRA**: Tab-separated plain text files describing the Pearson correlations between Z-score distributions for each tetranucleotide in each input sequence (TETRA).
 

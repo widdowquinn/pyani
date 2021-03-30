@@ -8,21 +8,26 @@
 
 <!-- TOC -->
 
-- [Overview](#overview)
-- [Installation](#installation)
-- [Docker images](#docker-images)
-- [Testing `pyani`](#testing-pyani)
-- [Running `pyani`](#running-pyani)
+- [README.md (pyani)](#readmemd-pyani)
+  - [Overview](#overview)
+  - [Installation](#installation)
+    - [`conda`](#conda)
+    - [`pip`](#pip)
+  - [Docker images](#docker-images)
+    - [NOTE](#note)
+  - [Installing from the repository/source code](#installing-from-the-repositorysource-code)
+    - [IMPORTANT NOTICE](#important-notice)
+    - [Direct download](#direct-download)
+    - [Clone the repository using `git`](#clone-the-repository-using-git)
+    - [Installation](#installation-1)
+    - [Third-party tools](#third-party-tools)
+  - [Testing `pyani`](#testing-pyani)
+  - [Running `pyani`](#running-pyani)
     - [Script: `average_nucleotide_identity.py`](#script-average_nucleotide_identitypy)
     - [Script: `genbank_get_genomes_by_taxon.py`](#script-genbank_get_genomes_by_taxonpy)
-- [DEPENDENCIES](#dependencies)
-    - [For ANI analysis](#for-ani-analysis)
-    - [For graphical output](#for-graphical-output)
-- [Method and Output Description](#method-and-output-description)
+  - [Method and Output Description](#method-and-output-description)
     - [Average Nucleotide Identity (ANI)](#average-nucleotide-identity-ani)
-- [Developer notes](#developer-notes)
-    - [Code Style and Pre-Commit Hooks](#code-style-and-pre-commit-hooks)
-- [Licensing](#licensing)
+  - [Licensing](#licensing)
 
 <!-- /TOC -->
 
@@ -38,21 +43,29 @@
 
 ## Installation
 
-The easiest way to install `pyani` is to use `pip3`:
+The easiest way to install `pyani` v0.2 is to use `conda` or  `pip`. `conda` is recommended for the simplest installation of third-party tool dependencies (`mummer` and `BLAST`/`BLAST+`).
+
+### `conda`
+
+You will need to install the `bioconda` channel, following instructions at [https://bioconda.github.io/user/install.html](https://bioconda.github.io/user/install.html). Then, to create a new environment for `pyani` and install the program, issue the following command:
+
+```bash
+conda create --name pyani_env python=3.8 -y
+conda activate pyani_env
+conda install pyani
+```
+
+### `pip`
+
+`pip` will install `pyani` and its Python dependencies, but not the third-party tools.
 
 ```bash
 pip3 install pyani
 ```
 
-From version 0.1.3.2 onwards, this should also install all the required Python package dependencies. Prior to this version (i.e. 0.1.3.1 and earlier), you can acquire these dependencies with `pip -r`, and pointing at `requirements.txt` from this repository:
-
-```bash
-pip3 install -r requirements.txt
-```
-
 ## Docker images
 
-`pyani`'s scripts are also provided as [Docker](https://www.docker.com/) images, that can be run locally as containers. To use these images, first install Docker, then to run the corresponding scripts issue either:
+`pyani` v0.2 scripts are also provided as [Docker](https://www.docker.com/) images, that can be run locally as containers. To use these images, first install Docker. Then, to run the corresponding scripts, issue either:
 
 ```bash
 docker run -v ${PWD}:/host_dir leightonpritchard/average_nucleotide_identity
@@ -64,17 +77,79 @@ or
 docker run -v ${PWD}:/host_dir leightonpritchard/genbank_get_genomes_by_taxon
 ```
 
+### NOTE
+
 The `-v ${PWD}:/host_dir` argument enables the Docker container to see the current directory. Without this argument, the container will not be able to see your input files, or write output data.
 
-## Testing `pyani`
+## Installing from the repository/source code
 
-`pyani` includes tests that can be run with `nosetest` (including coverage measurement using `coverage.py`) with the following command, executed from the repository root directory:
+If you wish to install `pyani` v0.2 from source code, you will need to download this code from GitHub either directly, or by cloning the repository.
+
+Both methods will create a directory called `pyani` which contains the source code for v0.2.
+
+### IMPORTANT NOTICE
+
+**THE DEFAULT REPOSITORY ON `GITHUB` IS `PYANI` v0.3+, *NOT* v0.2. THE INSTRUCTIONS ON THE MAIN REPOSITORY `README.md` DO NOT APPLY TO v0.2**
+
+Please note that v0.2 is a **MAINTENANCE-ONLY RELEASE**. This means that bugs and security issues will be fixed, but no new features will be added. All new feature development now takes place under v0.3 (the `master` branch on the repository).
+
+### Direct download
+
+Download the source as `.zip` or `.tar.gz` from [https://github.com/widdowquinn/pyani/releases/tag/v0.2.10](https://github.com/widdowquinn/pyani/releases/tag/v0.2.10)
+
+Extract the archived file using the appropriate commands (or by double-clicking in your file explorer/finder):
 
 ```bash
-nosetests --cover-erase --cover-package=pyani --cover-html --with-coverage
+unzip v0.2.10.zip
 ```
 
-Coverage output will be placed (by default) in the `cover` subdirectory, and can be loaded into the web browser.
+or
+
+```bash
+tar -zxvf v0.2.10.tar.gz
+```
+
+### Clone the repository using `git`
+
+Download the current `pyani` repository with `git clone`, and change branch to `version_0_2`:
+
+```bash
+git clone git@github.com:widdowquinn/pyani.git
+git checkout version_0_2
+```
+
+### Installation
+
+Change directory to `pyani`, and use the `python setup.py` setuptools command, to install the package and scripts. This will **not** install the third-party tools `BLAST`/`BLAST+` and `mummer`.
+
+```bash
+cd pyani
+python setup.py build
+python setup.py install
+```
+
+### Third-party tools
+
+Three alignment packages are required, to use all of `pyani`'s methods: `mummer`, `BLAST+`, and legacy `BLAST`.
+
+The simplest route to obtaining these tools is to use `conda`/`bioconda`:
+
+```bash
+conda install mummer blast legacy-blast -y
+```
+
+But they can also be installed by following instructions from the tools' own websites.
+
+- **BLAST+** (for `anib`) [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
+- **legacy BLAST** (for `aniblastall`) [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/)
+- **MUMmer** (for `anim`) [http://mummer.sourceforge.net/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/)
+## Testing `pyani`
+
+The `pyani` repository includes tests that can be run with `pytest` (including coverage measurement using `pytest-cov`) with the following command, executed from the repository root directory:
+
+```bash
+pytest -v
+```
 
 ## Running `pyani`
 
@@ -173,30 +248,6 @@ INFO: Done.
 
 The number of attempted retries for each download, and the size of a batch download can be modified. By default, the script will attempt 20 download retries, and obtain sequences in batches of 10000.
 
-## DEPENDENCIES
-
-Note that Python package dependencies should automatically be installed if you are using version 0.1.3.2 or greater, and installing with `pip install pyani`.
-
-For earlier versions, you can satisfy dependencies by using `pip install -r requirements.txt` (using the `requirements.txt` file in this repository).
-
-### For ANI analysis
-
-- **Biopython** <http://www.biopython.org>
-- **NumPy** <http://www.numpy.org/>
-- **pandas** <http://pandas.pydata.org/>
-- **SciPy** <http://www.scipy.org/>
-
-#### Alignment tools
-
-- **BLAST+** executable in the `$PATH`, or available on the command line (required for **ANIb** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/>
-- **legacy BLAST** executable in the `$PATH` or available on the command line (required for **ANIblastall** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/>
-- **MUMmer** executables in the $PATH, or available on the command line (required for **ANIm** analysis) <http://mummer.sourceforge.net/>
-
-### For graphical output
-
-- **matplotlib** <http://matplotlib.org/>
-- **seaborn** <https://github.com/mwaskom/seaborn>
-
 ## Method and Output Description
 
 ### Average Nucleotide Identity (ANI)
@@ -234,31 +285,13 @@ Output is written to a named directory. The output files differ depending on the
 
 If graphical output is chosen, the output directory will also contain PDF, PNG and EPS files representing the various output measures as a heatmap with row and column dendrograms. Other output formats (e.g. SVG) can be specified with the `--gformat` argument.
 
-## Developer notes
-
-The `pyani` package is presented at [`GitHub`](https://github.com/widdowquinn/pyani) under two main branches:
-
-- `master` is the source code underpinning the most recent/current release of `pyani`. It will (almost) always be in sync with the latest release found at [https://github.com/widdowquinn/pyani/releases](https://github.com/widdowquinn/pyani/releases). The only time this code should not be in sync with the release is when there are modifications to documentation, or immediately preceding a release.
-- `development` is the current bleeding-edge version of `pyani`. It should (almost) always be in a working and usable condition, but may not be complete and/or some features may be missing or still under development.
-
-### Code Style and Pre-Commit Hooks
-
-The source code for `pyani` is expected to conform to `flake8` linting, and `black` code styling. These are enforced as pre-commit hooks using the `pre-commit` package (included in `requirements.txt`).
-
-The `black` and `flake8` hooks are defined in `.pre-commit-config.yaml`. Custom settings for `flake8` are held in `.flake8`.
-
-To enable pre-commit checks in the codebase on your local machine, execute the following command in the root directory of this repository:
-
-```bash
-pre-commit install
-```
 
 ## Licensing
 
 Unless otherwise indicated, all code is subject to the following agreement:
 
 >(c) The James Hutton Institute 2014-2019
->(c) The University of Strathclyde 2019
+>(c) The University of Strathclyde 2019-2021
 >Author: Leighton Pritchard
 >
 >Contact: leighton.pritchard@strath.ac.uk
@@ -276,7 +309,7 @@ Unless otherwise indicated, all code is subject to the following agreement:
 >The MIT License
 >
 >Copyright (c) 2014-2019 The James Hutton Institute
->Copyright (c) 2019 The University of Strathclyde
+>Copyright (c) 2019-2021 The University of Strathclyde
 >
 >Permission is hereby granted, free of charge, to any person obtaining a copy
 >of this software and associated documentation files (the "Software"), to deal
