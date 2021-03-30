@@ -176,7 +176,7 @@ pyani download C_blochmannia --email my.email@my.domain -t 203804 -v -l C_blochm
 
 The first argument is the output directory into which the downloaded genomes will be written (`C_blochmannia`). To download anything from NCBI we must provide an email address (`--email my.email@my.domain`), and to specify which taxon subtree we want to download we provide the taxon ID (`-t 203804`).
 
-Here we have also requested verbose output (`-v`), and specified a log file to which to write for reproducible research/diagnosing bugs and errors (`-l C_blochmannia_dl.log`).
+Here we also request verbose output (`-v`), and write a log file for reproducible research/diagnosing bugs and errors (`-l C_blochmannia_dl.log`).
 
 This produces a new subdirectory (`C_blochmannia`) with the following contents:
 
@@ -556,10 +556,10 @@ Methods differ on: (1) what alignment algorithm is used, and the choice of param
 
 - **ANIm**: uses MUMmer (NUCmer) to align the input sequences
 - **ANIb**: uses BLASTN+ to align 1020nt fragments of the input sequences
-- **ANIblastall**: uses legacy BLASTN to align 1020nt fragments of the input sequences
+- **ANIblastall**: uses legacy BLASTN to align 10al20nt fragments of the input sequences
 - **TETRA**: calculates tetranucleotide frequencies of each input sequence
 
-The algorithms takes as input correctly-formatted FASTA multiple sequence files. All sequences for a single organism should be contained in only one sequence file. Although it is possible to provide new labels for each input genome for rendering graphical output, the names of these files are used for identification so it is best to name them sensibly.
+The algorithms take as input correctly-formatted FASTA multiple sequence files. All sequences for a single organism should be contained in only one sequence file. Although it is possible to provide new labels for each input genome for rendering graphical output, the names of these files are used for identification so it is best to name them sensibly.
 
 Output is written to a named directory. The output files differ depending on the chosen ANI method.
 
