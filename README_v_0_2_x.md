@@ -145,7 +145,7 @@ But they can also be installed by following instructions from the tools' own web
 - **MUMmer** (for `anim`) [http://mummer.sourceforge.net/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/)
 ## Testing `pyani`
 
-The `pyani` repository includes tests that can be run with `pytest` (including coverage measurement using `pytest-cov) with the following command, executed from the repository root directory:
+The `pyani` repository includes tests that can be run with `pytest` (including coverage measurement using `pytest-cov`) with the following command, executed from the repository root directory:
 
 ```bash
 pytest -v
