@@ -104,7 +104,7 @@ pip3 install pyani
 
 ### Third-party tools
 
-Three alignment packages are required, to use all of `pyani`'s methods: `mummer`, `BLAST+`, and legacy `BLAST`.
+Three alignment packages are required, to use all of `pyani`'s methods: `mummer`, `BLAST+`, and legacy `BLAST`. (*Note that it is not necessary to install all three tools to use `pyani`. You need only install the tools that are required for the method you wish to use.*)
 
 The simplest route to obtaining these tools is to use `conda`/`bioconda`:
 
@@ -138,7 +138,7 @@ This `README.md` file provides a quick overview and walkthrough for **THE DEVELO
 
 ### Older documentation (v0.2)
 
-If you are using the stable version of `pyani` (v0.2.x), then please note that the command-line API has changed, and documentation for this version can be found at the following page:
+If you are using `pyani` v0.2.x, then please note that the command-line API has changed, and documentation for this version can be found at the following page:
 
 - [`pyani` v0.2.x Documentation](./README_v_0_2_x.md)
 
