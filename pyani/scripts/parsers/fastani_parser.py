@@ -9,7 +9,8 @@ from pyani.scripts import subcommands
 
 
 def build(
-    subps: _SubParsersAction, parents: Optional[List[ArgumentParser]] = None
+    subps: _SubParsersAction,
+    parents: Optional[List[ArgumentParser]] = None,
 ) -> None:
     """Return a command-line parser for the fastani subcommand.
 
@@ -26,16 +27,16 @@ def build(
     reference = parser.add_mutually_exclusive_group(required=True)
     query = parser.add_mutually_exclusive_group(required=True)
     # Required positional arguments: input and output directories
-#    parser.add_argument(
-#        "-i",
-#        "--input",
-#        required=True,
-#        action="store",
-#        dest="indir",
-#        default=None,
-#        type=Path,
-#        help="input genome directory",
-#    )
+    #    parser.add_argument(
+    #        "-i",
+    #        "--input",
+    #        required=True,
+    #        action="store",
+    #        dest="indir",
+    #        default=None,
+    #        type=Path,
+    #        help="input genome directory",
+    #    )
     parser.add_argument(  # I think this should be handled with pyani's overall output
         "-o",
         "--out",
@@ -108,7 +109,7 @@ def build(
         "--fragLen",
         dest="fragLen",
         action="store",
-        default=3,000,
+        default=3000,
         type=int,
         help="fragment length [default : 3,000]",
     )
@@ -125,7 +126,7 @@ def build(
         "--minFraction",
         dest="minFraction",
         action="store",
-        default=.2,
+        default=0.2,
         type=float,
         help="minimum fraction of genome that must be shared for trusting ANI. If reference and query genome size differ, smaller one among the two is considered. [default : .2]",
     )
@@ -136,19 +137,17 @@ def build(
         default=False,
         help="also output ANI values as lower triangular matrix (format inspired from phylip). If enabled, you should expect an output file with .matrix extension [disabled by default]",
     )
-    '''parser.add_argument(
+    """parser.add_argument(
         "--visualize",
         dest="visualize",
         action="store_true",
         default=False,
         help="output mappings for visualization, can be enabled for single genome to single genome comparison only [disabled by default]",
-    )'''
+    )"""
     parser.set_defaults(func=subcommands.subcmd_fastani)
 
 
-
-
-'''
+"""
 -----------------
 fastANI is a fast alignment-free implementation for computing whole-genome
 Average Nucleotide Identity (ANI) between genomes
@@ -203,4 +202,4 @@ Available options
 -v, --version
     Show version
 
-'''
+"""

@@ -1,16 +1,16 @@
 # insert copyright info
 
 import datetime
-import json  # is this needed?
+import json  # is this needed? [LP: for this, probably not]
 import logging
 import os
 
-from argparse import Namespace  # unsure what this does
-from itertools import permutations  # may be specific to anib
+from argparse import Namespace  # unsure what this does [LP: makes it easier to mock CLI stuff; also mypy hints]
+from itertools import permutations  # may be specific to anib [LP: yes; ANIb is asymmetrical, but fastANI will take care of what permutations does if you pass a file list; I'd expect you'd only need this when passing jobs out via SLURM/SGE]
 from pathlib import Path
 from typing import List, Tuple
-from Bio import SeqIO   # unsure what this does
-from tqdm import tqdm   # unsure what this does
+from Bio import SeqIO   # unsure what this does [LP: bioinformatics file format IO]
+from tqdm import tqdm   # unsure what this does [LP: progress bars]
 
 from pyani import fastani
 from pyani.pyani_files import collect_existing_output
@@ -34,10 +34,9 @@ def subcmd_fastani(args: Namespace) -> None:
         termcolor("running FastANI analysis", "red")
     )
 	
-    # Do we need to get the version of anything? FastANI?
+    # Do we need to get the version of anything? FastANI? [LP: this is for logging; ]
     # fastani_version = fastani.get_version(args.fastani_exe)
     # logger.info(termcolor("FastANI version: %s" % fastani_version, "cyan")
-    # the anib version of this is odd 
 	
     # Use provided name, or make new one for this analysis
     start_time = datetime.datetime.now()
@@ -164,7 +163,7 @@ def subcmd_fastani(args: Namespace) -> None:
     joblist = generate_joblist(
         comparisons_to_run, existingfiles, args
     )
-    logger.dbug("...created %d fastani jobs" % len(joblist))
+    logger.debug("...created %d fastani jobs" % len(joblist))
     # do we need lines here, like in ANIm, for the scheduler and adding results
     # to the database?
     raise NotImplementedError # needed?
