@@ -36,7 +36,7 @@ def build(
 #        type=Path,
 #        help="input genome directory",
 #    )
-    parser.add_argument(
+    parser.add_argument(  # I think this should be handled with pyani's overall output
         "-o",
         "--out",
         required=True,
@@ -46,7 +46,7 @@ def build(
         type=Path,
         help="output analysis results directory",
     )
-    reference.add_argument(
+    reference.add_argument(  # I think the -r/-rl/-q/-ql options will be defined when you compile fastaANI, rather than in user control
         "-r",
         "--ref",
         dest="ref",
@@ -79,7 +79,7 @@ def build(
         help="path to query list file",
     )
     # Optional arguments
-    parser.add_argument(
+    parser.add_argument(  # keep ;)
         "--dbpath",
         action="store",
         dest="dbpath",
@@ -112,7 +112,7 @@ def build(
         type=int,
         help="fragment length [default : 3,000]",
     )
-    parser.add_argument(
+    parser.add_argument(  # should be under control of scheduling parser?
         "-t",
         "--threads",
         dest="threads",
@@ -129,7 +129,7 @@ def build(
         type=float,
         help="minimum fraction of genome that must be shared for trusting ANI. If reference and query genome size differ, smaller one among the two is considered. [default : .2]",
     )
-    parser.add_argument(
+    parser.add_argument(  # should be handled by the report subcommand; BUT this would be useful for concordance testing - does the extra pyani processing distort fastANI's output?
         "--matrix",
         dest="matrix",
         action="store_true",
