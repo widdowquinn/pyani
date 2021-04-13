@@ -44,10 +44,38 @@ class ComparisonResult(NamedTuple):
     orthologs: int
     fragments: int
 
-def get_version():
-    pass
+def get_version(fastana_exe: Path = pyani_config.FASTANI_DEFAULT) -> str:
+    """Return FastANI package version as a string.
 
-def generate_jobs():
+    :param fastani_exe: path to FastANI executable
+
+    We expect fastANI to return a string on STDOUT as
+
+    .. code-block:: bash
+
+        $ ./fastANI -v
+        version 1.32
+
+    we concatenate this with the OS name.
+    """
+    cmdline = [fastani_exe, "-v"]  # type: List
+    result = subprocess.run(
+        cmdline, shell = False, stdout = subprocess.PIPE,
+        stderr = subprocess.PIPE, check = True
+    )                               # type: CompletedProcess
+    match = re.search(r"(?<=version\s)[0-9\.]*",
+        str(result.stderr, "utf-8"))
+    version = match.group()  # type: ignore
+    return f"{platform.system()}_{version}"
+
+# Generate list of Job objects, one per NUCmer run
+def generate_jobs(
+    reference: Path,
+    query: Path,
+    outdir: Path = Path("."),
+    fastani_exe: Path = pyani_config.FASTANI_DEFAULT,
+    kmer
+    ):
     pass
 
 def generate_commands():

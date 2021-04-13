@@ -23,20 +23,60 @@ def build(
     parser = subps.add_parser(
         "anib", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
+    reference = parser.add_mutually_exclusive_group(required=True)
+    query = parser.add_mutually_exclusive_group(required=True)
     # Required positional arguments: input and output directories
+#    parser.add_argument(
+#        "-i",
+#        "--input",
+#        required=True,
+#        action="store",
+#        dest="indir",
+#        default=None,
+#        type=Path,
+#        help="input genome directory",
+#    )
     parser.add_argument(
-        action="store",
-        dest="indir",
-        default=None,
-        type=Path,
-        help="input genome directory",
-    )
-    parser.add_argument(
+        "-o",
+        "--out",
+        required=True,
         action="store",
         dest="outdir",
         default=None,
         type=Path,
         help="output analysis results directory",
+    )
+    reference.add_argument(
+        "-r",
+        "--ref",
+        dest="ref",
+        action="store",
+        type=Path,
+        help="path to reference genome",
+    )
+    reference.add_argument(
+        "-rl",
+        "--refList",
+        dest="refList",
+        action="store",
+        type=Path,
+        help="path to reference list file",
+    )
+    query.add_argument(
+        "-q",
+        "--query",
+        dest="query",
+        action="store",
+        type=Path,
+        help="path to query genome",
+    )
+    query.add_argument(
+        "-ql",
+        "--queryList",
+        dest="queryList",
+        action="store",
+        type=Path,
+        help="path to query list file",
     )
     # Optional arguments
     parser.add_argument(
@@ -55,20 +95,112 @@ def build(
         type=Path,
         help="path to fastani executable",
     )
-    '''parser.add_argument(
-        "--format_exe",
-        dest="format_exe",
+    parser.add_argument(
+        "-k",
+        "--kmer",
+        dest="kmer",
         action="store",
-        default=pyani_config.MAKEBLASTDB_DEFAULT,
-        type=Path,
-        help="path to makeblastdb executable",
+        default=16,
+        type=int,
+        help="kmer size <= 16 [default : 16]",
     )
     parser.add_argument(
-        "--fragsize",
-        dest="fragsize",
+        "--fragLen",
+        dest="fragLen",
         action="store",
+        default=3,000,
         type=int,
-        default=pyani_config.FRAGSIZE,
-        help="blastn query fragment size",
+        help="fragment length [default : 3,000]",
+    )
+    parser.add_argument(
+        "-t",
+        "--threads",
+        dest="threads",
+        action="store",
+        default=1,
+        type=int,
+        help="thread count for parallel execution [default : 1]",
+    )
+    parser.add_argument(
+        "--minFraction",
+        dest="minFraction",
+        action="store",
+        default=.2,
+        type=float,
+        help="minimum fraction of genome that must be shared for trusting ANI. If reference and query genome size differ, smaller one among the two is considered. [default : .2]",
+    )
+    parser.add_argument(
+        "--matrix",
+        dest="matrix",
+        action="store_true",
+        default=False,
+        help="also output ANI values as lower triangular matrix (format inspired from phylip). If enabled, you should expect an output file with .matrix extension [disabled by default]",
+    )
+    '''parser.add_argument(
+        "--visualize",
+        dest="visualize",
+        action="store_true",
+        default=False,
+        help="output mappings for visualization, can be enabled for single genome to single genome comparison only [disabled by default]",
     )'''
     parser.set_defaults(func=subcommands.subcmd_fastani)
+
+
+
+
+'''
+-----------------
+fastANI is a fast alignment-free implementation for computing whole-genome
+Average Nucleotide Identity (ANI) between genomes
+-----------------
+Example usage:
+$ fastANI -q genome1.fa -r genome2.fa -o output.txt
+$ fastANI -q genome1.fa --rl genome_list.txt -o output.txt
+
+Available options
+-----------------
+-h, --help
+    Print this help page
+
+-r <value>, --ref <value>
+    reference genome (fasta/fastq)[.gz]
+
+--refList <value>, --rl <value>
+    a file containing list of reference genome files, one genome per line
+
+-q <value>, --query <value>
+    query genome (fasta/fastq)[.gz]
+
+--ql <value>, --queryList <value>
+    a file containing list of query genome files, one genome per line
+
+-k <value>, --kmer <value>
+    kmer size <= 16 [default : 16]
+
+-t <value>, --threads <value>
+    thread count for parallel execution [default : 1]
+
+--fragLen <value>
+    fragment length [default : 3,000]
+
+--minFraction <value>
+    minimum fraction of genome that must be shared for trusting ANI. If
+    reference and query genome size differ, smaller one among the two is
+    considered. [default : 0.2]
+
+--visualize
+    output mappings for visualization, can be enabled for single genome to
+    single genome comparison only [disabled by default]
+
+--matrix
+    also output ANI values as lower triangular matrix (format inspired from
+    phylip). If enabled, you should expect an output file with .matrix
+    extension [disabled by default]
+
+-o <value>, --output <value> [required]
+    output file name
+
+-v, --version
+    Show version
+
+'''

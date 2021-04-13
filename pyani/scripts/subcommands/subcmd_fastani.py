@@ -182,3 +182,7 @@ def generate_joblist(
     """
     # logger = logging.getLogger(__name__)  # in ANIm: uncommented
     raise NotImplementedError
+
+# is this needed for fastANI?
+def update_comparison_results():
+    pass
