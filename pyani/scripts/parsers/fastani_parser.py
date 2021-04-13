@@ -45,8 +45,7 @@ from pyani.scripts import subcommands
 
 
 def build(
-    subps: _SubParsersAction,
-    parents: Optional[List[ArgumentParser]] = None,
+    subps: _SubParsersAction, parents: Optional[List[ArgumentParser]] = None
 ) -> None:
     """Return a command-line parser for the fastani subcommand.
 
