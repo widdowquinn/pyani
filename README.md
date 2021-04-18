@@ -1,6 +1,6 @@
 # `pyani`
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Whole-genome classification using Average Nucleotide Identity
@@ -28,6 +28,9 @@ and we are grateful to all who have contributed to this software:
     <td align="center"><a href="https://github.com/nickp60"><img src="https://avatars.githubusercontent.com/u/14367274?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nick Waters</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=nickp60" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/ytanizaw"><img src="https://avatars.githubusercontent.com/u/2227458?v=4?s=100" width="100px;" alt=""/><br /><sub><b>YT</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=ytanizaw" title="Code">💻</a> <a href="#ideas-ytanizaw" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="https://github.com/ozcan"><img src="https://avatars.githubusercontent.com/u/940884?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Özcan Esen</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=ozcan" title="Code">💻</a> <a href="https://github.com/widdowquinn/pyani/issues?q=author%3Aozcan" title="Bug reports">🐛</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://b-brankovics.github.io"><img src="https://avatars.githubusercontent.com/u/6728856?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Balázs Brankovics</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=b-brankovics" title="Code">💻</a> <a href="https://github.com/widdowquinn/pyani/issues?q=author%3Ab-brankovics" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 

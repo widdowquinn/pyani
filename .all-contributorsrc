@@ -85,6 +85,16 @@
         "code",
         "bug"
       ]
+    },
+    {
+      "login": "b-brankovics",
+      "name": "Balázs Brankovics",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6728856?v=4",
+      "profile": "https://b-brankovics.github.io",
+      "contributions": [
+        "code",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
