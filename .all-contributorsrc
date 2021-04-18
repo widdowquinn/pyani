@@ -22,6 +22,20 @@
         "test",
         "tutorial"
       ]
+    },
+    {
+      "login": "baileythegreen",
+      "name": "Bailey Harrington",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12277715?v=4",
+      "profile": "https://github.com/baileythegreen",
+      "contributions": [
+        "code",
+        "doc",
+        "design",
+        "ideas",
+        "infra",
+        "tool"
+      ]
     }
   ],
   "contributorsPerLine": 7,
