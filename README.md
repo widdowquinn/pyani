@@ -21,7 +21,7 @@ and we are grateful to all who have contributed to this software:
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://www.strath.ac.uk/staff/pritchardleightondr/"><img src="https://avatars.githubusercontent.com/u/63981?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Leighton Pritchard</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=widdowquinn" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://www.strath.ac.uk/staff/pritchardleightondr/"><img src="https://avatars.githubusercontent.com/u/63981?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Leighton Pritchard</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=widdowquinn" title="Documentation">📖</a> <a href="https://github.com/widdowquinn/pyani/commits?author=widdowquinn" title="Code">💻</a> <a href="#design-widdowquinn" title="Design">🎨</a> <a href="#financial-widdowquinn" title="Financial">💵</a> <a href="#ideas-widdowquinn" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-widdowquinn" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#projectManagement-widdowquinn" title="Project Management">📆</a> <a href="#tool-widdowquinn" title="Tools">🔧</a> <a href="https://github.com/widdowquinn/pyani/commits?author=widdowquinn" title="Tests">⚠️</a> <a href="#tutorial-widdowquinn" title="Tutorials">✅</a></td>
   </tr>
 </table>
 
