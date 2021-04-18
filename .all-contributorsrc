@@ -36,6 +36,16 @@
         "infra",
         "tool"
       ]
+    },
+    {
+      "login": "peterjc",
+      "name": "Peter Cock",
+      "avatar_url": "https://avatars.githubusercontent.com/u/63959?v=4",
+      "profile": "http://blastedbio.blogspot.com",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
