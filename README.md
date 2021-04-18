@@ -24,8 +24,6 @@
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/pyani/badges/downloads.svg)](https://anaconda.org/bioconda/pyani)
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/pyani/badges/platforms.svg)](https://anaconda.org/bioconda/pyani)
 
-
-
 <!-- TOC -->
 
 - [README.md (pyani)](#readmemd-pyani)
