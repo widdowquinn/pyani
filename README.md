@@ -14,12 +14,23 @@ Whole-genome classification using Average Nucleotide Identity
 
 and we are grateful to all who have contributed to this software:
 
-- [Balázs Brankovics](https://github.com/b-brankovics)
-- [Peter Cock](https://github.com/peterjc)
-- [Robert Davey](https://github.com/froggleston)
-- [Özcan Esen](https://github.com/ozcan)
-- [Nick Waters](https://github.com/nickp60)
-- [@ytanzaw](https://github.com/ytanizaw)
+## Contributors ✨  ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://www.strath.ac.uk/staff/pritchardleightondr/"><img src="https://avatars.githubusercontent.com/u/63981?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Leighton Pritchard</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=widdowquinn" title="Documentation">📖</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+> (This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!)
 
 -----
 
@@ -68,35 +79,34 @@ If you would like to contribute code to the `pyani` project (e.g. a bug fix or n
 
 <!-- TOC -->
 
-- [`pyani`](#pyani)
-  - [Citing `pyani`](#citing-pyani)
-  - [Contributing](#contributing)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Installation](#installation)
+- [Contributors ✨  ([emoji key](https://allcontributors.org/docs/en/emoji-key)):](#contributors-✨--emoji-keyhttpsallcontributorsorgdocsenemoji-key)
+- [Citing `pyani`](#citing-pyani)
+- [Contributing](#contributing)
+- [Table of Contents](#table-of-contents)
+- [Overview](#overview)
+- [Installation](#installation)
     - [IMPORTANT NOTICE](#important-notice)
     - [Documentation for stable version `pyani` v0.2.x](#documentation-for-stable-version-pyani-v02x)
     - [`conda`](#conda)
     - [`pip`](#pip)
     - [Third-party tools](#third-party-tools)
     - [NOTE: Installing legacy BLAST](#note-installing-legacy-blast)
-  - [Documentation (v0.3)](#documentation-v03)
+- [Documentation (v0.3)](#documentation-v03)
     - [Older documentation (v0.2)](#older-documentation-v02)
-  - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
-  - [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
+- [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
+- [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
     - [1. Download genome data](#1-download-genome-data)
     - [2. Create an analysis database](#2-create-an-analysis-database)
     - [3. Conduct ANI analysis](#3-conduct-ani-analysis)
-      - [Rerunning the same analysis](#rerunning-the-same-analysis)
     - [4. Reporting Analyses and Analysis Results](#4-reporting-analyses-and-analysis-results)
     - [5. Generating graphical output for ANI](#5-generating-graphical-output-for-ani)
     - [6. Classifying Genomes from Analysis Results](#6-classifying-genomes-from-analysis-results)
-  - [Running `pyani` version 0.2.x](#running-pyani-version-02x)
+- [Running `pyani` version 0.2.x](#running-pyani-version-02x)
     - [Script: `average_nucleotide_identity.py`](#script-average_nucleotide_identitypy)
     - [Script: `genbank_get_genomes_by_taxon.py`](#script-genbank_get_genomes_by_taxonpy)
-  - [Method and Output Description](#method-and-output-description)
+- [Method and Output Description](#method-and-output-description)
     - [Average Nucleotide Identity (ANI)](#average-nucleotide-identity-ani)
-  - [Licensing](#licensing)
+- [Licensing](#licensing)
 
 <!-- /TOC -->
 
@@ -162,7 +172,7 @@ But they can also be installed by following instructions from the tools' own web
 
 ### NOTE: Installing legacy BLAST
 
-**The legacy BLAST executable available from NCBI will not run on macOS Big Sur**
+**The legacy BLAST executable available from NCBI will not run on macOS Big Sur.**
 
 If you wish to use `pyani blastall` or the `ANIblastall` method with the legacy `pyani` interface, you will require a locally-installed copy of this package. This is one of the packages linked in the `requirements-thirdparty.txt` file.
 
@@ -624,23 +634,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
-
-## Contributors ✨
-
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tr>
-    <td align="center"><a href="https://www.strath.ac.uk/staff/pritchardleightondr/"><img src="https://avatars.githubusercontent.com/u/63981?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Leighton Pritchard</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=widdowquinn" title="Documentation">📖</a></td>
-  </tr>
-</table>
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
