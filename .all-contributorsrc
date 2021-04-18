@@ -75,6 +75,16 @@
         "code",
         "ideas"
       ]
+    },
+    {
+      "login": "ozcan",
+      "name": "Özcan Esen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/940884?v=4",
+      "profile": "https://github.com/ozcan",
+      "contributions": [
+        "code",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
