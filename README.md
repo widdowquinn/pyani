@@ -1,4 +1,39 @@
-# README.md (pyani)
+# `pyani`
+
+Whole-genome classification using Average Nucleotide Identity
+
+-----
+
+`pyani` is maintained by:
+
+- [Leighton Pritchard](https://pureportal.strath.ac.uk/en/persons/leighton-pritchard)
+- [Bailey Harrington](https://pureportal.strath.ac.uk/en/persons/bailey-ann-harrington)
+
+and we are grateful to all who have contributed to this software:
+
+- [Balázs Brankovics](https://github.com/b-brankovics)
+- [Peter Cock](https://github.com/peterjc)
+- [Robert Davey](https://github.com/froggleston)
+- [Özcan Esen](https://github.com/ozcan)
+- [Nick Waters](https://github.com/nickp60)
+- [@ytanzaw](https://github.com/ytanizaw)
+
+-----
+
+## Citing `pyani`
+
+A complete guide to citing `pyani` is included in the file [`CITATIONS`](CITATIONS). Please cite the following manuscript in your work, if you have found `pyani` useful:
+
+> Pritchard et al. (2016) "Genomics and taxonomy in diagnostics for food security: soft-rotting enterobacterial plant pathogens" Anal. Methods, 2016,8, 12-24
+DOI: [10.1039/C5AY02550H](https://doi.org/10.1039/C5AY02550H)
+
+-----
+
+## Contributing
+
+If you would like to contribute code to the `pyani` project (e.g. a bug fix or new feature), please refer to the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide for more details.
+
+-----
 
 [![CircleCI](https://circleci.com/gh/widdowquinn/pyani.svg?style=shield)](https://circleci.com/gh/widdowquinn/pyani/tree/master)
 [![codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)](https://codecov.io/github/widdowquinn/pyani)
@@ -24,9 +59,16 @@
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/pyani/badges/downloads.svg)](https://anaconda.org/bioconda/pyani)
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/pyani/badges/platforms.svg)](https://anaconda.org/bioconda/pyani)
 
+-----
+
+## Table of Contents
+
 <!-- TOC -->
 
-- [README.md (pyani)](#readmemd-pyani)
+- [`pyani`](#pyani)
+  - [Citing `pyani`](#citing-pyani)
+  - [Contributing](#contributing)
+  - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
   - [Installation](#installation)
     - [IMPORTANT NOTICE](#important-notice)
@@ -35,11 +77,9 @@
     - [`pip`](#pip)
     - [Third-party tools](#third-party-tools)
     - [NOTE: Installing legacy BLAST](#note-installing-legacy-blast)
-  - [Citing `pyani`](#citing-pyani)
   - [Documentation (v0.3)](#documentation-v03)
     - [Older documentation (v0.2)](#older-documentation-v02)
   - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
-  - [Contributing](#contributing)
   - [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
     - [1. Download genome data](#1-download-genome-data)
     - [2. Create an analysis database](#2-create-an-analysis-database)
@@ -48,25 +88,26 @@
     - [4. Reporting Analyses and Analysis Results](#4-reporting-analyses-and-analysis-results)
     - [5. Generating graphical output for ANI](#5-generating-graphical-output-for-ani)
     - [6. Classifying Genomes from Analysis Results](#6-classifying-genomes-from-analysis-results)
-  - [Testing `pyani`](#testing-pyani)
-  - [Running `pyani`](#running-pyani)
+  - [Running `pyani` version 0.2.x](#running-pyani-version-02x)
     - [Script: `average_nucleotide_identity.py`](#script-average_nucleotide_identitypy)
     - [Script: `genbank_get_genomes_by_taxon.py`](#script-genbank_get_genomes_by_taxonpy)
-  - [DEPENDENCIES](#dependencies)
-    - [For ANI analysis](#for-ani-analysis)
-      - [Alignment tools](#alignment-tools)
-    - [For graphical output](#for-graphical-output)
   - [Method and Output Description](#method-and-output-description)
     - [Average Nucleotide Identity (ANI)](#average-nucleotide-identity-ani)
   - [Licensing](#licensing)
 
 <!-- /TOC -->
 
+-----
+
 ## Overview
 
-`pyani` is a Python3 module and script that provides support for calculating average nucleotide identity (ANI) and related measures for whole genome comparisons, and rendering relevant graphical summary output. Where available, it takes advantage of multicore systems, and can integrate with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
+`pyani` is a software package and Python3 module that calculates average nucleotide identity (ANI) and related measures for whole genome comparisons, and renders relevant graphical summary output.
 
-`pyani` also installs the prgram `pyani`, which enables command-line based analysis of genomes.
+Where available, `pyani` can take advantage of multicore systems, and integrates with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
+
+`pyani` installs the prgram `pyani`, which enables command-line based analysis of genomes.
+
+-----
 
 ## Installation
 
@@ -118,11 +159,11 @@ But they can also be installed by following instructions from the tools' own web
 
 ### NOTE: Installing legacy BLAST
 
-The NCBI legacy `BLAST` package is deprecated and not recommended. However, if you wish to use `pyani blastall` or the `ANIblastall` method with the legacy `pyani` interface, you will require a locally-installed copy of this package. This is one of the packages linked in the `requirements-thirdparty.txt` file.
+**The legacy BLAST executable available from NCBI will not run on macOS Big Sur**
 
-## Citing `pyani`
+If you wish to use `pyani blastall` or the `ANIblastall` method with the legacy `pyani` interface, you will require a locally-installed copy of this package. This is one of the packages linked in the `requirements-thirdparty.txt` file.
 
-A guide to citing `pyani` is included in the file [`CITATIONS`](CITATIONS)
+-----
 
 ## Documentation (v0.3)
 
@@ -146,9 +187,7 @@ If you would like to report a bug or problem with `pyani`, or ask a question of 
 
 - [`pyani` Issues page](https://github.com/widdowquinn/pyani/issues)
 
-## Contributing
-
-If you would like to contribute code to the `pyani` project (as a bug fix or new feature), please refer to the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide for more details.
+-----
 
 ## Walkthrough: A First Analysis
 
@@ -403,17 +442,9 @@ The heatmaps also include dendrograms, clustering the rows and columns by overal
 
 ### 6. Classifying Genomes from Analysis Results
 
-## Testing `pyani`
+-----
 
-`pyani` includes tests that can be run with `nosetest` (including coverage measurement using `coverage.py`) with the following command, executed from the repository root directory:
-
-```bash
-nosetests --cover-erase --cover-package=pyani --cover-html --with-coverage
-```
-
-Coverage output will be placed (by default) in the `cover` subdirectory, and can be loaded into the web browser.
-
-## Running `pyani`
+## Running `pyani` version 0.2.x
 
 ### Script: `average_nucleotide_identity.py`
 
@@ -510,29 +541,7 @@ INFO: Done.
 
 The number of attempted retries for each download, and the size of a batch download can be modified. By default, the script will attempt 20 download retries, and obtain sequences in batches of 10,000.
 
-## DEPENDENCIES
-
-Note that Python package dependencies should automatically be installed if you are using version 0.1.3.2 or greater, and installing with `pip install pyani`.
-
-For earlier versions, you can satisfy dependencies by using `pip install -r requirements.txt` (using the `requirements.txt` file in this repository).
-
-### For ANI analysis
-
-- **Biopython** <http://www.biopython.org>
-- **NumPy** <http://www.numpy.org/>
-- **pandas** <http://pandas.pydata.org/>
-- **SciPy** <http://www.scipy.org/>
-
-#### Alignment tools
-
-- **BLAST+** executable in the `$PATH`, or available on the command line (required for **ANIb** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/>
-- **legacy BLAST** executable in the `$PATH` or available on the command line (required for **ANIblastall** analysis) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/>
-- **MUMmer** executables in the $PATH, or available on the command line (required for **ANIm** analysis) <http://mummer.sourceforge.net/>
-
-### For graphical output
-
-- **matplotlib** <http://matplotlib.org/>
-- **seaborn** <https://github.com/mwaskom/seaborn>
+-----
 
 ## Method and Output Description
 
@@ -567,13 +576,15 @@ Output is written to a named directory. The output files differ depending on the
 
 If graphical output is chosen, the output directory will also contain PDF, PNG and EPS files representing the various output measures as a heatmap with row and column dendrograms. Other output formats (e.g. SVG) can be specified with the `--gformat` argument.
 
+-----
+
 ## Licensing
 
 Unless otherwise indicated, all code is subject to the following agreement:
 
 ```text
     (c) The James Hutton Institute 2014-2019
-    (c) The University of Strathclyde 2019
+    (c) The University of Strathclyde 2019-present
     Author: Leighton Pritchard
 
     Contact: leighton.pritchard@strath.ac.uk
@@ -590,6 +601,7 @@ Unless otherwise indicated, all code is subject to the following agreement:
 The MIT License
 
 Copyright (c) 2014-2019 The James Hutton Institute
+Copyright (c) 2014-present The James Hutton Institute
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
