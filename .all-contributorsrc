@@ -1,0 +1,24 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "widdowquinn",
+      "name": "Leighton Pritchard",
+      "avatar_url": "https://avatars.githubusercontent.com/u/63981?v=4",
+      "profile": "https://www.strath.ac.uk/staff/pritchardleightondr/",
+      "contributions": [
+        "doc"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "pyani",
+  "projectOwner": "widdowquinn",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
