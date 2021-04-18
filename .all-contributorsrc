@@ -46,6 +46,16 @@
         "code",
         "ideas"
       ]
+    },
+    {
+      "login": "froggleston",
+      "name": "Robert Davey",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1872302?v=4",
+      "profile": "http://www.earlham.ac.uk/rob-davey",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
