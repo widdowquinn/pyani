@@ -1,6 +1,6 @@
 # `pyani`
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Whole-genome classification using Average Nucleotide Identity
@@ -23,6 +23,7 @@ and we are grateful to all who have contributed to this software:
   <tr>
     <td align="center"><a href="https://www.strath.ac.uk/staff/pritchardleightondr/"><img src="https://avatars.githubusercontent.com/u/63981?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Leighton Pritchard</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=widdowquinn" title="Documentation">📖</a> <a href="https://github.com/widdowquinn/pyani/commits?author=widdowquinn" title="Code">💻</a> <a href="#design-widdowquinn" title="Design">🎨</a> <a href="#financial-widdowquinn" title="Financial">💵</a> <a href="#ideas-widdowquinn" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-widdowquinn" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#projectManagement-widdowquinn" title="Project Management">📆</a> <a href="#tool-widdowquinn" title="Tools">🔧</a> <a href="https://github.com/widdowquinn/pyani/commits?author=widdowquinn" title="Tests">⚠️</a> <a href="#tutorial-widdowquinn" title="Tutorials">✅</a></td>
     <td align="center"><a href="https://github.com/baileythegreen"><img src="https://avatars.githubusercontent.com/u/12277715?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Bailey Harrington</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=baileythegreen" title="Code">💻</a> <a href="https://github.com/widdowquinn/pyani/commits?author=baileythegreen" title="Documentation">📖</a> <a href="#design-baileythegreen" title="Design">🎨</a> <a href="#ideas-baileythegreen" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-baileythegreen" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#tool-baileythegreen" title="Tools">🔧</a></td>
+    <td align="center"><a href="http://blastedbio.blogspot.com"><img src="https://avatars.githubusercontent.com/u/63959?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Peter Cock</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=peterjc" title="Code">💻</a> <a href="#ideas-peterjc" title="Ideas, Planning, & Feedback">🤔</a></td>
   </tr>
 </table>
 
