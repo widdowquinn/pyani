@@ -1,11 +1,12 @@
 # `pyani`
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Whole-genome classification using Average Nucleotide Identity
 
 -----
+
+## Contributing
+
+If you would like to contribute code to the `pyani` project (e.g. a bug fix or new feature), please refer to the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide for more details.
 
 `pyani` is maintained by:
 
@@ -14,7 +15,7 @@ Whole-genome classification using Average Nucleotide Identity
 
 and we are grateful to all who have contributed to this software:
 
-## Contributors ✨  ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+### Contributors ✨  ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -52,18 +53,16 @@ DOI: [10.1039/C5AY02550H](https://doi.org/10.1039/C5AY02550H)
 
 -----
 
-## Contributing
-
-If you would like to contribute code to the `pyani` project (e.g. a bug fix or new feature), please refer to the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide for more details.
-
------
-
 [![CircleCI](https://circleci.com/gh/widdowquinn/pyani.svg?style=shield)](https://circleci.com/gh/widdowquinn/pyani/tree/master)
 [![codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)](https://codecov.io/github/widdowquinn/pyani)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f3e56b2bf118471aabf09514a3e6af75)](https://www.codacy.com/manual/widdowquinn/pyani?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/pyani&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/widdowquinn/pyani/badge)](https://www.codefactor.io/repository/github/widdowquinn/pyani)
 [![documentation](https://readthedocs.org/projects/pyani/badge/?version=latest)](https://pyani.readthedocs.io/en/latest/?badge=latest)
 [![pyani sourcerank](https://img.shields.io/librariesio/sourcerank/pypi/pyani.svg?logo=koding&logoColor=white)](https://libraries.io/pypi/pyani)
+
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=shield)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![pyani PyPi version](https://img.shields.io/pypi/v/pyani "PyPI version")](https://pypi.python.org/pypi/pyani)
 [![pyani licence](https://img.shields.io/pypi/l/pyani "PyPI licence")](https://github.com/widdowquinn/pyani/blob/master/LICENSE)
@@ -88,34 +87,36 @@ If you would like to contribute code to the `pyani` project (e.g. a bug fix or n
 
 <!-- TOC -->
 
-- [Contributors ✨  ([emoji key](https://allcontributors.org/docs/en/emoji-key)):](#contributors-✨--emoji-keyhttpsallcontributorsorgdocsenemoji-key)
-- [Citing `pyani`](#citing-pyani)
-- [Contributing](#contributing)
-- [Table of Contents](#table-of-contents)
-- [Overview](#overview)
-- [Installation](#installation)
+- [`pyani`](#pyani)
+  - [Contributing](#contributing)
+    - [Contributors ✨  (emoji key):](#contributors---emoji-key)
+  - [Citing `pyani`](#citing-pyani)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Installation](#installation)
     - [IMPORTANT NOTICE](#important-notice)
     - [Documentation for stable version `pyani` v0.2.x](#documentation-for-stable-version-pyani-v02x)
     - [`conda`](#conda)
     - [`pip`](#pip)
     - [Third-party tools](#third-party-tools)
     - [NOTE: Installing legacy BLAST](#note-installing-legacy-blast)
-- [Documentation (v0.3)](#documentation-v03)
+  - [Documentation (v0.3)](#documentation-v03)
     - [Older documentation (v0.2)](#older-documentation-v02)
-- [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
-- [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
+  - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
+  - [Walkthrough: A First Analysis](#walkthrough-a-first-analysis)
     - [1. Download genome data](#1-download-genome-data)
     - [2. Create an analysis database](#2-create-an-analysis-database)
     - [3. Conduct ANI analysis](#3-conduct-ani-analysis)
+      - [Rerunning the same analysis](#rerunning-the-same-analysis)
     - [4. Reporting Analyses and Analysis Results](#4-reporting-analyses-and-analysis-results)
     - [5. Generating graphical output for ANI](#5-generating-graphical-output-for-ani)
     - [6. Classifying Genomes from Analysis Results](#6-classifying-genomes-from-analysis-results)
-- [Running `pyani` version 0.2.x](#running-pyani-version-02x)
+  - [Running `pyani` version 0.2.x](#running-pyani-version-02x)
     - [Script: `average_nucleotide_identity.py`](#script-average_nucleotide_identitypy)
     - [Script: `genbank_get_genomes_by_taxon.py`](#script-genbank_get_genomes_by_taxonpy)
-- [Method and Output Description](#method-and-output-description)
+  - [Method and Output Description](#method-and-output-description)
     - [Average Nucleotide Identity (ANI)](#average-nucleotide-identity-ani)
-- [Licensing](#licensing)
+  - [Licensing](#licensing)
 
 <!-- /TOC -->
 
