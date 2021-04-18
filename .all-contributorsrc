@@ -11,7 +11,16 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/63981?v=4",
       "profile": "https://www.strath.ac.uk/staff/pritchardleightondr/",
       "contributions": [
-        "doc"
+        "doc",
+        "code",
+        "design",
+        "financial",
+        "ideas",
+        "infra",
+        "projectManagement",
+        "tool",
+        "test",
+        "tutorial"
       ]
     }
   ],
