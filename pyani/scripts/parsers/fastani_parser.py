@@ -9,7 +9,8 @@ from pyani.scripts import subcommands
 
 
 def build(
-    subps: _SubParsersAction, parents: Optional[List[ArgumentParser]] = None
+    subps: _SubParsersAction,
+    parents: Optional[List[ArgumentParser]] = None,
 ) -> None:
     """Return a command-line parser for the fastani subcommand.
 
@@ -26,17 +27,17 @@ def build(
     reference = parser.add_mutually_exclusive_group(required=True)
     query = parser.add_mutually_exclusive_group(required=True)
     # Required positional arguments: input and output directories
-#    parser.add_argument(
-#        "-i",
-#        "--input",
-#        required=True,
-#        action="store",
-#        dest="indir",
-#        default=None,
-#        type=Path,
-#        help="input genome directory",
-#    )
-    parser.add_argument(
+    #    parser.add_argument(
+    #        "-i",
+    #        "--input",
+    #        required=True,
+    #        action="store",
+    #        dest="indir",
+    #        default=None,
+    #        type=Path,
+    #        help="input genome directory",
+    #    )
+    parser.add_argument(  # I think this should be handled with pyani's overall output
         "-o",
         "--out",
         required=True,
@@ -46,7 +47,7 @@ def build(
         type=Path,
         help="output analysis results directory",
     )
-    reference.add_argument(
+    reference.add_argument(  # I think the -r/-rl/-q/-ql options will be defined when you compile fastaANI, rather than in user control
         "-r",
         "--ref",
         dest="ref",
@@ -79,7 +80,7 @@ def build(
         help="path to query list file",
     )
     # Optional arguments
-    parser.add_argument(
+    parser.add_argument(  # keep ;)
         "--dbpath",
         action="store",
         dest="dbpath",
@@ -112,7 +113,7 @@ def build(
         type=int,
         help="fragment length [default : 3,000]",
     )
-    parser.add_argument(
+    parser.add_argument(  # should be under control of scheduling parser?
         "-t",
         "--threads",
         dest="threads",
@@ -125,30 +126,28 @@ def build(
         "--minFraction",
         dest="minFraction",
         action="store",
-        default=.2,
+        default=0.2,
         type=float,
         help="minimum fraction of genome that must be shared for trusting ANI. If reference and query genome size differ, smaller one among the two is considered. [default : .2]",
     )
-    parser.add_argument(
+    parser.add_argument(  # should be handled by the report subcommand; BUT this would be useful for concordance testing - does the extra pyani processing distort fastANI's output?
         "--matrix",
         dest="matrix",
         action="store_true",
         default=False,
         help="also output ANI values as lower triangular matrix (format inspired from phylip). If enabled, you should expect an output file with .matrix extension [disabled by default]",
     )
-    '''parser.add_argument(
+    """parser.add_argument(
         "--visualize",
         dest="visualize",
         action="store_true",
         default=False,
         help="output mappings for visualization, can be enabled for single genome to single genome comparison only [disabled by default]",
-    )'''
+    )"""
     parser.set_defaults(func=subcommands.subcmd_fastani)
 
 
-
-
-'''
+"""
 -----------------
 fastANI is a fast alignment-free implementation for computing whole-genome
 Average Nucleotide Identity (ANI) between genomes
@@ -203,4 +202,4 @@ Available options
 -v, --version
     Show version
 
-'''
+"""
