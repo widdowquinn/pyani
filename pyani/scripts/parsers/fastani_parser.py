@@ -108,7 +108,7 @@ def build(
         "--fragLen",
         dest="fragLen",
         action="store",
-        default=3,000,
+        default=3000,
         type=int,
         help="fragment length [default : 3,000]",
     )
