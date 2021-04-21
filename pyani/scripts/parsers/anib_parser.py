@@ -42,8 +42,11 @@ from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, _SubParsersA
 from pathlib import Path
 from typing import List, Optional
 
+from pyani import anib
 from pyani import pyani_config
 from pyani.scripts import subcommands
+
+from pyani import __version__
 
 
 def build(
@@ -62,7 +65,17 @@ def build(
         "anib", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
     # Required positional arguments: input and output directories
+    # parser.add_argument(
+    #    "--version",
+    #    action="version",
+    #    version="pyani.py version: {0};   {1} version: {2}".format(
+    #        __version__,
+    #        pyani_config.BLASTN_DEFAULT,
+    #        anib.get_version(pyani_config.BLASTN_DEFAULT).split('_')[-1],
+    #    ),
+    # )
     parser.add_argument(
+        "-i",
         action="store",
         dest="indir",
         default=None,
@@ -70,6 +83,7 @@ def build(
         help="input genome directory",
     )
     parser.add_argument(
+        "-o",
         action="store",
         dest="outdir",
         default=None,
