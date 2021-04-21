@@ -90,6 +90,12 @@ def run_main(argv: Optional[List[str]] = None) -> int:
     if len(sys.argv) == 1:
         sys.stderr.write("pyani version: {0}\n".format(__version__))
         return 0
+    elif len(sys.argv) == 2 and args.citation:
+        sys.stderr.write("pyani version: {0}\n\n".format(__version__))
+        sys.stderr.write(termcolor("CITATION INFO:\n\n", bold=True))
+        for line in CITATION_INFO:
+            sys.stderr.write("{0}\n".format(line))
+        return 0    
 
     # Set up logging
     time0 = time.time()
