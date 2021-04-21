@@ -37,7 +37,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 """Provides parser for arguments common to all subcommands."""
-
+import sys
 from argparse import ArgumentParser
 
 from pathlib import Path
@@ -56,6 +56,12 @@ def build() -> ArgumentParser:
     -v, --verbose (produce verbose output on STDOUT)
     """
     parser = ArgumentParser(add_help=False)
+    parser.add_argument(
+        "--version",
+        dest="version",
+        action="store_true",
+        default=False,
+    )
     parser.add_argument(
         "-l",
         "--logfile",

@@ -53,6 +53,10 @@ from pyani.pyani_tools import termcolor
 from .parsers import parse_cmdline
 from .. import __version__
 
+from pyani.anib import get_version as get_blast_version
+from pyani.aniblastall import get_version as get_blastall_version
+from pyani.anim import get_version as get_nucmer_version
+
 
 CITATION_INFO = [
     termcolor(
@@ -76,6 +80,25 @@ CITATION_INFO = [
 ]
 
 
+def subcmd_version(subcmd: str) -> str:
+    """Retrieve version information for subcommands
+
+    :param subcmd:  str, name of a subcommand
+
+    Calls the version of get_version() defined for subcmd and returns the version
+    number from that function's output.
+    """
+    return (
+        {
+            "anib": lambda: get_blast_version(),
+            "anim": lambda: get_nucmer_version(),
+            "aniblastall": lambda: get_blastall_version(),
+        }
+        .get(subcmd, lambda: None)()
+        .split("_")[-1]
+    )
+
+
 # Main function
 def run_main(argv: Optional[List[str]] = None) -> int:
     """Run main process for pyani.py script.
@@ -90,13 +113,19 @@ def run_main(argv: Optional[List[str]] = None) -> int:
 
     # Catch execution with no arguments
     if len(sys.argv) == 1:
-        sys.stderr.write("pyani version: {0}\n".format(__version__))
+        sys.stderr.write(f"pyani {__version__}")
         return 0
     elif len(sys.argv) == 2 and args.citation:
-        sys.stderr.write("pyani version: {0}\n\n".format(__version__))
+        sys.stderr.write("pyani version: {__version__}\n\n")
         sys.stderr.write(termcolor("CITATION INFO:\n\n", bold=True))
         for line in CITATION_INFO:
-            sys.stderr.write("{0}\n".format(line))
+            sys.stderr.write(f"{line}\n")
+        return 0
+    elif args.version:
+        sys.stderr.write(f"pyani {__version__}\n")
+        subcmd = sys.argv[1]
+        v_num = subcmd_version(subcmd)
+        sys.stderr.write(f"{subcmd} {v_num}\n")
         return 0
 
     # Set up logging

@@ -63,6 +63,8 @@ def build(
     )
     # Required positional arguments: input and output directories
     parser.add_argument(
+        "-i",
+        "--indir",
         action="store",
         dest="indir",
         default=None,
@@ -70,6 +72,8 @@ def build(
         help="input genome directory",
     )
     parser.add_argument(
+        "-o",
+        "--outdir",
         action="store",
         dest="outdir",
         default=None,
@@ -77,15 +81,15 @@ def build(
         help="output analysis results directory",
     )
     # Optional arguments
-    parser.add_argument(
-        "--version",
-        action="version",
-        version="pyani.py version: {0}; {1} version: {2}".format(
-            __version__,
-            pyani_config.NUCMER_DEFAULT,
-            anim.get_version(pyani_config.NUCMER_DEFAULT).split("_")[-1],
-        ),
-    )
+    # parser.add_argument(
+    #    "--version",
+    #    action="version",
+    #    version="pyani.py version: {0}§ {1} version: {2}".format(
+    #        __version__,
+    #        pyani_config.NUCMER_DEFAULT,
+    #        anim.get_version(pyani_config.NUCMER_DEFAULT).split("_")[-1],
+    #    ).replace('§', '\n\n    '),
+    # )
     parser.add_argument(
         "--dbpath",
         action="store",
