@@ -45,6 +45,8 @@ import time
 
 from typing import List, Optional
 
+# from . import pyani_config
+
 from pyani.logger import config_logger
 from pyani.pyani_tools import termcolor
 
@@ -58,7 +60,8 @@ CITATION_INFO = [
         "green",
     ),
     termcolor(
-        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,", "yellow",
+        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,",
+        "yellow",
     ),
     termcolor(
         "\t& Toth, I.K. (2016) 'Genomics and taxonomy in diagnostics for", "yellow"
@@ -94,7 +97,7 @@ def run_main(argv: Optional[List[str]] = None) -> int:
         sys.stderr.write(termcolor("CITATION INFO:\n\n", bold=True))
         for line in CITATION_INFO:
             sys.stderr.write("{0}\n".format(line))
-        return 0    
+        return 0
 
     # Set up logging
     time0 = time.time()
