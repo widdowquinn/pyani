@@ -98,11 +98,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         "--version", action="version", version="%(prog)s 0.3.0-alpha"
     )
     parser_main.add_argument(
-        "--citation",
-        action="store_true",
-        dest="citation",
-        default=False,
-        help="Display pyani citation",
+        "--citation", action="store_true", dest="citation", default=False, help="Display pyani citation"
     )
 
     # Parsers common to multiple subcommand parsers
