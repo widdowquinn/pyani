@@ -80,16 +80,6 @@ def build(
         type=Path,
         help="output analysis results directory",
     )
-    # Optional arguments
-    # parser.add_argument(
-    #    "--version",
-    #    action="version",
-    #    version="pyani.py version: {0}§ {1} version: {2}".format(
-    #        __version__,
-    #        pyani_config.NUCMER_DEFAULT,
-    #        anim.get_version(pyani_config.NUCMER_DEFAULT).split("_")[-1],
-    #    ).replace('§', '\n\n    '),
-    # )
     parser.add_argument(
         "--dbpath",
         action="store",
