@@ -58,7 +58,8 @@ CITATION_INFO = [
         "green",
     ),
     termcolor(
-        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,", "yellow",
+        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,",
+        "yellow",
     ),
     termcolor(
         "\t& Toth, I.K. (2016) 'Genomics and taxonomy in diagnostics for", "yellow"
