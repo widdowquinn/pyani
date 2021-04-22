@@ -25,6 +25,7 @@ Additional branches may also be found on GitHub, with bug fixes and or new featu
   - [Pull Requests](#pull-requests)
     - [Naming your branch](#naming-your-branch)
     - [Reviewing changes](#reviewing-changes)
+    - [Coding Conventions](#coding-conventions)
     - [Code Style Checks](#code-style-checks)
     - [Commit Message Convention](#commit-message-convention)
     - [Pre-commit Checks](#pre-commit-checks)
@@ -167,7 +168,7 @@ Please check your `git` log and consider rebasing or squashing any commits that 
 git log
 ```
 
-### Coding Conventions
+### Coding Conventions
 
 So far as is possible, we aim to follow the coding conventions as described in [PEP8](http://www.python.org/dev/peps/pep-0008/) and [PEP257](http://www.python.org/dev/peps/pep-0257/), but we have adopted `black` code styling, which does vary from the PEPs in places.
 
