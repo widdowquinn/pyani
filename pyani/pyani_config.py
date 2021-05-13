@@ -79,6 +79,7 @@ ANIBLASTALL_FILESTEMS = (
     "ANIblastall_similarity_errors",
     "ANIblastall_hadamard",
 )
+FASTANI_DEFAULT = "~/Software/fastANI/fastANI"
 FASTANI_FILESTEMS = ("grapevine_files",)
 # Output subdirectory names for each method
 ALIGNDIR = {
