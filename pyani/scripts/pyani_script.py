@@ -81,6 +81,26 @@ CITATION_INFO = [
 ]
 
 
+DEP_CITATIONS = [
+    "The authors of pyani gratefully acknowledge its dependence on",
+    "the following bioinformatics software:",
+    f"\t{termcolor('MUMmer3', 'cyan')}: S. Kurtz, A. Phillippy, A.L. Delcher, M. Smoot, M. Shumway,",
+    "\tC. Antonescu, and S.L. Salzberg (2004), 'Versatile and open software",
+    "\tfor comparing large genomes' Genome Biology 5:R12",
+    f"\t{termcolor('BLAST+', 'cyan')}: Camacho C., Coulouris G., Avagyan V., Ma N., Papadopoulos J.,",
+    "\tBealer K., & Madden T.L. (2008) 'BLAST+: architecture and applications.'",
+    "\tBMC Bioinformatics 10:421.",
+    f"\t{termcolor('BLAST', 'cyan')}: Altschul, S.F., Madden, T.L., Schäffer, A.A., Zhang, J.,",
+    "\tZhang, Z., Miller, W. & Lipman, D.J. (1997) 'Gapped BLAST and PSI-BLAST:",
+    "\ta new generation of protein database search programs.' Nucleic Acids Res.",
+    "\t25:3389-3402",
+    f"\t{termcolor('Biopython', 'cyan')}: Cock PA, Antao T, Chang JT, Chapman BA, Cox CJ, Dalke A,",
+    "\tFriedberg I, Hamelryck T, Kauff F, Wilczynski B and de Hoon MJL",
+    "\t(2009) Biopython: freely available Python tools for computational",
+    "\tmolecular biology and bioinformatics. Bioinformatics, 25, 1422-1423",
+]
+
+
 def get_subcmd_exe(subcmd: str, system: str) -> tuple:
     """Retrieve the executable name/location for the subcommand
 
@@ -141,20 +161,27 @@ def run_main(argv: Optional[List[str]] = None) -> int:
     if len(sys.argv) == 1:
         sys.stderr.write(f"pyani {__version__}\n\n")
         return 0
+    # Catch request for pyani citation information
     elif len(sys.argv) == 2 and args.citation:
-        sys.stderr.write("pyani version: {__version__}\n\n")
+        sys.stderr.write(f"pyani version: {__version__}\n\n")
         sys.stderr.write(termcolor("CITATION INFO:\n\n", bold=True))
         for line in CITATION_INFO:
             sys.stderr.write(f"{line}\n")
         return 0
-    elif args.version:
+    # Catch requests for subcmd-specific information
+    elif args.version or args.citation:
         sys.stderr.write(f"pyani {__version__}\n")
         subcmd = sys.argv[1]
         system, v_num = get_subcmd_version(subcmd)
         program, process = get_subcmd_exe(subcmd, system)
-        sys.stderr.write(
-            f"{program} {v_num}, located at {process.stdout.decode('utf-8')}"
-        )
+        if args.version:
+            sys.stderr.write(
+                f"{program} {v_num}, located at {process.stdout.decode('utf-8')}\n"
+            )
+        if args.citation:
+            sys.stderr.write(f"{program} {v_num}, citation:\n")
+            for line in DEP_CITATIONS:
+                sys.stderr.write(f"{line}\n")
         return 0
 
     # Set up logging
@@ -192,23 +219,5 @@ def add_log_headers():
 
     # Add dependency citations
     logger.info(termcolor("DEPENDENCIES", bold=True))
-    dep_citations = [
-        "The authors of pyani gratefully acknowledge its dependence on",
-        "the following bioinformatics software:",
-        f"\t{termcolor('MUMmer3', 'cyan')}: S. Kurtz, A. Phillippy, A.L. Delcher, M. Smoot, M. Shumway,",
-        "\tC. Antonescu, and S.L. Salzberg (2004), 'Versatile and open software",
-        "\tfor comparing large genomes' Genome Biology 5:R12",
-        f"\t{termcolor('BLAST+', 'cyan')}: Camacho C., Coulouris G., Avagyan V., Ma N., Papadopoulos J.,",
-        "\tBealer K., & Madden T.L. (2008) 'BLAST+: architecture and applications.'",
-        "\tBMC Bioinformatics 10:421.",
-        f"\t{termcolor('BLAST', 'cyan')}: Altschul, S.F., Madden, T.L., Schäffer, A.A., Zhang, J.,",
-        "\tZhang, Z., Miller, W. & Lipman, D.J. (1997) 'Gapped BLAST and PSI-BLAST:",
-        "\ta new generation of protein database search programs.' Nucleic Acids Res.",
-        "\t25:3389-3402",
-        f"\t{termcolor('Biopython', 'cyan')}: Cock PA, Antao T, Chang JT, Chapman BA, Cox CJ, Dalke A,",
-        "\tFriedberg I, Hamelryck T, Kauff F, Wilczynski B and de Hoon MJL",
-        "\t(2009) Biopython: freely available Python tools for computational",
-        "\tmolecular biology and bioinformatics. Bioinformatics, 25, 1422-1423",
-    ]
-    for line in dep_citations:
+    for line in DEP_CITATIONS:
         logger.info(line)
