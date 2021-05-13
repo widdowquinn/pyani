@@ -42,6 +42,7 @@
 import logging
 import sys
 import time
+import subprocess
 
 from typing import List, Optional
 
@@ -80,7 +81,32 @@ CITATION_INFO = [
 ]
 
 
-def subcmd_version(subcmd: str) -> str:
+def get_subcmd_exe(subcmd: str, system: str) -> tuple:
+    """Retrieve the executable name/location for the subcommand
+
+    :param subcmd:  str, name of a subcommand
+    """
+    if system == "Windows":
+        sys_cmd = "where"
+    else:
+        sys_cmd = "which"
+    return {
+        "anib": lambda: (
+            "BLAST",
+            subprocess.run([sys_cmd, "blastn"], capture_output=True),
+        ),
+        "anim": lambda: (
+            "NUCMER",
+            subprocess.run([sys_cmd, "nucmer"], capture_output=True),
+        ),
+        "aniblastall": lambda: (
+            "BLAST+",
+            subprocess.run([sys_cmd, "blastall"], capture_output=True),
+        ),
+    }.get(subcmd, lambda: None)()
+
+
+def get_subcmd_version(subcmd: str) -> str:
     """Retrieve version information for subcommands
 
     :param subcmd:  str, name of a subcommand
@@ -95,7 +121,7 @@ def subcmd_version(subcmd: str) -> str:
             "aniblastall": lambda: get_blastall_version(),
         }
         .get(subcmd, lambda: None)()
-        .split("_")[-1]
+        .split("_")
     )
 
 
@@ -113,7 +139,7 @@ def run_main(argv: Optional[List[str]] = None) -> int:
 
     # Catch execution with no arguments
     if len(sys.argv) == 1:
-        sys.stderr.write(f"pyani {__version__}")
+        sys.stderr.write(f"pyani {__version__}\n\n")
         return 0
     elif len(sys.argv) == 2 and args.citation:
         sys.stderr.write("pyani version: {__version__}\n\n")
@@ -124,8 +150,11 @@ def run_main(argv: Optional[List[str]] = None) -> int:
     elif args.version:
         sys.stderr.write(f"pyani {__version__}\n")
         subcmd = sys.argv[1]
-        v_num = subcmd_version(subcmd)
-        sys.stderr.write(f"{subcmd} {v_num}\n")
+        system, v_num = get_subcmd_version(subcmd)
+        program, process = get_subcmd_exe(subcmd, system)
+        sys.stderr.write(
+            f"{program} {v_num}, located at {process.stdout.decode('utf-8')}"
+        )
         return 0
 
     # Set up logging
