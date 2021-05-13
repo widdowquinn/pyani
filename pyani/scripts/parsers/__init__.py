@@ -59,10 +59,13 @@ from pyani.scripts.parsers import (
     listdeps_parser,
 )
 
+from pyani import __version__
+
 
 # Process command-line
 def parse_cmdline(argv: Optional[List] = None) -> Namespace:
-    """Parse command-line arguments for script.
+    """
+    Parse command-line arguments for script.
 
     :param argv:  Namespace, command-line arguments
 
@@ -95,16 +98,14 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         title="subcommands", description="valid subcommands", help="additional help"
     )
     parser_main.add_argument(
-        "--version", 
-        action="version", 
-        version="%(prog)s 0.3.0-alpha"
+        "--version", action="version", version=f"%(prog)s {__version__}"
     )
     parser_main.add_argument(
-        "--citation", 
-        action="store_true", 
-        dest="citation", 
-        default=False, 
-        help="Display pyani citation"
+        "--citation",
+        action="store_true",
+        dest="citation",
+        default=False,
+        help="Display pyani citation",
     )
 
     # Parsers common to multiple subcommand parsers
