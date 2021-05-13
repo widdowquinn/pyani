@@ -172,15 +172,19 @@ def run_main(argv: Optional[List[str]] = None) -> int:
     elif args.version or args.citation:
         sys.stderr.write(f"pyani {__version__}\n")
         subcmd = sys.argv[1]
-        system, v_num = get_subcmd_version(subcmd)
-        program, process = get_subcmd_exe(subcmd, system)
-        if args.version:
-            sys.stderr.write(
-                f"{program} {v_num}, located at {process.stdout.decode('utf-8')}\n"
-            )
-        if args.citation:
-            sys.stderr.write(f"{program} {v_num}, citation:\n")
-            for line in DEP_CITATIONS:
+        if subcmd in ("anib", "aniblastall", "anim"):
+            system, v_num = get_subcmd_version(subcmd)
+            program, process = get_subcmd_exe(subcmd, system)
+            if args.version:
+                sys.stderr.write(
+                    f"{program} {v_num}, located at {process.stdout.decode('utf-8')}\n"
+                )
+            if args.citation:
+                sys.stderr.write(f"{program} {v_num}, citation:\n")
+                for line in DEP_CITATIONS:
+                    sys.stderr.write(f"{line}\n")
+        elif args.citation:
+            for line in CITATION_INFO:
                 sys.stderr.write(f"{line}\n")
         return 0
 
