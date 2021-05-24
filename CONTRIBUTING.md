@@ -129,12 +129,12 @@ from the repository root directory
 
 ## Pull Requests
 
-If you plan to make a pull request, please begin by forking this repository, and creating a new branch with a short, descriptive name, instead of using the `development` branch.
+If you plan to make a pull request, please begin by forking this repository, and creating a new branch with a short, descriptive name, instead of using the `development`, `version_0_2`, `version_0_3`, `main`, or `master` branch.
 
 A workflow might look like this:
 
 1. Identify something you think you can change or add
-2. Fork this repository into your own account
+2. Fork this repository into your own account (but [please add write access for repository maintainers](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork))
 3. Obtain source code and set up a development environment as described above
 4. Create a new branch with a short, descriptive name (for the thing you're fixing/adding), and work on this branch locally
 5. When you're finished, check the changes/additions with `flake8`/`black` and test locally with `pytest -v`.
@@ -142,6 +142,8 @@ A workflow might look like this:
 7. Continue the discussion in the [`Pull requests` section](https://github.com/widdowquinn/pyani/pulls) of this repository on GitHub.
 
 **All tests must pass before a pull request will be merged at `GitHub`.**
+
+Please keep each pull request as *atomic* as possible - fixing or adding a single conceptually-complete issue/functionality. If you would like to add several features or fix several issues, please use a separate pull request for each one, where possible.
 
 ### Naming your branch
 
