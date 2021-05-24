@@ -1,0 +1,12 @@
+- [ ] Work on a single issue/concept (if there are multiple separate issues to address, please use a separate pull request for each)
+- [ ] Fork the `pyani` repository under your own account (please [allow write access for repository maintainers](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork))
+- [ ] Set up an appropriate development environment (please see `CONTRIBUTING.md`)
+- [ ] Create a new branch with a short, descriptive name
+- [ ] Work on this branch
+- [ ] Test locally with `pytest -v` **non-passing code will not be merged**
+- [ ] Rebase against `origin/master`
+- [ ] Check changes with `flake8` and `black` before submission
+- [ ] Commit branch
+- [ ] Submit pull request, describing the content and intent of the pull request
+- [ ] Request a code review
+- [ ] Continue the discussion at [`Pull requests` section](https://github.com/widdowquinn/pyani/pulls) in the `pyani` repository
