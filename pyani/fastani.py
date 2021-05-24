@@ -100,7 +100,9 @@ def generate_commands():
     pass
 
 
-def construct_cmdline():
+def construct_fastani_cmdline():
+    """Will return a fastcmd item"""
+    # return fastcmd
     pass
 
 

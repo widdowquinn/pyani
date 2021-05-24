@@ -27,16 +27,16 @@ def build(
     reference = parser.add_mutually_exclusive_group(required=True)
     query = parser.add_mutually_exclusive_group(required=True)
     # Required positional arguments: input and output directories
-    #    parser.add_argument(
-    #        "-i",
-    #        "--input",
-    #        required=True,
-    #        action="store",
-    #        dest="indir",
-    #        default=None,
-    #        type=Path,
-    #        help="input genome directory",
-    #    )
+    parser.add_argument(
+        "-i",
+        "--input",
+        required=True,
+        action="store",
+        dest="indir",
+        default=None,
+        type=Path,
+        help="input genome directory",
+    )
     parser.add_argument(  # I think this should be handled with pyani's overall output
         "-o",
         "--out",
