@@ -85,8 +85,8 @@ def get_version(fastani_exe: Path = pyani_config.FASTANI_DEFAULT) -> str:
     return f"{platform.system()}_{version}"
 
 
-# Generate list of Job objects, one per NUCmer run
-def generate_jobs(
+# Generate list of Job objects, one per fastANI run -> this is maybe not necessary
+def generate_fastani_jobs(
     reference: Path,
     query: Path,
     outdir: Path = Path("."),
@@ -116,6 +116,7 @@ def parse_output_file(filename: Path) -> ComparisonResult:
     Extracts the ANI estimate, the number of orthologous matches, and the
     number of sequence fragments considered from the fastANI output file.
     """
+    # ¶ Example code from a different project
     # def add_snp(holder, type, key, *value):
     #    holder[key] = type(*value)
     # Create some sort of holder:
@@ -124,7 +125,7 @@ def parse_output_file(filename: Path) -> ComparisonResult:
         if len(line) == 5:
             box.append(ComparisonResult(*line))
         else:
-            raise ValueError("Line contains too many items: %s" % line)
+            raise ValueError("Line contains too many/too few items: %s" % line)
             continue
     return box
 
