@@ -611,15 +611,16 @@ def update_comparison_matrices(session, run) -> None:
     for cmp in run.comparisons.all():
         qid, sid = cmp.query_id, cmp.subject_id
         df_identity.loc[qid, sid] = cmp.identity
-        df_identity.loc[sid, qid] = cmp.identity
         df_coverage.loc[qid, sid] = cmp.cov_query
-        df_coverage.loc[sid, qid] = cmp.cov_subject
         df_alnlength.loc[qid, sid] = cmp.aln_length
-        df_alnlength.loc[sid, qid] = cmp.aln_length
         df_simerrors.loc[qid, sid] = cmp.sim_errs
-        df_simerrors.loc[sid, qid] = cmp.sim_errs
         df_hadamard.loc[qid, sid] = cmp.identity * cmp.cov_query
-        df_hadamard.loc[sid, qid] = cmp.identity * cmp.cov_subject
+        if cmp.program in ["nucmer"]:
+            df_hadamard.loc[sid, qid] = cmp.identity * cmp.cov_subject
+            df_simerrors.loc[sid, qid] = cmp.sim_errs
+            df_alnlength.loc[sid, qid] = cmp.aln_length
+            df_coverage.loc[sid, qid] = cmp.cov_subject
+            df_identity.loc[sid, qid] = cmp.identity
 
     # Add matrices to the database
     run.df_identity = df_identity.to_json()
