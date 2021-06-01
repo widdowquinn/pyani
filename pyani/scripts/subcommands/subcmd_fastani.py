@@ -8,6 +8,7 @@ from argparse import (
 )  # unsure what this does [LP: makes it easier to mock CLI stuff; also mypy hints]
 from itertools import (
     permutations,
+    combinations,
 )  # may be specific to anib [LP: yes; ANIb is asymmetrical, but fastANI will take care of what permutations does if you pass a file list; I'd expect you'd only need this when passing jobs out via SLURM/SGE]
 from pathlib import Path, PosixPath
 from typing import List, Tuple, NamedTuple
@@ -44,6 +45,9 @@ class ComparisonJob(NamedTuple):
     ref: str
     fastcmd: str
     outfile: Path
+    kmerSize: int
+    fragLen: int
+    minFraction: float
     job: pyani_jobs.Job
 
 
@@ -63,18 +67,18 @@ class ComparisonResult(NamedTuple):
     """Convenience struct for a single fastani comparison result."""
 
     qid: float
-    sid: float
+    rid: float
     aln_length: int
     sim_errs: int
     pid: float
     qlen: int
-    slen: int
+    rlen: int
     qcov: float
-    scov: float
+    rcov: float
 
 
 def subcmd_fastani(args: Namespace) -> None:
-    """"""
+    """ """
     logger = logging.getLogger(__name__)
 
     # announce that we're starting
@@ -152,7 +156,7 @@ def subcmd_fastani(args: Namespace) -> None:
     logger.info(
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
-    comparisons = list(permutations(tqdm(genomes, disable=args.disable_tqdm), 2))
+    comparisons = list(combinations(tqdm(genomes, disable=args.disable_tqdm), 2))
     logger.info("\t...total pairwise comparisons to be performed: %d", len(comparisons))
 
     # Check for existing comparisons; if one has already been done (for the same
@@ -165,8 +169,10 @@ def subcmd_fastani(args: Namespace) -> None:
         comparisons,
         "fastANI",
         fastani_version,
-        None,  # fragsize
-        None,  # maxmatch
+        kmersize=args.kmer,
+        fragsize=None,  # fragsize
+        maxmatch=None,  # maxmatch
+        minmatch=args.minFraction,
     )
     logger.info(
         "\t...after check, still need to run %d comparisons", len(comparisons)
@@ -204,19 +210,19 @@ def subcmd_fastani(args: Namespace) -> None:
 
     # Create list of FastANI jobs for each comparison still to be performed
     logger.info("Creating fastani jobs for fastANI...")
-    joblist = generate_joblist(comparisons_to_run, existingfiles, args)
-    logger.debug("...created %d fastani jobs", len(joblist))
+    job = generate_joblist(comparisons_to_run, existingfiles, args)
+    logger.debug("...created %d fastani jobs", len(job))
 
     # Pass jobs to appropriate scheduler
-    logger.debug("Passing %s jobs to %s...", len(joblist), args.scheduler)
-    run_fastani_jobs(joblist, args)
+    logger.debug("Passing %s jobs to %s...", len(job), args.scheduler)
+    run_fastani_jobs(job, args)
     logger.info("...jobs complete")
 
     # Process output and add results to database
     # This requires us to drop out of threading/multiprocessing: Python's SQLite3
     # interface doesn't allow sharing connecitons and cursors
     logger.info("Adding comparison results to database...")
-    update_comparison_results(joblist, run, session, fastani_version, args)
+    update_comparison_results(job, run, session, fastani_version, args)
     update_comparison_matrices(session, run)
     logger.info("...database updated.")
 
@@ -235,7 +241,7 @@ def generate_joblist(
     logger = logging.getLogger(__name__)
 
     joblist = []  # will hold ComparisonJob structs
-    for idx, (query, ref) in enumerate(tqdm(comparisons, disables=args.disable_tqdm)):
+    for idx, (query, ref) in enumerate(tqdm(comparisons, disable=args.disable_tqdm)):
         # ¶ need to make a thing that produces this
         fastcmd = fastani.construct_fastani_cmdline(
             query.path,
@@ -245,32 +251,42 @@ def generate_joblist(
             args.kmer,
             args.fragLen,
             args.minFraction,
-            args.matrix,
         )
-    logger.debug("Commands to run:\n\t%s", fastcmd)
-    outprefix = fastcmd.split()[3]  # prefix for fastANI output
-    # ¶ There is likely no need to test for different output files
-    # ¶ The only exception might be something with --matrix
-    outfname = Path(outprefix + ".fastani")  # ¶ unsure about this suffix
-    logger.debug("Expected output file for db: %s", outfname)
-    if args.matrix:
-        outfname_2 = Path(outprefix + ".matrix")
-        logger.debug("Expected matrix output file: %s", outfname_2)
+        logger.debug("Commands to run:\n\t%s", fastcmd)
+        outprefix = fastcmd.split()[6]  # ¶ should this be hard-coded???
+        # ¶ There is likely no need to test for different output files
+        # ¶ The only exception might be something with --matrix
+        outfname = Path(outprefix + ".fastani")  # ¶ unsure about this suffix
+        logger.debug("Expected output file for db: %s", outfname)
+        if args.matrix:
+            outfname_2 = Path(outprefix + ".matrix")
+            logger.debug("Expected matrix output file: %s", outfname_2)
 
-    # If we're in recovery mode, we don't want to repeat a computational
-    # comparison that already exists, so we check whether the ultimate
-    # output is in the set of existing files and, if not, we add the jobs
-    # TODO: something faster than a list search (dict or set?)
-    # The comparisons collections always gets updated, so that results are
-    # added to the database whether they come from recovery mode or are run
-    # in this call of the script.
-    if args.recovery and outfname.name in existingfiles:
-        logger.debug("Recovering output from %s, not building job", outfname)
-    else:
-        logger.debug("Building job")
-        # Build jobs
-        fastjob = pyani_jobs.Job("%s_%06d-fast" % (args.jobprefix, idx), fastcmd)
-        joblist.append(ComparisonJob(query, ref, fastcmd, outfname, fastjob))
+        # If we're in recovery mode, we don't want to repeat a computational
+        # comparison that already exists, so we check whether the ultimate
+        # output is in the set of existing files and, if not, we add the jobs
+        # TODO: something faster than a list search (dict or set?)
+        # The comparisons collections always gets updated, so that results are
+        # added to the database whether they come from recovery mode or are run
+        # in this call of the script.
+        if args.recovery and outfname.name in existingfiles:
+            logger.debug("Recovering output from %s, not building job", outfname)
+        else:
+            logger.debug("Building job")
+            # Build jobs
+            fastjob = pyani_jobs.Job("%s_%06d-fast" % (args.jobprefix, idx), fastcmd)
+            joblist.append(
+                ComparisonJob(
+                    query,
+                    ref,
+                    fastcmd,
+                    outfname,
+                    args.kmer,
+                    args.fragLen,
+                    args.minFraction,
+                    fastjob,
+                )
+            )
     return joblist
 
 
@@ -339,28 +355,42 @@ def update_comparison_results(
     logger = logging.getLogger(__name__)
 
     # Add individual results to Comparison table
-    for job in tqdm(joblist, disale=args.disable_tqdm):
-        logger.debug("\t%s vs %s", job.query.description, job.subject.description)
+    for job in tqdm(joblist, disable=args.disable_tqdm):
+        logger.debug("\t%s vs %s", job.query.description, job.ref.description)
         # ¶ fastANI allows many runs to share the same outfile; might have to alter this
         # ¶ May also need to use something other than this Comparison object
         # ¶ Or add new columns?
-        query, ref, ani, aln_frag, num_frags = fastani.parse_fastani(job.outfile)
+        contents = fastani.parse_fastani_file(job.outfile)
+        if len(contents) > 1:
+            raise ValueError(
+                f"fastANI output file {job.outfile} has more than one line"
+            )
+        print(contents[0])
+        query, ref, ani, matches, num_frags = contents[0]
+        aln_length = matches
+        sim_errs = int(num_frags) - int(aln_length)
+        qcov = float(aln_length) * job.fragLen / job.query.length
+        # try:
+        #   pid = (1 - sim_errs) / int(aln_length)
+        # except ZeroDivisionError:  # aln_length was zero (no alignment)
+        #   pid = 0
         run.comparisons.append(
             Comparison(
                 query=job.query,
                 subject=job.ref,
-                aln_length=aln_frag,
-                sim_errs=None,
+                aln_length=int(aln_length),
+                sim_errs=int(sim_errs),
                 identity=ani,
-                cov_query=None,
+                cov_query=qcov,
                 cov_subject=None,
                 program="fastANI",
                 version=fastani_version,
-                fragLen=job.fragLen,
+                kmersize=job.kmerSize,
+                fragsize=job.fragLen,
                 maxmatch=False,
+                minmatch=job.minFraction,
             )
         )
-
     # Populate db
     logger.debug("Committing results to database")
     session.commit()
