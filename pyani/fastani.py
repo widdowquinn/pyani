@@ -58,7 +58,7 @@ class ComparisonResult(NamedTuple):
     reference: Path
     query: Path
     ani: float
-    orthologs: int
+    matches: int
     fragments: int
 
 
@@ -264,12 +264,12 @@ def process_files(
             outfile
         )  # Returns a list of ComparisonResult objects
         for result in resultList:
-            if result.orthologs == 0 and logger is not None:
+            if result.matches == 0 and logger is not None:
                 if logger:
                     logger.warning(
                         "Total alignment length reported in %s is zero!", outfile
                     )
-            tot_length = result.orthologs
+            tot_length = result.matches
             sim_errors = result.fragments - tot_length
             query_cover = float(tot_length) / org_lengths[qname]
 
@@ -295,7 +295,7 @@ def process_files(
 #    reference: Path
 #    query: Path
 #    ani: float
-#    orthologs: int
+#    matches: int
 #    fragments: int
 # fastANI is a fast alignment-free implementation for computing whole-genome
 # Average Nucleotide Identity (ANI) between genomes
