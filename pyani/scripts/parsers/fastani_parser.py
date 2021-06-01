@@ -24,9 +24,7 @@ def build(
     parser = subps.add_parser(
         "fastani", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
-    reference = parser.add_mutually_exclusive_group(required=True)
-    query = parser.add_mutually_exclusive_group(required=True)
-    # Required positional arguments: input and output directories
+    # Required arguments: input and output directories
     parser.add_argument(
         "-i",
         "--input",
@@ -46,38 +44,6 @@ def build(
         default=None,
         type=Path,
         help="output analysis results directory",
-    )
-    reference.add_argument(  # I think the -r/-rl/-q/-ql options will be defined when you compile fastaANI, rather than in user control
-        "-r",
-        "--ref",
-        dest="ref",
-        action="store",
-        type=Path,
-        help="path to reference genome",
-    )
-    reference.add_argument(
-        "-rl",
-        "--refList",
-        dest="refList",
-        action="store",
-        type=Path,
-        help="path to reference list file",
-    )
-    query.add_argument(
-        "-q",
-        "--query",
-        dest="query",
-        action="store",
-        type=Path,
-        help="path to query genome",
-    )
-    query.add_argument(
-        "-ql",
-        "--queryList",
-        dest="queryList",
-        action="store",
-        type=Path,
-        help="path to query list file",
     )
     # Optional arguments
     parser.add_argument(  # keep ;)
