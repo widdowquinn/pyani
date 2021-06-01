@@ -156,7 +156,7 @@ def subcmd_fastani(args: Namespace) -> None:
     logger.info(
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
-    comparisons = list(combinations(tqdm(genomes, disable=args.disable_tqdm), 2))
+    comparisons = list(permutations(tqdm(genomes, disable=args.disable_tqdm), 2))
     logger.info("\t...total pairwise comparisons to be performed: %d", len(comparisons))
 
     # Check for existing comparisons; if one has already been done (for the same
