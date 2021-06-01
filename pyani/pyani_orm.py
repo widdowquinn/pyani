@@ -438,6 +438,7 @@ def filter_existing_comparisons(
     comparisons that still need to be run.
     """
     existing_comparisons = get_comparison_dict(session)
+    print(f"Existing comparisons: {existing_comparisons}")
     comparisons_to_run = []
     for (qgenome, sgenome) in comparisons:
         try:
@@ -457,6 +458,7 @@ def filter_existing_comparisons(
             session.commit()
         except KeyError:
             comparisons_to_run.append((qgenome, sgenome))
+    print(f"Comparisons to run inside ORM file: {comparisons_to_run}")
     return comparisons_to_run
 
 
