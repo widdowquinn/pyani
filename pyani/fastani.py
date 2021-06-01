@@ -182,7 +182,7 @@ def construct_fastani_cmdline(
     return fastcmd
 
 
-def parse_output_file(filename: Path) -> ComparisonResult:
+def parse_fastani_file(filename: Path) -> ComparisonResult:
     """
     Return (ref genome, query genome, ANI estimate, orthologous matches,
     sequence fragments) tuple.
@@ -260,7 +260,7 @@ def process_files(
                     outfile,
                 )
             continue
-        resultList = parse_output_file(
+        resultList = parse_fastani_file(
             outfile
         )  # Returns a list of ComparisonResult objects
         for result in resultList:
