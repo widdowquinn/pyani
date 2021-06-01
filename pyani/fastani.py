@@ -177,8 +177,8 @@ def construct_fastani_cmdline(
     query, ref = Path(query), Path(ref)
 
     # Compile commands
-    outprefix = outdir / f"{query.stem}_vs_{ref.stem}"
-    fastcmd = f"{fastani_exe} -q {query} -r {ref} -o {outprefix} -k {kmer} --fragLen {fragLen} --minFraction {minFraction}"
+    outfile = outdir / f"{query.stem}_vs_{ref.stem}.fastani"
+    fastcmd = f"{fastani_exe} -q {query} -r {ref} -o {outfile} -k {kmer} --fragLen {fragLen} --minFraction {minFraction}"
     return fastcmd
 
 

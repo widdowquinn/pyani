@@ -253,14 +253,11 @@ def generate_joblist(
             args.minFraction,
         )
         logger.debug("Commands to run:\n\t%s", fastcmd)
-        outprefix = fastcmd.split()[6]  # ¶ should this be hard-coded???
+        outfile = fastcmd.split()[6]  # ¶ should this be hard-coded???
         # ¶ There is likely no need to test for different output files
         # ¶ The only exception might be something with --matrix
-        outfname = Path(outprefix + ".fastani")  # ¶ unsure about this suffix
+        outfname = Path(outfile)  # ¶ unsure about this suffix
         logger.debug("Expected output file for db: %s", outfname)
-        if args.matrix:
-            outfname_2 = Path(outprefix + ".matrix")
-            logger.debug("Expected matrix output file: %s", outfname_2)
 
         # If we're in recovery mode, we don't want to repeat a computational
         # comparison that already exists, so we check whether the ultimate
