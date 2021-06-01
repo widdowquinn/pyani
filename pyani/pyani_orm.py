@@ -268,22 +268,31 @@ class Comparison(Base):
     __tablename__ = "comparisons"
     __table_args__ = (
         UniqueConstraint(
-            "query_id", "subject_id", "program", "version", "fragsize", "maxmatch"
+            "query_id",
+            "subject_id",
+            "program",
+            "version",
+            "kmersize",
+            "fragsize",
+            "maxmatch",
+            "minmatch",
         ),
     )
 
     comparison_id = Column(Integer, primary_key=True)
     query_id = Column(Integer, ForeignKey("genomes.genome_id"), nullable=False)
     subject_id = Column(Integer, ForeignKey("genomes.genome_id"), nullable=False)
-    aln_length = Column(Integer)
-    sim_errs = Column(Integer)
+    aln_length = Column(Integer)  # in fastANI this is matchedfrags * fragLength
+    sim_errs = Column(Integer)  # in fastANI this is allfrags - matchedfrags
     identity = Column(Float)
-    cov_query = Column(Float)
-    cov_subject = Column(Float)
+    cov_query = Column(Float)  # in fastANI this is matchedfrags/allfrags
+    cov_subject = Column(Float)  # in fastANI this is Null
     program = Column(String)
     version = Column(String)
-    fragsize = Column(Integer)
-    maxmatch = Column(Boolean)
+    kmersize = Column(Integer)
+    fragsize = Column(Integer)  # in fastANI this is fragLength
+    maxmatch = Column(Boolean)  # in fastANi this is Null
+    minmatch = Column(Float)
 
     query = relationship(
         "Genome", foreign_keys=[query_id], back_populates="query_comparisons"
@@ -340,7 +349,16 @@ def get_comparison_dict(session: Any) -> Dict[Tuple, Any]:
     _.program, _.version, _.fragsize, _.maxmatch) tuple
     """
     return {
-        (_.query_id, _.subject_id, _.program, _.version, _.fragsize, _.maxmatch): _
+        (
+            _.query_id,
+            _.subject_id,
+            _.program,
+            _.version,
+            _.kmersize,
+            _.fragsize,
+            _.maxmatch,
+            _.minmatch,
+        ): _
         for _ in session.query(Comparison).all()
     }
 
@@ -399,8 +417,10 @@ def filter_existing_comparisons(
     comparisons,
     program,
     version,
+    kmersize: Optional[int] = 16,
     fragsize: Optional[int] = None,
     maxmatch: Optional[bool] = None,
+    minmatch: Optional[float] = 0.2,
 ) -> List:
     """Filter list of (Genome, Genome) comparisons for those not in the session db.
 
@@ -467,7 +487,7 @@ def add_run(session, method, cmdline, date, status, name):
 
 
 def add_run_genomes(
-    session, run, indir: Path, classpath: Path, labelpath: Path
+    session, run, indir: Path, classpath: Path, labelpath: Path, **kwargs
 ) -> List:
     """Add genomes for a run to the database.
 
@@ -517,7 +537,6 @@ def add_run_genomes(
             raise PyaniORMException("Could not read genome files for database import")
         abspath = fastafile.resolve()
         genome_len = get_genome_length(abspath)
-
         # If the genome is not already in the database, add it as a Genome object
         genome = session.query(Genome).filter(Genome.genome_hash == inhash).first()
         if not isinstance(genome, Genome):
