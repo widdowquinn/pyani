@@ -95,7 +95,10 @@ def get_fasta_and_hash_paths(dirname: Path = Path(".")) -> List[Tuple[Path, Path
     infiles = get_fasta_paths(dirname)
     outfiles = []
     for infile in infiles:
+        # retain original extension and add .md5
         hashfile = infile.with_name(f"{infile.name}.md5")
+        # if a hashfile with that name is not found, check for one
+        # where the original extension has been removed
         if not hashfile.is_file():
             sys.stderr.write(f"Hashfile {hashfile} does not exist")
             sys.stderr.write(f"Trying {infile.stem}.md5")
