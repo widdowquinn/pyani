@@ -118,9 +118,9 @@ def run_main(argv: Optional[List[str]] = None) -> int:
         termcolor("Completed. Time taken: %.3f", bold=True), (time.time() - time0)
     )
 
-    # Was citation info requested?
-    if args.citation:
-        sys.stdout.write("\n".join(CITATION_INFO) + "\n\n")
+    ## Was citation info requested?
+    # if args.citation:
+    #    sys.stdout.write("\n".join(CITATION_INFO) + "\n\n")
 
     return returnval
 
