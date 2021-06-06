@@ -42,21 +42,14 @@
 import logging
 import sys
 import time
-import subprocess
 
 from typing import List, Optional
-
-# from . import pyani_config
 
 from pyani.logger import config_logger
 from pyani.pyani_tools import termcolor
 
 from .parsers import parse_cmdline
 from .. import __version__
-
-from pyani.anib import get_version as get_blast_version
-from pyani.aniblastall import get_version as get_blastall_version
-from pyani.anim import get_version as get_nucmer_version
 
 
 CITATION_INFO = [
