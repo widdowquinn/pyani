@@ -86,4 +86,6 @@ def build() -> ArgumentParser:
         default=False,
         help="Turn off tqdm progress bar",
     )
+    parser.add_argument("--version", action="store_true", dest="version")
+    parser.add_argument("--citation", action="store_true", dest="citation")
     return parser
