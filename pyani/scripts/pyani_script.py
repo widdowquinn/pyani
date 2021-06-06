@@ -81,70 +81,6 @@ CITATION_INFO = [
 ]
 
 
-DEP_CITATIONS = [
-    "The authors of pyani gratefully acknowledge its dependence on",
-    "the following bioinformatics software:",
-    f"\t{termcolor('MUMmer3', 'cyan')}: S. Kurtz, A. Phillippy, A.L. Delcher, M. Smoot, M. Shumway,",
-    "\tC. Antonescu, and S.L. Salzberg (2004), 'Versatile and open software",
-    "\tfor comparing large genomes' Genome Biology 5:R12",
-    f"\t{termcolor('BLAST+', 'cyan')}: Camacho C., Coulouris G., Avagyan V., Ma N., Papadopoulos J.,",
-    "\tBealer K., & Madden T.L. (2008) 'BLAST+: architecture and applications.'",
-    "\tBMC Bioinformatics 10:421.",
-    f"\t{termcolor('BLAST', 'cyan')}: Altschul, S.F., Madden, T.L., Schäffer, A.A., Zhang, J.,",
-    "\tZhang, Z., Miller, W. & Lipman, D.J. (1997) 'Gapped BLAST and PSI-BLAST:",
-    "\ta new generation of protein database search programs.' Nucleic Acids Res.",
-    "\t25:3389-3402",
-    f"\t{termcolor('Biopython', 'cyan')}: Cock PA, Antao T, Chang JT, Chapman BA, Cox CJ, Dalke A,",
-    "\tFriedberg I, Hamelryck T, Kauff F, Wilczynski B and de Hoon MJL",
-    "\t(2009) Biopython: freely available Python tools for computational",
-    "\tmolecular biology and bioinformatics. Bioinformatics, 25, 1422-1423",
-]
-
-
-def get_subcmd_exe(subcmd: str, system: str) -> tuple:
-    """Retrieve the executable name/location for the subcommand
-
-    :param subcmd:  str, name of a subcommand
-    """
-    if system == "Windows":
-        sys_cmd = "where"
-    else:
-        sys_cmd = "which"
-    return {
-        "anib": lambda: (
-            "BLAST",
-            subprocess.run([sys_cmd, "blastn"], capture_output=True),
-        ),
-        "anim": lambda: (
-            "NUCMER",
-            subprocess.run([sys_cmd, "nucmer"], capture_output=True),
-        ),
-        "aniblastall": lambda: (
-            "BLAST+",
-            subprocess.run([sys_cmd, "blastall"], capture_output=True),
-        ),
-    }.get(subcmd, lambda: None)()
-
-
-def get_subcmd_version(subcmd: str) -> str:
-    """Retrieve version information for subcommands
-
-    :param subcmd:  str, name of a subcommand
-
-    Calls the version of get_version() defined for subcmd and returns the version
-    number from that function's output.
-    """
-    return (
-        {
-            "anib": lambda: get_blast_version(),
-            "anim": lambda: get_nucmer_version(),
-            "aniblastall": lambda: get_blastall_version(),
-        }
-        .get(subcmd, lambda: None)()
-        .split("_")
-    )
-
-
 # Main function
 def run_main(argv: Optional[List[str]] = None) -> int:
     """Run main process for pyani.py script.
@@ -156,36 +92,20 @@ def run_main(argv: Optional[List[str]] = None) -> int:
         args = parse_cmdline()
     else:
         args = parse_cmdline(argv)
-
     # Catch execution with no arguments
     if len(sys.argv) == 1:
-        sys.stderr.write(f"pyani {__version__}\n\n")
-        return 0
-    # Catch request for pyani citation information
-    elif len(sys.argv) == 2 and args.citation:
         sys.stderr.write(f"pyani version: {__version__}\n\n")
-        sys.stderr.write(termcolor("CITATION INFO:\n\n", bold=True))
-        for line in CITATION_INFO:
-            sys.stderr.write(f"{line}\n")
         return 0
-    # Catch requests for subcmd-specific information
-    elif args.version or args.citation:
-        sys.stderr.write(f"pyani {__version__}\n")
-        subcmd = sys.argv[1]
-        if subcmd in ("anib", "aniblastall", "anim"):
-            system, v_num = get_subcmd_version(subcmd)
-            program, process = get_subcmd_exe(subcmd, system)
-            if args.version:
-                sys.stderr.write(
-                    f"{program} {v_num}, located at {process.stdout.decode('utf-8')}\n"
-                )
-            if args.citation:
-                sys.stderr.write(f"{program} {v_num}, citation:\n")
-                for line in DEP_CITATIONS:
-                    sys.stderr.write(f"{line}\n")
-        elif args.citation:
+    # Catch requests for citation and version information
+    if sys.argv[1].startswith("-"):
+        if args.citation:
+            sys.stderr.write(f"pyani version: {__version__}\n\n")
             for line in CITATION_INFO:
                 sys.stderr.write(f"{line}\n")
+            return 0
+        if args.version:
+            sys.stderr.write(f"pyani version: {__version__}\n\n")
+            return 0
         return 0
 
     # Set up logging
@@ -223,5 +143,23 @@ def add_log_headers():
 
     # Add dependency citations
     logger.info(termcolor("DEPENDENCIES", bold=True))
-    for line in DEP_CITATIONS:
+    dep_citations = [
+        "The authors of pyani gratefully acknowledge its dependence on",
+        "the following bioinformatics software:",
+        f"\t{termcolor('MUMmer3', 'cyan')}: S. Kurtz, A. Phillippy, A.L. Delcher, M. Smoot, M. Shumway,",
+        "\tC. Antonescu, and S.L. Salzberg (2004), 'Versatile and open software",
+        "\tfor comparing large genomes' Genome Biology 5:R12",
+        f"\t{termcolor('BLAST+', 'cyan')}: Camacho C., Coulouris G., Avagyan V., Ma N., Papadopoulos J.,",
+        "\tBealer K., & Madden T.L. (2008) 'BLAST+: architecture and applications.'",
+        "\tBMC Bioinformatics 10:421.",
+        f"\t{termcolor('BLAST', 'cyan')}: Altschul, S.F., Madden, T.L., Schäffer, A.A., Zhang, J.,",
+        "\tZhang, Z., Miller, W. & Lipman, D.J. (1997) 'Gapped BLAST and PSI-BLAST:",
+        "\ta new generation of protein database search programs.' Nucleic Acids Res.",
+        "\t25:3389-3402",
+        f"\t{termcolor('Biopython', 'cyan')}: Cock PA, Antao T, Chang JT, Chapman BA, Cox CJ, Dalke A,",
+        "\tFriedberg I, Hamelryck T, Kauff F, Wilczynski B and de Hoon MJL",
+        "\t(2009) Biopython: freely available Python tools for computational",
+        "\tmolecular biology and bioinformatics. Bioinformatics, 25, 1422-1423",
+    ]
+    for line in dep_citations:
         logger.info(line)
