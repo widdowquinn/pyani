@@ -44,7 +44,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from pyani import pyani_config
-from pyani import anim
+
 from pyani.scripts import subcommands
 
 from pyani import __version__
