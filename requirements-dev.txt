@@ -1,5 +1,6 @@
 bandit
 black
+blacken-docs
 codecov
 coverage
 doc8

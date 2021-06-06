@@ -13,28 +13,32 @@ Additional branches may also be found on GitHub, with bug fixes and or new featu
 
 <!-- TOC -->
 
-- [Table of Contents](#table-of-contents)
-- [Licensing](#licensing)
-- [How to Contribute](#how-to-contribute)
+- [Contributing to `pyani`](#contributing-to-pyani)
+  - [Table of Contents](#table-of-contents)
+  - [Licensing](#licensing)
+  - [How to Contribute](#how-to-contribute)
     - [Getting the source code](#getting-the-source-code)
     - [Setting up a development environment](#setting-up-a-development-environment)
+      - [Cleaning up development environment](#cleaning-up-development-environment)
     - [Editing source code](#editing-source-code)
     - [Editing documentation](#editing-documentation)
-- [Pull Requests](#pull-requests)
+  - [Pull Requests](#pull-requests)
+    - [Naming your branch](#naming-your-branch)
     - [Reviewing changes](#reviewing-changes)
     - [Coding Conventions](#coding-conventions)
     - [Code Style Checks](#code-style-checks)
+    - [Commit Message Convention](#commit-message-convention)
     - [Pre-commit Checks](#pre-commit-checks)
     - [Testing](#testing)
     - [Local Testing](#local-testing)
     - [Continuous Integration](#continuous-integration)
-- [Versioning](#versioning)
+  - [Versioning](#versioning)
 
 <!-- /TOC -->
 
 ## Licensing
 
-`pyani` is shared under the [MIT License](https://opensource.org/licenses/MIT) (see LICENSE file for details), and it any contributions you make will be licensed under this agreement.
+`pyani` is shared under the [MIT License](https://opensource.org/licenses/MIT) (see LICENSE file for details), and any contributions you make will be licensed under this agreement.
 
 ## How to Contribute
 
@@ -125,12 +129,12 @@ from the repository root directory
 
 ## Pull Requests
 
-If you plan to make a pull request, please begin by forking this repository, and creating a new branch with a short, descriptive name, instead of using the `development` branch.
+If you plan to make a pull request, please begin by forking this repository, and creating a new branch with a short, descriptive name, instead of using the `development`, `version_0_2`, `version_0_3`, `main`, or `master` branch.
 
 A workflow might look like this:
 
 1. Identify something you think you can change or add
-2. Fork this repository into your own account
+2. Fork this repository into your own account (but [please add write access for repository maintainers](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork))
 3. Obtain source code and set up a development environment as described above
 4. Create a new branch with a short, descriptive name (for the thing you're fixing/adding), and work on this branch locally
 5. When you're finished, check the changes/additions with `flake8`/`black` and test locally with `pytest -v`.
@@ -138,6 +142,13 @@ A workflow might look like this:
 7. Continue the discussion in the [`Pull requests` section](https://github.com/widdowquinn/pyani/pulls) of this repository on GitHub.
 
 **All tests must pass before a pull request will be merged at `GitHub`.**
+
+Please keep each pull request as *atomic* as possible - fixing or adding a single conceptually-complete issue/functionality. If you would like to add several features or fix several issues, please use a separate pull request for each one, where possible.
+
+### Naming your branch
+
+- If you are proposing a fix to an issue, please give your branch a name that reflects this. For example, if you were proposing to fix issue #150, please call your branch `issue_150` (or some similar variation).
+- If you are handling a pull request from a fork, with a view to merging, please indicate the PR number somewhere in the local branch name when you pull the forked version into the repository. For example, if you were handling pull request #250 which refers to a fork from `kenny_loggins/pyani`, please call your local branch `pr_250` (or some similar variation).
 
 ### Reviewing changes
 
@@ -159,7 +170,7 @@ Please check your `git` log and consider rebasing or squashing any commits that 
 git log
 ```
 
-### Coding Conventions
+### Coding Conventions
 
 So far as is possible, we aim to follow the coding conventions as described in [PEP8](http://www.python.org/dev/peps/pep-0008/) and [PEP257](http://www.python.org/dev/peps/pep-0257/), but we have adopted `black` code styling, which does vary from the PEPs in places.
 
@@ -168,6 +179,59 @@ We are moving to writing all docstrings as reStructuredText, for usage with Sphi
 ### Code Style Checks
 
 We use the `flake8`, `doc8`, and `pylint` tools for style checks. These will be installed if you have used `make setup_env` to set up your development environment.
+
+### Commit Message Convention
+
+`git` commit messages are an important way to manage a readable revision history. We use the following conventions:
+
+- **If a commit fixes an issue, state this in the commit message**
+  - `GitHub` Projects picks up on terms like `fixes #123` and `closes #987`. Using these phrases makes project management much easier.
+
+- **Every commit gets a short description**
+  - The short description should be in *imperative form* and *around 50 characters or less*
+  - The short description can, but need not, include the name of the file that is modified
+  - There should be a short account of what the change does
+  - The short discription *should not only contain the name of the file that is modified*
+
+For example, if the commit updates some documentation, the following are good short descriptions:
+
+- `update citations.rst to add new references`
+- `update docs to add new references; fixes #567`
+- `add new references to citations.rst`
+
+The following are bad short descriptions
+
+- `update citations.rst` (does not say what was done)
+- `there were some new references so I added them` (not in imperative form)
+- `citations.rst` (does not say what was done)
+- `part of some doc updates` (does not say what was done)
+
+- **Some commits get long/extended descriptions**
+  - Long descriptions should be included where there is more information to share than can be fit in the short description
+  - Long descriptions are free-form
+  - Long descriptions should explain the *why* of the change. They may also explain the *what* at a high level, but should not be excessively detailed.
+  - They are "long descriptions", but they should be concise, precise and clear
+  - Paragraphs are fine
+  - Bullet points are fine
+
+A good long description could be
+
+> This fix improves efficiency of the veeblefetzer. The main change is replacing a
+> nested loop with asyncio calls to a new function `fetzveebles()`. This commit
+> makes affects `veebles.py`, and new tests are added in `test_veeblefetzer.py`.
+> 
+> fixes #246
+
+A bad long description might be
+
+> So, because it was taking too long to fetz all the veebles I looked at the
+> structure. It took a while to identify the main problem, which was that there
+> were a bunch of nested loops. I timed these and it turned out that one of
+> them really hit performance. So I looked into a load of options (like
+> multiprocessing, threading and so on) but, inspired by a Stack Overflow
+> post (URL HERE:) I decided to try asyncio. After some trial and error I
+> managed to get something working with that. I also wrote some tests. I
+> also think this might fix one of the issues.
 
 ### Pre-commit Checks
 
