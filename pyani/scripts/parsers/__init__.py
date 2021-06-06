@@ -60,8 +60,6 @@ from pyani.scripts.parsers import (
     listdeps_parser,
 )
 
-from pyani import __version__
-
 
 # Process command-line
 def parse_cmdline(argv: Optional[List] = None) -> Namespace:
