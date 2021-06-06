@@ -454,7 +454,7 @@ The output of a `pyani` run can also be represented graphically, using the `plot
 pyani plot C_blochmannia_ANIm 1 -v --formats png,pdf
 ```
 
-will place `.pdf` and `.png` format output in the `C_blochmannia_ANIm` output directory for the run wuth ID 1, generated above. Five heatmaps are generated:
+will place `.pdf` and `.png` format output in the `C_blochmannia_ANIm` output directory for the run with ID 1, generated above. Five heatmaps are generated:
 
 - percentage identity
 - percentage coverage (for both query and subject)
@@ -463,6 +463,17 @@ will place `.pdf` and `.png` format output in the `C_blochmannia_ANIm` output di
 - hadamard matrix (dot product of identity and coverage matrices)
 
 The heatmaps also include dendrograms, clustering the rows and columns by overall similarity.
+
+**Note:** Running `pyani plot` with a large number of genomes (~500) can cause problems with the image output, including:
+
+- labels in `.png` files to be difficult to read, and
+- `.pdf` files to render slowly.
+
+This happens when the default value for `--method` (`seaborn`) is used.
+
+Using `--method mpl` produces clearer and less unwieldy outputs, and removes the score text.
+
+Please be aware that the matrix orientation changes between these two options; so, with Seaborn (the default), the orientation is `\`, while with matplotlib (`--method mpl`) the orientation is `/`.
 
 ### 6. Classifying Genomes from Analysis Results
 
