@@ -110,7 +110,6 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         default=False,
         help="Display pyani citation",
     )
-
     # Parsers common to multiple subcommand parsers
     parser_common = common_parser.build()
     parser_scheduler = scheduling_parser.build()
@@ -140,5 +139,8 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
     # Parse arguments
     # The list comprehension is to allow PosixPaths to be defined and passed in testing
     if argv is None:
-        argv = sys.argv[1:]
+        if len(sys.argv) == 1:
+            argv = ["-h"]
+        else:
+            argv = sys.argv[1:]
     return parser_main.parse_args([str(_) for _ in argv])
