@@ -113,6 +113,8 @@ DOI: [10.1039/C5AY02550H](https://doi.org/10.1039/C5AY02550H)
     - [4. Reporting Analyses and Analysis Results](#4-reporting-analyses-and-analysis-results)
     - [5. Generating graphical output for ANI](#5-generating-graphical-output-for-ani)
     - [6. Classifying Genomes from Analysis Results](#6-classifying-genomes-from-analysis-results)
+  - [Using a scheduler](#using-a-scheduler)
+    - [SGE/OGE](#sgeoge)
   - [Running `pyani` version 0.2.x](#running-pyani-version-02x)
     - [Script: `average_nucleotide_identity.py`](#script-average_nucleotide_identitypy)
     - [Script: `genbank_get_genomes_by_taxon.py`](#script-genbank_get_genomes_by_taxonpy)
@@ -477,6 +479,77 @@ Please be aware that the matrix orientation differs for these two options; so, w
 ### 6. Classifying Genomes from Analysis Results
 
 -----
+
+## Using a scheduler
+
+### SGE/OGE
+
+The `--scheduler SGE` argument allows one to use `pyani` with an an SGE-type scheduler.
+
+In order for this work, one must be able to submit jobs using the `qsub` command. By default, this will batch the pairwise comparisons in chunks of 10,000, in order to avoid clogging the scheduler queue. Each chunk will be run as a single-core slot.
+
+#### Arguments assigned by Pyani
+The following arguments will be automatically set:
+
+```bash
+-N job_name  # this is the value passed to `--name`
+-cwd
+-o ./stdout  # cwd/ + "stdout"
+-e ./stderr  # cwd/ + "stderr"
+```
+
+#### Modifiable arguments
+The number of pairwise comparisons submitted per chunk can be modified using:
+
+```bash
+--SGEgroupsize *number*
+```
+
+The job prefix to use can be modified using:
+
+```bash
+--jobprefix *prefix*
+```
+
+#### Specifying additional arguments
+Additional SGE arguments may be specified with:
+
+```bash
+--SGEargs "<your arguments here>"
+```
+
+Additional arguments must be specified as a string which includes all flags and their values. For instance, to specify a value for the memory resource:
+
+```bash
+"-l h_mem=64G"
+```
+
+```bash
+"-l h_mem=64G -l h_rt=02:00:00"
+```
+
+An alternative to listing all desired options on the command line is to pass an `optionfile`:
+
+```bash
+"-@ optionfile"
+```
+
+This file only contains comments and the flags to be passed (do not include the `#$` in front of the arguments):
+
+```bash
+# Memory to assign to the job
+-l h_mem=64G
+
+# Time to allow for job HH:MM:SS
+-l h_rt=10:20:00
+
+# Notification email address
+-M email@domain.com
+
+# Send notifications when job 'b'egins, 'a'borts (or is rescheduled), 'e'nds, or is 's'uspended
+-m baes
+```
+
 
 ## Running `pyani` version 0.2.x
 
