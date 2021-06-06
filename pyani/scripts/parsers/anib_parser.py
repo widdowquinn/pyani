@@ -42,7 +42,6 @@ from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, _SubParsersA
 from pathlib import Path
 from typing import List, Optional
 
-from pyani import anib
 from pyani import pyani_config
 from pyani.scripts import subcommands
 
