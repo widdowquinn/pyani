@@ -74,7 +74,7 @@ def subcmd_index(args: Namespace) -> int:
 
     # Create MD5 hash for each file, if needed
     for fpath in fpaths:
-        hashfname = fpath.with_suffix(".md5")
+        hashfname = fpath.with_name(f"{fpath.name}.md5")
         if hashfname.is_file():
             logger.info("%s already indexed (using existing hash)", fpath)
             with open(hashfname, "r") as ifh:
