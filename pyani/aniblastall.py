@@ -60,7 +60,10 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
 
     This is concatenated with the OS name.
     """
-    cmdline = [blast_exe, "-version"]
+    if platform.system() == "Darwin":
+        cmdline = [blast_exe, "-version"]
+    else:
+        cmdline = [blast_exe]
     result = subprocess.run(
         cmdline,  # type: ignore
         shell=False,
