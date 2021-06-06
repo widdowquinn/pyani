@@ -57,12 +57,6 @@ def build() -> ArgumentParser:
     """
     parser = ArgumentParser(add_help=False)
     parser.add_argument(
-        "--version",
-        dest="version",
-        action="store_true",
-        default=False,
-    )
-    parser.add_argument(
         "-l",
         "--logfile",
         dest="logfile",
@@ -92,12 +86,5 @@ def build() -> ArgumentParser:
         dest="disable_tqdm",
         default=False,
         help="Turn off tqdm progress bar",
-    )
-    parser.add_argument(
-        "--citation",
-        action="store_true",
-        dest="citation",
-        default=False,
-        help="Display pyani citation after run",
     )
     return parser
