@@ -98,7 +98,9 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         title="subcommands", description="valid subcommands", help="additional help"
     )
     parser_main.add_argument(
-        "--version", action="version", version=f"%(prog)s {__version__}"
+        "--version",
+        action="store_true",
+        default=False,
     )
     parser_main.add_argument(
         "--citation",
