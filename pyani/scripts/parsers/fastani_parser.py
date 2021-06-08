@@ -65,7 +65,7 @@ def build(
     parser.add_argument(
         "-k",
         "--kmer",
-        dest="kmer",
+        dest="kmerSize",
         action="store",
         default=16,
         type=int,

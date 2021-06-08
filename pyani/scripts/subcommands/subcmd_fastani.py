@@ -45,8 +45,8 @@ class ComparisonJob(NamedTuple):
     ref: str
     fastcmd: str
     outfile: Path
-    kmerSize: int
     fragLen: int
+    kmerSize: int
     minFraction: float
     job: pyani_jobs.Job
 
@@ -170,9 +170,9 @@ def subcmd_fastani(args: Namespace) -> None:
         comparisons,
         "fastANI",
         fastani_version,
-        kmersize=args.kmer,
-        fragsize=None,  # fragsize
+        fragsize=args.fragLen,  # fragsize
         maxmatch=None,  # maxmatch
+        kmersize=args.kmerSize,
         minmatch=args.minFraction,
     )
     print(f"Comparisons to run: {comparisons_to_run}")
@@ -250,8 +250,8 @@ def generate_joblist(
             ref.path,
             args.outdir,
             args.fastani_exe,
-            args.kmer,
             args.fragLen,
+            args.kmerSize,
             args.minFraction,
         )
         logger.debug("Commands to run:\n\t%s", fastcmd)
@@ -280,8 +280,8 @@ def generate_joblist(
                     ref,
                     fastcmd,
                     outfname,
-                    args.kmer,
                     args.fragLen,
+                    args.kmerSize,
                     args.minFraction,
                     fastjob,
                 )
@@ -364,7 +364,6 @@ def update_comparison_results(
             raise ValueError(
                 f"fastANI output file {job.outfile} has more than one line"
             )
-        print(contents[0])
         query, ref, ani, matches, num_frags = contents[0]
         aln_length = matches
         sim_errs = int(num_frags) - int(aln_length)
@@ -384,9 +383,9 @@ def update_comparison_results(
                 cov_subject=None,
                 program="fastANI",
                 version=fastani_version,
-                kmersize=job.kmerSize,
                 fragsize=job.fragLen,
                 maxmatch=False,
+                kmersize=job.kmerSize,
                 minmatch=job.minFraction,
             )
         )

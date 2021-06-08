@@ -91,8 +91,8 @@ def generate_fastani_jobs(
     filenames: List[Path],
     outdir: Path = Path("."),
     fastani_exe: Path = pyani_config.FASTANI_DEFAULT,
-    kmer: int = 16,
     fragLen: int = 3000,
+    kmerSize: int = 16,
     minFraction: float = 0.2,
     jobprefix: str = "fastANI",
 ):  # should this have a hint for return type?
@@ -101,8 +101,8 @@ def generate_fastani_jobs(
     :param filenames:   a list of paths to input FASTA files
     :param outdir:      path to output directory
     :param fastani_exe: location of the fastANI binary
-    :param kmer:        kmer size to use
     :param fragLen:     fragment length to use
+    :param kmerSize:        kmer size to use
     :param minFraction: minimum portion of the genomes that must match to trust ANI
     :param jobprefix:
 
@@ -110,7 +110,7 @@ def generate_fastani_jobs(
     for each pairwise comparison.
     """
     fastcmds = generate_fastani_commands(
-        filenames, outdir, fastani_exe, kmer, fragLen, minFraction
+        filenames, outdir, fastani_exe, fragLen, kmerSize, minFraction
     )
     joblist = []
     for idx, fastcmd in enumerate(fastcmds):
@@ -123,8 +123,8 @@ def generate_fastani_commands(
     filenames: List[Path],
     outdir: Path = Path("."),
     fastani_exe: Path = pyani_config.FASTANI_DEFAULT,
-    kmer: int = 16,
     fragLen: int = 3000,
+    kmerSize: int = 16,
     minFraction: float = 0.2,
 ) -> List[str]:
     """Return list of fastANI command lines.
@@ -132,8 +132,8 @@ def generate_fastani_commands(
     :param filenames:   a list of paths to input FASTA files
     :param outdir:      path to output directory
     :param fastani_exe: location of the fastANI binary
-    :param kmer:        kmer size to use
     :param fragLen:     fragment length to use
+    :param kmerSize:        kmer size to use
     :param minFraction: minimum portion of the genomes that must match to trust ANI
 
     Loop over all FASTA files generating fastANI command lines for each pairwise comparison.
@@ -145,7 +145,7 @@ def generate_fastani_commands(
             if idx == index:
                 pass  # do we want to compare things to themselves?
             fastcmd = construct_fastani_cmdline(
-                query, ref, outdir, fastani_exe, kmer, fragLen, minFraction
+                query, ref, outdir, fastani_exe, fragLen, kmerSize, minFraction
             )
             fastani_cmdlines.append(fastcmd)
     return fastani_cmdlines
@@ -159,8 +159,8 @@ def construct_fastani_cmdline(
     ref: Path,
     outdir: Path = Path("."),
     fastani_exe: Path = pyani_config.FASTANI_DEFAULT,
-    kmer: int = 16,
     fragLen: int = 3000,
+    kmerSize: int = 16,
     minFraction: float = 0.2,
 ) -> str:
     """Will return a fastcmd item
@@ -169,8 +169,8 @@ def construct_fastani_cmdline(
     :param ref:             path to reference file
     :param outdir:          path to output directory
     :param fastani_exe:     path to fastANI executable
-    :param kmer:            kmer size to use
     :param fragLen:         fragment length to use
+    :param kmerSize:        kmer size to use
     :param minFraction:     minimum portion of the genomes that must match to trust ANI
     """
     # Cast path strings to pathlib.Path for safety
@@ -178,7 +178,7 @@ def construct_fastani_cmdline(
 
     # Compile commands
     outfile = outdir / f"{query.stem}_vs_{ref.stem}.fastani"
-    fastcmd = f"{fastani_exe} -q {query} -r {ref} -o {outfile} -k {kmer} --fragLen {fragLen} --minFraction {minFraction}"
+    fastcmd = f"{fastani_exe} -q {query} -r {ref} -o {outfile} --fragLen {fragLen} -k {kmerSize} --minFraction {minFraction}"
     return fastcmd
 
 
