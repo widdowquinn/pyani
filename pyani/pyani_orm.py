@@ -272,9 +272,9 @@ class Comparison(Base):
             "subject_id",
             "program",
             "version",
-            "kmersize",
             "fragsize",
             "maxmatch",
+            "kmersize",
             "minmatch",
         ),
     )
@@ -289,9 +289,9 @@ class Comparison(Base):
     cov_subject = Column(Float)  # in fastANI this is Null
     program = Column(String)
     version = Column(String)
-    kmersize = Column(Integer)
     fragsize = Column(Integer)  # in fastANI this is fragLength
     maxmatch = Column(Boolean)  # in fastANi this is Null
+    kmersize = Column(Integer)
     minmatch = Column(Float)
 
     query = relationship(
@@ -354,9 +354,9 @@ def get_comparison_dict(session: Any) -> Dict[Tuple, Any]:
             _.subject_id,
             _.program,
             _.version,
-            _.kmersize,
             _.fragsize,
             _.maxmatch,
+            _.kmersize,
             _.minmatch,
         ): _
         for _ in session.query(Comparison).all()
@@ -419,8 +419,8 @@ def filter_existing_comparisons(
     version,
     fragsize: Optional[int] = None,
     maxmatch: Optional[bool] = None,
-    kmersize: Optional[int] = 16,
-    minmatch: Optional[float] = 0.2,
+    kmersize: Optional[int] = None,
+    minmatch: Optional[float] = None,
 ) -> List:
     """Filter list of (Genome, Genome) comparisons for those not in the session db.
 
@@ -451,6 +451,8 @@ def filter_existing_comparisons(
                         version,
                         fragsize,
                         maxmatch,
+                        kmersize,
+                        minmatch,
                     )
                 ]
             )

@@ -15,12 +15,7 @@ from typing import List, Tuple, NamedTuple
 from Bio import SeqIO  # unsure what this does [LP: bioinformatics file format IO]
 from tqdm import tqdm  # unsure what this does [LP: progress bars]
 
-from pyani import (
-    fastani,
-    pyani_jobs,
-    run_sge,
-    run_multiprocessing as run_mp,
-)
+from pyani import fastani, pyani_jobs, run_sge, run_multiprocessing as run_mp
 from pyani.pyani_files import collect_existing_output
 from pyani.pyani_orm import (
     Comparison,
@@ -169,9 +164,9 @@ def subcmd_fastani(args: Namespace) -> None:
         comparisons,
         "fastANI",
         fastani_version,
-        kmersize=args.kmer,
         fragsize=None,  # fragsize
         maxmatch=None,  # maxmatch
+        kmersize=args.kmer,
         minmatch=args.minFraction,
     )
     logger.info(
@@ -333,11 +328,7 @@ def run_fastani_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
 
 
 def update_comparison_results(
-    joblist: List[ComparisonJob],
-    run,
-    session,
-    fastani_version: str,
-    args: Namespace,
+    joblist: List[ComparisonJob], run, session, fastani_version: str, args: Namespace
 ) -> None:
     """Update the Comparison table with the completed result set.
 
@@ -371,6 +362,7 @@ def update_comparison_results(
         #   pid = (1 - sim_errs) / int(aln_length)
         # except ZeroDivisionError:  # aln_length was zero (no alignment)
         #   pid = 0
+        print(f"{job=}")
         run.comparisons.append(
             Comparison(
                 query=job.query,
@@ -382,9 +374,9 @@ def update_comparison_results(
                 cov_subject=None,
                 program="fastANI",
                 version=fastani_version,
-                kmersize=job.kmerSize,
                 fragsize=job.fragLen,
                 maxmatch=False,
+                kmersize=job.kmerSize,
                 minmatch=job.minFraction,
             )
         )
