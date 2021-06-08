@@ -38,7 +38,6 @@
 # THE SOFTWARE.
 """Code to handle files for average nucleotide identity calculations."""
 
-import sys
 from argparse import Namespace
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
@@ -100,8 +99,6 @@ def get_fasta_and_hash_paths(dirname: Path = Path(".")) -> List[Tuple[Path, Path
         # if a hashfile with that name is not found, check for one
         # where the original extension has been removed
         if not hashfile.is_file():
-            sys.stderr.write(f"Hashfile {hashfile} does not exist")
-            sys.stderr.write(f"Trying {infile.stem}.md5")
             hashfile = infile.with_suffix(".md5")
         if not hashfile.is_file():
             raise IOError("Alternate hashfile {hashfile} does not exist")
