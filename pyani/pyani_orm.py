@@ -493,7 +493,6 @@ def filter_existing_comparisons(
             session.commit()
         except KeyError:
             comparisons_to_run.append((qgenome, sgenome))
-    print(f"Comparisons to run inside ORM file: {comparisons_to_run}")
     return comparisons_to_run
 
 

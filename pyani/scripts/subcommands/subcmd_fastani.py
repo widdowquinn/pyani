@@ -163,7 +163,6 @@ def subcmd_fastani(args: Namespace) -> None:
     # software package, version, and setting) we add the comparison to this run,
     # but remove it from the list of comparisons to be performed
     logger.info("Checking database for existing comparison data...")
-    print(f"Comparisons: {comparisons}")
     comparisons_to_run = filter_existing_comparisons(
         session,
         run,
@@ -175,7 +174,6 @@ def subcmd_fastani(args: Namespace) -> None:
         kmersize=args.kmerSize,
         minmatch=args.minFraction,
     )
-    print(f"Comparisons to run: {comparisons_to_run}")
     logger.info(
         "\t...after check, still need to run %d comparisons", len(comparisons_to_run)
     )  # this is indicating 0 comparisons — need to diagnose
