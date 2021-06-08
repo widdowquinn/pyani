@@ -11,7 +11,7 @@ If you would like to contribute code to the `pyani` project (e.g. a bug fix or n
 `pyani` is maintained by:
 
 - [Leighton Pritchard](https://pureportal.strath.ac.uk/en/persons/leighton-pritchard)
-- [Bailey Harrington](https://pureportal.strath.ac.uk/en/persons/bailey-ann-harrington)
+- [Bailey Harrington](https://pureportal.strath.ac.uk/en/persons/bailey-harrington)
 
 and we are grateful to all who have contributed to this software:
 
