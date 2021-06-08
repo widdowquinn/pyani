@@ -1,4 +1,4 @@
-	#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
 # (c) University of Strathclyde 2019-2020
@@ -237,14 +237,20 @@ def subcmd_anim(args: Namespace) -> None:
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
     comparisons = list(combinations(tqdm(genomes, disable=args.disable_tqdm), 2))
-    logger.info("\t...total parwise comparisons to be performed: %s", len(comparisons))
+    logger.info("\t...total pairwise comparisons to be performed: %s", len(comparisons))
 
     # Check for existing comparisons; if one has been done (for the same
     # software package, version, and setting) we add the comparison to this run,
     # but remove it from the list of comparisons to be performed
     logger.info("Checking database for existing comparison data...")
     comparisons_to_run = filter_existing_comparisons(
-        session, run, comparisons, "nucmer", nucmer_version, None, args.maxmatch
+        session,
+        run,
+        comparisons,
+        "nucmer",
+        nucmer_version,
+        fragsize=None,
+        maxmatch=args.maxmatch,
     )
     logger.info(
         "\t...after check, still need to run %s comparisons", len(comparisons_to_run)
