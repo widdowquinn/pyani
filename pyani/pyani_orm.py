@@ -425,7 +425,7 @@ def filter_existing_comparisons(
     program,
     version,
     fragsize: Optional[int] = None,
-    maxmatch: Optional[bool] = None,
+    maxmatch: Optional[bool] = False,
     kmersize: Optional[int] = None,
     minmatch: Optional[float] = None,
 ) -> List:

@@ -171,7 +171,7 @@ def subcmd_fastani(args: Namespace) -> None:
         "fastANI",
         fastani_version,
         fragsize=args.fragLen,  # fragsize
-        maxmatch=None,  # maxmatch
+        maxmatch=False,  # maxmatch
         kmersize=args.kmerSize,
         minmatch=args.minFraction,
     )
