@@ -308,12 +308,16 @@ class Comparison(Base):
     def __str__(self) -> str:
         """Return string representation of Comparison table row."""
         return str(
-            "Query: {}, Subject: {}, %%ID={}, ({} {})".format(
+            "Query: {}, Subject: {}, %%ID={}, ({} {}), FragSize: {}, MaxMatch: {}, KmerSize: {}, MinMatch: {}".format(
                 self.query_id,
                 self.subject_id,
                 self.identity,
                 self.program,
                 self.version,
+                self.fragsize,
+                self.maxmatch,
+                self.kmersize,
+                self.minmatch,
             )
         )
 
