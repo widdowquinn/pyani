@@ -177,7 +177,7 @@ def subcmd_fastani(args: Namespace) -> None:
     )
     print(f"Comparisons to run: {comparisons_to_run}")
     logger.info(
-        "\t...after check, still need to run %d comparisons", len(comparisons)
+        "\t...after check, still need to run %d comparisons", len(comparisons_to_run)
     )  # this is indicating 0 comparisons — need to diagnose
 
     # If there are no comparisons to run, update the Run matrices and exit
