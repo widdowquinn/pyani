@@ -42,6 +42,8 @@
 This SQLAlchemy-based ORM replaces the previous SQL-based module
 """
 
+import logging
+
 from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
@@ -418,7 +420,7 @@ def filter_existing_comparisons(
     program,
     version,
     fragsize: Optional[int] = None,
-    maxmatch: Optional[bool] = None,
+    maxmatch: Optional[bool] = False,
     kmersize: Optional[int] = None,
     minmatch: Optional[float] = None,
 ) -> List:
@@ -437,9 +439,36 @@ def filter_existing_comparisons(
     If not, then add the (Genome, Genome) pair to a list for returning as the
     comparisons that still need to be run.
     """
+    logger = logging.getLogger(__name__)
+
     existing_comparisons = get_comparison_dict(session)
+    logger.debug("Existing comparisons\n%s", existing_comparisons)
     comparisons_to_run = []
+    logger.debug(
+        (
+            "Checking for existing comparisons, with unique constraints \n"
+            "\tprogram: %s\n"
+            "\tversion: %s\n"
+            "\tfragsize: %s\n"
+            "\tmaxmatch: %s\n"
+            "\tkmersize: %s\n"
+            "\tminmatch: %s\n"
+        ),
+        program,
+        version,
+        fragsize,
+        maxmatch,
+        kmersize,
+        minmatch,
+    )
     for (qgenome, sgenome) in comparisons:
+        logger.debug(
+            "Checking for existing comparison: %s (%s) vs %s (%s)",
+            qgenome,
+            qgenome.genome_id,
+            sgenome,
+            sgenome.genome_id,
+        )
         try:
             # Associate run with existing comparisons
             run.comparisons.append(

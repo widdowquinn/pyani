@@ -164,13 +164,13 @@ def subcmd_fastani(args: Namespace) -> None:
         comparisons,
         "fastANI",
         fastani_version,
-        fragsize=None,  # fragsize
-        maxmatch=None,  # maxmatch
+        fragsize=args.fragLen,  # fragsize
+        maxmatch=False,  # maxmatch
         kmersize=args.kmer,
         minmatch=args.minFraction,
     )
     logger.info(
-        "\t...after check, still need to run %d comparisons", len(comparisons)
+        "\t...after check, still need to run %d comparisons", len(comparisons_to_run)
     )  # this is indicating 0 comparisons — need to diagnose
 
     # If there are no comparisons to run, update the Run matrices and exit
