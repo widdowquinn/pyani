@@ -52,6 +52,7 @@ from argparse import Namespace
 from pathlib import Path
 
 from pyani.scripts import subcommands
+from pyani import pyani_files
 
 
 class TestIndexSubcommand(unittest.TestCase):
@@ -103,3 +104,8 @@ class TestIndexSubcommand(unittest.TestCase):
                     self.assertEqual(
                         ofh.read(), tfh.read(), msg="{} files differ".format(fname)
                     )
+
+    def test_missing_index(self):
+        """Test behaviour when an index file is missing"""
+        with self.assertRaises(IOError):
+            pyani_files.get_fasta_and_hash_paths(self.indir / "nonexistant_hash.fna")
