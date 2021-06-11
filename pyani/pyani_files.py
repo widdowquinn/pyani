@@ -103,12 +103,13 @@ def get_fasta_and_hash_paths(dirname: Path = Path(".")) -> List[Tuple[Path, Path
         hashfile = infile.with_name(f"{infile.name}.md5")
         # if a hashfile with that name is not found, check for one
         # where the original extension has been removed
+        logger.info(f"Checking for hashfile: {hashfile}.")
         if not hashfile.is_file():
-            logger.warning(f"Hashfile {hashfile} does not exist")
-            logger.warning(f"Trying {infile.stem}.md5")
+            logger.warning(f"Hashfile {hashfile} does not exist...")
             hashfile = infile.with_suffix(".md5")
+            logger.warning(f"... trying {hashfile}.")
         if not hashfile.is_file():
-            raise IOError("Alternate hashfile {hashfile} does not exist")
+            raise PyaniFilesException("Alternate hashfile {hashfile} does not exist.")
         outfiles.append((infile, hashfile))
     return outfiles
 
