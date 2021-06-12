@@ -108,4 +108,4 @@ class TestIndexSubcommand(unittest.TestCase):
     def test_missing_index(self):
         """Test behaviour when an index file is missing"""
         with self.assertRaises(IOError):
-            pyani_files.get_fasta_and_hash_paths(self.indir / "nonexistant_hash.fna")
+            pyani_files.get_fasta_and_hash_paths(self.indir / "nonexistent_hash.txt")
