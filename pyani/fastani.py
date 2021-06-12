@@ -200,6 +200,9 @@ def parse_fastani_file(filename: Path) -> ComparisonResult:
     results = []
     for line in [_.strip().split() for _ in open(filename, "r").readlines()]:
         if len(line) == 5:
+            line[2] = float(line[2])
+            line[3] = int(line[3])
+            line[4] = int(line[4])
             results.append(ComparisonResult(*line))
         else:
             raise ValueError(f"Line contains too many/too few items: {line}")
