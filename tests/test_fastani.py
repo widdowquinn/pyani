@@ -53,15 +53,16 @@ def test_fastanifile_parsing(fastanifile_parsed):  # works
 
 
 # Test fastANI command generation
-def test_fastani_single(tmp_path, path_file_two):
+def test_fastani_single(tmp_path, path_file_two):  # works
     """Generate single fastANI command line."""
     fastcmd = fastani.construct_fastani_cmdline(
-        path_file_two[0], path_file_two[1], outdir=tmp_path, matrix=False
+        path_file_two[0], path_file_two[1], outdir=tmp_path
     )
-    dir_fastani = tmp_path / "fastani_output"
+    dir_fastani = tmp_path
     expected = (
-        f"fastANI -q {path_file_two[0]} -r {path_file_two[1]}"
-        f"-o {dir_fastani / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem)} "
+        f"fastANI -q {path_file_two[0]} -r {path_file_two[1]} "
+        f"-o {dir_fastani / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem + '.fastani')} "
+        f"--fragLen 3000 -k 16 --minFraction 0.2"
     )
     assert fastcmd == expected
 
