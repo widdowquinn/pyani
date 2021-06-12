@@ -112,11 +112,11 @@ def test_fastani_multiple(fastani_cmds_four):
     assert cmds == (fastani_cmds_four.fastcmds)
 
 
-def test_fastani_job_generation(fastani_cmds_four):
-    """Generate dependency"""
+def test_fastani_job_generation(fastani_cmds_four):  # works
+    """Generate job names"""
 
     joblist = fastani.generate_fastani_jobs(fastani_cmds_four.infiles, jobprefix="test")
-    assert len(joblist) == 6  # ¶ I might want a different number
+    assert len(joblist) == 16
 
     for idx, job in enumerate(joblist):
-        assert job.name == "test_%06d-fast" % idx
+        assert job.name == f"test_{idx:06d}"
