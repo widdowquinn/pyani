@@ -37,12 +37,46 @@ class fastANIParsed(NamedTuple):
     data: ComparisonResult
 
 
+class FastANIExample(NamedTuple):
+
+    """Convenience struct for fastANI command-line examples."""
+
+    infiles: List[Path]
+    fastcmds: List[str]
+
+
 @pytest.fixture
 def fastanifile_parsed(dir_fastani_in):  # works
     """Example parsed fastANI file."""
     return fastANIParsed(
         dir_fastani_in / "ecoli_vs_shiga.fastani",
         ComparisonResult("ecoli.fna", "shiga.fna", 97.664, 1322, 1547),
+    )
+
+
+@pytest.fixture
+def fastani_cmds_four(path_file_four):  # works
+    """Example fastANI commands (four files)."""
+    return FastANIExample(
+        path_file_four,
+        [
+            "fastANI -q file1.fna -r file1.fna -o file1_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file1.fna -r file2.fna -o file1_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file1.fna -r file3.fna -o file1_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file1.fna -r file4.fna -o file1_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file2.fna -r file1.fna -o file2_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file2.fna -r file2.fna -o file2_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file2.fna -r file3.fna -o file2_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file2.fna -r file4.fna -o file2_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file3.fna -r file1.fna -o file3_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file3.fna -r file2.fna -o file3_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file3.fna -r file3.fna -o file3_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file3.fna -r file4.fna -o file3_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file4.fna -r file1.fna -o file4_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file4.fna -r file2.fna -o file4_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file4.fna -r file3.fna -o file4_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file4.fna -r file4.fna -o file4_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+        ],
     )
 
 
