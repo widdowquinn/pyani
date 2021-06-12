@@ -21,9 +21,34 @@ from pyani import fastani, pyani_files, pyani_tools
 ### Some classes... to be decided
 
 
-def test_fastanifile_parsing(fastanifile_parsed):
+class ComparisonResult(NamedTuple):
+    reference: Path
+    query: Path
+    ani: float
+    matches: int
+    fragments: int
+
+
+class fastANIParsed(NamedTuple):
+
+    """Convenience struct for fastANI .fastani file and associated parsed output."""
+
+    filename: Path
+    data: ComparisonResult
+
+
+@pytest.fixture
+def fastanifile_parsed(dir_fastani_in):  # works
+    """Example parsed fastANI file."""
+    return fastANIParsed(
+        dir_fastani_in / "ecoli_vs_shiga.fastani",
+        ComparisonResult("ecoli.fna", "shiga.fna", 97.664, 1322, 1547),
+    )
+
+
+def test_fastanifile_parsing(fastanifile_parsed):  # works
     """Check parsing of test fastANI .fastani file."""
-    result = fastani.parse_fastani(fastanifile_parsed.filename)
+    result = fastani.parse_fastani_file(fastanifile_parsed.filename)[0]
     assert result == fastanifile_parsed.data
 
 
