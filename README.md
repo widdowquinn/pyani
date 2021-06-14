@@ -464,16 +464,14 @@ will place `.pdf` and `.png` format output in the `C_blochmannia_ANIm` output di
 
 The heatmaps also include dendrograms, clustering the rows and columns by overall similarity.
 
-**Note:** Running `pyani plot` with a large number of genomes (~500) can cause problems with the image output, including:
+**NOTE:** Running `pyani plot` with a large number of genomes (~500) and the default figure output (`--method seaborn`) may reduce output figure quality:
 
-- labels in `.png` files to be difficult to read, and
-- `.pdf` files to render slowly.
+- labels in `.png` files may be difficult to read
+- `.pdf` files may render very slowly due to the large number of numerical values in heatmap cells.
 
-This happens when the default value for `--method` (`seaborn`) is used.
+With large datasets, `--method mpl` (matplotlib) is recommended.
 
-Using `--method mpl` produces clearer and less unwieldy outputs, and removes the score text.
-
-Please be aware that the matrix orientation changes between these two options; so, with Seaborn (the default), the orientation is `\`, while with matplotlib (`--method mpl`) the orientation is `/`.
+Please be aware that the matrix orientation differs for these two options; so, with `seaborn` (the default, `--method seaborn`), the orientation of self-comparisons is top left to bottom right (`\`), while with `matplotlib` (`--method mpl`) the orientation is bottom left to top right (`/`).
 
 ### 6. Classifying Genomes from Analysis Results
 
