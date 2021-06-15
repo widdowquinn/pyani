@@ -54,7 +54,7 @@ MAKEBLASTDB_DEFAULT = Path("makeblastdb")
 BLASTALL_DEFAULT = Path("blastall")
 FORMATDB_DEFAULT = Path("formatdb")
 QSUB_DEFAULT = Path("qsub")
-FASTANI_DEFAULT = Path("fastani")
+FASTANI_DEFAULT = Path("fastANI")
 
 # Stems for output files
 ANIM_FILESTEMS = (
@@ -79,8 +79,6 @@ ANIBLASTALL_FILESTEMS = (
     "ANIblastall_similarity_errors",
     "ANIblastall_hadamard",
 )
-FASTANI_DEFAULT = "fastANI"
-FASTANI_FILESTEMS = ("grapevine_files",)  # unsure what this might need to be
 # Output subdirectory names for each method
 ALIGNDIR = {
     "ANIm": "nucmer_output",
