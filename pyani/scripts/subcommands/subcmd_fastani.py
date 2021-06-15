@@ -271,7 +271,7 @@ def generate_joblist(
         else:
             logger.debug("Building job")
             # Build jobs
-            fastjob = pyani_jobs.Job("%s_%06d-fast" % (args.jobprefix, idx), fastcmd)
+            fastjob = pyani_jobs.Job("f{args.jobprefix}_{idx:06d}", fastcmd)
             joblist.append(
                 ComparisonJob(
                     query,
