@@ -329,7 +329,12 @@ def get_asm_uids(args, taxon_uid):
     # Perform initial search for assembly UIDs with taxon ID as query.
     # Use NCBI history for the search.
     handle = entrez_retry(
-        args, Entrez.esearch, db="assembly", term=query, format="xml", usehistory="y",
+        args,
+        Entrez.esearch,
+        db="assembly",
+        term=query,
+        format="xml",
+        usehistory="y",
     )
     record = Entrez.read(handle, validate=False)
     result_count = int(record["Count"])
@@ -446,7 +451,10 @@ def get_ncbi_asm(args, asm_uid, fmt="fasta"):
 
 # Download and extract an NCBI assembly file, given a filestem
 def retrieve_asm_contigs(
-    args, filestem, ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all", fmt="fasta",
+    args,
+    filestem,
+    ftpstem="ftp://ftp.ncbi.nlm.nih.gov/genomes/all",
+    fmt="fasta",
 ):
     """Download assembly sequence to a local directory.
 
@@ -536,6 +544,10 @@ def retrieve_asm_contigs(
                     buffer = response.read(bsize)
                     if not buffer:
                         break
+                    elif buffer == b"status=replaced\n":
+                        logger.warning(
+                            "Could not download %s; file has been replaced", asmurl
+                        )
                     fsize_dl += len(buffer)
                     outfh.write(buffer)
                     status = r"%10d  [%3.2f%%]" % (fsize_dl, fsize_dl * 100.0 / fsize)

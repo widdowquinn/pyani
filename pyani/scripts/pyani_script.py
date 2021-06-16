@@ -86,10 +86,12 @@ def run_main(argv: Optional[List[str]] = None) -> int:
         args = parse_cmdline()
     else:
         args = parse_cmdline(argv)
+
     # Catch execution with no arguments
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 1 and argv is None:
         sys.stderr.write(f"{VERSION_INFO}\n")
         return 0
+    
     # Catch requests for citation and version information
     if sys.argv[1].startswith("-"):
         if args.citation:
@@ -99,7 +101,6 @@ def run_main(argv: Optional[List[str]] = None) -> int:
         if args.version:
             sys.stderr.write(f"{VERSION_INFO}\n")
             return 0
-        return 0
 
     # Set up logging
     time0 = time.time()

@@ -38,6 +38,8 @@
 # THE SOFTWARE.
 """Code to handle files for average nucleotide identity calculations."""
 
+import logging
+
 from argparse import Namespace
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
@@ -91,12 +93,23 @@ def get_fasta_and_hash_paths(dirname: Path = Path(".")) -> List[Tuple[Path, Path
 
     Raises an IOError if the corresponding hash for a FASTA file does not exist
     """
+    # Create logger
+    logger = logging.getLogger(__name__)
+
     infiles = get_fasta_paths(dirname)
     outfiles = []
     for infile in infiles:
-        hashfile = infile.with_suffix(".md5")
+        # retain original extension and add .md5
+        hashfile = infile.with_name(f"{infile.name}.md5")
+        # if a hashfile with that name is not found, check for one
+        # where the original extension has been removed
+        logger.info(f"Checking for hashfile: {hashfile}.")
         if not hashfile.is_file():
-            raise IOError("Hashfile %s does not exist" % hashfile)
+            logger.warning(f"Hashfile {hashfile} does not exist...")
+            hashfile = infile.with_suffix(".md5")
+            logger.warning(f"... trying {hashfile}.")
+        if not hashfile.is_file():
+            raise PyaniFilesException("Alternate hashfile {hashfile} does not exist.")
         outfiles.append((infile, hashfile))
     return outfiles
 
