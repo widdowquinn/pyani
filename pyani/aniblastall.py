@@ -61,6 +61,13 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
         one-line descriptions for (V) [ersion] is bad or out of range [? to ?]
 
     This is concatenated with the OS name.
+
+    The following circumstances are explicitly reported as strings
+
+    - no executable at passed path
+    - non-executable file at passed path
+    - no version info returned
+    - executable cannot be run on this OS
     """
     logger = logging.getLogger(__name__)
 

@@ -95,6 +95,12 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
         NUCmer (NUCleotide MUMmer) version 3.1
 
     we concatenate this with the OS name.
+
+    The following circumstances are explicitly reported as strings
+
+    - no executable at passed path
+    - non-executable file at passed path
+    - no version info returned
     """
     nucmer_path = Path(shutil.which(nucmer_exe))  # type:ignore
 

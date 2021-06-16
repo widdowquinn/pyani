@@ -115,6 +115,12 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
         Package: blast 2.9.0, build Jun 10 2019 09:40:53
 
     This is concatenated with the OS name.
+
+    The following circumstances are explicitly reported as strings
+
+    - no executable at passed path
+    - non-executable file at passed path
+    - no version info returned
     """
     blastn_path = Path(shutil.which(blast_exe))  # type:ignore
 
