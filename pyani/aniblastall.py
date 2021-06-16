@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# (c) University of Strathclyde 2020
+# (c) University of Strathclyde 2021
 # Author: Leighton Pritchard
 #
 # Contact: leighton.pritchard@strath.ac.uk
@@ -14,7 +14,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2020 University of Strathclyde
+# Copyright (c) 2021 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -73,8 +73,11 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
 
     blastall_path = Path(shutil.which(blast_exe))  # type:ignore
 
-    if not os.path.isfile(blastall_path):  # no executable
-        return f"No blastall executable at {blastall_path}"
+    if blastall_path is None:
+        return f"{blast_exe} is not found in $PATH"
+
+    if blastall_path.is_file():  # no executable
+        return f"No blastall at {blastall_path}"
 
     if not os.access(blastall_path, os.X_OK):  # file exists but not executable
         return f"blastall exists at {blastall_path} but not executable"

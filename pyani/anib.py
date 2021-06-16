@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019-2020
+# (c) University of Strathclyde 2019-2021
 # Author: Leighton Pritchard
 #
 # Contact: leighton.pritchard@strath.ac.uk
@@ -16,7 +16,7 @@
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019-2020 University of Strathclyde
+# Copyright (c) 2019-2021 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -124,7 +124,10 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
     """
     blastn_path = Path(shutil.which(blast_exe))  # type:ignore
 
-    if not os.path.isfile(blastn_path):  # no executable
+    if blastn_path is None:
+        return f"{blast_exe} is not found in $PATH"
+
+    if not blastn_path.is_file():  # no executable
         return f"No blastn executable at {blastn_path}"
 
     if not os.access(blastn_path, os.X_OK):  # file exists but not executable
