@@ -36,6 +36,7 @@
 """Code to implement the fastANI average nucleotide identity method."""
 
 import platform
+import os
 import re
 import shutil
 import subprocess
@@ -75,7 +76,21 @@ def get_version(fastani_exe: Path = pyani_config.FASTANI_DEFAULT) -> str:
         version 1.32
 
     we concatenate this with the OS name.
+
+    The following circumstances are explicitly reported as strings:
+
+    - no executable at passed path
+    - non-executable file at passed path
+    - no version info returned
     """
+    fastani_path = Path(shutil.which(fastani_exe))  # type:ignore
+
+    if not os.path.isfile(fastani_path):  # no executable
+        return f"No fastANI executable at {fastani_path}"
+
+    if not os.access(fastani_path, os.X_OK):  # file exists but not executable
+        return f"fastANI exists at {fastani_path} but not executable"
+
     cmdline = [fastani_exe, "-v"]  # type: List
     result = subprocess.run(
         cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
@@ -83,7 +98,11 @@ def get_version(fastani_exe: Path = pyani_config.FASTANI_DEFAULT) -> str:
     # type CompletedProcess
     match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
     version = match.group()  # type: ignore
-    return f"{platform.system()}_{version}"
+
+    if 0 == len(version.strip()):
+        return f"fastANI exists at {fastani_path} but could not retrieve version"
+
+    return f"{platform.system()}_{version} ({fastani_path})"
 
 
 # Generate list of Job objects, one per fastANI run -> this is maybe not necessary
@@ -201,9 +220,9 @@ def parse_fastani_file(filename: Path) -> ComparisonResult:
     for line in [_.strip().split() for _ in open(filename, "r").readlines()]:
         if len(line) == 5:
             # Convert types from string to numeric
-            line[2] = float(line[2])
-            line[3] = int(line[3])
-            line[4] = int(line[4])
+            line[2] = float(line[2]) / 100  # ANI value
+            line[3] = int(line[3])  # number of matching fragments
+            line[4] = int(line[4])  # total number of fragments
             results.append(ComparisonResult(*line))
         else:
             raise ValueError(f"Line contains too many/too few items: {line}")
