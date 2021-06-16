@@ -4,7 +4,7 @@
 Running fastANI analysis
 ========================
 
-``pyani`` implements average nucleotide identity analysis using `fastANI`_(*fastANI*) as defined in __________________. To run fastANI on a set of input genomes, use the ``pyani fastani`` subcommand.
+``pyani`` implements average nucleotide identity analysis using `fastANI`_(*fastANI*) as defined in `doi.org/10.1038/s41467-018-07641-9`_. To run fastANI on a set of input genomes, use the ``pyani fastani`` subcommand.
 
 In brief, the analysis proceeds as follows for a set of input prokaryotic genomes:
 
@@ -71,7 +71,7 @@ To enable use of a scheduler during the analysis, use the ``--scheduler SGE`` op
 Controlling parameters of Open Grid Scheduler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-It is possible to control the following features of `Open Grid Scheduler`_ `via` the ``pyani fastani`` subcommand:
+It is possible to control the following features of `Open Grid Scheduler`_ via the ``pyani fastani`` subcommand:
 
 - The array job size (by default, comparison jobs are batched in arrays of 10,000)
 - The prefix string for the job, as reported in the scheduler queue
