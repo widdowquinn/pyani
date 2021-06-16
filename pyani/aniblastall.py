@@ -35,6 +35,7 @@
 # THE SOFTWARE.
 """Code to implement the ANIblastall average nucleotide identity method."""
 
+import logging
 import os
 import platform
 import re
@@ -61,6 +62,8 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
 
     This is concatenated with the OS name.
     """
+    logger = logging.getLogger(__name__)
+
     blastall_path = Path(shutil.which(blast_exe))  # type:ignore
 
     if not os.path.isfile(blastall_path):  # no executable
@@ -86,6 +89,7 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
             r"(?<=blastall\s)[0-9\.]*", str(result.stderr, "utf-8")
         ).group()
     except OSError:
+        logger.warning("blastall executable will not run", exc_info=True)
         return f"blastall exists at {blastall_path} but could not be executed"
 
     if 0 == len(version.strip()):
