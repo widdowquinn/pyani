@@ -114,7 +114,4 @@ def get_tool_versions() -> Generator:
         ("nucmer", get_nucmer_version),
         ("blastall", get_blastall_version),
     ]:
-        try:
-            yield (name, func())
-        except AttributeError:
-            yield (f"{name}", "Could not retrieve version")
+        yield (name, func())

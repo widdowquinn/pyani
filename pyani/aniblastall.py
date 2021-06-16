@@ -35,10 +35,11 @@
 # THE SOFTWARE.
 """Code to implement the ANIblastall average nucleotide identity method."""
 
+import os
 import platform
 import re
+import shutil
 import subprocess
-
 
 from pathlib import Path
 
@@ -60,18 +61,34 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
 
     This is concatenated with the OS name.
     """
+    blastall_path = Path(shutil.which(blast_exe))  # type:ignore
+
+    if not os.path.isfile(blastall_path):  # no executable
+        return f"No blastall at {blastall_path}"
+
+    if not os.access(blastall_path, os.X_OK):  # file exists but not executable
+        return f"blastall exists at {blastall_path} but not executable"
+
     if platform.system() == "Darwin":
         cmdline = [blast_exe, "-version"]
     else:
         cmdline = [blast_exe]
-    result = subprocess.run(
-        cmdline,  # type: ignore
-        shell=False,
-        stdout=subprocess.PIPE,  # type: ignore
-        stderr=subprocess.PIPE,
-        check=False,  # blastall doesn't return 0
-    )
-    version = re.search(  # type: ignore
-        r"(?<=blastall\s)[0-9\.]*", str(result.stderr, "utf-8")
-    ).group()
-    return f"{platform.system()}_{version}"
+
+    try:
+        result = subprocess.run(
+            cmdline,  # type: ignore
+            shell=False,
+            stdout=subprocess.PIPE,  # type: ignore
+            stderr=subprocess.PIPE,
+            check=False,  # blastall doesn't return 0
+        )
+        version = re.search(  # type: ignore
+            r"(?<=blastall\s)[0-9\.]*", str(result.stderr, "utf-8")
+        ).group()
+    except OSError:
+        return f"blastall exists at {blastall_path} but could not be executed"
+
+    if 0 == len(version.strip()):
+        return f"blastall exists at {blastall_path} but could not retrieve version"
+
+    return f"{platform.system()}_{version} ({blastall_path})"

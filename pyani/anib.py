@@ -81,6 +81,7 @@ qualifying matches contribute to the total aligned length, and total
 aligned sequence identity used to calculate ANI.
 """
 
+import os
 import platform
 import re
 import shutil
@@ -115,6 +116,14 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
 
     This is concatenated with the OS name.
     """
+    blastn_path = Path(shutil.which(blast_exe))  # type:ignore
+
+    if not os.path.isfile(blastn_path):  # no executable
+        return f"No blastn executable at {blastn_path}"
+
+    if not os.access(blastn_path, os.X_OK):  # file exists but not executable
+        return f"blastn exists at {blastn_path} but not executable"
+
     cmdline = [blast_exe, "-version"]
     result = subprocess.run(
         cmdline,  # type: ignore
@@ -126,7 +135,11 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
     version = re.search(  # type: ignore
         r"(?<=blastn:\s)[0-9\.]*\+", str(result.stdout, "utf-8")
     ).group()
-    return f"{platform.system()}_{version}"
+
+    if 0 == len(version.strip()):
+        return f"blastn exists at {blastn_path} but could not retrieve version"
+
+    return f"{platform.system()}_{version} ({blastn_path})"
 
 
 # Divide input FASTA sequences into fragments

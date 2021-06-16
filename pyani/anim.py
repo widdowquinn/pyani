@@ -52,8 +52,10 @@ counts, average nucleotide identity (ANI) percentages, and minimum aligned
 percentage (of whole genome) for each pairwise comparison.
 """
 
+import os
 import platform
 import re
+import shutil
 import subprocess
 
 from logging import Logger
@@ -94,13 +96,25 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
 
     we concatenate this with the OS name.
     """
+    nucmer_path = Path(shutil.which(nucmer_exe))  # type:ignore
+
+    if not os.path.isfile(nucmer_path):  # no executable
+        return f"No nucmer at {nucmer_path}"
+
+    if not os.access(nucmer_path, os.X_OK):  # file exists but not executable
+        return f"nucmer exists at {nucmer_path} but not executable"
+
     cmdline = [nucmer_exe, "-V"]  # type: List
     result = subprocess.run(
         cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
     )
     match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
     version = match.group()  # type: ignore
-    return f"{platform.system()}_{version}"
+
+    if 0 == len(version.strip()):
+        return f"nucmer exists at {nucmer_path} but could not retrieve version"
+
+    return f"{platform.system()}_{version} ({nucmer_path})"
 
 
 # Generate list of Job objects, one per NUCmer run
