@@ -56,11 +56,10 @@ VERSION_INFO = f"pyani version: {__version__}"
 
 CITATION_INFO = [
     termcolor(
-        "If you use pyani in your work, please cite the following publication:",
-        "green",
+        "If you use pyani in your work, please cite the following publication:", "green"
     ),
     termcolor(
-        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,", "yellow",
+        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,", "yellow"
     ),
     termcolor(
         "\t& Toth, I.K. (2016) 'Genomics and taxonomy in diagnostics for", "yellow"
@@ -69,8 +68,7 @@ CITATION_INFO = [
         "\tfood security: soft-rotting enterobacterial plant pathogens.'", "yellow"
     ),
     termcolor(
-        "\tAnalytical Methods, 8(1), 12–24. http://doi.org/10.1039/C5AY02550H",
-        "yellow",
+        "\tAnalytical Methods, 8(1), 12–24. http://doi.org/10.1039/C5AY02550H", "yellow"
     ),
 ]
 
