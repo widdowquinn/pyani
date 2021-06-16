@@ -97,12 +97,15 @@ Suggestions for improvement
 ---------------------------
 
 If you would like to make a suggestion for how we could improve ``pyani``,
-we welcome contributions at the `GitHub issues page`_.
+we welcome contributions. If you have a specific problem, or a concrete suggestion,
+you can submit these at the `GitHub issues page`_. If you would like to discuss
+an idea with the maintainers, this can be done at the  at the `Github discussions page`_.
 
 
 .. _GitHub: https://github.com
 .. _Github contributors: https://github.com/widdowquinn/pyani/blob/master/CONTRIBUTORS.md
 .. _Github issues page: https://github.com/widdowquinn/pyani/issues
+.. _Github discussions page: https//github.com/widdowquinn/pyani/discussions
 .. _PEP8: http://www.python.org/dev/peps/pep-0008/
 .. _PEP257: http://www.python.org/dev/peps/pep-0257/
 .. _pre-commit: https://github.com/pre-commit/pre-commit
