@@ -58,8 +58,7 @@ CITATION_INFO = [
         "green",
     ),
     termcolor(
-        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,",
-        "yellow",
+        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,", "yellow",
     ),
     termcolor(
         "\t& Toth, I.K. (2016) 'Genomics and taxonomy in diagnostics for", "yellow"
@@ -87,7 +86,7 @@ def run_main(argv: Optional[List[str]] = None) -> int:
         args = parse_cmdline(argv)
 
     # Catch execution with no arguments
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 1 and argv is None:
         sys.stderr.write("pyani version: {0}\n".format(__version__))
         return 0
 
