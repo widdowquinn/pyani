@@ -545,7 +545,7 @@ def retrieve_asm_contigs(
                     if not buffer:
                         break
                     elif buffer == b"status=replaced\n":
-                        logger.error(
+                        logger.warning(
                             "Could not download %s; file has been replaced", asmurl
                         )
                     fsize_dl += len(buffer)
