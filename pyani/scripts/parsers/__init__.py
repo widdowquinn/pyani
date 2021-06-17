@@ -62,7 +62,8 @@ from pyani.scripts.parsers import (
 
 # Process command-line
 def parse_cmdline(argv: Optional[List] = None) -> Namespace:
-    """Parse command-line arguments for script.
+    """
+    Parse command-line arguments for script.
 
     :param argv:  Namespace, command-line arguments
 
@@ -94,7 +95,18 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
     subparsers = parser_main.add_subparsers(
         title="subcommands", description="valid subcommands", help="additional help"
     )
-
+    parser_main.add_argument(
+        "--version",
+        action="store_true",
+        default=False,
+    )
+    parser_main.add_argument(
+        "--citation",
+        action="store_true",
+        dest="citation",
+        default=False,
+        help="Display pyani citation",
+    )
     # Parsers common to multiple subcommand parsers
     parser_common = common_parser.build()
     parser_scheduler = scheduling_parser.build()
@@ -121,5 +133,8 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
     # Parse arguments
     # The list comprehension is to allow PosixPaths to be defined and passed in testing
     if argv is None:
-        argv = sys.argv[1:]
+        if len(sys.argv) == 1:
+            argv = ["-h"]
+        else:
+            argv = sys.argv[1:]
     return parser_main.parse_args([str(_) for _ in argv])
