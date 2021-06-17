@@ -27,20 +27,20 @@ Pre-commit checks and style guide
 
 So far as is possible, we aim to follow the coding conventions as described in `PEP8`_ and `PEP257`_, but we have adopted ``black`` code styling, which does vary from the PEPs in places.
 
-We use the `flake8` tool for style checks, and this can be installed as follows (with two useful plugins):
+We use the ``flake8`` tool for style checks, and this can be installed as follows (with two useful plugins):
 
 .. code-block:: bash
 
     pip install flake8 flake8-docstrings flake8-blind-except
 
-`flake8` can then be run directly on the codebase with
+``flake8`` can then be run directly on the codebase with
 
 .. code-block:: bash
 
     flake8 bin/
     flake8 pyani/
 
-We use the `black` tool for code style checking, which can be installed with:
+We use the ``black`` tool for code style checking, which can be installed with:
 
 .. code-block:: bash
 
@@ -96,11 +96,7 @@ The assigned developer will then review your pull request, and merge it or conti
 Suggestions for improvement
 ---------------------------
 
-If you would like to make a suggestion for how we could improve ``pyani``,
-we welcome contributions. If you have a specific problem, or a concrete suggestion,
-you can submit these at the `GitHub issues page`_. If you would like to discuss
-an idea with the maintainers and the `pyani` community, this can be done at the `Github discussions page`_.
-
+If you would like to make a suggestion for how we could improve ``pyani``, we welcome contributions. If you have a specific problem, or a concrete suggestion, you can submit these at the `GitHub issues page`_. If you would like to discuss an idea with the maintainers and the ``pyani`` community, this can be done at the `Github discussions page`_.
 
 .. _GitHub: https://github.com
 .. _Github contributors: https://github.com/widdowquinn/pyani/blob/master/CONTRIBUTORS.md
