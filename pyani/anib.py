@@ -85,7 +85,6 @@ import platform
 import re
 import shutil
 import subprocess
-import secrets
 
 from logging import Logger
 from pathlib import Path
