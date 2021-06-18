@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2021
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -17,7 +17,7 @@
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2021 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -98,9 +98,8 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
     result = subprocess.run(
         cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
     )
-    #match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
-    #version = match.group()  # type: ignore
-    version = str(result.stdout, "utf-8")
+    match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
+    version = match.group()  # type: ignore
     return f"{platform.system()}_{version}"
 
 
