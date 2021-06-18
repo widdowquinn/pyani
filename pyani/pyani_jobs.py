@@ -159,7 +159,7 @@ class JobGroup(object):
         arguments='{'fooargs': ['1','2','3','4'],
                     'barargs': ['a','b','c','d']}
         """
-        logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
         self.name = name  # Set JobQueue name
         self.queue = queue  # Set SGE queue to request
@@ -185,7 +185,7 @@ class JobGroup(object):
         elif self.scheduler == "slurm":
             self.generate_slurm_script()  # Make SLURM script for sweep/array
         else:
-            logger.warning("Cannot make script for scheduler %s", self.scheduler)
+            self.logger.warning("Cannot make script for scheduler %s", self.scheduler)
 
     def generate_sge_script(self) -> None:
         """Create the SGE script that will run the jobs in the JobGroup."""
@@ -290,7 +290,7 @@ class JobGroup(object):
             if self.scheduler == "sge":  # hpc is SGE
                 self.finished = os.system("qstat -j %s > /dev/null" % (self.name))
             elif self.scheduler == "slurm":  # hpc is SLURM
-                print(
+                self.logger.info(
                     "Scheduler slurm: squeue -n %s" % (self.name),
                     "finished? ",
                     self.finished,
@@ -300,7 +300,7 @@ class JobGroup(object):
 
                 if int(count) == 0:
                     self.finished = True
-                    print("Finished ", self.finished)
+                    self.logger.info("Finished ", self.finished)
 
 
 def get_cmd_output(cmd):
