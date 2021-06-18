@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2013-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2021
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -119,6 +119,7 @@ class Job(object):
             interval = min(2.0 * interval, 60)
             self.finished = os.system(f"qstat -j {self.name} > /dev/null")
 
+
 class JobGroup(object):
 
     """Class that stores a group of jobs, permitting parameter sweeps."""
@@ -130,7 +131,6 @@ class JobGroup(object):
         scheduler: str,
         queue: Optional[str] = None,
         arguments: Optional[Dict[str, List[Any]]] = None,
-        
     ) -> None:
         """Instantiate a JobGroup object.
 
@@ -140,7 +140,8 @@ class JobGroup(object):
         :param name:  str, the JobGroup name
         :param command:  str, the command to be run, with arguments specified
         :param queue:   str, , the queue for SGE to use
-        :param arguments:  dict, the values for each parameter as lists of strings, keyed by an identifier for the command string
+        :param arguments:  dict, the values for each parameter as lists of strings,
+                           keyed by an identifier for the command string
 
         For example, to use a command 'my_cmd' with the arguments
         '-foo' and '-bar' having values 1, 2, 3, 4 and 'a', 'b', 'c', 'd' in
@@ -155,7 +156,7 @@ class JobGroup(object):
         self.dependencies = []  # type: List[Any]
         self.submitted = False  # type: bool
         self.finished = False  # type: int
-        self.scheduler = scheduler
+        self.scheduler = scheduler.lower()
         if arguments is not None:
             self.arguments = arguments  # Dictionary of arguments for command
         else:
@@ -168,7 +169,7 @@ class JobGroup(object):
         total = 1  # total number of jobs in this group
 
         # for now, SLURM_TASK_ID becomes TASK_ID, but we base it at zero
-        #self.script += """let "TASK_ID=$SLURM_TASK_ID - 1"\n"""
+        # self.script += """let "TASK_ID=$SLURM_TASK_ID - 1"\n"""
         self.script += """let "TASK_ID=$SLURM_ARRAY_TASK_ID - 1"\n"""
         # build the array definitions
         for key in sorted(self.arguments.keys()):
@@ -225,23 +226,27 @@ class JobGroup(object):
         while not self.finished:
             time.sleep(interval)
             interval = min(2 * interval, 60)
-            
-            if self.scheduler.lower() == "sge" :  # hpc is SGE
-                self.finished = os.system("qstat -j %s > /dev/null" % (self.name))
 
-            elif self.scheduler.lower() == "slurm" :  # hpc is SLURM
-                print("Scheduler slurm: squeue -n %s" % (self.name), "finished? ", self.finished)
+            if self.scheduler == "sge":  # hpc is SGE
+                self.finished = os.system("qstat -j %s > /dev/null" % (self.name))
+            elif self.scheduler == "slurm":  # hpc is SLURM
+                print(
+                    "Scheduler slurm: squeue -n %s" % (self.name),
+                    "finished? ",
+                    self.finished,
+                )
                 cmd = "squeue -n %s | tail -n+2 | wc -l" % (self.name)
                 count = get_cmd_output(cmd)
-            
+
                 if int(count) == 0:
                     self.finished = True
                     print("Finished ", self.finished)
 
+
 def get_cmd_output(cmd):
-    
-    """ call subprocess popen to get command stdout """
+
+    """call subprocess popen to get command stdout"""
 
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-    out, error =  p.communicate()
-    return str(out, 'utf-8')
+    out, error = p.communicate()
+    return str(out, "utf-8")

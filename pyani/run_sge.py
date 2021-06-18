@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2013-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2021
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -74,7 +74,7 @@ def build_joblist(jobgraph) -> List:
     :param jobgraph:
     """
     logger = logging.getLogger(__name__)
-    
+
     jobset = set()  # type: Set
     for job in jobgraph:
         jobset = populate_jobset(job, jobset, depth=1)
@@ -106,7 +106,10 @@ def compile_jobgroups_from_joblist(
             sge_jobcmdlist = [f'"{jc}"' for jc in sublist]
             jobgroups.append(
                 JobGroup(
-                    f"{jgprefix}_{count}", "$cmds", arguments={"cmds": sge_jobcmdlist}, scheduler="sge"
+                    f"{jgprefix}_{count}",
+                    "$cmds",
+                    arguments={"cmds": sge_jobcmdlist},
+                    scheduler="sge",
                 )
             )
     return jobgroups
@@ -122,7 +125,6 @@ def run_dependency_graph(
     """Create and runs SGE scripts for jobs based on passed jobgraph.
 
     :param jobgraph: list of jobs, which may have dependencies.
-    :param verbose: flag for multiprocessing verbosity
     :param jgprefix: a prefix for the submitted jobs, in the scheduler
     :param sgegroupsize: the maximum size for an array job submission
     :param schedulerargs: additional arguments to qsub
@@ -136,8 +138,7 @@ def run_dependency_graph(
     logger = logging.getLogger(__name__)
 
     logger.debug("Received jobgraph with %d jobs", len(jobgraph))
-    
-    
+
     jobs_main = []  # Can be run first, before deps
     jobs_deps = []  # Depend on the main jobs
 
@@ -263,17 +264,17 @@ def extract_submittable_jobs(waiting: List) -> List:
 
 
 def submit_safe_jobs(
-    root_dir: Path, jobs: Iterable, schedulerargs: Optional[str] = None
+    root_dir: Path, jobs: List, schedulerargs: Optional[str] = None
 ) -> None:
     """Submit passed list of jobs to SGE server with dir as root for output.
 
     :param root_dir:  path to output directory
-    :param jobs:  iterable of Job objects
+    :param jobs:  sized iterable of Job objects
     :param schedulerargs:  str, additional arguments for qsub
     """
     logger = logging.getLogger(__name__)
     logger.debug("Received %s jobs", len(jobs))
-    
+
     # Loop over each job, constructing SGE command-line based on job settings
     for job in jobs:
         job.out = root_dir / "stdout"
@@ -312,7 +313,9 @@ def submit_safe_jobs(
         job.submitted = True  # Set the job's submitted flag to True
 
 
-def submit_jobs(root_dir: Path, jobs: Iterable, schedulerargs: Optional[str] = None) -> None:
+def submit_jobs(
+    root_dir: Path, jobs: Iterable, schedulerargs: Optional[str] = None
+) -> None:
     """Submit passed jobs to SGE server with passed directory as root.
 
     :param root_dir:  path to output directory
