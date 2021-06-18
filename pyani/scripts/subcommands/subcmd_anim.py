@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2020
+# (c) University of Strathclyde 2019-2021
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2020 University of Strathclyde
+# Copyright (c) 2019-2021 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -303,7 +303,7 @@ def subcmd_anim(args: Namespace) -> None:
 
 
 def generate_joblist(
-    comparisons: List[Tuple], existingfiles: List[Path], args: Namespace,
+    comparisons: List[Tuple], existingfiles: List[Path], args: Namespace
 ) -> List[ComparisonJob]:
     """Return list of ComparisonJobs.
 
@@ -360,7 +360,7 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
     """
     logger = logging.getLogger(__name__)
     logger.debug("Scheduler: %s", args.scheduler)
-    
+
     if args.scheduler == "multiprocessing":
         logger.info("Running jobs with multiprocessing")
         if not args.workers:
@@ -376,8 +376,8 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
             )
             raise PyaniException("Multiprocessing run failed in ANIm")
         logger.info("Multiprocessing run completed without error")
-    elif args.scheduler.lower() == "sge" or args.scheduler.lower() == "slurm":
-        logger.info("Running jobs with ", args.scheduler)
+    elif args.scheduler.lower() in ("sge", "slurm"):
+        logger.info("Running jobs with %s", args.scheduler)
         logger.debug("Setting jobarray group size to %d", args.sgegroupsize)
         logger.debug("Joblist contains %d jobs", len(joblist))
         if args.scheduler.lower() == "sge":
@@ -385,14 +385,13 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
                 [_.job for _ in joblist],
                 jgprefix=args.jobprefix,
                 sgegroupsize=args.sgegroupsize,
-                sgeargs=args.sgeargs,
+                sgeargs=args.schedulerargs,
             )
         elif args.scheduler.lower() == "slurm":
             run_slurm.run_dependency_graph(
                 [_.job for _ in joblist],
                 jgprefix=args.jobprefix,
                 sgegroupsize=args.sgegroupsize,
-                #sgeargs=args.sgeargs,
             )
     else:
         logger.error(termcolor("Scheduler %s not recognised", "red"), args.scheduler)
@@ -400,7 +399,7 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
 
 
 def update_comparison_results(
-    joblist: List[ComparisonJob], run, session, nucmer_version: str, args: Namespace,
+    joblist: List[ComparisonJob], run, session, nucmer_version: str, args: Namespace
 ) -> None:
     """Update the Comparison table with the completed result set.
 
