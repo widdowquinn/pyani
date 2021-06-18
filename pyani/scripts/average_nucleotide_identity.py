@@ -683,7 +683,7 @@ def run_blast(
             else:
                 logger.info("All multiprocessing jobs complete.")
             logger.info("multiprocessing scheduler : cumval ", cumval)
-        elif args.scheduler == "SGE":
+        elif args.scheduler.upper() == "SGE":
             logger.info("Running dependency graph with SGE")
             run_sge.run_dependency_graph(jobgraph)
             cumval = 0
