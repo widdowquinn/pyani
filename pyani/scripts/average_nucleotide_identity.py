@@ -662,6 +662,8 @@ def run_blast(
     return values of the BLAST tool subprocesses, and the fragment sizes for
     each input file
     """
+    cumval = 0
+
     if not args.skip_blastn:
         logger.info("Fragmenting input files, and writing to %s", args.outdirname)
         fragfiles, fraglengths = make_sequence_fragments(
@@ -673,6 +675,7 @@ def run_blast(
         jobgraph = anib.make_job_graph(
             infiles, fragfiles, anib.make_blastcmd_builder(args.method, blastdir)
         )
+
         if args.scheduler == "multiprocessing":
             logger.info("Running dependency graph with multiprocessing")
             cumval = run_mp.run_dependency_graph(jobgraph, logger=logger)
@@ -682,17 +685,12 @@ def run_blast(
                 )
             else:
                 logger.info("All multiprocessing jobs complete.")
-            logger.info("multiprocessing scheduler : cumval ", cumval)
         elif args.scheduler.upper() == "SGE":
             logger.info("Running dependency graph with SGE")
             run_sge.run_dependency_graph(jobgraph)
-            cumval = 0
-            logger.info("All SGE jobs complete.")
         elif args.scheduler.upper() == "SLURM":
             logger.info("Running dependency graph with SLURM")
             run_slurm.run_dependency_graph(jobgraph)
-            cumval = 0
-            logger.info("All SLURM jobs complete.")
         else:
             logger.error(f"Scheduler {args.scheduler} not recognised (exiting)")
             raise SystemError(1)
