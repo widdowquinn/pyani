@@ -60,7 +60,6 @@ This code is essentially a frozen and cut-down version of pysge
 (https://github.com/widdowquinn/pysge)
 """
 
-import logging
 import os
 import time
 
@@ -159,8 +158,6 @@ class JobGroup(object):
         arguments='{'fooargs': ['1','2','3','4'],
                     'barargs': ['a','b','c','d']}
         """
-        self.logger = logging.getLogger(__name__)
-
         self.name = name  # Set JobQueue name
         self.queue = queue  # Set SGE queue to request
         self.command = command  # Set command string
@@ -168,13 +165,6 @@ class JobGroup(object):
         self.submitted = False  # type: bool
         self.finished = False  # type: int
         self.scheduler = scheduler.lower()
-
-        logging.info(
-            "JobGroup created with scheduler %s on queue %s with name %s",
-            self.scheduler,
-            self.queue,
-            self.name,
-        )
 
         if arguments is not None:
             self.arguments = arguments  # Dictionary of arguments for command
@@ -184,8 +174,6 @@ class JobGroup(object):
             self.generate_sge_script()  # Make SGE script for sweep/array
         elif self.scheduler == "slurm":
             self.generate_slurm_script()  # Make SLURM script for sweep/array
-        else:
-            self.logger.warning("Cannot make script for scheduler %s", self.scheduler)
 
     def generate_sge_script(self) -> None:
         """Create the SGE script that will run the jobs in the JobGroup."""
@@ -289,17 +277,11 @@ class JobGroup(object):
             if self.scheduler == "sge":  # hpc is SGE
                 self.finished = os.system("qstat -j %s > /dev/null" % (self.name))
             elif self.scheduler == "slurm":  # hpc is SLURM
-                self.logger.info(
-                    "Scheduler slurm: squeue -n %s; finished %s",
-                    self.name,
-                    self.finished,
-                )
                 cmd = "squeue -n %s | tail -n+2 | wc -l" % (self.name)
                 count = get_cmd_output(cmd)
 
                 if int(count) == 0:
                     self.finished = True
-                    self.logger.info("Finished %s", self.finished)
 
 
 def get_cmd_output(cmd):
