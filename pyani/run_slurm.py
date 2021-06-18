@@ -44,6 +44,7 @@ jobs.
 
 import itertools
 import logging
+import os
 import subprocess
 
 from collections import defaultdict
@@ -319,7 +320,7 @@ def submit_safe_jobs(
             slurmcmd = f"{slurmcmd} {schedulerargs}"
         # We've considered Bandit warnings B404,B603 and silence
         logger.info("Running command %s", slurmcmd)
-        subprocess.call(slurmcmd, shell=False)
+        os.system(slurmcmd)
 
         job.submitted = True  # Set the job's submitted flag to True
 
