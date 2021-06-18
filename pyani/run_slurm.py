@@ -44,7 +44,6 @@ jobs.
 
 import itertools
 import logging
-import os
 import subprocess
 
 from collections import defaultdict
