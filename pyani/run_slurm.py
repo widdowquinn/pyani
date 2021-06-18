@@ -17,7 +17,7 @@
 # The MIT License
 #
 # Copyright (c) 2013-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2021 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -288,12 +288,10 @@ def submit_safe_jobs(
 
         # If the job is actually a JobGroup, add the task numbering argument
         if isinstance(job, JobGroup):
-            # args += f"-t 1:{job.tasks} "
             args += f" --array=1-{job.tasks} "
         # If there are dependencies for this job, hold the job until they are
         # complete
         if job.dependencies:
-            # args += "-hold_jid "
             args += " --dependency=afterok:"
             for dep in job.dependencies:
                 # get the jobid using the jobname
@@ -317,20 +315,12 @@ def submit_safe_jobs(
             args = args[:-1]
 
         # Build the sbatch SLURM commandline (passing local environment)
-        # qsubcmd = f"{pyani_config.QSUB_DEFAULT} -V {args} {job.scriptpath}"
         slurmcmd = f"{pyani_config.SLURM_DEFAULT} {args} {job.scriptpath}".strip()
         if schedulerargs is not None:
             slurmcmd = f"{slurmcmd} {schedulerargs}"
         # We've considered Bandit warnings B404,B603 and silence
-        # subprocess.call(qsubcmd, shell=False)  # nosec
-        # os.system(qsubcmd)
-        print("running command", slurmcmd)
-        os.system(slurmcmd)
-
-        # out = subprocess.Popen(slurmcmd, stdout=PIPE, stderr=PIPE, shell=True)
-        # jobSubmitOutput = out.stdout.read()
-        # if "Submitted batch job" in jobSubmitOutput:
-        #    jobid = jobSubmitOutput.split()[3]
+        logger.info("Running command %s", slurmcmd)
+        subprocess.call(slurmcmd, shell=False)
 
         job.submitted = True  # Set the job's submitted flag to True
 
