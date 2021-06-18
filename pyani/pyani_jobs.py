@@ -60,8 +60,10 @@ This code is essentially a frozen and cut-down version of pysge
 (https://github.com/widdowquinn/pysge)
 """
 
+import logging
 import os
 import time
+
 from subprocess import Popen, PIPE
 from typing import Any, Dict, List, Optional
 
@@ -145,11 +147,20 @@ class JobGroup(object):
 
         For example, to use a command 'my_cmd' with the arguments
         '-foo' and '-bar' having values 1, 2, 3, 4 and 'a', 'b', 'c', 'd' in
-        all combinations, respectively, you would pass
-        command='my_cmd $SLURM_TASK_ID -foo $fooargs -bar $barargs'
+        all combinations, respectively, you would pass:
+
+        command='my_cmd $SLURM_ARRAY_TASK_ID -foo $fooargs -bar $barargs'
+        arguments='{'fooargs': ['1','2','3','4'],
+                    'barargs': ['a','b','c','d']}
+
+        or
+
+        command='my_cmd $SGE_TASK_ID -foo $fooargs -bar $barargs'
         arguments='{'fooargs': ['1','2','3','4'],
                     'barargs': ['a','b','c','d']}
         """
+        logger = logging.getLogger(__name__)
+
         self.name = name  # Set JobQueue name
         self.queue = queue  # Set SGE queue to request
         self.command = command  # Set command string
@@ -157,19 +168,68 @@ class JobGroup(object):
         self.submitted = False  # type: bool
         self.finished = False  # type: int
         self.scheduler = scheduler.lower()
+
+        logging.info(
+            "JobGroup created with scheduler %s on queue %s with name %s",
+            self.scheduler,
+            self.queue,
+            self.name,
+        )
+
         if arguments is not None:
             self.arguments = arguments  # Dictionary of arguments for command
         else:
             self.arguments = {}
-        self.generate_script()  # Make SGE script for sweep/array
+        if self.scheduler == "sge":
+            self.generate_sge_script()  # Make SGE script for sweep/array
+        elif self.scheduler == "slurm":
+            self.generate_slurm_script()  # Make SLURM script for sweep/array
+        else:
+            logger.warning("Cannot make script for scheduler %s", self.scheduler)
 
-    def generate_script(self) -> None:
+    def generate_sge_script(self) -> None:
+        """Create the SGE script that will run the jobs in the JobGroup."""
+        self.script = ""  # type: ignore
+        total = 1  # total number of jobs in this group
+
+        # for now, SGE_TASK_ID becomes TASK_ID, but we base it at zero
+        self.script += """let "TASK_ID=$SGE_TASK_ID - 1"\n"""
+
+        # build the array definitions
+        for key in sorted(self.arguments.keys()):
+            # The keys are sorted for py3.5 compatibility with tests
+            values = self.arguments[key]
+            line = "%s_ARRAY=( " % (key)
+            for value in values:
+                line += value
+                line += " "
+            line += " )\n"
+            self.script += line
+            total *= len(values)
+        self.script += "\n"
+
+        # now, build the decoding logic in the script
+        for key in sorted(self.arguments.keys()):
+            # The keys are sorted for py3.5 compatibility with tests
+            count = len(self.arguments[key])
+            self.script += """let "%s_INDEX=$TASK_ID %% %d"\n""" % (key, count)
+            self.script += """%s=${%s_ARRAY[$%s_INDEX]}\n""" % (key, key, key)
+            self.script += """let "TASK_ID=$TASK_ID / %d"\n""" % (count)
+
+        # now, add the command to run the job
+        self.script += "\n"
+        self.script += self.command
+        self.script += "\n"
+
+        # set the number of tasks in this group
+        self.tasks = total
+
+    def generate_slurm_script(self) -> None:
         """Create the SLURM script that will run the jobs in the JobGroup."""
-        self.script = ""  # type: str
+        self.script = ""  # type: ignore
         total = 1  # total number of jobs in this group
 
         # for now, SLURM_TASK_ID becomes TASK_ID, but we base it at zero
-        # self.script += """let "TASK_ID=$SLURM_TASK_ID - 1"\n"""
         self.script += """let "TASK_ID=$SLURM_ARRAY_TASK_ID - 1"\n"""
         # build the array definitions
         for key in sorted(self.arguments.keys()):
