@@ -186,6 +186,7 @@ def subcmd_anim(args: Namespace) -> None:
 
     # Add information about this run to the database
     logger.debug("Adding run info to database %s...", args.dbpath)
+    run = None  # defining this avoids a pylance error in the except clause below
     try:
         run = add_run(
             session,
