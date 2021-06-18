@@ -290,8 +290,8 @@ class JobGroup(object):
                 self.finished = os.system("qstat -j %s > /dev/null" % (self.name))
             elif self.scheduler == "slurm":  # hpc is SLURM
                 self.logger.info(
-                    "Scheduler slurm: squeue -n %s" % (self.name),
-                    "finished? ",
+                    "Scheduler slurm: squeue -n %s; finished %s",
+                    self.name,
                     self.finished,
                 )
                 cmd = "squeue -n %s | tail -n+2 | wc -l" % (self.name)
@@ -299,7 +299,7 @@ class JobGroup(object):
 
                 if int(count) == 0:
                     self.finished = True
-                    self.logger.info("Finished ", self.finished)
+                    self.logger.info("Finished %s", self.finished)
 
 
 def get_cmd_output(cmd):
