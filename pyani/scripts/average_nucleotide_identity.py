@@ -546,12 +546,24 @@ def calculate_anim(
             logger.info("Running jobs with ", args.scheduler)
             logger.info("Jobarray group size set to %d", args.sgegroupsize)
 
-            run_slurm.run_dependency_graph(
-                joblist,
-                jgprefix=args.jobprefix,
-                sgegroupsize=args.sgegroupsize,
-                schedulerargs=args.schedulerargs,
-            )
+            if args.scheduler.upper() == "SLURM":
+                run_slurm.run_dependency_graph(
+                    joblist,
+                    jgprefix=args.jobprefix,
+                    sgegroupsize=args.sgegroupsize,
+                    schedulerargs=args.schedulerargs,
+                )
+            elif args.scheduler.upper() == "SGE":
+                run_sge.run_dependency_graph(
+                    joblist,
+                    jgprefix=args.jobprefix,
+                    sgegroupsize=args.sgegroupsize,
+                    sgeargs=args.sgeargs,
+                    schedulerargs=args.schedulerargs,
+                )
+            else:
+                logger.error("Scheduler %s not recognised", args.scheduler)
+                raise SystemExit(1)
     else:
         logger.warning("Skipping NUCmer run (as instructed)!")
 
