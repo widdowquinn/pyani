@@ -254,7 +254,6 @@ class JobGroup(object):
 
         # now, add the command to run the job
         self.script += "\n"
-        self.script += "echo " + self.command + "\n"
         self.script += self.command
         self.script += "\n"
 
