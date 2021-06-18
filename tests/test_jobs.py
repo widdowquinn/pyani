@@ -149,28 +149,32 @@ def test_remove_dependency(job_dummy_cmds):
 
 def test_create_jobgroup(job_empty_script):
     """create dummy jobgroup."""
-    jobgroup = pyani_jobs.JobGroup("empty", "")
+    jobgroup = pyani_jobs.JobGroup("empty", "", "sge")
     assert jobgroup.script == job_empty_script
 
 
 def test_1d_jobgroup(job_scripts):
     """create dummy 1-parameter sweep jobgroup."""
-    jobgroup = pyani_jobs.JobGroup("1d-sweep", "cat", arguments=job_scripts[0].params)
+    jobgroup = pyani_jobs.JobGroup(
+        "1d-sweep", "cat", "sge", arguments=job_scripts[0].params
+    )
     assert (jobgroup.script, 3) == (job_scripts[0].script, jobgroup.tasks)
 
 
 def test_2d_jobgroup(job_scripts):
     """create dummy 2-parameter sweep jobgroup."""
     jobgroup = pyani_jobs.JobGroup(
-        "2d-sweep", "myprog", arguments=job_scripts[1].params
+        "2d-sweep", "myprog", "sge", arguments=job_scripts[1].params
     )
     assert (jobgroup.script, 4) == (job_scripts[1].script, jobgroup.tasks)
 
 
 def test_add_group_dependency(job_scripts):
     """add jobgroup dependency."""
-    jg1 = pyani_jobs.JobGroup("1d-sweep", "cat", arguments=job_scripts[0].params)
-    jg2 = pyani_jobs.JobGroup("2d-sweep", "myprog", arguments=job_scripts[1].params)
+    jg1 = pyani_jobs.JobGroup("1d-sweep", "cat", "sge", arguments=job_scripts[0].params)
+    jg2 = pyani_jobs.JobGroup(
+        "2d-sweep", "myprog", "sge", arguments=job_scripts[1].params
+    )
     jg2.add_dependency(jg1)
     dep = jg2.dependencies[0]
 
@@ -184,8 +188,10 @@ def test_add_group_dependency(job_scripts):
 
 def test_remove_group_dependency(job_scripts):
     """add and remove jobgroup dependency."""
-    jg1 = pyani_jobs.JobGroup("1d-sweep", "cat", arguments=job_scripts[0].params)
-    jg2 = pyani_jobs.JobGroup("2d-sweep", "myprog", arguments=job_scripts[1].params)
+    jg1 = pyani_jobs.JobGroup("1d-sweep", "cat", "sge", arguments=job_scripts[0].params)
+    jg2 = pyani_jobs.JobGroup(
+        "2d-sweep", "myprog", "sge", arguments=job_scripts[1].params
+    )
     jg2.add_dependency(jg1)
     dep = jg2.dependencies[0]
     jg2.remove_dependency(dep)
