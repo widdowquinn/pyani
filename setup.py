@@ -87,9 +87,7 @@ setuptools.setup(
     license="MIT",
     keywords="genome bioinformatics sequence taxonomy",
     platforms="Posix; MacOS X",
-    #url="http://widdowquinn.github.io/pyani/",  # project home page
-    #download_url="https://github.com/widdowquinn/pyani/releases",
-    #download_url="https://github.com/TeamMacLean/pyani"
+    url="http://widdowquinn.github.io/pyani/",  # project home page
     scripts=[],
     entry_points={
         "console_scripts": [
