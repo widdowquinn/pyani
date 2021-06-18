@@ -558,7 +558,6 @@ def calculate_anim(
                     joblist,
                     jgprefix=args.jobprefix,
                     sgegroupsize=args.sgegroupsize,
-                    sgeargs=args.sgeargs,
                     schedulerargs=args.schedulerargs,
                 )
             else:
