@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2013-2019
 # (c) University of Strathclyde 2019
-# Author: Leighton Pritchard
+# Author: Ram Krishna
 #
 # Contact:
 # leighton.pritchard@strath.ac.uk
@@ -75,7 +75,7 @@ def build_joblist(jobgraph) -> List:
     :param jobgraph:
     """
     logger = logging.getLogger(__name__)
-    
+
     jobset = set()  # type: Set
     for job in jobgraph:
         jobset = populate_jobset(job, jobset, depth=1)
@@ -107,7 +107,10 @@ def compile_jobgroups_from_joblist(
             sge_jobcmdlist = [f'"{jc}"' for jc in sublist]
             jobgroups.append(
                 JobGroup(
-                    f"{jgprefix}_{count}", "$cmds", arguments={"cmds": sge_jobcmdlist}, scheduler="slurm"
+                    f"{jgprefix}_{count}",
+                    "$cmds",
+                    arguments={"cmds": sge_jobcmdlist},
+                    scheduler="slurm",
                 )
             )
     return jobgroups
@@ -137,8 +140,7 @@ def run_dependency_graph(
     logger = logging.getLogger(__name__)
 
     logger.debug("Received jobgraph with %d jobs", len(jobgraph))
-    
-    
+
     jobs_main = []  # Can be run first, before deps
     jobs_deps = []  # Depend on the main jobs
 
@@ -264,7 +266,7 @@ def extract_submittable_jobs(waiting: List) -> List:
 
 
 def submit_safe_jobs(
-    root_dir: Path, jobs: Iterable, schedulerargs: Optional[str] = None
+    root_dir: Path, jobs: List, schedulerargs: Optional[str] = None
 ) -> None:
     """Submit passed list of jobs to SLURM server with dir as root for output.
 
@@ -274,7 +276,7 @@ def submit_safe_jobs(
     """
     logger = logging.getLogger(__name__)
     logger.debug("Received %s jobs", len(jobs))
-    
+
     # Loop over each job, constructing SLURM command-line based on job settings
     for job in jobs:
         job.out = root_dir / "stdout"
@@ -282,59 +284,60 @@ def submit_safe_jobs(
 
         # Add the job name, current working directory, and SLURM stdout/stderr
         # directories to the SLURM command line
-        #args = f" -N {job.name} "
         args = f" -J {job.name}"
-        #args += " -cwd "  # not required in slurm
-        #args += f" -o {job.out} -e {job.err} "   # removing this code as the same output/err filename generates error in slurm
-
-        # If a queue is specified, add this to the SLURM command line
-        # LP: This has an undeclared variable, not sure why - delete?
-        # if job.queue is not None and job.queue in local_queues:
-        #    args += local_queues[job.queue]
 
         # If the job is actually a JobGroup, add the task numbering argument
         if isinstance(job, JobGroup):
-            #args += f"-t 1:{job.tasks} "
+            # args += f"-t 1:{job.tasks} "
             args += f" --array=1-{job.tasks} "
         # If there are dependencies for this job, hold the job until they are
         # complete
         if job.dependencies:
-            #args += "-hold_jid "
+            # args += "-hold_jid "
             args += " --dependency=afterok:"
             for dep in job.dependencies:
                 # get the jobid using the jobname
-                squeue_cmd_for_jobid = "squeue -n " + dep.name + " | grep -v JOBID | awk '{print $1}'  | sed 's/_/ /' | awk '{print $1}' | sort | uniq"
-                squeue_jobid = subprocess.Popen(squeue_cmd_for_jobid, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                
-                jobid, err = squeue_jobid.communicate()
-                jobid = str(jobid, 'utf-8').strip()
-                #args += dep.name + ","
-                if jobid != "":
-                	args += jobid + ","
+                squeue_cmd_for_jobid = (
+                    "squeue -n "
+                    + dep.name
+                    + " | grep -v JOBID | awk '{print $1}'  | sed 's/_/ /' | awk '{print $1}' | sort | uniq"
+                )
+                squeue_jobid = subprocess.Popen(
+                    squeue_cmd_for_jobid,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+
+                jobid, _ = squeue_jobid.communicate()
+                myjobid = jobid.decode("utf-8").strip()
+
+                if myjobid != "":
+                    args += myjobid + ","
             args = args[:-1]
 
-	
         # Build the sbatch SLURM commandline (passing local environment)
-        #qsubcmd = f"{pyani_config.QSUB_DEFAULT} -V {args} {job.scriptpath}"
+        # qsubcmd = f"{pyani_config.QSUB_DEFAULT} -V {args} {job.scriptpath}"
         slurmcmd = f"{pyani_config.SLURM_DEFAULT} {args} {job.scriptpath}".strip()
         if schedulerargs is not None:
-            #qsubcmd = f"{qsubcmd} {schedulerargs}"
-            slurmcmd = f"{slurmcmd} {slurmargs}"
+            slurmcmd = f"{slurmcmd} {schedulerargs}"
         # We've considered Bandit warnings B404,B603 and silence
         # subprocess.call(qsubcmd, shell=False)  # nosec
-        #os.system(qsubcmd)
+        # os.system(qsubcmd)
         print("running command", slurmcmd)
         os.system(slurmcmd)
-        
-       # out = subprocess.Popen(slurmcmd, stdout=PIPE, stderr=PIPE, shell=True)
-       # jobSubmitOutput = out.stdout.read()
-       # if "Submitted batch job" in jobSubmitOutput:
-       #    jobid = jobSubmitOutput.split()[3]
+
+        # out = subprocess.Popen(slurmcmd, stdout=PIPE, stderr=PIPE, shell=True)
+        # jobSubmitOutput = out.stdout.read()
+        # if "Submitted batch job" in jobSubmitOutput:
+        #    jobid = jobSubmitOutput.split()[3]
 
         job.submitted = True  # Set the job's submitted flag to True
 
 
-def submit_jobs(root_dir: Path, jobs: Iterable, schedulerargs: Optional[str] = None) -> None:
+def submit_jobs(
+    root_dir: Path, jobs: Iterable, schedulerargs: Optional[str] = None
+) -> None:
     """Submit passed jobs to SLURM server with passed directory as root.
 
     :param root_dir:  path to output directory
