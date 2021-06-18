@@ -385,7 +385,7 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
                 [_.job for _ in joblist],
                 jgprefix=args.jobprefix,
                 sgegroupsize=args.sgegroupsize,
-                sgeargs=args.schedulerargs,
+                schedulerargs=args.sgeargs,
             )
         elif args.scheduler.lower() == "slurm":
             run_slurm.run_dependency_graph(
