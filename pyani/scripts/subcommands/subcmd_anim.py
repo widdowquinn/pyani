@@ -205,6 +205,8 @@ def subcmd_anim(args: Namespace) -> None:
 
     # Identify input files for comparison, and populate the database
     logger.debug("Adding genomes for run %s to database...", run)
+    logger.debug("\tClasses file: %s", args.classes)
+    logger.debug("\tLabels file: %s", args.labels)
     try:
         genome_ids = add_run_genomes(
             session, run, args.indir, args.classes, args.labels
