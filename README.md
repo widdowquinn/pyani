@@ -33,6 +33,7 @@ and we are grateful to all who have contributed to this software:
   <tr>
     <td align="center"><a href="https://b-brankovics.github.io"><img src="https://avatars.githubusercontent.com/u/6728856?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Balázs Brankovics</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=b-brankovics" title="Code">💻</a> <a href="https://github.com/widdowquinn/pyani/issues?q=author%3Ab-brankovics" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/sammywinchester19"><img src="https://avatars.githubusercontent.com/u/67588791?v=4?s=100" width="100px;" alt=""/><br /><sub><b>sammywinchester19</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/issues?q=author%3Asammywinchester19" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/TSL-RamKrishna"><img src="https://avatars.githubusercontent.com/u/20773891?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ram Krishna Shrestha</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=TSL-RamKrishna" title="Tests">⚠️</a> <a href="https://github.com/widdowquinn/pyani/commits?author=TSL-RamKrishna" title="Code">💻</a> <a href="#ideas-TSL-RamKrishna" title="Ideas, Planning, & Feedback">🤔</a></td>
   </tr>
 </table>
 
@@ -62,7 +63,7 @@ DOI: [10.1039/C5AY02550H](https://doi.org/10.1039/C5AY02550H)
 [![pyani sourcerank](https://img.shields.io/librariesio/sourcerank/pypi/pyani.svg?logo=koding&logoColor=white)](https://libraries.io/pypi/pyani)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![pyani PyPi version](https://img.shields.io/pypi/v/pyani "PyPI version")](https://pypi.python.org/pypi/pyani)
