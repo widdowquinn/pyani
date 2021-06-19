@@ -52,9 +52,11 @@ counts, average nucleotide identity (ANI) percentages, and minimum aligned
 percentage (of whole genome) for each pairwise comparison.
 """
 
+import logging
 import platform
 import re
 import subprocess
+import sys
 
 from logging import Logger
 from pathlib import Path
@@ -63,8 +65,14 @@ from typing import Dict, Iterable, List, Optional, Tuple
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
+from . import PyaniException
 
 from .pyani_tools import ANIResults
+
+
+class PyaniANImException(PyaniException):
+
+    """ANIm-specific exception for pyani."""
 
 
 # Get a list of FASTA files from the input directory
@@ -317,17 +325,16 @@ def process_deltadir(
     May throw a ZeroDivisionError if one or more NUCmer runs failed, or a
     very distant sequence was included in the analysis.
     """
+    logger = logging.getLogger(__name__)
+
     # Process directory to identify input files - as of v0.2.4 we use the
     # .filter files that result from delta-filter (1:1 alignments)
-    deltafiles = sorted(delta_dir.glob("*/*.filter"))
-    import sys
+    deltafiles = sorted(delta_dir.glob("*.filter"))
 
-    sys.exit(f"{delta_dir} has {len(deltafiles)} files to load")
+    logger.info("%s has %d files to load", delta_dir, len(deltafiles))
     if not deltafiles:
-        sys.exit(f"{delta_dir} empty? No filter files found")
-    if not logger:
-        logger = logging.getLogger(__name__)
-    logger.debug(f"Found {len(deltafiles)} filter files in {delta_dir}")
+        logger.error("%s empty? No filter files found", delta_dir)
+        raise PyaniANImException(f"{delta_dir} contains no filter files.")
 
     # Hold data in ANIResults object
     results = ANIResults(list(org_lengths.keys()), "ANIm")
