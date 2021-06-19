@@ -23,7 +23,7 @@ Flagged arguments
     Path to the location where the database will be created. Default: ``.pyani/pyanidb``
 
 ``-h, --help``
-    Display usage information for ``pyani index``.
+    Display usage information for ``pyani createdb``.
 
 ``-l LOGFILE, --logfile LOGFILE``
     Provide the location ``LOGFILE`` to which a logfile of the download process will be written.
