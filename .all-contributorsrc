@@ -104,6 +104,17 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "TSL-RamKrishna",
+      "name": "Ram Krishna Shrestha",
+      "avatar_url": "https://avatars.githubusercontent.com/u/20773891?v=4",
+      "profile": "https://github.com/TSL-RamKrishna",
+      "contributions": [
+        "test",
+        "code",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
