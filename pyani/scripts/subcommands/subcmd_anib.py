@@ -182,7 +182,7 @@ def subcmd_anib(args: Namespace) -> None:
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
     comparisons = list(permutations(tqdm(genomes, disable=args.disable_tqdm), 2))
-    logger.info(f"\t...total parwise comparisons to be performed: {len(comparisons)}")
+    logger.info(f"\t...total pairwise comparisons to be performed: {len(comparisons)}")
 
     # Check for existing comparisons; if one has already been done (for the same
     # software package, version, and setting) we add the comparison to this run,
@@ -223,7 +223,7 @@ def subcmd_anib(args: Namespace) -> None:
         )
     else:
         existingfiles = None
-        logger.debug(f"\tIdentified no existing output files")
+        logger.debug("\tIdentified no existing output files")
 
     # Split the input genome files into contiguous fragments of the specified size,
     # as described in Goris et al. We create a new directory to hold sequence
@@ -243,7 +243,7 @@ def subcmd_anib(args: Namespace) -> None:
     joblist = generate_joblist(
         comparisons_to_run, existingfiles, fragfiles, fraglens, args
     )
-    logger.debug(f"...created %s blastn jobs", len(joblist))
+    logger.debug("...created %s blastn jobs", len(joblist))
 
     raise NotImplementedError
 
