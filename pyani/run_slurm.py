@@ -285,10 +285,12 @@ def submit_safe_jobs(
         # Add the job name, current working directory, and SLURM stdout/stderr
         # directories to the SLURM command line
         args = f" -J {job.name}"
+        args += f" -o {job.out} -e {job.err} "
 
         # If the job is actually a JobGroup, add the task numbering argument
         if isinstance(job, JobGroup):
             args += f" --array=1-{job.tasks} "
+
         # If there are dependencies for this job, hold the job until they are
         # complete
         if job.dependencies:
@@ -316,12 +318,13 @@ def submit_safe_jobs(
 
         # Build the sbatch SLURM commandline (passing local environment)
         slurmcmd = f"{pyani_config.SLURM_DEFAULT} {args} {job.scriptpath}".strip()
+
         if schedulerargs is not None:
             slurmcmd = f"{slurmcmd} {schedulerargs}"
-        # We've considered Bandit warnings B404,B603 and silence
-        logger.info("Running command %s", slurmcmd)
-        os.system(slurmcmd)
 
+        # We've considered Bandit warnings B404,B603 and silence
+        logger.debug("Running command %s", slurmcmd)
+        os.system(slurmcmd)
         job.submitted = True  # Set the job's submitted flag to True
 
 

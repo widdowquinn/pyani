@@ -305,8 +305,10 @@ def submit_safe_jobs(
 
         # Build the qsub SGE commandline (passing local environment)
         qsubcmd = f"{pyani_config.QSUB_DEFAULT} -V {args} {job.scriptpath}"
+
         if schedulerargs is not None:
             qsubcmd = f"{qsubcmd} {schedulerargs}"
+
         # We've considered Bandit warnings B404,B603 and silence
         # subprocess.call(qsubcmd, shell=False)  # nosec
         os.system(qsubcmd)
