@@ -279,13 +279,13 @@ def submit_safe_jobs(
 
     # Loop over each job, constructing SLURM command-line based on job settings
     for job in jobs:
-        job.out = root_dir / "stdout"
-        job.err = root_dir / "stderr"
+        job.out = root_dir / "stdout" / job.name
+        job.err = root_dir / "stderr" / job.name
 
         # Add the job name, current working directory, and SLURM stdout/stderr
         # directories to the SLURM command line
         args = f" -J {job.name}"
-        # args += f" -o {job.out} -e {job.err} "
+        args += f" -o {job.out} -e {job.err} "
 
         # If the job is actually a JobGroup, add the task numbering argument
         if isinstance(job, JobGroup):
