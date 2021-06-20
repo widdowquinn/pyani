@@ -72,7 +72,7 @@ def build() -> ArgumentParser:
         "--SGEgroupsize",
         dest="sgegroupsize",
         action="store",
-        default=10000,
+        default=9999,
         type=int,
         help="Number of jobs to place in an SGE array group " "(default 10000)",
     )

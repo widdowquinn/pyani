@@ -91,7 +91,7 @@ def compile_jobgroups_from_joblist(
     """Return list of jobgroups, rather than list of jobs.
 
     :param joblist:
-    :param jgprefix:  str, prefix for SLRUM jobgroup
+    :param jgprefix:  str, prefix for SLURM jobgroup
     :param sgegroupsize:  int, number of jobs in each SLURM jobgroup
     """
     jobcmds = defaultdict(list)  # type: Dict[str, List[str]]
@@ -120,7 +120,7 @@ def compile_jobgroups_from_joblist(
 def run_dependency_graph(
     jobgraph,
     jgprefix: str = "ANIm_SLURM_JG",
-    sgegroupsize: int = 1000,  # changed to 1000 from 10000
+    sgegroupsize: int = 10000,
     schedulerargs: Optional[str] = None,
 ) -> None:
     """Create and runs SLURM scripts for jobs based on passed jobgraph.

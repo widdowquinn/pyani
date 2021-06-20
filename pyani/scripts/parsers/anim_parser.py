@@ -37,7 +37,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 """Provides parser for anim subcommand."""
-import sys
 
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, _SubParsersAction
 from pathlib import Path
@@ -46,8 +45,6 @@ from typing import List, Optional
 from pyani import pyani_config
 
 from pyani.scripts import subcommands
-
-from pyani import __version__
 
 
 def build(
