@@ -352,6 +352,12 @@ def generate_joblist(
             fjob = pyani_jobs.Job("%s_%06d-f" % (args.jobprefix, idx), dcmd)
             fjob.add_dependency(njob)
             joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, fjob))
+
+        logger.debug("Generated %s jobs", len(joblist))
+        logger.debug(
+            "\t...there are %s dependencies for these jobs",
+            sum([len(_.dependencies) for _ in joblist]),
+        )
     return joblist
 
 
