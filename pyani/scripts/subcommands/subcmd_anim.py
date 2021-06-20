@@ -356,7 +356,7 @@ def generate_joblist(
         logger.debug("Generated %s jobs", len(joblist))
         logger.debug(
             "\t...there are %s dependencies for these jobs",
-            sum([len(_.dependencies) for _ in joblist]),
+            sum([len(_.job.dependencies) for _ in joblist]),
         )
     return joblist
 
