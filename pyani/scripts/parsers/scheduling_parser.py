@@ -74,7 +74,7 @@ def build() -> ArgumentParser:
         action="store",
         default=9999,
         type=int,
-        help="Number of jobs to place in an SGE array group " "(default 10000)",
+        help="Number of jobs to place in an SGE array group ",
     )
     parser.add_argument(
         "--SGEargs",
