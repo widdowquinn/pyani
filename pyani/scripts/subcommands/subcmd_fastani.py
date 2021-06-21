@@ -363,9 +363,14 @@ def update_comparison_results(
                 f"fastANI output file {job.outfile} has more than one line"
             )
         query, ref, ani, matches, num_frags = contents[0]
-        aln_length = matches
-        sim_errs = int(num_frags) - int(aln_length)
-        qcov = float(aln_length) * job.fragLen / job.query.length
+        ani = float(ani)  # should be in the range 0–1
+        aln_length = matches * job.fragLen  # should be in bp units
+        sim_errs = (
+            int(num_frags) * job.fragLen - matches * job.fragLen
+        )  # should be in bp units
+        qcov = (
+            float(matches) * job.fragLen / job.query.length
+        )  # should be inthe range 0–1
         # try:
         #   pid = (1 - sim_errs) / int(aln_length)
         # except ZeroDivisionError:  # aln_length was zero (no alignment)
