@@ -35,6 +35,7 @@
 # THE SOFTWARE.
 """Code to implement the fastANI average nucleotide identity method."""
 
+import logging
 import platform
 import os
 import re
@@ -52,7 +53,13 @@ from Bio import SeqIO
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
+from . import PyaniException
 from .pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
+
+
+class PyaniFastANIException(PyaniException):
+
+    """Exception raised when there is a problem with fastANI"""
 
 
 class ComparisonResult(NamedTuple):
@@ -192,12 +199,17 @@ def construct_fastani_cmdline(
     :param kmerSize:        kmer size to use
     :param minFraction:     minimum portion of the genomes that must match to trust ANI
     """
+    logging.getLogger(__name__)
+
     # Cast path strings to pathlib.Path for safety
     query, ref = Path(query), Path(ref)
 
     # Compile commands
     outfile = outdir / f"{query.stem}_vs_{ref.stem}.fastani"
     fastcmd = f"{fastani_exe} -q {query} -r {ref} -o {outfile} --fragLen {fragLen} -k {kmerSize} --minFraction {minFraction}"
+
+    logging.debug("Compiled command: %s", fastcmd)
+
     return fastcmd
 
 
@@ -210,24 +222,36 @@ def parse_fastani_file(filename: Path) -> ComparisonResult:
 
     Extracts the ANI estimate, the number of orthologous matches, and the
     number of sequence fragments considered from the fastANI output file.
+
+    We assume that all fastANI comparisons are pairwise: one query and
+    one reference file. The fastANI file should contain a single line.
+
+    fsatANI *can* produce multi-line output, if a list of query/reference
+    files is given to it.
     """
     # ¶ Example code from a different project
     # def add_snp(holder, type, key, *value):
     #    holder[key] = type(*value)
     # Create some sort of holder:
     # ¶ The following is for an output file with multiple lines
-    results = []
-    for line in [_.strip().split() for _ in open(filename, "r").readlines()]:
-        if len(line) == 5:
-            # Convert types from string to numeric
-            line[2] = float(line[2]) / 100  # ANI value
-            line[3] = int(line[3])  # number of matching fragments
-            line[4] = int(line[4])  # total number of fragments
-            results.append(ComparisonResult(*line))
-        else:
-            raise ValueError(f"Line contains too many/too few items: {line}")
-            continue
-    return results
+    # results = []
+    # for line in [_.strip().split() for _ in open(filename, "r").readlines()]:
+    #     if len(line) == 5:
+    #         # Convert types from string to numeric
+    #         line[2] = float(line[2]) / 100  # ANI value
+    #         line[3] = int(line[3])  # number of matching fragments
+    #         line[4] = int(line[4])  # total number of fragments
+    #         results.append(ComparisonResult(*line))
+    #     else:
+    #         raise ValueError(f"Line contains too many/too few items: {line}")
+    #         continue
+    # return results
+    line = open(filename, "r").readline().strip().split()
+    if not line:  # No file content; either run failed or no detectable similarity
+        raise PyaniFastANIException(f"Input file {filename} is empty")
+    return ComparisonResult(
+        line[0], line[1], 0.01 * float(line[2]), int(line[3]), int(line[4])
+    )
 
 
 def process_files(

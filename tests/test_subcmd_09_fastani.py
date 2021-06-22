@@ -78,10 +78,10 @@ class TestfastANISubcommand(unittest.TestCase):
             )
         }
 
-    @unittest.skip(
-        "This test currently fails for reasons unknown. \
-        Something about the comparisons.kmersize column not existing."
-    )
+    # @unittest.skip(
+    #     "This test currently fails for reasons unknown. \
+    #     Something about the comparisons.kmersize column not existing."
+    # )
     def test_fastani(self):
         """Test fastani run."""
         print(self.argsdict["fastani"])
