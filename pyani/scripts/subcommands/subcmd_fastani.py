@@ -116,6 +116,7 @@ def subcmd_fastani(args: Namespace) -> None:
     logger.info(termcolor("running FastANI analysis", "red"))
 
     # Get current fastani version
+    logger.info(termcolor(f"fastANI executable: {args.fastani_exe}"))
     fastani_version = fastani.get_version(args.fastani_exe)
     logger.info(termcolor("FastANI version: %s", "cyan"), fastani_version)
 
