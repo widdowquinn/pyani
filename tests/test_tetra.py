@@ -57,10 +57,10 @@ import unittest
 
 import pandas as pd
 
-from nose.tools import (assert_equal, assert_false, assert_true)
-from pandas.util.testing import (assert_frame_equal,)
+from nose.tools import assert_equal, assert_false, assert_true
+from pandas.testing import assert_frame_equal
 
-from pyani import (tetra, )
+from pyani import tetra
 
 
 def ordered(obj):
@@ -78,22 +78,23 @@ class TestTETRA(unittest.TestCase):
 
     def setUp(self):
         """Define parameters and values for tests."""
-        self.indir = os.path.join('tests', 'test_input', 'tetra')
-        self.tgtdir = os.path.join('tests', 'test_targets', 'tetra')
-        self.seqdir = os.path.join('tests', 'test_input', 'sequences')
-        self.infile = os.path.join(self.seqdir, 'NC_002696.fna')
-        self.infiles = [os.path.join(self.seqdir, fname) for fname in
-                        os.listdir(self.seqdir)]
+        self.indir = os.path.join("tests", "test_input", "tetra")
+        self.tgtdir = os.path.join("tests", "test_targets", "tetra")
+        self.seqdir = os.path.join("tests", "test_input", "sequences")
+        self.infile = os.path.join(self.seqdir, "NC_002696.fna")
+        self.infiles = [
+            os.path.join(self.seqdir, fname) for fname in os.listdir(self.seqdir)
+        ]
 
     def test_tetraclean(self):
         """detects unambiguous IUPAC symbols correctly."""
-        assert_false(tetra.tetra_clean('ACGTYACGTACNGTACGWTACGT'))
-        assert_true(tetra.tetra_clean('ACGTACGTACGTACGTACGTAC'))
+        assert_false(tetra.tetra_clean("ACGTYACGTACNGTACGWTACGT"))
+        assert_true(tetra.tetra_clean("ACGTACGTACGTACGTACGTAC"))
 
     def test_zscore(self):
         """TETRA Z-score calculated correctly."""
         tetra_z = tetra.calculate_tetra_zscore(self.infile)
-        with open(os.path.join(self.tgtdir, 'zscore.json'), 'r') as ifh:
+        with open(os.path.join(self.tgtdir, "zscore.json"), "r") as ifh:
             target = json.load(ifh)
         assert_equal(ordered(tetra_z), ordered(target))
 
@@ -101,6 +102,7 @@ class TestTETRA(unittest.TestCase):
         """TETRA correlation calculated correctly."""
         infiles = ordered(self.infiles)[:2]  # only test a single correlation
         corr = tetra.calculate_correlations(tetra.calculate_tetra_zscores(infiles))
-        target = pd.read_csv(os.path.join(self.tgtdir, 'correlation.tab'), sep='\t',
-                             index_col=0)
+        target = pd.read_csv(
+            os.path.join(self.tgtdir, "correlation.tab"), sep="\t", index_col=0
+        )
         assert_frame_equal(corr, target)
