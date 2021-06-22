@@ -384,12 +384,18 @@ def update_comparison_results(
         # ¶ fastANI allows many runs to share the same outfile; might have to alter this
         # ¶ May also need to use something other than this Comparison object
         # ¶ Or add new columns?
-        contents = fastani.parse_fastani_file(job.outfile)
-        if len(contents) > 1:
-            raise ValueError(
-                f"fastANI output file {job.outfile} has more than one line"
-            )
-        query, ref, ani, matches, num_frags = contents[0]
+        try:
+            contents = fastani.parse_fastani_file(job.outfile)
+        except fastani.PyaniFastANIException:
+            contents = fastani.ComparisonResult(job.query, job.ref, 0, 0, 0)
+            print(contents)
+        # if len(contents) > 1:
+        #     raise ValueError(
+        #         f"fastANI output file {job.outfile} has more than one line"
+        #     )
+        logger.debug(f"Parsed fastANI file contents: {contents=}")
+        query, ref, ani, matches, num_frags = contents
+
         ani = float(ani)  # should be in the range 0–1
         aln_length = matches * job.fragLen  # should be in bp units
         sim_errs = (
