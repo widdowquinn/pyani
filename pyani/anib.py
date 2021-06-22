@@ -506,6 +506,7 @@ def parse_blast_tab(filename, fraglengths, identity, coverage, mode="ANIb"):
             "ppos",
             "blast_gaps",
         ]
+
     # We may receive an empty BLASTN output file, if there are no significant
     # regions of homology. This causes pandas to throw an error on CSV import.
     # To get past this, we create an empty dataframe with the appropriate
@@ -513,25 +514,28 @@ def parse_blast_tab(filename, fraglengths, identity, coverage, mode="ANIb"):
     try:
         data = pd.read_csv(filename, header=None, sep="\t", index_col=0)
         data.columns = columns
-    except pd.io.common.EmptyDataError:
+    except pd.errors.EmptyDataError:
         data = pd.DataFrame(columns=columns)
     # Add new column for fragment length, only for BLASTALL
     if mode == "ANIblastall":
         data["qlen"] = pd.Series(
             [qfraglengths[idx] for idx in data.index], index=data.index
         )
+
     # Add new columns for recalculated alignment length, proportion, and
     # percentage identity
     data["ani_alnlen"] = data["blast_alnlen"] - data["blast_gaps"]
     data["ani_alnids"] = data["ani_alnlen"] - data["blast_mismatch"]
     data["ani_coverage"] = data["ani_alnlen"] / data["qlen"]
     data["ani_pid"] = data["ani_alnids"] / data["qlen"]
+
     # Filter rows on 'ani_coverage' > 0.7, 'ani_pid' > 0.3
     filtered = data[(data["ani_coverage"] > coverage) & (data["ani_pid"] > identity)]
     # Dedupe query hits, so we only take the best hit
     filtered = filtered.groupby(filtered.index).first()
     # Replace NaNs with zero
     filtered = filtered.fillna(value=0)  # Needed if no matches
+
     # The ANI value is then the mean percentage identity.
     # We report total alignment length and the number of similarity errors
     # (mismatches and gaps), as for ANIm
