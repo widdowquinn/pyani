@@ -275,15 +275,9 @@ class Comparison(Base):
             "subject_id",
             "program",
             "version",
-<<<<<<< HEAD
             "fragsize",
             "maxmatch",
             "kmersize",
-=======
-            "kmersize",
-            "fragsize",
-            "maxmatch",
->>>>>>> 1760ddb (Updated constraints and columns with fastANI fields)
             "minmatch",
         ),
     )
@@ -298,15 +292,9 @@ class Comparison(Base):
     cov_subject = Column(Float)  # in fastANI this is Null
     program = Column(String)
     version = Column(String)
-<<<<<<< HEAD
     fragsize = Column(Integer)  # in fastANI this is fragLength
     maxmatch = Column(Boolean)  # in fastANi this is Null
     kmersize = Column(Integer)
-=======
-    kmersize = Column(Integer)
-    fragsize = Column(Integer)  # in fastANI this is fragLength
-    maxmatch = Column(Boolean)  # in fastANi this is Null
->>>>>>> 1760ddb (Updated constraints and columns with fastANI fields)
     minmatch = Column(Float)
 
     query = relationship(
@@ -373,15 +361,9 @@ def get_comparison_dict(session: Any) -> Dict[Tuple, Any]:
             _.subject_id,
             _.program,
             _.version,
-<<<<<<< HEAD
             _.fragsize,
             _.maxmatch,
             _.kmersize,
-=======
-            _.kmersize,
-            _.fragsize,
-            _.maxmatch,
->>>>>>> 1760ddb (Updated constraints and columns with fastANI fields)
             _.minmatch,
         ): _
         for _ in session.query(Comparison).all()
