@@ -155,7 +155,7 @@ def parse_delta(filename):
     each as a tuple.
     """
     aln_length, sim_errors = 0, 0
-    for line in [l.strip().split() for l in open(filename, "r").readlines()]:
+    for line in [_.strip().split() for _ in open(filename, "r").readlines()]:
         if line[0] == "NUCMER" or line[0].startswith(">"):  # Skip headers
             continue
         # We only process lines with seven columns:
