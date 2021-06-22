@@ -65,6 +65,7 @@ jobs:
             wget https://github.com/ParBLiSS/FastANI/releases/download/v1.33/fastANI-Linux64-v1.33.zip
             unzip fastANI-Linux64-v1.33.zip
             echo 'export PATH=$PWD/fastANI:$PATH' >> $BASH_ENV
+            source $BASH_ENV            
 
 
       - run:
