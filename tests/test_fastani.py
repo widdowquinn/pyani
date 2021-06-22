@@ -12,6 +12,7 @@ from typing import List, NamedTuple, Tuple
 
 import pandas as pd
 import pytest
+import unittest
 
 from pandas.util.testing import assert_frame_equal
 
@@ -50,7 +51,7 @@ def fastanifile_parsed(dir_fastani_in):  # works
     """Example parsed fastANI file."""
     return fastANIParsed(
         dir_fastani_in / "ecoli_vs_shiga.fastani",
-        ComparisonResult("ecoli.fna", "shiga.fna", 97.664, 1322, 1547),
+        ComparisonResult("ecoli.fna", "shiga.fna", 0.9766400000000001, 1322, 1547),
     )
 
 
@@ -80,10 +81,13 @@ def fastani_cmds_four(path_file_four):  # works
     )
 
 
+assertions = unittest.TestCase("__init__")
+
+
 def test_fastanifile_parsing(fastanifile_parsed):  # works
     """Check parsing of test fastANI .fastani file."""
-    result = fastani.parse_fastani_file(fastanifile_parsed.filename)[0]
-    assert result == fastanifile_parsed.data
+    result = fastani.parse_fastani_file(fastanifile_parsed.filename)
+    assertions.assertEqual(result, fastanifile_parsed.data)
 
 
 # Test fastANI command generation
