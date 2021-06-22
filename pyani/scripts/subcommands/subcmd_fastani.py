@@ -393,7 +393,7 @@ def update_comparison_results(
         #     raise ValueError(
         #         f"fastANI output file {job.outfile} has more than one line"
         #     )
-        logger.debug(f"Parsed fastANI file contents: {contents=}")
+        logger.debug(f"Parsed fastANI file contents: {contents}")
         query, ref, ani, matches, num_frags = contents
 
         ani = float(ani)  # should be in the range 0–1
@@ -408,7 +408,6 @@ def update_comparison_results(
         #   pid = (1 - sim_errs) / int(aln_length)
         # except ZeroDivisionError:  # aln_length was zero (no alignment)
         #   pid = 0
-        print(f"{job=}")
         run.comparisons.append(
             Comparison(
                 query=job.query,
