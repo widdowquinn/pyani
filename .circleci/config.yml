@@ -102,7 +102,7 @@ jobs:
   test-3_6:
     <<: *test-template
     docker:
-      - image: circleci/python:3.6.0
+      - image: circleci/python:3.6.9
   test-3_8:
     <<: *test-template
     docker:
