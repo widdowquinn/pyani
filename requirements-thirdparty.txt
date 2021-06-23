@@ -1,3 +1,4 @@
 blast
 blast-legacy
 mummer
+fastani
