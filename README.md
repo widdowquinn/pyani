@@ -486,7 +486,7 @@ Please be aware that the matrix orientation differs for these two options; so, w
 
 The `--scheduler SGE` argument allows one to use `pyani` with an an SGE-type scheduler.
 
-In order for this work, one must be able to submit jobs using the `qsub` command. By default, this will batch the pairwise comparisons in chunks of 10,000, in order to avoid clogging the scheduler queue. Each chunk will be run as a single-core slot.
+In order for this work, one must be able to submit jobs using the `qsub` command. By default, this will batch the pairwise comparisons in array jobs of 10,000, in order to avoid clogging the scheduler queue. Each comparison will be run as a single-core task in an array job.
 
 #### Arguments assigned by Pyani
 The following arguments will be automatically set:
@@ -517,39 +517,6 @@ Additional SGE arguments may be specified with:
 ```bash
 --SGEargs "<your arguments here>"
 ```
-
-Additional arguments must be specified as a string which includes all flags and their values. For instance, to specify a value for the memory resource:
-
-```bash
-"-l h_mem=64G"
-```
-
-```bash
-"-l h_mem=64G -l h_rt=02:00:00"
-```
-
-An alternative to listing all desired options on the command line is to pass an `optionfile`:
-
-```bash
-"-@ optionfile"
-```
-
-This file only contains comments and the flags to be passed (do not include the `#$` in front of the arguments):
-
-```bash
-# Memory to assign to the job
--l h_mem=64G
-
-# Time to allow for job HH:MM:SS
--l h_rt=10:20:00
-
-# Notification email address
--M email@domain.com
-
-# Send notifications when job 'b'egins, 'a'borts (or is rescheduled), 'e'nds, or is 's'uspended
--m baes
-```
-
 
 ## Running `pyani` version 0.2.x
 

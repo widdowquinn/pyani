@@ -95,3 +95,9 @@ This file only contains comments and the flags to be passed (do not include the 
 For more information on using an SGE/OGE scheduler, see:
 
 - `Open Grid Scheduler <http://gridscheduler.sourceforge.net/>`_
+
+^^^^^
+SLURM
+^^^^^
+
+Support for the SLURM scheduler is forthcoming.
