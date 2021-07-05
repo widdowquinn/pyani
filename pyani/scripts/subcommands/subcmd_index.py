@@ -40,6 +40,7 @@
 """Provides the index subcommand for pyani."""
 
 import logging
+import os
 
 from argparse import Namespace
 
@@ -86,10 +87,18 @@ def subcmd_index(args: Namespace) -> int:
                 hfh.write(f"{datahash}\t{fpath}\n")
 
         # Parse the file and get the label/class information
-        with open(fpath, "r") as sfh:
-            label = list(SeqIO.parse(sfh, "fasta"))[0].description.split(" ", 1)[-1]
-        labels.append("\t".join([datahash, fpath.stem, label]))
-        classes.append("\t".join([datahash, fpath.stem, label]))
+        try:
+            with open(fpath, "r") as sfh:
+                label = list(SeqIO.parse(sfh, "fasta"))[0].description.split(" ", 1)[-1]
+            labels.append("\t".join([datahash, fpath.stem, label]))
+            classes.append("\t".join([datahash, fpath.stem, label]))
+        except FileNotFoundError:
+            file = os.readlink(fpath)
+            print(fpath.parent.parent / file)
+            with open(fpath.parent.parent / file, "r") as sfh:
+                label = list(SeqIO.parse(sfh, "fasta"))[0].description.split(" ", 1)[-1]
+            labels.append("\t".join([datahash, fpath.stem, label]))
+            classes.append("\t".join([datahash, fpath.stem, label]))
 
     # Write class and label files
     classfname = args.indir / args.classfname

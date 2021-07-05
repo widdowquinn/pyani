@@ -79,7 +79,7 @@ def get_fasta_paths(
     return [
         fname
         for fname in dirname.iterdir()
-        if fname.is_file() and fname.suffix in extlist
+        if fname.is_file() or fname.is_symlink() and fname.suffix in extlist
     ]
 
 
