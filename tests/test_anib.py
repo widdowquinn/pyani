@@ -48,6 +48,9 @@ from typing import List, NamedTuple
 
 import pandas as pd
 import pytest  # noqa: F401  # pylint: disable=unused-import
+import unittest
+import unittest.mock as mock
+import subprocess
 
 from pandas.util.testing import assert_frame_equal
 
@@ -116,6 +119,67 @@ def anib_output_dir(dir_anib_in):
         dir_anib_in / "blastall",
         pd.read_csv(dir_anib_in / "dataframes" / "blastn_result.csv", index_col=0),
         pd.read_csv(dir_anib_in / "dataframes" / "blastall_result.csv", index_col=0),
+    )
+
+
+# Convenience struct for test_get_version()
+class MockProcess(NamedTuple):
+    stdout: str
+
+
+# Convenience struct for test_get_version()
+class MockMatch(NamedTuple):
+    def group(self):
+        return ""
+
+
+# Create object for accessing unittest assertions
+assertions = unittest.TestCase("__init__")
+
+
+# Test get_version()
+@mock.patch("re.search")
+@mock.patch("subprocess.run")
+@mock.patch("os.path.isfile")
+@mock.patch("os.access")
+@mock.patch("shutil.which")
+def test_get_version(
+    mock_which, mock_access, mock_isfile, mock_run, mock_search
+):  # , mock_search):
+    """ """
+
+    # Test case 1: there is no executable
+    test_file_1 = "/non/existent/file"
+    mock_which.return_value = Path("/non/existent/file")
+    mock_isfile.return_value = False
+    mock_access.return_value = False
+
+    assertions.assertEquals(
+        anib.get_version(test_file_1), f"No blastn executable at {test_file_1}"
+    )
+
+    # Test case 2: there is a file, but it is not executable
+    test_file_2 = "/non/executable/file"
+    mock_which.return_value = Path(test_file_2)
+    mock_isfile.return_value = True
+    mock_access.return_value = False
+
+    assertions.assertEquals(
+        anib.get_version(test_file_2),
+        f"blastn exists at {test_file_2} but not executable",
+    )
+
+    # Test case 3: there is an executable file, but the version can't be retrieved
+    test_file_3 = "/missing/version/file"
+    mock_which.return_value = Path(test_file_3)
+    mock_isfile.return_value = True
+    mock_access.return_value = True
+    mock_run.return_value = MockProcess(b"mock bytes")
+    mock_search.return_value = MockMatch()
+
+    assertions.assertEquals(
+        anib.get_version(test_file_3),
+        f"blastn exists at {test_file_3} but could not retrieve version",
     )
 
 
