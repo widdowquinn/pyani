@@ -43,6 +43,7 @@ import logging
 import re
 import shlex
 import subprocess
+import os
 import sys
 import traceback
 import urllib.request
@@ -202,7 +203,12 @@ def download_genome_and_hash(
     else:
         filestem = dlfiledata.filestem
     dlstatus = retrieve_genome_and_hash(
-        filestem, dlfiledata.suffix, dlfiledata.ftpstem, outdir, timeout, disable_tqdm,
+        filestem,
+        dlfiledata.suffix,
+        dlfiledata.ftpstem,
+        outdir,
+        timeout,
+        disable_tqdm,
     )
     # Pylint is confused by the content of dlstatus (a namedlist)
     if dlstatus.error is not None:  # pylint: disable=no-member
@@ -585,9 +591,15 @@ def create_hash(fname: Path) -> str:
     cryptographic purposes.
     """
     hash_md5 = hashlib.md5()  # nosec
-    with open(fname, "rb") as fhandle:
-        for chunk in iter(lambda: fhandle.read(65536), b""):
-            hash_md5.update(chunk)
+    try:
+        with open(fname, "rb") as fhandle:
+            for chunk in iter(lambda: fhandle.read(65536), b""):
+                hash_md5.update(chunk)
+    except FileNotFoundError:
+        file = os.readlink(fname)
+        with open(fname.parent.parent / file, "rb") as fhandle:
+            for chunk in iter(lambda: fhandle.read(65536), b""):
+                hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
 
