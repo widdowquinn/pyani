@@ -45,7 +45,7 @@ import logging
 from argparse import Namespace
 from itertools import combinations
 from pathlib import Path
-from typing import List, NamedTuple, Tuple
+from typing import List, NamedTuple, Optional, Tuple
 
 from tqdm import tqdm
 
@@ -71,6 +71,11 @@ from pyani.pyani_orm import (
 from pyani.pyani_tools import termcolor
 
 
+class PyaniANImSubcommandException(PyaniException):
+
+    """Exception for pyani anim subcommand."""
+
+
 # Convenience struct describing a pairwise comparison job for the SQLAlchemy
 # implementation
 class ComparisonJob(NamedTuple):
@@ -82,7 +87,7 @@ class ComparisonJob(NamedTuple):
     filtercmd: str
     nucmercmd: str
     outfile: Path
-    job: pyani_jobs.Job
+    job: Optional[pyani_jobs.Job]
 
 
 # Convenience struct describing an analysis run
@@ -321,8 +326,6 @@ def generate_joblist(
     """
     logger = logging.getLogger(__name__)
 
-    existingfiles = set(existingfiles)  # Path objects hashable
-
     joblist = []  # will hold ComparisonJob structs
     for idx, (query, subject) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
@@ -350,7 +353,7 @@ def generate_joblist(
         # The comparisons collections always gets updated, so that results are
         # added to the database whether they come from recovery mode or are run
         # in this call of the script.
-        if args.recovery and outfname in existingfiles:
+        if args.recovery and outfname in set(existingfiles):
             logger.debug("Recovering output from %s, not submitting job", outfname)
             # Need to track the expected output, but set the job itself to None:
             joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, None))
@@ -382,7 +385,10 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
     # Entries with None seen in recovery mode:
     jobs = [_.job for _ in joblist if _.job]
 
-    if args.scheduler == "multiprocessing":
+    # We distinguish broadly between "local" and "on-cluster" jobs; we use
+    # multiprocessing for "local" jobs, and either SLURM or SGE for "cluster"
+    # jobs. (though obviously you can use multiprocessing on a cluster, too!)
+    if args.scheduler == "multiprocessing":  # "local" operation
         logger.info("Running jobs with multiprocessing")
         if not args.workers:
             logger.debug("(using maximum number of worker threads)")
@@ -396,9 +402,9 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
             raise PyaniException("Multiprocessing run failed in ANIm")
         logger.info("Multiprocessing run completed without error")
     elif args.scheduler.lower() in ("sge", "slurm"):
-        logger.info("Running jobs with %s", args.scheduler)
-        logger.debug("Setting jobarray group size to %d", args.sgegroupsize)
-        logger.debug("Joblist contains %d jobs", len(joblist))
+        logger.info("Running jobs with %s.", args.scheduler)
+        logger.debug("Jobarray group size: %d", args.sgegroupsize)
+        logger.debug("Joblist contains %d total jobs", len(joblist))
         if args.scheduler.lower() == "sge":
             run_sge.run_dependency_graph(
                 [_.job for _ in joblist],
@@ -414,7 +420,7 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
             )
     else:
         logger.error(termcolor("Scheduler %s not recognised", "red"), args.scheduler)
-        raise SystemError(1)
+        raise PyaniANImSubcommandException(f"Scheduler {args.scheduler} not recognised")
 
 
 def update_comparison_results(
