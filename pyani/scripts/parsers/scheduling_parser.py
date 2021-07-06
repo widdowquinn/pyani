@@ -69,8 +69,7 @@ def build() -> ArgumentParser:
         "(default zero, meaning use all available cores)",
     )
     parser.add_argument(
-        # "--SGEgroupsize",
-        "--groupsize",
+        "--SGEgroupsize",
         dest="sgegroupsize",
         action="store",
         default=9999,
@@ -78,8 +77,7 @@ def build() -> ArgumentParser:
         help="Number of jobs to place in an SGE array group ",
     )
     parser.add_argument(
-        # "--SGEargs",
-        "--hpcargs",
+        "--SGEargs",
         dest="sgeargs",
         action="store",
         default=None,
