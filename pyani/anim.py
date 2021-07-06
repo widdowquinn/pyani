@@ -53,18 +53,23 @@ percentage (of whole genome) for each pairwise comparison.
 """
 
 import platform
+import logging
 import re
 import subprocess
 
-from logging import Logger
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Tuple
 
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
 
 from .pyani_tools import ANIResults
+
+
+class PyaniANImError(Exception):
+
+    """Exception raised when ANIm run fails."""
 
 
 # Get a list of FASTA files from the input directory
@@ -298,9 +303,7 @@ def parse_delta(filename: Path) -> Tuple[int, int]:
 
 
 # Parse all the .delta files in the passed directory
-def process_deltadir(
-    delta_dir: Path, org_lengths: Dict, logger: Optional[Logger] = None
-) -> ANIResults:
+def process_deltadir(delta_dir: Path, org_lengths: Dict) -> ANIResults:
     """Return tuple of ANIm results for .deltas in passed directory.
 
     :param delta_dir:  Path, path to the directory containing .delta files
@@ -317,17 +320,17 @@ def process_deltadir(
     May throw a ZeroDivisionError if one or more NUCmer runs failed, or a
     very distant sequence was included in the analysis.
     """
+    logger = logging.getLogger(__name__)
+
     # Process directory to identify input files - as of v0.2.4 we use the
     # .filter files that result from delta-filter (1:1 alignments)
-    deltafiles = sorted(delta_dir.glob("*/*.filter"))
-    import sys
+    logger.debug("Checking %s for .filter files", delta_dir)
+    deltafiles = sorted(delta_dir.glob("*.filter"))
 
-    sys.exit(f"{delta_dir} has {len(deltafiles)} files to load")
     if not deltafiles:
-        sys.exit(f"{delta_dir} empty? No filter files found")
-    if not logger:
-        logger = logging.getLogger(__name__)
-    logger.debug(f"Found {len(deltafiles)} filter files in {delta_dir}")
+        logger.error("No delta files found in %s (exiting)", delta_dir)
+        raise PyaniANImError(f"{delta_dir} empty? No filter files found")
+    logger.debug("Found %d filter files in %s", len(deltafiles), delta_dir)
 
     # Hold data in ANIResults object
     results = ANIResults(list(org_lengths.keys()), "ANIm")
@@ -344,28 +347,23 @@ def process_deltadir(
         # We may have .delta files from other analyses in the same directory
         # If this occurs, we raise a warning, and skip the .delta file
         if qname not in list(org_lengths.keys()):
-            if logger:
-                logger.warning(
-                    "Query name %s not in input sequence list, skipping %s",
-                    qname,
-                    deltafile,
-                )
-            continue
+            logger.warning(
+                "Query name %s not in input sequence list, skipping %s",
+                qname,
+                deltafile,
+            )
         if sname not in list(org_lengths.keys()):
-            if logger:
-                logger.warning(
-                    "Subject name %s not in input sequence list, skipping %s",
-                    sname,
-                    deltafile,
-                )
-            continue
+            logger.warning(
+                "Subject name %s not in input sequence list, skipping %s",
+                sname,
+                deltafile,
+            )
         tot_length, tot_sim_error = parse_delta(deltafile)
         if tot_length == 0 and logger is not None:
-            if logger:
-                logger.warning(
-                    "Total alignment length reported in %s is zero!", deltafile
-                )
-            sys.exit("Zero length alignment!")
+            logger.debug(
+                "Total alignment length reported in %s is zero! (exiting)", deltafile
+            )
+            raise PyaniANImError(f"Zero length alignment in {deltafile}")
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
 

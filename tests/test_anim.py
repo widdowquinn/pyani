@@ -44,8 +44,6 @@ These tests are intended to be run from the repository root using:
 pytest -v
 """
 
-import os
-
 from pathlib import Path
 from typing import List, NamedTuple, Tuple
 
@@ -54,7 +52,7 @@ import pytest
 
 from pandas.util.testing import assert_frame_equal
 
-from pyani import anim, pyani_files, pyani_tools
+from pyani import anim, pyani_files
 
 
 class DeltaDir(NamedTuple):
