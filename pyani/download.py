@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019-2020
+# (c) University of Strathclyde 2019-2021
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -17,7 +17,7 @@
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2021 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -81,6 +81,11 @@ class FileExistsException(Exception):
     def __init__(self, msg: str = "Specified file exists"):
         """Instantiate class."""
         Exception.__init__(self, msg)
+
+
+class PyaniIndexException(Exception):
+
+    """General exception for indexing with pyani"""
 
 
 class ASMIDs(NamedTuple):
@@ -203,12 +208,7 @@ def download_genome_and_hash(
     else:
         filestem = dlfiledata.filestem
     dlstatus = retrieve_genome_and_hash(
-        filestem,
-        dlfiledata.suffix,
-        dlfiledata.ftpstem,
-        outdir,
-        timeout,
-        disable_tqdm,
+        filestem, dlfiledata.suffix, dlfiledata.ftpstem, outdir, timeout, disable_tqdm
     )
     # Pylint is confused by the content of dlstatus (a namedlist)
     if dlstatus.error is not None:  # pylint: disable=no-member
@@ -590,16 +590,18 @@ def create_hash(fname: Path) -> str:
     We can ignore the Bandit B303 error as we're not using the hash for
     cryptographic purposes.
     """
+    logger = logging.getLogger(__name__)
+
+    fname = Path(fname)  # ensure we have a Path object
     hash_md5 = hashlib.md5()  # nosec
     try:
-        with open(fname, "rb") as fhandle:
+        with fname.open("rb") as fhandle:
             for chunk in iter(lambda: fhandle.read(65536), b""):
                 hash_md5.update(chunk)
     except FileNotFoundError:
-        file = os.readlink(fname)
-        with open(fname.parent.parent / file, "rb") as fhandle:
-            for chunk in iter(lambda: fhandle.read(65536), b""):
-                hash_md5.update(chunk)
+        logger.error(f"Input file {fname} is not a file or symlink")
+        raise PyaniIndexException
+
     return hash_md5.hexdigest()
 
 
