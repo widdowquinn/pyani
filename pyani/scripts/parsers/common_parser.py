@@ -37,7 +37,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 """Provides parser for arguments common to all subcommands."""
-
 from argparse import ArgumentParser
 
 from pathlib import Path
@@ -87,11 +86,6 @@ def build() -> ArgumentParser:
         default=False,
         help="Turn off tqdm progress bar",
     )
-    parser.add_argument(
-        "--citation",
-        action="store_true",
-        dest="citation",
-        default=False,
-        help="Display pyani citation after run",
-    )
+    parser.add_argument("--version", action="store_true", dest="version")
+    parser.add_argument("--citation", action="store_true", dest="citation")
     return parser

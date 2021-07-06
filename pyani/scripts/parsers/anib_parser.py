@@ -45,6 +45,8 @@ from typing import List, Optional
 from pyani import pyani_config
 from pyani.scripts import subcommands
 
+from pyani import __version__
+
 
 def build(
     subps: _SubParsersAction, parents: Optional[List[ArgumentParser]] = None
@@ -61,8 +63,8 @@ def build(
     parser = subps.add_parser(
         "anib", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
-    # Required positional arguments: input and output directories
     parser.add_argument(
+        "-i",
         action="store",
         dest="indir",
         default=None,
@@ -70,6 +72,7 @@ def build(
         help="input genome directory",
     )
     parser.add_argument(
+        "-o",
         action="store",
         dest="outdir",
         default=None,

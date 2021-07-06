@@ -37,13 +37,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 """Provides parser for anim subcommand."""
+import sys
 
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, _SubParsersAction
 from pathlib import Path
 from typing import List, Optional
 
 from pyani import pyani_config
+
 from pyani.scripts import subcommands
+
+from pyani import __version__
 
 
 def build(
@@ -59,6 +63,8 @@ def build(
     )
     # Required positional arguments: input and output directories
     parser.add_argument(
+        "-i",
+        "--indir",
         action="store",
         dest="indir",
         default=None,
@@ -66,13 +72,14 @@ def build(
         help="input genome directory",
     )
     parser.add_argument(
+        "-o",
+        "--outdir",
         action="store",
         dest="outdir",
         default=None,
         type=Path,
         help="output analysis results directory",
     )
-    # Optional arguments
     parser.add_argument(
         "--dbpath",
         action="store",

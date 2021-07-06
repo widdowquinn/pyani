@@ -52,9 +52,11 @@ counts, average nucleotide identity (ANI) percentages, and minimum aligned
 percentage (of whole genome) for each pairwise comparison.
 """
 
+import logging
 import platform
 import re
 import subprocess
+import sys
 
 from logging import Logger
 from pathlib import Path
@@ -63,8 +65,14 @@ from typing import Dict, Iterable, List, Optional, Tuple
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
+from . import PyaniException
 
 from .pyani_tools import ANIResults
+
+
+class PyaniANImException(PyaniException):
+
+    """ANIm-specific exception for pyani."""
 
 
 # Get a list of FASTA files from the input directory
@@ -206,6 +214,7 @@ def construct_nucmer_cmdline(
 
     # Compile commands
     outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"]
+    outsubdir.mkdir(exist_ok=True)
     outprefix = outsubdir / f"{fname1.stem}_vs_{fname2.stem}"
     if maxmatch:
         mode = "--maxmatch"
@@ -316,9 +325,16 @@ def process_deltadir(
     May throw a ZeroDivisionError if one or more NUCmer runs failed, or a
     very distant sequence was included in the analysis.
     """
+    logger = logging.getLogger(__name__)
+
     # Process directory to identify input files - as of v0.2.4 we use the
     # .filter files that result from delta-filter (1:1 alignments)
-    deltafiles = pyani_files.get_input_files(delta_dir, ".filter")
+    deltafiles = sorted(delta_dir.glob("*.filter"))
+
+    logger.info("%s has %d files to load", delta_dir, len(deltafiles))
+    if not deltafiles:
+        logger.error("%s empty? No filter files found", delta_dir)
+        raise PyaniANImException(f"{delta_dir} contains no filter files.")
 
     # Hold data in ANIResults object
     results = ANIResults(list(org_lengths.keys()), "ANIm")
@@ -356,6 +372,7 @@ def process_deltadir(
                 logger.warning(
                     "Total alignment length reported in %s is zero!", deltafile
                 )
+            sys.exit("Zero length alignment!")
         query_cover = float(tot_length) / org_lengths[qname]
         sbjct_cover = float(tot_length) / org_lengths[sname]
 

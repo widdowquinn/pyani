@@ -52,14 +52,15 @@ from .parsers import parse_cmdline
 from .. import __version__
 
 
+VERSION_INFO = f"pyani version: {__version__}"
+
 CITATION_INFO = [
     termcolor(
         "If you use pyani in your work, please cite the following publication:",
         "green",
     ),
     termcolor(
-        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,",
-        "yellow",
+        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,", "yellow",
     ),
     termcolor(
         "\t& Toth, I.K. (2016) 'Genomics and taxonomy in diagnostics for", "yellow"
@@ -87,9 +88,19 @@ def run_main(argv: Optional[List[str]] = None) -> int:
         args = parse_cmdline(argv)
 
     # Catch execution with no arguments
-    if len(sys.argv) == 1:
-        sys.stderr.write("pyani version: {0}\n".format(__version__))
+    if len(sys.argv) == 1 and argv is None:
+        sys.stderr.write(f"{VERSION_INFO}\n")
         return 0
+    
+    # Catch requests for citation and version information
+    if sys.argv[1].startswith("-"):
+        if args.citation:
+            sys.stderr.write(f"{VERSION_INFO}\n")
+            sys.stderr.write("\n".join(CITATION_INFO) + "\n")
+            return 0
+        if args.version:
+            sys.stderr.write(f"{VERSION_INFO}\n")
+            return 0
 
     # Set up logging
     time0 = time.time()
@@ -108,10 +119,6 @@ def run_main(argv: Optional[List[str]] = None) -> int:
         termcolor("Completed. Time taken: %.3f", bold=True), (time.time() - time0)
     )
 
-    # Was citation info requested?
-    if args.citation:
-        sys.stdout.write("\n".join(CITATION_INFO) + "\n\n")
-
     return returnval
 
 
@@ -119,9 +126,12 @@ def add_log_headers():
     """Add headers to log output."""
     logger = logging.getLogger(__name__)
 
+    # Add version information to log
+    logger.info(VERSION_INFO)
+
     # Add citation information to log
     logger.info(termcolor("CITATION INFO", bold=True))
-    for line in CITATION_INFO:
+    for line in CITATION_INFO:  # for loop here to get [INFO] at start of each line
         logger.info(line)
 
     # Add dependency citations

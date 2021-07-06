@@ -11,7 +11,7 @@ If you would like to contribute code to the `pyani` project (e.g. a bug fix or n
 `pyani` is maintained by:
 
 - [Leighton Pritchard](https://pureportal.strath.ac.uk/en/persons/leighton-pritchard)
-- [Bailey Harrington](https://pureportal.strath.ac.uk/en/persons/bailey-ann-harrington)
+- [Bailey Harrington](https://pureportal.strath.ac.uk/en/persons/bailey-harrington)
 
 and we are grateful to all who have contributed to this software:
 
@@ -33,6 +33,7 @@ and we are grateful to all who have contributed to this software:
   <tr>
     <td align="center"><a href="https://b-brankovics.github.io"><img src="https://avatars.githubusercontent.com/u/6728856?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Balázs Brankovics</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=b-brankovics" title="Code">💻</a> <a href="https://github.com/widdowquinn/pyani/issues?q=author%3Ab-brankovics" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/sammywinchester19"><img src="https://avatars.githubusercontent.com/u/67588791?v=4?s=100" width="100px;" alt=""/><br /><sub><b>sammywinchester19</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/issues?q=author%3Asammywinchester19" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/TSL-RamKrishna"><img src="https://avatars.githubusercontent.com/u/20773891?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ram Krishna Shrestha</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=TSL-RamKrishna" title="Tests">⚠️</a> <a href="https://github.com/widdowquinn/pyani/commits?author=TSL-RamKrishna" title="Code">💻</a> <a href="#ideas-TSL-RamKrishna" title="Ideas, Planning, & Feedback">🤔</a></td>
   </tr>
 </table>
 
@@ -62,7 +63,7 @@ DOI: [10.1039/C5AY02550H](https://doi.org/10.1039/C5AY02550H)
 [![pyani sourcerank](https://img.shields.io/librariesio/sourcerank/pypi/pyani.svg?logo=koding&logoColor=white)](https://libraries.io/pypi/pyani)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![pyani PyPi version](https://img.shields.io/pypi/v/pyani "PyPI version")](https://pypi.python.org/pypi/pyani)
@@ -112,6 +113,8 @@ DOI: [10.1039/C5AY02550H](https://doi.org/10.1039/C5AY02550H)
     - [4. Reporting Analyses and Analysis Results](#4-reporting-analyses-and-analysis-results)
     - [5. Generating graphical output for ANI](#5-generating-graphical-output-for-ani)
     - [6. Classifying Genomes from Analysis Results](#6-classifying-genomes-from-analysis-results)
+  - [Using a scheduler](#using-a-scheduler)
+    - [SGE/OGE](#sgeoge)
   - [Running `pyani` version 0.2.x](#running-pyani-version-02x)
     - [Script: `average_nucleotide_identity.py`](#script-average_nucleotide_identitypy)
     - [Script: `genbank_get_genomes_by_taxon.py`](#script-genbank_get_genomes_by_taxonpy)
@@ -454,7 +457,7 @@ The output of a `pyani` run can also be represented graphically, using the `plot
 pyani plot C_blochmannia_ANIm 1 -v --formats png,pdf
 ```
 
-will place `.pdf` and `.png` format output in the `C_blochmannia_ANIm` output directory for the run wuth ID 1, generated above. Five heatmaps are generated:
+will place `.pdf` and `.png` format output in the `C_blochmannia_ANIm` output directory for the run with ID 1, generated above. Five heatmaps are generated:
 
 - percentage identity
 - percentage coverage (for both query and subject)
@@ -464,9 +467,56 @@ will place `.pdf` and `.png` format output in the `C_blochmannia_ANIm` output di
 
 The heatmaps also include dendrograms, clustering the rows and columns by overall similarity.
 
+**NOTE:** Running `pyani plot` with a large number of genomes (~500) and the default figure output (`--method seaborn`) may reduce output figure quality:
+
+- labels in `.png` files may be difficult to read
+- `.pdf` files may render very slowly due to the large number of numerical values in heatmap cells.
+
+With large datasets, `--method mpl` (matplotlib) is recommended.
+
+Please be aware that the matrix orientation differs for these two options; so, with `seaborn` (the default, `--method seaborn`), the orientation of self-comparisons is top left to bottom right (`\`), while with `matplotlib` (`--method mpl`) the orientation is bottom left to top right (`/`).
+
 ### 6. Classifying Genomes from Analysis Results
 
 -----
+
+## Using a scheduler
+
+### SGE/OGE
+
+The `--scheduler SGE` argument allows one to use `pyani` with an an SGE-type scheduler.
+
+In order for this work, one must be able to submit jobs using the `qsub` command. By default, this will batch the pairwise comparisons in array jobs of 10,000, in order to avoid clogging the scheduler queue. Each comparison will be run as a single-core task in an array job.
+
+#### Arguments assigned by Pyani
+The following arguments will be automatically set:
+
+```bash
+-N job_name  # this is the value passed to `--name`
+-cwd
+-o ./stdout  # cwd/ + "stdout"
+-e ./stderr  # cwd/ + "stderr"
+```
+
+#### Modifiable arguments
+The number of pairwise comparisons submitted per chunk can be modified using:
+
+```bash
+--SGEgroupsize *number*
+```
+
+The job prefix to use can be modified using:
+
+```bash
+--jobprefix *prefix*
+```
+
+#### Specifying additional arguments
+Additional SGE arguments may be specified with:
+
+```bash
+--SGEargs "<your arguments here>"
+```
 
 ## Running `pyani` version 0.2.x
 

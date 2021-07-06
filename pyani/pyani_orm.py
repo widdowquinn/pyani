@@ -515,7 +515,7 @@ def add_run_genomes(
             indesc = read_fasta_description(fastafile)
         except Exception:
             raise PyaniORMException("Could not read genome files for database import")
-        abspath = fastafile.resolve()
+        abspath = fastafile.absolute()
         genome_len = get_genome_length(abspath)
 
         # If the genome is not already in the database, add it as a Genome object

@@ -48,7 +48,7 @@ Flagged arguments
     Path to the ``MUMmer`` ``delta-filter`` executable. Default: ``delta-filter``
 
 ``-h, --help``
-    Display usage information for ``pyani index``.
+    Display usage information for ``pyani anim``.
 
 ``--jobprefix JOBPREFIX``
     Use the string ``JOBPREFIX`` as a prefix for SGE job submission names. Default: ``PYANI``
