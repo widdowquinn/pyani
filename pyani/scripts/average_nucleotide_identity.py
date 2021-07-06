@@ -570,7 +570,7 @@ def calculate_anim(
 
     # Process resulting .delta files
     logger.info("Processing NUCmer .delta files.")
-    results = anim.process_deltadir(deltadir, org_lengths, logger=logger)
+    results = anim.process_deltadir(deltadir, org_lengths)
     if results.zero_error:  # zero percentage identity error
         if not args.skip_nucmer and args.scheduler == "multiprocessing":
             if cumval > 0:
