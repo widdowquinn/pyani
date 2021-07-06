@@ -90,6 +90,7 @@ If you'd like to fix a bug or make an improvement yourself, contributions are we
    basic_use
    examples
    subcommands
+   interpreting_plots
    scheduler
    testing
    contributing
