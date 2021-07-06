@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2021
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2021 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@ import logging
 import os
 
 from argparse import Namespace
+from pathlib import Path
 
 from Bio import SeqIO
 
@@ -65,8 +66,7 @@ def subcmd_index(args: Namespace) -> int:
     # Get list of FASTA files in the input directory
     logger.info("Scanning directory %s for FASTA files", args.indir)
     fpaths = pyani_files.get_fasta_paths(args.indir)
-    logger.info("Found FASTA files:")
-    logger.info([f"\t{fpath}\n" for fpath in fpaths])
+    logger.info("Found FASTA files:\n" + "\n".join([f"\t{fpath}" for fpath in fpaths]))
 
     # Lists of class/label information
     classes = []
@@ -87,18 +87,10 @@ def subcmd_index(args: Namespace) -> int:
                 hfh.write(f"{datahash}\t{fpath}\n")
 
         # Parse the file and get the label/class information
-        try:
-            with open(fpath, "r") as sfh:
-                label = list(SeqIO.parse(sfh, "fasta"))[0].description.split(" ", 1)[-1]
-            labels.append("\t".join([datahash, fpath.stem, label]))
-            classes.append("\t".join([datahash, fpath.stem, label]))
-        except FileNotFoundError:
-            file = os.readlink(fpath)
-            print(fpath.parent.parent / file)
-            with open(fpath.parent.parent / file, "r") as sfh:
-                label = list(SeqIO.parse(sfh, "fasta"))[0].description.split(" ", 1)[-1]
-            labels.append("\t".join([datahash, fpath.stem, label]))
-            classes.append("\t".join([datahash, fpath.stem, label]))
+        with fpath.open("r") as sfh:
+            label = list(SeqIO.parse(sfh, "fasta"))[0].description.split(" ", 1)[-1]
+        labels.append("\t".join([datahash, fpath.stem, label]))
+        classes.append("\t".join([datahash, fpath.stem, label]))
 
     # Write class and label files
     classfname = args.indir / args.classfname
