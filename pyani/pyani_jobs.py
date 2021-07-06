@@ -165,7 +165,6 @@ class JobGroup(object):
         self.submitted = False  # type: bool
         self.finished = False  # type: int
         self.scheduler = scheduler.lower()
-
         if arguments is not None:
             self.arguments = arguments  # Dictionary of arguments for command
         else:
@@ -277,6 +276,11 @@ class JobGroup(object):
             if self.scheduler == "sge":  # hpc is SGE
                 self.finished = os.system("qstat -j %s > /dev/null" % (self.name))
             elif self.scheduler == "slurm":  # hpc is SLURM
+                print(
+                    "Scheduler slurm: squeue -n %s" % (self.name),
+                    "finished? ",
+                    self.finished,
+                )
                 cmd = "squeue -n %s | tail -n+2 | wc -l" % (self.name)
                 count = get_cmd_output(cmd)
 
