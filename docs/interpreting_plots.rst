@@ -52,7 +52,7 @@ For each of the ANI methods provided by `pyani` the values shown in the plots ar
   - FastANI — asymmetrical (only available in version 0.3.0-alpha)
   - ANIb — asymmetrical (only available in version 0.2)
   - ANIblastall — asymmetrical (only available in version 0.2)
-  - TETRA — (I don't know which this is) (only available in version 0.2)
+  - TETRA — (only available in version 0.2)
 
 **Alignment coverage** is the proportion of the query genome that aligns against the reference genome (this can be asymmetrical: comparing genome A to genome B may give different coverage values for A and B).
 
