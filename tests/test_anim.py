@@ -50,7 +50,7 @@ from typing import List, NamedTuple, Tuple
 import pandas as pd
 import pytest
 
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 
 from pyani import anim, pyani_files
 

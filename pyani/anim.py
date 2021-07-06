@@ -57,6 +57,7 @@ import logging
 import re
 import subprocess
 
+from itertools import chain
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 
@@ -212,7 +213,7 @@ def construct_nucmer_cmdline(
     # Compile commands
     outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"] / fname1.stem
     outsubdir.mkdir(exist_ok=True)
-    outprefix = outsubdir / f"{fname1.stem}_vs_{fname2.stem}"
+    outprefix = outsubdir / fname1.stem / f"{fname1.stem}_vs_{fname2.stem}"
     if maxmatch:
         mode = "--maxmatch"
     else:
@@ -325,7 +326,7 @@ def process_deltadir(delta_dir: Path, org_lengths: Dict) -> ANIResults:
     # Process directory to identify input files - as of v0.2.4 we use the
     # .filter files that result from delta-filter (1:1 alignments)
     logger.debug("Checking %s for .filter files", delta_dir)
-    deltafiles = sorted(delta_dir.glob("*.filter"))
+    deltafiles = sorted(chain(delta_dir.glob("*.filter"), delta_dir.glob("*/*.filter")))
 
     if not deltafiles:
         logger.error("No delta files found in %s (exiting)", delta_dir)
