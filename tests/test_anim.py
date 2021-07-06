@@ -103,43 +103,43 @@ def mummer_cmds_four(path_file_four):
     return MUMmerExample(
         path_file_four,
         [
-            "nucmer --mum -p nucmer_output/file1_vs_file2 file1.fna file2.fna",
-            "nucmer --mum -p nucmer_output/file1_vs_file3 file1.fna file3.fna",
-            "nucmer --mum -p nucmer_output/file1_vs_file4 file1.fna file4.fna",
-            "nucmer --mum -p nucmer_output/file2_vs_file3 file2.fna file3.fna",
-            "nucmer --mum -p nucmer_output/file2_vs_file4 file2.fna file4.fna",
-            "nucmer --mum -p nucmer_output/file3_vs_file4 file3.fna file4.fna",
+            "nucmer --mum -p nucmer_output/file1/file1_vs_file2 file1.fna file2.fna",
+            "nucmer --mum -p nucmer_output/file1/file1_vs_file3 file1.fna file3.fna",
+            "nucmer --mum -p nucmer_output/file1/file1_vs_file4 file1.fna file4.fna",
+            "nucmer --mum -p nucmer_output/file2/file2_vs_file3 file2.fna file3.fna",
+            "nucmer --mum -p nucmer_output/file2/file2_vs_file4 file2.fna file4.fna",
+            "nucmer --mum -p nucmer_output/file3/file3_vs_file4 file3.fna file4.fna",
         ],
         [
             (
                 "delta_filter_wrapper.py delta-filter -1 "
-                "nucmer_output/file1_vs_file2.delta "
-                "nucmer_output/file1_vs_file2.filter"
+                "nucmer_output/file1/file1_vs_file2.delta "
+                "nucmer_output/file1/file1_vs_file2.filter"
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
-                "nucmer_output/file1_vs_file3.delta "
-                "nucmer_output/file1_vs_file3.filter"
+                "nucmer_output/file1/file1_vs_file3.delta "
+                "nucmer_output/file1/file1_vs_file3.filter"
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
-                "nucmer_output/file1_vs_file4.delta "
-                "nucmer_output/file1_vs_file4.filter"
+                "nucmer_output/file1/file1_vs_file4.delta "
+                "nucmer_output/file1/file1_vs_file4.filter"
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
-                "nucmer_output/file2_vs_file3.delta "
-                "nucmer_output/file2_vs_file3.filter"
+                "nucmer_output/file2/file2_vs_file3.delta "
+                "nucmer_output/file2/file2_vs_file3.filter"
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
-                "nucmer_output/file2_vs_file4.delta "
-                "nucmer_output/file2_vs_file4.filter"
+                "nucmer_output/file2/file2_vs_file4.delta "
+                "nucmer_output/file2/file2_vs_file4.filter"
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
-                "nucmer_output/file3_vs_file4.delta "
-                "nucmer_output/file3_vs_file4.filter"
+                "nucmer_output/file3/file3_vs_file4.delta "
+                "nucmer_output/file3/file3_vs_file4.filter"
             ),
         ],
     )
@@ -169,10 +169,10 @@ def test_maxmatch_single(tmp_path, path_file_two):
     ncmd, _ = anim.construct_nucmer_cmdline(
         path_file_two[0], path_file_two[1], outdir=tmp_path, maxmatch=True
     )
-    dir_nucmer = tmp_path / "nucmer_output"
+    dir_nucmer = tmp_path / "nucmer_output" / path_file_two[0].stem
     expected = (
         "nucmer --maxmatch -p "
-        f"{dir_nucmer / path_file_two[0].stem / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem)} "
+        f"{dir_nucmer / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem)} "
         f"{path_file_two[0]} {path_file_two[1]}"
     )
     assert ncmd == expected
@@ -184,8 +184,8 @@ def test_mummer_multiple(mummer_cmds_four):
     Tests that all the input files are correctly-paired
     """
     cmds = anim.generate_nucmer_commands(mummer_cmds_four.infiles)
-    print(f"\n{cmds}")
-    print((mummer_cmds_four.ncmds, mummer_cmds_four.fcmds))
+    # print(f"\n{cmds}")
+    # print((mummer_cmds_four.ncmds, mummer_cmds_four.fcmds))
     assert cmds == (mummer_cmds_four.ncmds, mummer_cmds_four.fcmds)
 
 
@@ -194,7 +194,7 @@ def test_mummer_single(tmp_path, path_file_two):
     cmds = anim.construct_nucmer_cmdline(
         path_file_two[0], path_file_two[1], outdir=tmp_path
     )
-    dir_nucmer = tmp_path / "nucmer_output"
+    dir_nucmer = tmp_path / "nucmer_output" / path_file_two[0].stem
     expected = (
         (
             "nucmer --mum -p "
