@@ -212,8 +212,8 @@ def construct_nucmer_cmdline(
 
     # Compile commands
     outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"] / fname1.stem
-    outsubdir.mkdir(exist_ok=True)
-    outprefix = outsubdir / fname1.stem / f"{fname1.stem}_vs_{fname2.stem}"
+    outsubdir.mkdir(parents=True, exist_ok=True)
+    outprefix = outsubdir / f"{fname1.stem}_vs_{fname2.stem}"
     if maxmatch:
         mode = "--maxmatch"
     else:

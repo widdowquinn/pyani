@@ -172,7 +172,7 @@ def test_maxmatch_single(tmp_path, path_file_two):
     dir_nucmer = tmp_path / "nucmer_output"
     expected = (
         "nucmer --maxmatch -p "
-        f"{dir_nucmer / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem)} "
+        f"{dir_nucmer / path_file_two[0].stem / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem)} "
         f"{path_file_two[0]} {path_file_two[1]}"
     )
     assert ncmd == expected
