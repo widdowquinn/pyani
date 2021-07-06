@@ -278,13 +278,13 @@ def subcmd_anim(args: Namespace) -> None:
         )
         existingfiles = collect_existing_output(deltadir, "nucmer", args)
         if existingfiles:
-            logger.debug(
-                "\tIdentified %s existing output files for reuse: %s (etc)",
+            logger.info(
+                "Recover mode identified %s existing output files for reuse: %s (etc)",
                 len(existingfiles),
                 existingfiles[0],
             )
         else:
-            logger.debug("\tIdentified no existing output files")
+            logger.info("Recovery mode identified no existing output files")
     else:
         existingfiles = list()
         logger.debug("\tAssuming no pre-existing output files")
@@ -351,7 +351,9 @@ def generate_joblist(
         # added to the database whether they come from recovery mode or are run
         # in this call of the script.
         if args.recovery and outfname in existingfiles:
-            logger.debug("Recovering output from %s, not building job", outfname)
+            logger.debug("Recovering output from %s, not submitting job", outfname)
+            # Need to track the expected output, but set the job itself to None:
+            joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, None))
         else:
             logger.debug("Building job")
             # Build jobs
@@ -377,15 +379,16 @@ def run_anim_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
     logger = logging.getLogger(__name__)
     logger.debug("Scheduler: %s", args.scheduler)
 
+    # Entries with None seen in recovery mode:
+    jobs = [_.job for _ in joblist if _.job]
+
     if args.scheduler == "multiprocessing":
         logger.info("Running jobs with multiprocessing")
         if not args.workers:
             logger.debug("(using maximum number of worker threads)")
         else:
             logger.debug("(using %d worker threads, if available)", args.workers)
-        cumval = run_mp.run_dependency_graph(
-            [_.job for _ in joblist], workers=args.workers
-        )
+        cumval = run_mp.run_dependency_graph(jobs, workers=args.workers)
         if cumval > 0:
             logger.error(
                 "At least one NUCmer comparison failed. Please investigate (exiting)"
