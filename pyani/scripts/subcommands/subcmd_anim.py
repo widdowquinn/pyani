@@ -87,7 +87,7 @@ class ComparisonJob(NamedTuple):
     filtercmd: str
     nucmercmd: str
     outfile: Path
-    job: Optional[pyani_jobs.Job]
+    job: Optional[pyani_jobs.Job] = None
 
 
 # Convenience struct describing an analysis run
@@ -203,7 +203,10 @@ def subcmd_anim(args: Namespace) -> None:
         )
     except PyaniORMException:
         logger.error(
-            "Could not add run %s to the database (exiting)", run, exc_info=True
+            "Could not add run starting %s with name %s to the database (exiting)",
+            start_time,
+            name,
+            exc_info=True,
         )
         raise SystemExit(1)
     logger.debug("...added run ID: %s to the database", run)
