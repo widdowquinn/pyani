@@ -249,27 +249,27 @@ $ tree C_blochmannia
 C_blochmannia
 ├── GCF_000011745.1_ASM1174v1_genomic.fna
 ├── GCF_000011745.1_ASM1174v1_genomic.fna.gz
-├── GCF_000011745.1_ASM1174v1_genomic.md5
+├── GCF_000011745.1_ASM1174v1_genomic.fna.md5
 ├── GCF_000011745.1_ASM1174v1_hashes.txt
 ├── GCF_000043285.1_ASM4328v1_genomic.fna
 ├── GCF_000043285.1_ASM4328v1_genomic.fna.gz
-├── GCF_000043285.1_ASM4328v1_genomic.md5
+├── GCF_000043285.1_ASM4328v1_genomic.fna.md5
 ├── GCF_000043285.1_ASM4328v1_hashes.txt
 ├── GCF_000185985.2_ASM18598v2_genomic.fna
 ├── GCF_000185985.2_ASM18598v2_genomic.fna.gz
-├── GCF_000185985.2_ASM18598v2_genomic.md5
+├── GCF_000185985.2_ASM18598v2_genomic.fna.md5
 ├── GCF_000185985.2_ASM18598v2_hashes.txt
 ├── GCF_000331065.1_ASM33106v1_genomic.fna
 ├── GCF_000331065.1_ASM33106v1_genomic.fna.gz
-├── GCF_000331065.1_ASM33106v1_genomic.md5
+├── GCF_000331065.1_ASM33106v1_genomic.fna.md5
 ├── GCF_000331065.1_ASM33106v1_hashes.txt
 ├── GCF_000973505.1_ASM97350v1_genomic.fna
 ├── GCF_000973505.1_ASM97350v1_genomic.fna.gz
-├── GCF_000973505.1_ASM97350v1_genomic.md5
+├── GCF_000973505.1_ASM97350v1_genomic.fna.md5
 ├── GCF_000973505.1_ASM97350v1_hashes.txt
 ├── GCF_000973545.1_ASM97354v1_genomic.fna
 ├── GCF_000973545.1_ASM97354v1_genomic.fna.gz
-├── GCF_000973545.1_ASM97354v1_genomic.md5
+├── GCF_000973545.1_ASM97354v1_genomic.fna.md5
 ├── GCF_000973545.1_ASM97354v1_hashes.txt
 ├── classes.txt
 └── labels.txt
@@ -279,7 +279,7 @@ Seven genomes have been downloaded, and each is represented by four files:
 
 - `_genomic.fna.gz`: the compressed genome sequence
 - `_genomic.fna`: the uncompressed genome sequence
-- `_genomic.md5`: an MD5 hash/checksum of the (uncompressed) genome sequence; this was generated during the download
+- `_genomic.fna.md5`: an MD5 hash/checksum of the (uncompressed) genome sequence; this was generated during the download
 - `_hashes.txt`: a list of MD5 hashes; this is provided by NCBI and is a reference to be sure that the download did not corrupt the genome sequence
 
 There are two additional plain text files: `classes.txt` and `labels.txt`, which provide alternative labels for use in the analysis. These files are generated during the download.
