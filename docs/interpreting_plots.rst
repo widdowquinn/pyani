@@ -50,28 +50,34 @@ For each of the ANI methods provided by `pyani` the values shown in the plots ar
 
   - ANIm — symmetrical
   - FastANI — asymmetrical (only available in version 0.3.0-alpha)
-  - ANIb — asymmetrical (only available in version 0.2)
-  - ANIblastall — asymmetrical (only available in version 0.2)
-  - TETRA — (only available in version 0.2)
-
-**Alignment coverage** is the proportion of the query genome that aligns against the reference genome (this can be asymmetrical: comparing genome A to genome B may give different coverage values for A and B).
-
-  - in ANIm this is ``alignment_length / genome_length``
-  - in fastANI this is ``matched_fragments / all_fragments``
+  - ANIb — asymmetrical
+  - ANIblastall — asymmetrical
+  - TETRA — symmetrical
 
 
 **Alignment length** is the count of bases in the pairwise alignment of two genomes.
 
-  - in ANIm this is calculated as ``reference_length + insertions - deletions``
+  - in ANIm this is calculated as ``reference_positions_in_alignment + insertions - deletions``
   - in fastANI this is ``matched_fragments * fragment_length``
+  - in ANIb this is ``alignment_length - gaps - mismatches``
+  - in ANIblastall this is ``alignment_length - gaps - mismatches``
+
+  **Alignment coverage** is the proportion of the query genome that aligns against the reference genome (this can be asymmetrical: comparing genome A to genome B may give different coverage values for A and B).
+
+    - in ANIm this is ``alignment_length / genome_length`` (asymmetrical)
+    - in fastANI this is ``matched_fragments / all_fragments`` (asymmetrical)
+    - in ANIb this is ``alignment_length / query_genome_length`` (asymmetrical)
+    - in ANIblastall this is ``alignment_length / query_genome_length`` (asymmetrical)
 
 The **similarity errors** graph shows a measure of the number of bases/positions that do not match.
 
   - in ANIm this is ``non-identities + insertions + deletions``
   - in fastANI this is ``all_fragments - matched_fragents``
+  - in ANIb this is ``gaps + mismatches``
+  - in ANIblastall this is ``gaps + mismatches``
 
 The **Hadamard** ouptut is the product (identity x coverage), as described at `Hadamard product`_ of identity and coverage. It's meant to provide a measure that allows you to interpret identity and coverage simultaneously.
 
-  - this is always ``ANI * coverage``, but the plot is not symmetric coverage may differ for query and reference genomes
+  - this is always ``ANI * coverage``, but as the plot is not symmetric, coverage may differ for query and reference genomes
 
 .. _Hadamard product: https://en.wikipedia.org/wiki/Hadamard_product_(matrices)
