@@ -58,7 +58,7 @@ This command will write the intermediate `NCBI-BLAST+`_ output to the directory 
   .. code-block:: bash
 
     $ ls genomes_ANIb/
-    blastn_output
+    nucmer_output
 
 .. ATTENTION::
     To view the output ANIb results, you will need to use the ``pyani report`` or ``pyani plot`` subcommands. Please see :ref:`pyani-subcmd-report` and :ref:`pyani-subcmd-plot` for more details.
@@ -67,11 +67,11 @@ This command will write the intermediate `NCBI-BLAST+`_ output to the directory 
 Perform ANIb analysis with Open Grid Scheduler
 ----------------------------------------------
 
-The `NCBI-BLAST+`_ comparisons are embarrassingly parallel, and `NCBI-BLAST+`_ jobs can be distributed across cores in a cluster using the `Open Grid Scheduler`_. To enable this during the analysis, use the ``--scheduler SGE`` option:
+The `NCBI-BLAST+`_ comparisons are embarrasingly parallel, and these jobs can be distributed across cores in a cluster using the `Open Grid Scheduler`_. To enable this during the analysis, use the ``--scheduler SGE`` option:
 
 .. code-block:: bash
 
-    pyani anib --scheduler SGE -i genomes -o genomes_ANIb
+    pyani anib --scheduler SGE genomes genomes_ANIb
 
 .. NOTE::
     Jobs are submitted as *array jobs* to keep the scheduler queue short.
@@ -93,19 +93,19 @@ These allow for useful control of job execution. For example, the command:
 
 .. code-block:: bash
 
-    pyani anib --scheduler SGE --SGEgroupsize 5000 -i genomes -o genomes_ANIb
+    pyani anib --scheduler SGE --SGEgroupsize 5000 genomes genomes_ANIb
 
-will batch `NCBI-BLAST+`_ jobs in groups of 500 for the scheduler. The command:
+will batch ``ANIb`` jobs in groups of 500 for the scheduler. The command:
 
 .. code-block:: bash
 
-    pyani anib --scheduler SGE --jobprefix My_Ace_Job -i genomes -o genomes_ANIb
+    pyani anib --scheduler SGE --jobprefix My_Ace_Job genomes genomes_ANIb
 
 will prepend the string ``My_Ace_Job`` to your job in the scheduler queue. And the command:
 
 .. code-block:: bash
 
-    pyani anib --scheduler SGE --SGEargs "-m e -M my.name@my.domain" 5000 -i genomes -o genomes_ANIb
+    pyani anib --scheduler SGE --SGEargs "-m e -M my.name@my.domain" --SGEgroupsize 5000 genomes genomes_ANIb
 
 will email ``my.name@my.domain`` when the jobs finish.
 
