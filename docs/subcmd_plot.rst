@@ -8,12 +8,22 @@ The ``plot`` subcommand will plot the results of an ANI analysis, specified by `
 
 .. code-block:: text
 
-    usage: pyani plot [-h] [-l LOGFILE] [-v] [--debug] [--disable_tqdm] [--version]
-                  [--citation] -o OUTDIR --run_ids RUN_ID [RUN_ID ...]
-                  [--dbpath DBPATH] [--formats FORMAT [FORMAT ...]]
-                  [--method METHOD] [--workers WORKERS]
+    usage: pyani.py plot [-h] [-l LOGFILE] [-v] [--debug]
+    [--disable_tqdm] [--version] [--citation] [--dbpath DBPATH]
+    [--formats FORMATS] [--method {seaborn,mpl,plotly}]
+    outdir run_id
 
 .. _SQLite3: https://www.sqlite.org/index.html
+
+--------------------
+Positional arguments
+--------------------
+
+``outdir``
+   Path to a directory where comparison plot files will be written.
+
+``run_id``
+  Unique database ID of the run to be plotted.
 
 -----------------
 Flagged arguments
@@ -25,17 +35,11 @@ Flagged arguments
 ``--disable_tqdm``
     Disable the ``tqdm`` progress bar while the plotting process runs. This is useful when testing to avoid aesthetic problems with test output.
 
-``--formats FORMAT [FORMAT ...]``
+``--formats FORMATS``
     Graphics output format(s); more than one can be specified. Valid options are: (pdf/png/svg/jpg). (default: png)
 
 ``-l LOGFILE, --logfile LOGFILE``
     Provide the location ``LOGFILE`` to which a logfile of the plotting process will be written.
 
-``--method METHOD``
-    Graphics method to use for plotting; options (seaborn, mpl, plotly). (default: seaborn)
-
-``-o OUTDIR, --o outdir OUTDIR``
-    Path to a directory where comparison plot files will be written.
-
-``--run_ids RUN_ID [RUN_ID ...]``
-    Unique database ID of the runs to be plotted.
+``--method {seaborn,mpl,plotly}``
+    Graphics method to use for plotting. (default: seaborn)
