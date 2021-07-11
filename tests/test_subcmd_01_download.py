@@ -117,6 +117,7 @@ assertions = TestCase("__init__")
 
 
 def test_create_hash():
+    """Test that the expected exception is raised if the file doesn't exist."""
     test_file = "/this/is/not/a/file"
     with assertions.assertRaises(download.PyaniIndexException):
         download.create_hash(test_file)
