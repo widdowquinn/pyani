@@ -40,6 +40,9 @@
 
 import copy
 import subprocess
+import shutil
+import os
+import re
 
 from argparse import Namespace
 from pathlib import Path
@@ -286,3 +289,129 @@ def mock_legacy_single_genome_dl(monkeypatch):
 
     monkeypatch.setattr(genbank_get_genomes_by_taxon, "get_asm_uids", mock_asmuids)
     monkeypatch.setattr(genbank_get_genomes_by_taxon, "get_ncbi_asm", mock_ncbi_asm)
+
+
+@pytest.fixture
+def executable_missing(monkeypatch):
+    """Mocks an executable path that does not point to a file."""
+
+    def mock_which(*args, **kwargs):
+        """Mock a call to `shutil.which()`, which produces an absolute file path."""
+        return "/non/existent/file"
+
+    def mock_isfile(*args, **kwargs):
+        """Mock a call to `os.path.isfile()`."""
+        return False
+
+    def mock_access(*args, **kwargs):
+        """Mock a call to `os.access()`."""
+        return False
+
+    monkeypatch.setattr(shutil, "which", mock_which)  # Path(test_file_1))
+    monkeypatch.setattr(os.path, "isfile", mock_isfile)
+    monkeypatch.setattr(os, "access", mock_access)
+
+
+@pytest.fixture
+def executable_not_executable(monkeypatch):
+    """
+    Mocks an executable path that does not point to an executable file,
+    but does point to a file.
+    """
+
+    def mock_which(*args, **kwargs):
+        """Mock an absolute file path."""
+        return "/non/executable/file"
+
+    def mock_isfile(*args, **kwargs):
+        """Mock a call to `os.path.isfile()`."""
+        return True
+
+    def mock_access(*args, **kwargs):
+        """Mock a call to `os.access()`."""
+        return False
+
+    monkeypatch.setattr(shutil, "which", mock_which)
+    monkeypatch.setattr(os.path, "isfile", mock_isfile)
+    monkeypatch.setattr(os, "access", mock_access)
+
+
+# Convenience struct for test_get_version()
+class MockProcess(NamedTuple):
+    stdout: str
+    stderr: str
+
+
+# Convenience struct for test_get_version()
+class MockMatch(NamedTuple):
+    def group(self):
+        return ""
+
+
+@pytest.fixture
+def executable_without_version(monkeypatch):
+    """
+    Mocks an executable file for which the version can't be obtained, but
+    which runs without incident.
+    """
+
+    def mock_which(*args, **kwargs):
+        """Mock an absolute file path."""
+        return "/missing/version/file"
+
+    def mock_isfile(*args, **kwargs):
+        """Mock a call to `os.path.isfile()`."""
+        return True
+
+    def mock_access(*args, **kwargs):
+        """Mock a call to `os.access()`."""
+        return True
+
+    def mock_subprocess(*args, **kwargs):
+        """Mock a call to `subprocess.run()`."""
+        return MockProcess(b"mock bytes", b"mock bytes")
+
+    def mock_search(*args, **kwargs):
+        """Mock a call to `re.search()`."""
+        return MockMatch()
+
+    monkeypatch.setattr(shutil, "which", mock_which)
+    monkeypatch.setattr(os.path, "isfile", mock_isfile)
+    monkeypatch.setattr(os, "access", mock_access)
+    monkeypatch.setattr(subprocess, "run", mock_subprocess)
+    monkeypatch.setattr(re, "search", mock_search)
+
+
+@pytest.fixture
+def executable_incompatible_with_os(monkeypatch):
+    """
+    Mocks an executable file that is incompatible with the OS.
+
+    (This situation likely only applies to blastall.)
+    """
+
+    def mock_which(*args, **kwargs):
+        """Mock an absolute file path."""
+        return "/os/incompatible/file"
+
+    def mock_isfile(*args, **kwargs):
+        """Mock a call to `os.path.isfile()`."""
+        return True
+
+    def mock_access(*args, **kwargs):
+        """Mock a call to `os.access()`."""
+        return True
+
+    def mock_subprocess(*args, **kwargs):
+        """Mock a call to `subprocess.run()` with an incompatible program."""
+        raise OSError
+
+    def mock_search(*args, **kwargs):
+        """Mock a call to `re.search()`."""
+        return MockMatch()
+
+    monkeypatch.setattr(shutil, "which", mock_which)
+    monkeypatch.setattr(os.path, "isfile", mock_isfile)
+    monkeypatch.setattr(os, "access", mock_access)
+    monkeypatch.setattr(subprocess, "run", mock_subprocess)
+    monkeypatch.setattr(re, "search", mock_search)
