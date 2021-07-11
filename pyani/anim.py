@@ -105,7 +105,7 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
     nucmer_path = Path(shutil.which(nucmer_exe))  # type:ignore
 
     if not os.path.isfile(nucmer_path):  # no executable
-        return f"No nucmer at {nucmer_path}"
+        return f"No nucmer executable at {nucmer_path}"
 
     if not os.access(nucmer_path, os.X_OK):  # file exists but not executable
         return f"nucmer exists at {nucmer_path} but not executable"

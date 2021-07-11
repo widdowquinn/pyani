@@ -51,6 +51,7 @@ from typing import List, NamedTuple, Tuple
 
 import pandas as pd
 import pytest
+import unittest
 
 from pandas.util.testing import assert_frame_equal
 
@@ -144,6 +145,40 @@ def mummer_cmds_four(path_file_four):
                 "nucmer_output/file3_vs_file4.filter"
             ),
         ],
+    )
+
+
+# Create object for accessing unittest assertions
+assertions = unittest.TestCase("__init__")
+
+
+# Test get_version()
+# Test case 1: there is no executable
+def test_get_version_1(executable_missing, monkeypatch):
+    """Test behaviour when there is no file at the specified executable location."""
+    test_file_1 = "/non/existent/file"
+    assertions.assertEqual(
+        anim.get_version(test_file_1), f"No nucmer executable at {test_file_1}"
+    )
+
+
+# Test case 2: there is a file, but it is not executable
+def test_get_version_2(executable_not_executable, monkeypatch):
+    """Test behaviour when the file at the executable location is not executable."""
+    test_file_2 = "/non/executable/file"
+    assertions.assertEqual(
+        anim.get_version(test_file_2),
+        f"nucmer exists at {test_file_2} but not executable",
+    )
+
+
+# Test case 3: there is an executable file, but the version can't be retrieved
+def test_get_version_3(executable_without_version, monkeypatch):
+    """Test behaviour when the version for the executable can not be retrieved."""
+    test_file_3 = "/missing/version/file"
+    assertions.assertEqual(
+        anim.get_version(test_file_3),
+        f"nucmer exists at {test_file_3} but could not retrieve version",
     )
 
 
