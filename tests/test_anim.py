@@ -49,7 +49,6 @@ from typing import List, NamedTuple, Tuple
 
 import pandas as pd
 import pytest
-import unittest
 
 from pandas.util.testing import assert_frame_equal
 
