@@ -1,6 +1,6 @@
 # `pyani`
 
-Whole-genome classification using Average Nucleotide Identity
+Application and Python module for whole-genome classification of microbes using Average Nucleotide Identity.
 
 -----
 
