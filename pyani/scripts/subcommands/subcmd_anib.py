@@ -89,11 +89,11 @@ def subcmd_anib(args: Namespace) -> None:
 
     The calculated values are stored in the local SQLite3 database.
     """
+    # Create logger
     logger = logging.getLogger(__name__)
 
-    logger.info(
-        termcolor("Running ANIm analysis", "red")
-    )  # announce that we're starting
+    # Announce the analysis
+    logger.info(termcolor("Running ANIb analysis", "red"))
 
     # Get BLAST+ version - this will be used in the database entries
     blastn_version = anib.get_version(args.blastn_exe)
@@ -102,7 +102,7 @@ def subcmd_anib(args: Namespace) -> None:
     # Use provided name, or make new one for this analysis
     start_time = datetime.datetime.now()
     name = args.name or "_".join(["ANIb", start_time.isoformat()])
-    logger.info("Analysis name: %s", name)
+    logger.info(termcolor("Analysis name: %s", "cyan"), name)
 
     # Connect to existing database (which may be "clean" or have old analyses)
     logger.debug("Connecting to database %s", args.dbpath)
@@ -225,7 +225,7 @@ def subcmd_anib(args: Namespace) -> None:
                 existingfiles[0],
             )
         else:
-            logger.debug(f"\tIdentified no existing output files")
+            logger.debug("\tIdentified no existing output files")
     else:
         existingfiles = list()
         logger.debug("\tAssuming no pre-existing output files")
@@ -248,7 +248,7 @@ def subcmd_anib(args: Namespace) -> None:
     joblist = generate_joblist(
         comparisons_to_run, existingfiles, fragfiles, fraglens, args
     )
-    logger.debug(f"...created %s blastn jobs", len(joblist))
+    logger.debug("...created %s blastn jobs", len(joblist))
 
     raise NotImplementedError
 
