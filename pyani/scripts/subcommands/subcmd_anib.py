@@ -47,7 +47,7 @@ import os
 from argparse import Namespace
 from itertools import permutations
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, NamedTuple, Tuple
 
 from Bio import SeqIO
 from tqdm import tqdm
@@ -55,14 +55,31 @@ from tqdm import tqdm
 from pyani import anib
 from pyani.pyani_files import collect_existing_output
 from pyani.pyani_orm import (
-    PyaniORMException,
     add_run,
     add_run_genomes,
+    add_blastdb,
+    Comparison,
     filter_existing_comparisons,
     get_session,
+    pyani_jobs,
+    PyaniORMException,
     update_comparison_matrices,
 )
 from pyani.pyani_tools import termcolor
+
+
+# Convenience struct describing a pairwise comparison job for the SQLAlchemy
+# implementation
+class ComparisonJob(NamedTuple):
+
+    """Pairwise comparison job for the SQLAlchemy implementation"""
+
+    query: str
+    subject: str
+    blastcmd: str
+    outfile: Path
+    fragsize: int
+    job: pyani_jobs.Job
 
 
 def subcmd_anib(args: Namespace) -> None:
@@ -163,6 +180,12 @@ def subcmd_anib(args: Namespace) -> None:
     logger.debug("\t...creating subdirectories")
     os.makedirs(fragdir, exist_ok=True)
     os.makedirs(blastdbdir, exist_ok=True)
+
+    # jobgraph = anib.make_job_graph(
+    #    infiles, fragfiles, anib.make_blastcmd_builder(args.method, blastdir)
+    # )
+
+    # Create dictionary of database building commands, keyed by dbname
 
     # Create a new sequence fragment file and a new BLAST+ database for each input genome,
     # and add this data to the database as a row in BlastDB
@@ -304,3 +327,86 @@ def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path
     fragpath = outdir / f"{inpath.stem}-fragments.fasta"
     SeqIO.write(outseqs, fragpath, "fasta")
     return fragpath, json.dumps(sizedict)
+
+
+# def run_anib_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
+#    """Pass ANIb blastn jobs to the scheduler.
+#
+#    :param joblist:           list of ComparisonJob namedtuples
+#    :param args:              command-line arguments for the run
+#    """
+#    logger = logging.getLogger(__name__)
+#    logger.debug("Scheduler: %s", args.scheduler)
+#
+#    # Entries with None seen in recovery mode:
+#    jobs = [_.job for _ in joblist if _.job]
+#
+#    if args.scheduler == "multiprocessing":
+#        logger.info("Running jobs with multiprocessing")
+#        if not args.workers:
+#            logger.debug("(using maximum number of worker threads)")
+#        else:
+#            logger.debug("(using %d worker threads, if available)", args.workers)
+#        cumval = run_mp.run_dependency_graph(jobs, workers=args.workers)
+#        if cumval > 0:
+#            logger.error(
+#                "At least one blastn comparison failed. Please investigate (exiting)"
+#            )
+#            raise PyaniException("Multiprocessing run failed in ANIb")
+#        logger.info("Multiprocessing run completed without error")
+#    elif args.scheduler.lower() == "sge":
+#        logger.info("Running jobs with SGE")
+#        logger.debug("Setting jobarray group size to %d", args.sgegroupsize)
+#        logger.debug("Joblist contains %d jobs", len(joblist))
+#        run_sge.run_dependency_graph(
+#            jobs,
+#            jgprefix=args.jobprefix,
+#            sgegroupsize=args.sgegroupsize,
+#            sgeargs=args.sgeargs,
+#        )
+#    else:
+#        logger.error(termcolor("Scheduler %s not recognised", "red"), args.scheduler)
+#        raise SystemError(1)
+#
+#
+# def update_comparison_results(
+#    joblist: List[ComparisonJob], run, session, blastn_version: str, args: Namespace
+# ) -> None:
+#    """Update the Comparision table with the completed result set.
+#
+#    :param joblist:         list of ComparisonJob namedtuples
+#    :param run:             Run ORM object for the current ANIb run
+#    :param session:         active pyanidb session via ORM
+#    :param blastn_version:  version of blastn used for the comparison
+#    :param args:            command-line arguments for this run
+#
+#    The Comparison table stores individual comparison results, one per row.
+#    """
+#    logger = logging.getLogger(__name__)
+#
+#    # Add individual results to Comparison table
+#    for job in tqdm(joblist, disable=args.disable_tqdm):
+#        logger.debug("\t%s vs %s", job.query.description, job.subject.description)
+#        aln_length, sim_errs, ani_pid = anib.process_blast_tab(job.outfile)
+#        qcov = aln_length / job.query.length
+#        scov = aln_length / job.subject.length
+#        run.comparisons.append(
+#            Comparison(
+#                query=job.query,
+#                subject=job.subject,
+#                aln_length=aln_length,
+#                sim_errs=sim_errs,
+#                identity=ani_pid,
+#                cov_query=qcov,
+#                cov_subject=scov,
+#                program="blastn",
+#                version=blastn_version,
+#                fragsize=job.fragsize,
+#                maxmatch=False,
+#            )
+#        )
+#
+#    # Populate db
+#    logger.debug("Committing results to database")
+#    session.commit()
+#
