@@ -191,13 +191,12 @@ def subcmd_anib(args: Namespace) -> None:
     # and add this data to the database as a row in BlastDB
     logger.info("Creating input sequence fragment files")
     for genome in genomes:
-        fragpath, fraglengths = fragment_fasta_file(
+        fragpath, fragsizes = fragment_fasta_file(
             Path(str(genome.path)), Path(str(fragdir)), args.fragsize
         )
-        print(fragpath, len(fraglengths))
-        # blastdb = add_blastdb(
-        #     session, genome, run, fragpath, dbpath, fraglengths, dbcmd
-        # )
+        print(fragpath, len(fragsizes))
+
+        # blastdb = add_blastdb(session, genome, run, fragpath, dbpath, fragsizes, dbcmd)
 
     raise NotImplementedError
 
@@ -281,7 +280,7 @@ def generate_joblist(
     comparisons: List,
     existingfiles: List,
     fragfiles: List,
-    fraglens: List,
+    fragsizes: List,
     args: Namespace,
 ) -> NotImplementedError:
     """Return list of ComparisonJobs.
@@ -289,7 +288,7 @@ def generate_joblist(
     :param comparisons:  list of (Genome, Genome) tuples for which comparisons are needed
     :param existingfiles:  list of pre-existing BLASTN+ outputs
     :param fragfiles:
-    :param fraglens:
+    :param fragsizes:
     :param args:  Namespace, command-line arguments
     """
     # logger = logging.getLogger(__name__)
