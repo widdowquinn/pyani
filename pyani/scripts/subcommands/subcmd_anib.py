@@ -140,6 +140,7 @@ def subcmd_anib(args: Namespace) -> None:
         logger.error(
             "Could not add genomes to database for run %s (exiting)", run, exc_info=True
         )
+        raise SystemExit(1)
     logger.debug("\t...added genome IDs: %s", genome_ids)
 
     # Get list of genomes for this analysis from the database
