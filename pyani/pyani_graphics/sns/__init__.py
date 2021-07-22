@@ -178,12 +178,9 @@ def distribution(dfr, outfilename, matname, title=None):
     """
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     fig.suptitle(title)
-    sns.distplot(
-        dfr.values.flatten(), kde=False, rug=False, ax=axes[0], norm_hist=False
-    )
-    sns.distplot(
-        dfr.values.flatten(), hist=False, rug=True, ax=axes[1], norm_hist=False
-    )
+    sns.histplot(dfr.values.flatten(), ax=axes[0], stat="count")
+    sns.kdeplot(dfr.values.flatten(), ax=axes[1])
+    sns.rugplot(dfr.values.flatten(), ax=axes[1])
 
     # Modify axes after data is plotted
     for _ in axes:
