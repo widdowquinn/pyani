@@ -176,11 +176,21 @@ def distribution(dfr, outfilename, matname, title=None):
     :param matname:  str, type of matrix being plotted
     :param title:  str, optional title
     """
+    fill = "#A6C8E0"
+    rug = "#2678B2"
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     fig.suptitle(title)
-    sns.histplot(dfr.values.flatten(), ax=axes[0], stat="count")
+    sns.histplot(
+        dfr.values.flatten(),
+        ax=axes[0],
+        stat="count",
+        element="step",
+        color=fill,
+        edgecolor=fill,
+    )
+    axes[0].set_ylim(ymin=0)
     sns.kdeplot(dfr.values.flatten(), ax=axes[1])
-    sns.rugplot(dfr.values.flatten(), ax=axes[1])
+    sns.rugplot(dfr.values.flatten(), ax=axes[1], color=rug)
 
     # Modify axes after data is plotted
     for _ in axes:
