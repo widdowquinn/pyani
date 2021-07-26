@@ -203,3 +203,46 @@ def distribution(dfr, outfilename, matname, title=None):
         fig.savefig(outfilename)
 
     return fig
+
+
+def scatter(
+    dfr1,
+    dfr2,
+    outfilename,
+    matname1="identity",
+    matname2="coverage",
+    title=None,
+    params=None,
+):
+    """ """
+    # Make an empty dataframe to collect the input data in
+    combined = pd.DataFrame()
+
+    # Add data
+    combined[matname1] = dfr1.values.flatten()
+    combined[matname2] = dfr2.values.flatten()
+
+    # Add lable information, if available
+    if params.labels:
+        hue = "labels"
+        #  combined['labels'] =   #  add labels to dataframe; unsure of their configuration at this point
+    else:
+        hue = None
+
+    # Create the plot
+    fig = sns.lmplot(
+        x=matname1,
+        y=matname2,
+        data=combined,
+        hue=hue,
+        fit_reg=False,
+        scatter_kws={"s": 2},
+    )
+    plt.title(f"{title}")
+
+    # Save to file
+    if outfilename:
+        fig.savefig(outfilename)
+
+    # Return clustermap
+    return fig
