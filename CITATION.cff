@@ -2,22 +2,16 @@ cff-version: 1.2.0
 message: If you use this software in your work, please cite the following paper
 title: Genomics and taxonomy in diagnostics for food security - soft-rotting enterobacterial plant pathogens
 authors:
-  - family-names: Pritchard
-    given-names: Leighton
-  - family-names: Glover
-    given-names: Rachel H.
-  - family-names: Humphris
-    given-names: Sonia
-  - family-names: Elphinstone
-    given-names: John G.
-  - family-names: Toth
-    given-names: Ian K.
+- family-names: Pritchard
+  given-names: Leighton
+- family-names: Glover
+  given-names: Rachel H.
+- family-names: Humphris
+  given-names: Sonia
+- family-names: Elphinstone
+  given-names: John G.
+- family-names: Toth
+  given-names: Ian K.
 doi: 10.1039/C5AY02550H
-identifiers:
-  - type: doi
-    value: 10.1039/C5AY02550H
 keywords:
-  - genomics
-title: >-
-  Genomics and taxonomy in diagnostics for food security: soft-rotting
-  enterobacterial plant pathogens
+- genomics
