@@ -13,10 +13,4 @@ authors:
 - family-names: Toth
   given-names: Ian K.
 keywords:
-- ruby
-- credit
-- citation
-version: 0.6.0
-date-released: 2021-06-05
-license: Apache-2.0
-repository-artifact: https://rubygems.org/gems/cff
+- genomics
