@@ -1,15 +1,11 @@
-cff-version: 1.2.0
-message: "Please cite the following work when using this software in your own publications."
-authors:
-  - family-names: "Pritchard"
-    given-names: "Leighton"
-  - family-names: "Glover"
-    given-names: "Rachel H."
-  - family-names: "Humphris"
-    given-names: "Sonia"
-  - family-names: "Elphinstone"
-    given-names: "John G."
-  - family-names: "Toth"
-    given-names: "Ian K."
-doi: 10.1039/C5AY02550H
-title: "Genomics and taxonomy in diagnostics for food security: soft-rotting enterobacterial plant pathogens"
+@article{Pritchard2016Genomics,
+
+    author = {Pritchard, Leighton and Glover, Rachel H. and Humphris, Sonia and Elphinstone, John G. and Toth, Ian K.},
+    journal = {Analytical Methods},
+    number = {1},
+    year = {2016},
+    pages = {12--24},
+    title = {Genomics and taxonomy in diagnostics for food security: soft-rotting enterobacterial plant pathogens},
+    volume = {8},
+
+}
