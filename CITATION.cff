@@ -1,24 +1,21 @@
-cff-version: 1.1.0
+cff-version: 1.2.0
 message: Please cite the following works when using this software.
 authors:
-  - family-names: Pritchard
-    given-names: Leighton
-  - family-names: Glover
-    given-names: Rachel H.
-  - family-names: Humphris
-    given-names: Sonia
-  - family-names: Elphinstone
-    given-names: John G.
-  - family-names: Toth
-    given-names: Ian K.
+  - family-names: "Pritchard"
+    given-names: "Leighton"
+  - family-names: "Glover"
+    given-names: "Rachel H."
+  - family-names: "Humphris"
+    given-names: "Sonia"
+  - family-names: "Elphinstone"
+    given-names: "John G."
+  - family-names: "Toth"
+    given-names: "Ian K."
 doi: 10.1039/C5AY02550H
 identifiers:
   - type: doi
     value: 10.1039/C5AY02550H
   - type: other
     value: urn:issn:1759-9660
-keywords:
-  - genomics
 title: >-
-  Genomics and taxonomy in diagnostics for food security: soft-rotting
-  enterobacterial plant pathogens
+  "Genomics and taxonomy in diagnostics for food security: soft-rotting enterobacterial plant pathogens"
