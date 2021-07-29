@@ -78,7 +78,7 @@ def run_dependency_graph(
             logger.info("Command pool now running:")
             for cmd in cmdset:
                 logger.info(cmd)
-        cumretval += multiprocessing_run(cmdset, workers)
+        cumretval += multiprocessing_run(cmdset, workers, logger)
         if logger:  # Try to be informative, if the logger module is being used
             logger.info("Command pool done.")
     return cumretval
@@ -110,7 +110,9 @@ def populate_cmdsets(job: Job, cmdsets: List, depth: int) -> List:
 
 
 # Run a set of command lines using multiprocessing
-def multiprocessing_run(cmdlines: List, workers: Optional[int] = None) -> int:
+def multiprocessing_run(
+    cmdlines: List, workers: Optional[int] = None, logger: Optional[Logger] = None
+) -> int:
     """Distributes passed command-line jobs using multiprocessing.
 
     :param cmdlines:  iterable, command line strings
@@ -138,4 +140,10 @@ def multiprocessing_run(cmdlines: List, workers: Optional[int] = None) -> int:
     ]
     pool.close()
     pool.join()
+
+    # Print a warning so individual runs that fail can be identified
+    for r in results:
+        if r.get().returncode != 0:
+            logger.warning(f"Comparison failed: {' '.join(r.get().args)}")
+
     return sum([r.get().returncode for r in results])
