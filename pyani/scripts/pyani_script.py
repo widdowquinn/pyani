@@ -116,13 +116,16 @@ def run_main(argv: Optional[List[str]] = None) -> int:
     add_log_headers()
 
     # Check the database file exists, if one is given
-    if args.dbpath:
-        logger.info("Checking for database file: {args.dbpath}")
-        if not os.path.isfile(args.dbpath):
-            logger.error(
-                f"No database file at {args.dbpath}. Create one using `pyani createdb`."
-            )
-            return 0
+    try:
+        if args.dbpath:
+            logger.info("Checking for database file: {args.dbpath}")
+            if not os.path.isfile(args.dbpath):
+                logger.error(
+                    f"No database file at {args.dbpath}. Create one using `pyani createdb`."
+                )
+                return 0
+    except AttributeError:
+        pass
 
     # Run the subcommand
     returnval = args.func(args)
