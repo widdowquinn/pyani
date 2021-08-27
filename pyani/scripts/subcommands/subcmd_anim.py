@@ -335,8 +335,8 @@ def generate_joblist(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
         if 0 == idx % args.sgegroupsize:  # start new list
-            # if curlist:
-            #    joblists.append(curlist[:])
+            if curlist:
+                joblists.append(curlist[:])
             curlist = []
 
         ncmd, dcmd = anim.construct_nucmer_cmdline(
@@ -374,7 +374,8 @@ def generate_joblist(
             fjob = pyani_jobs.Job("%s_%06d-f" % (args.jobprefix, idx), dcmd)
             fjob.add_dependency(njob)
             curlist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, fjob))
-    joblists.append(curlist)  # catch last set of jobs
+    if curlist:
+        joblists.append(curlist[:])  # catch last set of jobs
 
     logger.debug("Joblists: %s", joblists)
     joblist = list(chain(*joblists))
