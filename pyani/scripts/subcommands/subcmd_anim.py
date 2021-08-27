@@ -43,7 +43,7 @@ import datetime
 import logging
 
 from argparse import Namespace
-from itertools import combinations
+from itertools import chain, combinations
 from pathlib import Path
 from typing import List, NamedTuple, Optional, Tuple
 
@@ -329,10 +329,16 @@ def generate_joblist(
     """
     logger = logging.getLogger(__name__)
 
-    joblist = []  # will hold ComparisonJob structs
+    joblists = []
+    curlist = None
     for idx, (query, subject) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
+        if 0 == idx % args.sgegroupsize:  # start new list
+            # if curlist:
+            #    joblists.append(curlist[:])
+            curlist = []
+
         ncmd, dcmd = anim.construct_nucmer_cmdline(
             query.path,
             subject.path,
@@ -342,6 +348,7 @@ def generate_joblist(
             args.maxmatch,
         )
         logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
+
         outprefix = ncmd.split()[3]  # prefix for NUCmer output
         if args.nofilter:
             outfname = Path(outprefix + ".delta")
@@ -359,20 +366,25 @@ def generate_joblist(
         if args.recovery and outfname in set(existingfiles):
             logger.debug("Recovering output from %s, not submitting job", outfname)
             # Need to track the expected output, but set the job itself to None:
-            joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, None))
+            curlist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, None))
         else:
             logger.debug("Building job")
             # Build jobs
             njob = pyani_jobs.Job("%s_%06d-n" % (args.jobprefix, idx), ncmd)
             fjob = pyani_jobs.Job("%s_%06d-f" % (args.jobprefix, idx), dcmd)
             fjob.add_dependency(njob)
-            joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, fjob))
+            curlist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, fjob))
+    joblists.append(curlist)  # catch last set of jobs
 
-        logger.debug("Generated %s jobs", len(joblist))
-        logger.debug(
-            "\t...there are %s dependencies for these jobs",
-            sum([len(_.job.dependencies) for _ in joblist]),
-        )
+    logger.debug("Joblists: %s", joblists)
+    joblist = list(chain(*joblists))
+
+    logger.info("Generated %s jobs", len(joblist))
+    logger.debug(
+        "\t...there are %s dependencies for these jobs",
+        sum([len(_.job.dependencies) for _ in joblist]),
+    )
+
     return joblist
 
 
