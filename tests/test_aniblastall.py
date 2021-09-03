@@ -52,10 +52,7 @@ from pyani import aniblastall
 def test_get_version_missing_exe(executable_missing):
     """Test behaviour when there is no file at the specified executable location."""
     test_file_1 = Path("/non/existent/blastall")
-    assert (
-        aniblastall.get_version(test_file_1)
-        == f"No blastall executable at {test_file_1}"
-    )
+    assert aniblastall.get_version(test_file_1) == f"No blastall at {test_file_1}"
 
 
 # Test case 2: there is a file, but it is not executable

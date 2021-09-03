@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2021
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -17,7 +17,7 @@
 #
 # The MIT License
 #
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2021
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -178,6 +178,7 @@ def executable_incompatible_with_os(monkeypatch):
         raise OSError
 
     monkeypatch.setattr(shutil, "which", mock_which)
+    monkeypatch.setattr(Path, "is_file", mock_isfile)
     monkeypatch.setattr(os.path, "isfile", mock_isfile)
     monkeypatch.setattr(os, "access", mock_access)
     monkeypatch.setattr(subprocess, "run", mock_subprocess)
@@ -191,7 +192,13 @@ def executable_missing(monkeypatch):
         """Mock a call to `shutil.which()`, which produces an absolute file path."""
         return args[0]
 
+    def mock_isfile(*args, **kwargs):
+        """Mock a call to `os.path.isfile()`."""
+        return False
+
     monkeypatch.setattr(shutil, "which", mock_which)  # Path(test_file_1))
+    monkeypatch.setattr(Path, "is_file", mock_isfile)
+    monkeypatch.setattr(os.path, "isfile", mock_isfile)
 
 
 @pytest.fixture
@@ -214,6 +221,7 @@ def executable_not_executable(monkeypatch):
         return False
 
     monkeypatch.setattr(shutil, "which", mock_which)
+    monkeypatch.setattr(Path, "is_file", mock_isfile)
     monkeypatch.setattr(os.path, "isfile", mock_isfile)
     monkeypatch.setattr(os, "access", mock_access)
 
@@ -246,6 +254,7 @@ def executable_without_version(monkeypatch):
         return MockMatch()
 
     monkeypatch.setattr(shutil, "which", mock_which)
+    monkeypatch.setattr(Path, "is_file", mock_isfile)
     monkeypatch.setattr(os.path, "isfile", mock_isfile)
     monkeypatch.setattr(os, "access", mock_access)
     monkeypatch.setattr(subprocess, "run", mock_subprocess)

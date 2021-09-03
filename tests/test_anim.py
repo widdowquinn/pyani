@@ -150,7 +150,7 @@ def mummer_cmds_four(path_file_four):
 def test_get_version_no_exe(executable_missing):
     """Test behaviour when there is no file at the specified executable location."""
     test_file_1 = Path("/non/existent/nucmer")
-    assert anim.get_version(test_file_1) == f"No nucmer executable at {test_file_1}"
+    assert anim.get_version(test_file_1) == f"No nucmer at {test_file_1}"
 
 
 # Test case 2: there is a file, but it is not executable

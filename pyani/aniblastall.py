@@ -76,7 +76,7 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
     if blastall_path is None:
         return f"{blast_exe} is not found in $PATH"
 
-    if blastall_path.is_file():  # no executable
+    if not blastall_path.is_file():  # no executable
         return f"No blastall at {blastall_path}"
 
     if not os.access(blastall_path, os.X_OK):  # file exists but not executable
