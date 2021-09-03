@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2020
+# (c) University of Strathclyde 2019-2021
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2020 University of Strathclyde
+# Copyright (c) 2019-2021 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -44,18 +44,15 @@ These tests are intended to be run from the repository root using:
 pytest -v
 """
 
-import os
-
 from pathlib import Path
 from typing import List, NamedTuple, Tuple
 
 import pandas as pd
 import pytest
-import unittest
 
 from pandas.util.testing import assert_frame_equal
 
-from pyani import anim, pyani_files, pyani_tools
+from pyani import anim, pyani_files
 
 
 class DeltaDir(NamedTuple):
@@ -148,37 +145,31 @@ def mummer_cmds_four(path_file_four):
     )
 
 
-# Create object for accessing unittest assertions
-assertions = unittest.TestCase("__init__")
-
-
 # Test get_version()
 # Test case 1: there is no executable
-def test_get_version_1(executable_missing, monkeypatch):
+def test_get_version_no_exe(executable_missing):
     """Test behaviour when there is no file at the specified executable location."""
-    test_file_1 = "/non/existent/file"
-    assertions.assertEqual(
-        anim.get_version(test_file_1), f"No nucmer executable at {test_file_1}"
-    )
+    test_file_1 = Path("/non/existent/nucmer")
+    assert anim.get_version(test_file_1) == f"No nucmer executable at {test_file_1}"
 
 
 # Test case 2: there is a file, but it is not executable
-def test_get_version_2(executable_not_executable, monkeypatch):
+def test_get_version_exe_not_executable(executable_not_executable):
     """Test behaviour when the file at the executable location is not executable."""
-    test_file_2 = "/non/executable/file"
-    assertions.assertEqual(
-        anim.get_version(test_file_2),
-        f"nucmer exists at {test_file_2} but not executable",
+    test_file_2 = Path("/non/executable/nucmer")
+    assert (
+        anim.get_version(test_file_2)
+        == f"nucmer exists at {test_file_2} but not executable"
     )
 
 
 # Test case 3: there is an executable file, but the version can't be retrieved
-def test_get_version_3(executable_without_version, monkeypatch):
+def test_get_version_exe_no_version(executable_without_version):
     """Test behaviour when the version for the executable can not be retrieved."""
-    test_file_3 = "/missing/version/file"
-    assertions.assertEqual(
-        anim.get_version(test_file_3),
-        f"nucmer exists at {test_file_3} but could not retrieve version",
+    test_file_3 = Path("/missing/version/nucmer")
+    assert (
+        anim.get_version(test_file_3)
+        == f"nucmer exists at {test_file_3} but could not retrieve version"
     )
 
 
