@@ -92,7 +92,10 @@ def get_version(fastani_exe: Path = pyani_config.FASTANI_DEFAULT) -> str:
     """
     fastani_path = Path(shutil.which(fastani_exe))  # type:ignore
 
-    if not os.path.isfile(fastani_path):  # no executable
+    if fastani_path is None:
+        return f"{fastani_exe} is not found in $PATH"
+
+    if not fastani_path.is_file():  # no executable
         return f"No fastANI executable at {fastani_path}"
 
     if not os.access(fastani_path, os.X_OK):  # file exists but not executable
