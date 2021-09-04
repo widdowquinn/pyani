@@ -393,10 +393,10 @@ def scatter(
     # else:
     hue = None
 
-    fig = plt.figure(figsize=(8, 8))
+    fig, ax = plt.subplots(figsize=(8, 8))
     fig.suptitle(title)
-    fig.xlabel(f"{matname1.title()}")
-    fig.ylabel(f"{matname2.title()}")
+    ax.set_xlabel(f"{matname1.title()}")
+    ax.set_ylabel(f"{matname2.title()}")
 
     plt.scatter(matname1, matname2, data=combined, c=hue, s=2)
 
