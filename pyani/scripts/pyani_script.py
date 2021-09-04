@@ -79,13 +79,25 @@ def run_main(argv: Optional[List[str]] = None) -> int:
 
     :param argv:
     """
+    # We need to catch the case with no arguments here, otherwise
+    # argparse will infer -h as an implied argument
+    if len(sys.argv) == 1 and argv is None:
+        sys.stderr.write(f"{VERSION_INFO}\n")
+        return 0
+
     # If we need to (i.e. a namespace isn't passed), parse the command-line
     if argv is None:
         args = parse_cmdline()
     else:
         args = parse_cmdline(argv)
-    # Catch execution with no arguments
-    if len(sys.argv) == 1 and argv is None:
+
+    # Catch requests for citation and version information.
+    # This should stop any subcommands from running, also.
+    if args.citation:
+        sys.stderr.write(f"{VERSION_INFO}\n")
+        sys.stderr.write("\n".join(CITATION_INFO) + "\n")
+        return 0
+    if args.version:
         sys.stderr.write(f"{VERSION_INFO}\n")
         return 0
 

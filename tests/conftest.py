@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2021
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -17,7 +17,7 @@
 #
 # The MIT License
 #
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2021
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -38,18 +38,18 @@
 # THE SOFTWARE.
 """Pytest configuration file."""
 
-import copy
 import subprocess
+import shutil
+import os
+import re
 
-from argparse import Namespace
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Tuple
+from typing import NamedTuple
 
-import pandas as pd
 import pytest
 
 from pyani import download
-from pyani.download import ASMIDs, DLStatus, get_ncbi_esummary
+from pyani.download import ASMIDs, DLStatus
 from pyani.pyani_config import (
     BLASTALL_DEFAULT,
     BLASTN_DEFAULT,
@@ -63,6 +63,21 @@ from pyani.scripts import genbank_get_genomes_by_taxon
 # module. The fixture data should be in a subdirectory named fixtures
 TESTSPATH = Path(__file__).parents[0]
 FIXTUREPATH = TESTSPATH / "fixtures"
+
+
+# Convenience structs to emulate returned objects
+class MockProcess(NamedTuple):
+    """Mock process object."""
+
+    stdout: str
+    stderr: str
+
+
+class MockMatch(NamedTuple):
+    """Mock match object."""
+
+    def group(self):
+        return ""
 
 
 @pytest.fixture
@@ -145,9 +160,188 @@ def email_address():
 
 
 @pytest.fixture
+def executable_incompatible_with_os(monkeypatch):
+    """
+    Mocks an executable file that is incompatible with the OS.
+
+    (This situation likely only applies to blastall.)
+    """
+
+    def mock_which(*args, **kwargs):
+        """Mock an absolute file path."""
+        return args[0]
+
+    def mock_isfile(*args, **kwargs):
+        """Mock a call to `os.path.isfile()`."""
+        return True
+
+    def mock_access(*args, **kwargs):
+        """Mock a call to `os.access()`."""
+        return True
+
+    def mock_subprocess(*args, **kwargs):
+        """Mock a call to `subprocess.run()` with an incompatible program."""
+        raise OSError
+
+    monkeypatch.setattr(shutil, "which", mock_which)
+    monkeypatch.setattr(Path, "is_file", mock_isfile)
+    monkeypatch.setattr(os.path, "isfile", mock_isfile)
+    monkeypatch.setattr(os, "access", mock_access)
+    monkeypatch.setattr(subprocess, "run", mock_subprocess)
+
+
+@pytest.fixture
+def executable_missing(monkeypatch):
+    """Mocks an executable path that does not point to a file."""
+
+    def mock_which(*args, **kwargs):
+        """Mock a call to `shutil.which()`, which produces an absolute file path."""
+        return args[0]
+
+    def mock_isfile(*args, **kwargs):
+        """Mock a call to `os.path.isfile()`."""
+        return False
+
+    monkeypatch.setattr(shutil, "which", mock_which)  # Path(test_file_1))
+    monkeypatch.setattr(Path, "is_file", mock_isfile)
+    monkeypatch.setattr(os.path, "isfile", mock_isfile)
+
+
+@pytest.fixture
+def executable_not_executable(monkeypatch):
+    """
+    Mocks an executable path that does not point to an executable file,
+    but does point to a file.
+    """
+
+    def mock_which(*args, **kwargs):
+        """Mock an absolute file path."""
+        return args[0]
+
+    def mock_isfile(*args, **kwargs):
+        """Mock a call to `os.path.isfile()`."""
+        return True
+
+    def mock_access(*args, **kwargs):
+        """Mock a call to `os.access()`."""
+        return False
+
+    monkeypatch.setattr(shutil, "which", mock_which)
+    monkeypatch.setattr(Path, "is_file", mock_isfile)
+    monkeypatch.setattr(os.path, "isfile", mock_isfile)
+    monkeypatch.setattr(os, "access", mock_access)
+
+
+@pytest.fixture
+def executable_without_version(monkeypatch):
+    """
+    Mocks an executable file for which the version can't be obtained, but
+    which runs without incident.
+    """
+
+    def mock_which(*args, **kwargs):
+        """Mock an absolute file path."""
+        return args[0]
+
+    def mock_isfile(*args, **kwargs):
+        """Mock a call to `os.path.isfile()`."""
+        return True
+
+    def mock_access(*args, **kwargs):
+        """Mock a call to `os.access()`."""
+        return True
+
+    def mock_subprocess(*args, **kwargs):
+        """Mock a call to `subprocess.run()`."""
+        return MockProcess(b"mock bytes", b"mock bytes")
+
+    def mock_search(*args, **kwargs):
+        """Mock a call to `re.search()`."""
+        return MockMatch()
+
+    monkeypatch.setattr(shutil, "which", mock_which)
+    monkeypatch.setattr(Path, "is_file", mock_isfile)
+    monkeypatch.setattr(os.path, "isfile", mock_isfile)
+    monkeypatch.setattr(os, "access", mock_access)
+    monkeypatch.setattr(subprocess, "run", mock_subprocess)
+    monkeypatch.setattr(re, "search", mock_search)
+
+
+@pytest.fixture
 def fragment_length():
     """Fragment size for ANIb-related analyses."""
     return FRAGSIZE
+
+
+@pytest.fixture
+def mock_legacy_single_genome_dl(monkeypatch):
+    """Mocks remote database calls for single-genome downloads.
+
+    This masks calls to functions in genbank_get_genomes_by_taxon, for safe testing.
+
+    This will be deprecated once the genbank_get_genomes_by_taxon.py script is
+    converted to use the pyani.download module.
+    """
+
+    def mock_asmuids(*args, **kwargs):
+        """Mock genbank_get_genomes_by_taxon.get_asm_uids()."""
+        return ["32728"]
+
+    def mock_ncbi_asm(*args, **kwargs):
+        """Mock genbank_get_genomes_by_taxon.get_ncbi_asm()."""
+        return (
+            Path(
+                "tests/test_output/legacy_scripts/C_blochmannia_legacy/GCF_000011605.1_ASM1160v1_genomic.fna"
+            ),
+            "8b0cab310cb638c977d453ff06eceb64\tGCF_000011605.1_ASM1160v1_genomic\tPectobacterium atrosepticum",
+            "8b0cab310cb638c977d453ff06eceb64\tGCF_000011605.1_ASM1160v1_genomic\tP. atrosepticum SCRI1043",
+            "GCF_000011605.1",
+        )
+
+    monkeypatch.setattr(genbank_get_genomes_by_taxon, "get_asm_uids", mock_asmuids)
+    monkeypatch.setattr(genbank_get_genomes_by_taxon, "get_ncbi_asm", mock_ncbi_asm)
+
+
+@pytest.fixture
+def mock_single_genome_dl(monkeypatch):
+    """Mocks remote database calls for single-genome downloads.
+
+    This masks calls to the download module, for safe testing.
+    """
+
+    def mock_asmuids(*args, **kwargs):
+        """Mock download.get_asm_uids()."""
+        return ASMIDs("txid218491[Organism:exp]", 1, ["32728"])
+
+    def mock_ncbi_esummary(*args, **kwargs):
+        """Mock download.get_ncbi_esummary()."""
+        return (
+            {
+                "Taxid": "218491",
+                "SpeciesTaxid": "29471",
+                "AssemblyAccession": "GCF_000011605.1",
+                "AssemblyName": "ASM1160v1",
+                "SpeciesName": "Pectobacterium atrosepticum",
+            },
+            "GCF_000011605.1_ASM1160v1",
+        )
+
+    def mock_genome_hash(*args, **kwargs):
+        """Mock download.retrieve_genome_and_hash()."""
+        return DLStatus(
+            "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
+            "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
+            FIXTUREPATH
+            / "single_genome_download"
+            / "GCF_000011605.1_ASM1160v1_genomic.fna.gz",
+            FIXTUREPATH / "single_genome_download/GCF_000011605.1_ASM1160v1_hashes.txt",
+            False,
+            None,
+        )
+
+    monkeypatch.setattr(download, "get_asm_uids", mock_asmuids)
+    monkeypatch.setattr(download, "get_ncbi_esummary", mock_ncbi_esummary)
+    monkeypatch.setattr(download, "retrieve_genome_and_hash", mock_genome_hash)
 
 
 @pytest.fixture
@@ -221,74 +415,3 @@ def skip_by_unavailable_executable(
                 pytest.skip(f"Skipped as {exe_name} not available")
         except KeyError:  # Unknown executables are ignored
             pytest.skip(f"Executable {exe_name} not recognised")
-
-
-@pytest.fixture
-def mock_single_genome_dl(monkeypatch):
-    """Mocks remote database calls for single-genome downloads.
-
-    This masks calls to the download module, for safe testing.
-    """
-
-    def mock_asmuids(*args, **kwargs):
-        """Mock download.get_asm_uids()."""
-        return ASMIDs("txid218491[Organism:exp]", 1, ["32728"])
-
-    def mock_ncbi_esummary(*args, **kwargs):
-        """Mock download.get_ncbi_esummary()."""
-        return (
-            {
-                "Taxid": "218491",
-                "SpeciesTaxid": "29471",
-                "AssemblyAccession": "GCF_000011605.1",
-                "AssemblyName": "ASM1160v1",
-                "SpeciesName": "Pectobacterium atrosepticum",
-            },
-            "GCF_000011605.1_ASM1160v1",
-        )
-
-    def mock_genome_hash(*args, **kwargs):
-        """Mock download.retrieve_genome_and_hash()."""
-        return DLStatus(
-            "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
-            "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
-            FIXTUREPATH
-            / "single_genome_download"
-            / "GCF_000011605.1_ASM1160v1_genomic.fna.gz",
-            FIXTUREPATH / "single_genome_download/GCF_000011605.1_ASM1160v1_hashes.txt",
-            False,
-            None,
-        )
-
-    monkeypatch.setattr(download, "get_asm_uids", mock_asmuids)
-    monkeypatch.setattr(download, "get_ncbi_esummary", mock_ncbi_esummary)
-    monkeypatch.setattr(download, "retrieve_genome_and_hash", mock_genome_hash)
-
-
-@pytest.fixture
-def mock_legacy_single_genome_dl(monkeypatch):
-    """Mocks remote database calls for single-genome downloads.
-
-    This masks calls to functions in genbank_get_genomes_by_taxon, for safe testing.
-
-    This will be deprecated once the genbank_get_genomes_by_taxon.py script is
-    converted to use the pyani.download module.
-    """
-
-    def mock_asmuids(*args, **kwargs):
-        """Mock genbank_get_genomes_by_taxon.get_asm_uids()."""
-        return ["32728"]
-
-    def mock_ncbi_asm(*args, **kwargs):
-        """Mock genbank_get_genomes_by_taxon.get_ncbi_asm()."""
-        return (
-            Path(
-                "tests/test_output/legacy_scripts/C_blochmannia_legacy/GCF_000011605.1_ASM1160v1_genomic.fna"
-            ),
-            "8b0cab310cb638c977d453ff06eceb64\tGCF_000011605.1_ASM1160v1_genomic\tPectobacterium atrosepticum",
-            "8b0cab310cb638c977d453ff06eceb64\tGCF_000011605.1_ASM1160v1_genomic\tP. atrosepticum SCRI1043",
-            "GCF_000011605.1",
-        )
-
-    monkeypatch.setattr(genbank_get_genomes_by_taxon, "get_asm_uids", mock_asmuids)
-    monkeypatch.setattr(genbank_get_genomes_by_taxon, "get_ncbi_asm", mock_ncbi_asm)
