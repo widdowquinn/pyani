@@ -78,7 +78,7 @@ def run_dependency_graph(
             logger.info("Command pool now running:")
             for cmd in cmdset:
                 logger.info(cmd)
-        cumretval += multiprocessing_run(cmdset, workers, logger)
+        cumretval += multiprocessing_run(cmdset, workers)
         if logger:  # Try to be informative, if the logger module is being used
             logger.info("Command pool done.")
     return cumretval
@@ -121,6 +121,8 @@ def multiprocessing_run(
     Returns the sum of exit codes from each job that was run. If
     all goes well, this should be 0. Anything else and the calling
     function should act accordingly.
+
+    Sends a warning to the logger if a comparison fails; the warning consists of the specific command line that has failed.
     """
     # Run jobs
     # If workers is None or greater than the number of cores available,
@@ -144,6 +146,7 @@ def multiprocessing_run(
     # Print a warning so individual runs that fail can be identified
     for r in results:
         if r.get().returncode != 0:
-            logger.warning(f"Comparison failed: {' '.join(r.get().args)}")
+            if logger:  # Try to be informative, if the logger module is being used
+                logger.warning(f"Comparison failed: {' '.join(r.get().args)}")
 
     return sum([r.get().returncode for r in results])
