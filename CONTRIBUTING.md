@@ -97,6 +97,20 @@ This will install all dependencies for running and developing `pyani`, as well a
 make test
 ```
 
+If you want to be able to edit source files and have those changes take immediate effect when calling `pyani` (useful for testing), clone the GitHub repository with:
+
+```bash
+git clone https://github.com/widdowquinn/pyani.git
+```
+
+, then inside the new `pyani` directory run:
+
+```bash
+pip install -e .
+```
+
+This will add `pyani` to your path, and allow you to test changes as you make them.
+
 #### Cleaning up development environment
 
 You can remove the `conda` development environment with the following commands:
@@ -219,7 +233,7 @@ A good long description could be
 > This fix improves efficiency of the veeblefetzer. The main change is replacing a
 > nested loop with asyncio calls to a new function `fetzveebles()`. This commit
 > makes affects `veebles.py`, and new tests are added in `test_veeblefetzer.py`.
-> 
+>
 > fixes #246
 
 A bad long description might be

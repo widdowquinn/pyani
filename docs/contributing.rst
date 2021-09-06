@@ -82,6 +82,7 @@ Making changes and pull requests
 
 1. Fork the ``pyani`` `repository`_ under your account at `GitHub`_.
 2. Clone your fork to your development machine.
+2a. To be able to run `pyani` and have changes you make take effect (useful for testing), you can run `pip install -e .` inside the local cloned repository. 
 3. Create a new branch in your forked repository with an informative name like ``fix_issue_107``, using ``git`` (e.g. with the command ``git checkout -b fix_issue_107``).
 4. Make the changes you need and commit them to your local branch.
 5. Run the repository tests (see the :ref:`pyani-testing` documentation for more details).
