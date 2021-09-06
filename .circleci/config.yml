@@ -47,7 +47,8 @@ jobs:
       - run:
           name: update apt-get
           command: |
-            sudo apt-get update
+            sudo apt-get update --allow-releaseinfo-change
+            sudo apt-get upgrade
       - run:
           name: install third-party tools
           command: |
