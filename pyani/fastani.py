@@ -101,11 +101,18 @@ def get_version(fastani_exe: Path = pyani_config.FASTANI_DEFAULT) -> str:
     if not os.access(fastani_path, os.X_OK):  # file exists but not executable
         return f"fastANI exists at {fastani_path} but not executable"
 
-    cmdline = [fastani_exe, "-v"]  # type: List
-    result = subprocess.run(
-        cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
-    )
-    # type CompletedProcess
+    try:
+        cmdline = [fastani_exe, "-v"]  # type: List
+        result = subprocess.run(
+            cmdline,
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )  # type CompletedProcess
+    except (FileNotFoundError, PermissionError):
+        raise PyaniFastANIException("Couldn't run fastANI")
+
     match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
     version = match.group()  # type: ignore
 
