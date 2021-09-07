@@ -103,13 +103,13 @@ If you want to be able to edit source files and have those changes take immediat
 git clone https://github.com/widdowquinn/pyani.git
 ```
 
-, then inside the new `pyani` directory run:
+then inside the new `pyani` directory run:
 
 ```bash
 pip install -e .
 ```
 
-This will add `pyani` to your path, and allow you to test changes as you make them.
+This is the [`pip install --editable`](https://pip.pypa.io/en/stable/cli/pip_install/#install-editable) command, which links the installed package to the specified location (here `.`, i.e. the current directory) rather than the usual package location (`site-packages`). When using this option, edits to the source code are immediately available in the installed package. This allows you to test changes to the source code as you make them, without the need for an additional uninstall/install step.
 
 #### Cleaning up development environment
 
