@@ -121,11 +121,24 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
     if not os.access(nucmer_path, os.X_OK):  # file exists but not executable
         return f"nucmer exists at {nucmer_path} but not executable"
 
-    cmdline = [nucmer_exe, "-V"]  # type: List
-    result = subprocess.run(
-        cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
-    )
-    match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
+    try:
+        cmdline = [nucmer_exe, "-V"]  # type: List
+        result = subprocess.run(
+            cmdline,
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+    except IOError:
+        raise PyaniANImException("Couldn't run NUCmer")
+
+    if result.stderr:
+        match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
+    elif result.stdout:
+        match = re.search(r"[0-9a-z\.]*", str(result.stdout, "utf-8"))
+    else:
+        raise PyaniANImException("Couldn't get version")
     version = match.group()  # type: ignore
 
     if 0 == len(version.strip()):
