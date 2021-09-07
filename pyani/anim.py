@@ -130,17 +130,16 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
             stderr=subprocess.PIPE,
             check=True,
         )
-    except IOError:
+    except (FileNotFoundError, PermissionError):
         raise PyaniANImException("Couldn't run NUCmer")
 
     # version information appears in different places for
     # different nucmer releases
-    if result.stderr:
+    if result.stderr:  # expected to work for <= MUMmer3
         match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
-    elif result.stdout:
+    elif result.stdout:  # expected to work for MUMmer4
         match = re.search(r"[0-9a-z\.]*", str(result.stdout, "utf-8"))
-    else:
-        raise PyaniANImException("Couldn't get version")
+
     version = match.group()  # type: ignore
 
     if 0 == len(version.strip()):

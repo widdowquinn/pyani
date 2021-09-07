@@ -45,6 +45,12 @@ import subprocess
 from pathlib import Path
 
 from . import pyani_config
+from . import PyaniException
+
+
+class PyaniblastallException(PyaniException):
+
+    """ANIblastall-specific exception for pyani."""
 
 
 def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
@@ -95,6 +101,9 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
             stderr=subprocess.PIPE,
             check=False,  # blastall doesn't return 0
         )
+    except (FileNotFoundError, PermissionError):
+        raise PyaniblastallException("Couldn't run blastall")
+
         version = re.search(  # type: ignore
             r"(?<=blastall\s)[0-9\.]*", str(result.stderr, "utf-8")
         ).group()

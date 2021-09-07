@@ -98,7 +98,13 @@ from Bio import SeqIO  # type: ignore
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
+from . import PyaniException
 from .pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
+
+
+class PyaniANIbException(PyaniException):
+
+    """ANIb-specific exception for pyani."""
 
 
 def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
@@ -133,14 +139,18 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
     if not os.access(blastn_path, os.X_OK):  # file exists but not executable
         return f"blastn exists at {blastn_path} but not executable"
 
-    cmdline = [blast_exe, "-version"]
-    result = subprocess.run(
-        cmdline,  # type: ignore
-        shell=False,
-        stdout=subprocess.PIPE,  # type: ignore
-        stderr=subprocess.PIPE,
-        check=True,
-    )
+    try:
+        cmdline = [blast_exe, "-version"]
+        result = subprocess.run(
+            cmdline,  # type: ignore
+            shell=False,
+            stdout=subprocess.PIPE,  # type: ignore
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+    except (FileNotFoundError, PermissionError):
+        raise PyaniANIbException("Couldn't run blastn")
+
     version = re.search(  # type: ignore
         r"(?<=blastn:\s)[0-9\.]*\+", str(result.stdout, "utf-8")
     ).group()
