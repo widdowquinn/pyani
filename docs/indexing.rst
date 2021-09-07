@@ -34,7 +34,7 @@ The basic form of the command is:
 
 .. code-block:: bash
 
-    pyani index <GENOME_DIRECTORY>
+    pyani index -i <GENOME_DIRECTORY>
 
 This instructs ``pyani`` to search ``<GENOME_DIRECTORY>`` for files with a standard FASTA suffix (``.fna``, ``.fasta``, ``.fa``, ``.fas``, ``.fsa_nt``). For each file found, it calculates the MD5 hash and writes it to an accompanying file with extension ``.md5``. The hash is then associated with a genome label and a genome class, written to the two files ``labels.txt`` and ``classes.txt`` (see above).
 
@@ -52,7 +52,7 @@ We could run the ``pyani index`` command:
 
 .. code-block:: bash
 
-    $ pyani index unindexed/
+    $ pyani index -i unindexed/
     $ tree unindexed
     unindexed
     ├── GCA_001312105.1_ASM131210v1_genomic.fna
