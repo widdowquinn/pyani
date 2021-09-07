@@ -41,7 +41,7 @@ clean_walkthrough:
 walkthrough: clean_walkthrough
 	pyani download --email my.email@my.domain -t 203804 C_blochmannia
 	pyani createdb -f
-	pyani anim C_blochmannia C_blochmannia_ANIm \
+	pyani anim -i C_blochmannia -o C_blochmannia_ANIm \
         --name "C. blochmannia run 1" \
         --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
 	pyani report --runs C_blochmannia_ANIm/ --formats html,excel,stdout
