@@ -56,8 +56,10 @@ def build(
     parser = subps.add_parser(
         "report", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
-    # Required positional argument: output directory
+    # Required argument: output directory
     parser.add_argument(
+        "-o",
+        "--outdir",
         action="store",
         dest="outdir",
         default=None,
