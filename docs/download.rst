@@ -47,23 +47,23 @@ This displays each assembly as a download is attempted, and places all output in
     genomes/
     ├── GCA_001312105.1_ASM131210v1_genomic.fna
     ├── GCA_001312105.1_ASM131210v1_genomic.fna.gz
-    ├── GCA_001312105.1_ASM131210v1_genomic.md5
+    ├── GCA_001312105.1_ASM131210v1_genomic.fna.md5
     ├── GCA_001312105.1_ASM131210v1_hashes.txt
     ├── GCF_000802425.1_ASM80242v1_genomic.fna
     ├── GCF_000802425.1_ASM80242v1_genomic.fna.gz
-    ├── GCF_000802425.1_ASM80242v1_genomic.md5
+    ├── GCF_000802425.1_ASM80242v1_genomic.fna.md5
     ├── GCF_000802425.1_ASM80242v1_hashes.txt
     ├── GCF_000806415.1_ASM80641v1_genomic.fna
     ├── GCF_000806415.1_ASM80641v1_genomic.fna.gz
-    ├── GCF_000806415.1_ASM80641v1_genomic.md5
+    ├── GCF_000806415.1_ASM80641v1_genomic.fna.md5
     ├── GCF_000806415.1_ASM80641v1_hashes.txt
     ├── GCF_900101515.1_IMG-taxon_2596583557_annotated_assembly_genomic.fna
     ├── GCF_900101515.1_IMG-taxon_2596583557_annotated_assembly_genomic.fna.gz
-    ├── GCF_900101515.1_IMG-taxon_2596583557_annotated_assembly_genomic.md5
+    ├── GCF_900101515.1_IMG-taxon_2596583557_annotated_assembly_genomic.fna.md5
     ├── GCF_900101515.1_IMG-taxon_2596583557_annotated_assembly_hashes.txt
     ├── GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_genomic.fna
     ├── GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_genomic.fna.gz
-    ├── GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_genomic.md5
+    ├── GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_genomic.fna.md5
     ├── GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_hashes.txt
     ├── classes.txt
     └── labels.txt
@@ -72,7 +72,7 @@ Each genome is downloaded in compressed format (``.fna.gz`` files) and expanded 
 
 .. code-block:: bash
 
-    $ head genomes/GCA_001312105.1_ASM131210v1_genomic.md5
+    $ head genomes/GCA_001312105.1_ASM131210v1_genomic.fna.md5
     e55cd3d913a198ac60afd8d509c02ab4	genomes/GCA_001312105.1_ASM131210v1_genomic.fna
 
 ``pyani`` also creates two files:
@@ -169,9 +169,9 @@ Using this option does affects downstream performance or use of ``pyani`` only i
 
 .. code-block:: bash
 
-    $ head multi_taxa/GCA_001312105.1_ASM131210v1_genomic.md5
+    $ head multi_taxa/GCA_001312105.1_ASM131210v1_genomic.fna.md5
     e55cd3d913a198ac60afd8d509c02ab4	multi_taxa/GCA_001312105.1_ASM131210v1_genomic.fna
-    $ head genomes_kraken/GCA_001312105.1_ASM131210v1_genomic.md5
+    $ head genomes_kraken/GCA_001312105.1_ASM131210v1_genomic.fna.md5
     053fd98d8c9ab30de46f56fd601ef529	genomes_kraken/GCA_001312105.1_ASM131210v1_genomic.fna
 
 and so will not be considered to be the "same sequence" when repeating comparisons.
