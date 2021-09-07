@@ -133,6 +133,8 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
     except IOError:
         raise PyaniANImException("Couldn't run NUCmer")
 
+    # version information appears in different places for
+    # different nucmer releases
     if result.stderr:
         match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
     elif result.stdout:
