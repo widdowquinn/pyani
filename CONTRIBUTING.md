@@ -97,6 +97,20 @@ This will install all dependencies for running and developing `pyani`, as well a
 make test
 ```
 
+If you want to be able to edit source files and have those changes take immediate effect when calling `pyani` (useful for testing), clone the GitHub repository with:
+
+```bash
+git clone https://github.com/widdowquinn/pyani.git
+```
+
+then inside the new `pyani` directory run:
+
+```bash
+pip install -e .
+```
+
+This is the [`pip install --editable`](https://pip.pypa.io/en/stable/cli/pip_install/#install-editable) command, which links the installed package to the specified location (here `.`, i.e. the current directory) rather than the usual package location (`site-packages`). When using this option, edits to the source code are immediately available in the installed package. This allows you to test changes to the source code as you make them, without the need for an additional uninstall/install step.
+
 #### Cleaning up development environment
 
 You can remove the `conda` development environment with the following commands:
@@ -219,7 +233,7 @@ A good long description could be
 > This fix improves efficiency of the veeblefetzer. The main change is replacing a
 > nested loop with asyncio calls to a new function `fetzveebles()`. This commit
 > makes affects `veebles.py`, and new tests are added in `test_veeblefetzer.py`.
-> 
+>
 > fixes #246
 
 A bad long description might be
