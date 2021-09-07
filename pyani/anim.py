@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2021
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -17,7 +17,7 @@
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2021 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -53,8 +53,10 @@ percentage (of whole genome) for each pairwise comparison.
 """
 
 import logging
+import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
 
@@ -101,14 +103,35 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
         NUCmer (NUCleotide MUMmer) version 3.1
 
     we concatenate this with the OS name.
+
+    The following circumstances are explicitly reported as strings
+
+    - no executable at passed path
+    - non-executable file at passed path
+    - no version info returned
     """
+    nucmer_path = Path(shutil.which(nucmer_exe))  # type:ignore
+
+    if nucmer_path is None:
+        return f"{nucmer_exe} is not found in $PATH"
+
+    if not nucmer_path.is_file():  # no executable
+        return f"No nucmer at {nucmer_path}"
+
+    if not os.access(nucmer_path, os.X_OK):  # file exists but not executable
+        return f"nucmer exists at {nucmer_path} but not executable"
+
     cmdline = [nucmer_exe, "-V"]  # type: List
     result = subprocess.run(
         cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
     )
     match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
     version = match.group()  # type: ignore
-    return f"{platform.system()}_{version}"
+
+    if 0 == len(version.strip()):
+        return f"nucmer exists at {nucmer_path} but could not retrieve version"
+
+    return f"{platform.system()}_{version} ({nucmer_path})"
 
 
 # Generate list of Job objects, one per NUCmer run

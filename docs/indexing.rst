@@ -56,11 +56,11 @@ We could run the ``pyani index`` command:
     $ tree unindexed
     unindexed
     ├── GCA_001312105.1_ASM131210v1_genomic.fna
-    ├── GCA_001312105.1_ASM131210v1_genomic.md5
+    ├── GCA_001312105.1_ASM131210v1_genomic.fna.md5
     ├── GCF_000834555.1_ASM83455v1_genomic.fna
-    ├── GCF_000834555.1_ASM83455v1_genomic.md5
+    ├── GCF_000834555.1_ASM83455v1_genomic.fna.md5
     ├── GCF_005796105.1_ASM579610v1_genomic.fna
-    ├── GCF_005796105.1_ASM579610v1_genomic.md5
+    ├── GCF_005796105.1_ASM579610v1_genomic.fna.md5
     ├── classes.txt
     └── labels.txt
 
@@ -72,7 +72,7 @@ This creates an ``.md5`` file for each genome, and corresponding ``classes.txt``
     >BBCY01000001.1 Pseudomonas tuomuerensis JCM 14085 DNA, contig: JCM14085.contig00001, whole genome shotgun sequence
     ACCAGCATCTGGCGGATCAGGTCGCGGGCCTTCTCGGCCGATTGGCGGATGCGCCCGAGGTAGCGGCCGAGCGGCGCGTC
     GCCGCGCTCGCCCGCCAGCTCCTCGGCCATCTGCGTGTAGCCGAGCATGCTGGTCAGCAGGTTGTTGAAGTCGTGGGCAA
-    $ head unindexed/GCA_001312105.1_ASM131210v1_genomic.md5
+    $ head unindexed/GCA_001312105.1_ASM131210v1_genomic.fna.md5
     e55cd3d913a198ac60afd8d509c02ab4	unindexed/GCA_001312105.1_ASM131210v1_genomic.fna
     $ head unindexed/classes.txt
     527f35b3eb9dd371d8d5309b6043dd9f	GCF_000834555.1_ASM83455v1_genomic	Pseudomonas fulva strain MEJ086 contig_1, whole genome shotgun sequence
