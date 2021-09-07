@@ -98,7 +98,7 @@ This creates a new directory (``C_blochmannia``) with the following contents:
     C_blochmannia
     ├── GCF_000011745.1_ASM1174v1_genomic.fna
     ├── GCF_000011745.1_ASM1174v1_genomic.fna.gz
-    ├── GCF_000011745.1_ASM1174v1_genomic.md5
+    ├── GCF_000011745.1_ASM1174v1_genomic.fna.md5
     [...]
     ├── GCF_000973545.1_ASM97354v1_hashes.txt
     ├── classes.txt
