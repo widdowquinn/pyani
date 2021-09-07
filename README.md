@@ -132,7 +132,7 @@ DOI: [10.1039/C5AY02550H](https://doi.org/10.1039/C5AY02550H)
 
 Where available, `pyani` can take advantage of multicore systems, and integrates with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
 
-`pyani` installs the prgram `pyani`, which enables command-line based analysis of genomes.
+`pyani` installs the program `pyani`, which enables command-line based analysis of genomes.
 
 -----
 
@@ -235,10 +235,10 @@ The first step is to obtain genome data for analysis. `pyani` expects to find ea
 We'll use the `pyani download` subcommand to download all available genomes for *Candidatus Blochmannia* from NCBI. The taxon ID for this grouping is [203804](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=203804&lvl=3&lin=f&keep=1&srchmode=1&unlock).
 
 ```bash
-pyani download C_blochmannia --email my.email@my.domain -t 203804 -v -l C_blochmannia_dl.log
+pyani download -o C_blochmannia --email my.email@my.domain -t 203804 -v -l C_blochmannia_dl.log
 ```
 
-The first argument is the output directory into which the downloaded genomes will be written (`C_blochmannia`). To download anything from NCBI we must provide an email address (`--email my.email@my.domain`), and to specify which taxon subtree we want to download we provide the taxon ID (`-t 203804`).
+The first argument is the output directory into which the downloaded genomes will be written (`-o C_blochmannia`). To download anything from NCBI we must provide an email address (`--email my.email@my.domain`), and to specify which taxon subtree we want to download we provide the taxon ID (`-t 203804`).
 
 Here we also request verbose output (`-v`), and write a log file for reproducible research/diagnosing bugs and errors (`-l C_blochmannia_dl.log`).
 
@@ -316,7 +316,7 @@ Subsequent `pyani` commands will assume this location for the database, but you 
 In this walkthrough, we'll run ANIm on the downloaded genomes, using the command:
 
 ```bash
-pyani anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log \
+pyani anim -i C_blochmannia -o C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log \
     --name "C. blochmannia run 1" \
     --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
 ```
@@ -332,10 +332,10 @@ One reason for using a database backend for analysis results is so that, for ver
 You can test this for yourself by running the analysis command again, as below. You will see a number of messages indicating that genomes have been seen before, and that analyses performed before were skipped:
 
 ```bash
-$ pyani anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log \
+$ pyani anim -i C_blochmannia -o C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log \
     --name "C. blochmannia run 2" \
     --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
-INFO: command-line: pyani anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log
+INFO: command-line: pyani anim -i C_blochmannia -o C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log
 INFO: Running ANIm analysis
 INFO: Adding analysis information to database .pyani/pyanidb
 INFO: Current analysis has ID 2 in this database
@@ -367,9 +367,9 @@ Once an analysis is run, the results are placed in a local `SQLite` database, wh
 The report tables are written to a named directory (compulsory argument), and are written by default to a `.tab` plain-text format, but HTML and Excel format can also be requested with the `--formats` argument:
 
 ```bash
-$ pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel,stdout
-INFO: Processed arguments: Namespace(cmdline='./pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel', dbpath='.pyani/pyanidb', formats='html,excel', func=<function subcmd_report at 0x10c674a60>, logfile=None, outdir='C_blochmannia_ANIm/', run_results=False, show_genomes=False, show_genomes_runs=False, show_runs=True, show_runs_genomes=False, verbose=True)
-INFO: command-line: ./pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel
+$ pyani report -v --runs -o C_blochmannia_ANIm/ --formats html,excel,stdout
+INFO: Processed arguments: Namespace(cmdline='./pyani report -v --runs -o C_blochmannia_ANIm/ --formats html,excel', dbpath='.pyani/pyanidb', formats='html,excel', func=<function subcmd_report at 0x10c674a60>, logfile=None, outdir='C_blochmannia_ANIm/', run_results=False, show_genomes=False, show_genomes_runs=False, show_runs=True, show_runs_genomes=False, verbose=True)
+INFO: command-line: ./pyani report -v --runs -o C_blochmannia_ANIm/ --formats html,excel
 INFO: Creating output in formats: ['excel', 'tab', 'html']
 INFO: Using database: .pyani/pyanidb
 INFO: Writing table of pyani runs from the database to C_blochmannia_ANIm/runs.*
@@ -385,9 +385,9 @@ C_blochmannia_ANIm/
 To see all of the pairwise results for an individual run, the run ID must be provided. It is possible to get results for more than one run ID by providing a comma-separated list of run IDs (though each run's results will be provided in a separate file):
 
 ```bash
-$ pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
-INFO: Processed arguments: Namespace(cmdline='./pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4', dbpath='.pyani/pyanidb', formats='html,excel', func=<function subcmd_report at 0x108616a60>, logfile=None, outdir='C_blochmannia_ANIm/', run_results='1,2,3,4', show_genomes=False, show_genomes_runs=False, show_runs=True, show_runs_genomes=False, verbose=True)
-INFO: command-line: ./pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
+$ pyani report -v --runs -o C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
+INFO: Processed arguments: Namespace(cmdline='./pyani report -v --runs -o C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4', dbpath='.pyani/pyanidb', formats='html,excel', func=<function subcmd_report at 0x108616a60>, logfile=None, outdir='C_blochmannia_ANIm/', run_results='1,2,3,4', show_genomes=False, show_genomes_runs=False, show_runs=True, show_runs_genomes=False, verbose=True)
+INFO: command-line: ./pyani report -v --runs -o C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
 INFO: Creating output in formats: ['tab', 'excel', 'html']
 INFO: Using database: .pyani/pyanidb
 INFO: Writing table of pyani runs from the database to C_blochmannia_ANIm/runs.*
@@ -402,7 +402,7 @@ INFO: Completed. Time taken: 1.285
 You can see a run's results in the terminal by specifying the `stdout` format. For example, to see the identity, coverage, and other output matrices, you would specify `--run_matrices <RUN>` and `--formats=stdout` as below:
 
 ```bash
-$ pyani report C_blochmannia_ANIm --formats=stdout --run_matrices 1
+$ pyani report -o C_blochmannia_ANIm --formats=stdout --run_matrices 1
 TABLE: C_blochmannia_ANIm/matrix_identity_1
                                                     C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
 C. Blochmannia pennsylvanicus BPEN                                            1.000000                   0.834866                   0.836903                        0.980244                                           0.843700                                                0.829509
@@ -454,7 +454,7 @@ B. endosymbiont of Camponotus (Colobopsis) obli...                            0.
 The output of a `pyani` run can also be represented graphically, using the `plot` subcommand. For example, the command:
 
 ```bash
-pyani plot C_blochmannia_ANIm 1 -v --formats png,pdf
+pyani plot -o C_blochmannia_ANIm --run_id 1 -v --formats png,pdf
 ```
 
 will place `.pdf` and `.png` format output in the `C_blochmannia_ANIm` output directory for the run with ID 1, generated above. Five heatmaps are generated:
