@@ -65,6 +65,7 @@ def build(
         default=None,
         type=Path,
         help="input genome directory",
+        required=True,
     )
     parser.add_argument(
         "-o",
@@ -74,5 +75,6 @@ def build(
         default=None,
         type=Path,
         help="output analysis results directory",
+        required=True,
     )
     parser.set_defaults(func=subcommands.subcmd_aniblastall)

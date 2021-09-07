@@ -71,6 +71,7 @@ def build(
         default=None,
         type=Path,
         help="output directory",
+        required=True,
     )
     parser.add_argument(
         "--run_id",
@@ -78,6 +79,7 @@ def build(
         dest="run_id",
         default=None,
         help="run ID to classify",
+        required=True,
     )
     # Optional arguments
     parser.add_argument(

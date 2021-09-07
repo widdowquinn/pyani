@@ -69,6 +69,7 @@ def build(
         default=None,
         type=Path,
         help="input directory",
+        required=True,
     )
     # Names for output files
     parser.add_argument(

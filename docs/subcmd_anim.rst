@@ -12,8 +12,8 @@ The ``anim`` subcommand will carry out ANIm analysis using genome files containe
                      [--citation] [--scheduler {multiprocessing,SGE}]
                      [--workers WORKERS] [--SGEgroupsize SGEGROUPSIZE]
                      [--SGEargs SGEARGS] [--jobprefix JOBPREFIX] [--name NAME]
-                     [--classes CLASSES] [--labels LABELS] [--recovery] [-i INDIR]
-                     [-o OUTDIR] [--dbpath DBPATH] [--nucmer_exe NUCMER_EXE]
+                     [--classes CLASSES] [--labels LABELS] [--recovery] -i INDIR
+                     -o OUTDIR [--dbpath DBPATH] [--nucmer_exe NUCMER_EXE]
                      [--filter_exe FILTER_EXE] [--maxmatch] [--nofilter]
 
 

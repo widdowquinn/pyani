@@ -65,6 +65,7 @@ def build(
         default=None,
         type=Path,
         help="output analysis results directory",
+        required=True,
     )
     # Optional arguments
     parser.add_argument(

@@ -69,9 +69,15 @@ def build(
         default=None,
         type=Path,
         help="output directory",
+        required=True,
     )
     parser.add_argument(
-        "--run_id", action="store", dest="run_id", default=None, help="run ID to plot"
+        "--run_id",
+        action="store",
+        dest="run_id",
+        default=None,
+        help="run ID to plot",
+        required=True,
     )
     # Other optional arguments
     parser.add_argument(

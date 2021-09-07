@@ -79,6 +79,7 @@ def build(
         default=None,
         type=Path,
         help="output directory",
+        required=True,
     )
     # Required arguments for NCBI query
     parser.add_argument(

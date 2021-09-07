@@ -9,7 +9,7 @@ The ``index`` subcommand will index the genome files it finds the passed directo
 .. code-block:: text
 
     usage: pyani index [-h] [-l LOGFILE] [-v] [--debug] [--disable_tqdm] [--version]
-                      [--citation] [-i INDIR] [--labels LABELFNAME]
+                      [--citation] -i INDIR [--labels LABELFNAME]
                       [--classes CLASSFNAME]
 
 -----------------
