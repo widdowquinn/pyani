@@ -8,21 +8,11 @@ The ``classify`` subcommand identifies cliques (k-complete) graphs of genomes fr
 
 .. code-block:: text
 
-    usage: pyani.py classify [-h] [-l LOGFILE] [-v] [--debug]
-    [--disable_tqdm] [--version] [--citation] [--dbpath DBPATH]
-    [--cov_min COV_MIN] [--id_min ID_MIN] [--min_id MIN_ID]
-    [--max_id MAX_ID] [--resolution RESOLUTION] [--show_all]
-    outdir run_id
-
---------------------
-Positional arguments
---------------------
-
-``outdir``
-   Path to a directory where comparison output files will be written.
-
-``run_id``
-  Unique database ID of the run to be plotted.
+    usage: pyani.py classify [-h] [-l LOGFILE] [-v] [--debug] [--disable_tqdm]
+                         [--version] [--citation] -o OUTDIR --run_id RUN_ID
+                         [--dbpath DBPATH] [--cov_min COV_MIN] [--id_min ID_MIN]
+                         [--min_id MIN_ID] [--max_id MAX_ID]
+                         [--resolution RESOLUTION] [--show_all]
 
 -----------------
 Flagged arguments
@@ -55,8 +45,14 @@ Flagged arguments
 ``--min_id MIN_ID``
     Minimum identity threshold to test. (default: None)
 
+``-o OUTDIR, --outdir OUTDIR``
+   Path to a directory where comparison output files will be written.
+
 ``--resolution RESOLUTION``
     Number of identity thresholds to test. (default: 0.0001)
+
+``--run_id RUN_ID``
+  Unique database ID of the run to be plotted.
 
 ``--show_all``
     Report all intervals in log. (default: only intervals where all subgraphs are k-complete) (default: False)

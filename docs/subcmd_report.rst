@@ -8,19 +8,12 @@ The ``report`` subcommand reports the contents of a local `SQLite3`_ database, l
 
 
 usage: pyani.py report [-h] [-l LOGFILE] [-v] [--debug] [--disable_tqdm] [--version]
-                       [--citation] [--dbpath DBPATH] [--runs] [--genomes]
+                       [--citation] -o OUTDIR [--dbpath DBPATH] [--runs] [--genomes]
                        [--runs_genomes] [--genomes_runs] [--run_results RUN_RESULTS]
                        [--run_matrices RUN_MATRICES] [--formats FORMATS]
-                       outdir
 
 .. _SQLite3: https://www.sqlite.org/index.html
 
---------------------
-Positional arguments
---------------------
-
-``outdir``
-    Directory where output analysis reports will be written.
 
 -----------------
 Flagged arguments
@@ -40,6 +33,9 @@ Flagged arguments
 
 ``--genomes_runs``
     Report table of all runs in which each genome in the database participates. (default: False)
+
+``-o OUTDIR, --outdir OUTDIR``
+    Directory where output analysis reports will be written.
 
 ``--runs``
     Report table of analysis runs in database. (default: False)

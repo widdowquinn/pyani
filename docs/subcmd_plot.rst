@@ -8,22 +8,11 @@ The ``plot`` subcommand will plot the results of an ANI analysis, specified by `
 
 .. code-block:: text
 
-    usage: pyani.py plot [-h] [-l LOGFILE] [-v] [--debug]
-    [--disable_tqdm] [--version] [--citation] [--dbpath DBPATH]
-    [--formats FORMATS] [--method {seaborn,mpl,plotly}]
-    outdir run_id
+    usage: pyani.py plot [-h] [-l LOGFILE] [-v] [--debug] [--disable_tqdm] [--version]
+                     [--citation] -o OUTDIR --run_id RUN_ID [--dbpath DBPATH]
+                     [--formats FORMATS] [--method {seaborn,mpl,plotly}]
 
 .. _SQLite3: https://www.sqlite.org/index.html
-
---------------------
-Positional arguments
---------------------
-
-``outdir``
-   Path to a directory where comparison plot files will be written.
-
-``run_id``
-  Unique database ID of the run to be plotted.
 
 -----------------
 Flagged arguments
@@ -43,3 +32,9 @@ Flagged arguments
 
 ``--method {seaborn,mpl,plotly}``
     Graphics method to use for plotting. (default: seaborn)
+
+``-o OUTDIR, --o outdir OUTDIR``
+   Path to a directory where comparison plot files will be written.
+
+``--run_id RUN_ID``
+     Unique database ID of the run to be plotted.

@@ -8,13 +8,13 @@ The ``anib`` subcommand will carry out ANIb analysis using genome files containe
 
 .. code-block:: text
 
-    usage: pyani.py anib [-h] [-l LOGFILE] [-v] [--disable_tqdm]
-                     [--scheduler {multiprocessing,SGE}] [--workers WORKERS]
-                     [--SGEgroupsize SGEGROUPSIZE] [--SGEargs SGEARGS]
-                     [--jobprefix JOBPREFIX] [--name NAME] [--classes CLASSES]
-                     [--labels LABELS] [--recovery] [--dbpath DBPATH]
-                     [--blastn_exe BLASTN_EXE] [--format_exe FORMAT_EXE]
-                     [--fragsize] -i INDIR -o OUTDIR
+    usage: pyani.py anib [-h] [-l LOGFILE] [-v] [--debug] [--disable_tqdm] [--version]
+                     [--citation] [--scheduler {multiprocessing,SGE}]
+                     [--workers WORKERS] [--SGEgroupsize SGEGROUPSIZE]
+                     [--SGEargs SGEARGS] [--jobprefix JOBPREFIX] [--name NAME]
+                     [--classes CLASSES] [--labels LABELS] [--recovery] -i INDIR -o
+                     OUTDIR [--dbpath DBPATH] [--blastn_exe BLASTN_EXE]
+                     [--format_exe FORMAT_EXE] [--fragsize FRAGSIZE]
 
 .. _SQLite3: https://www.sqlite.org/index.html
 
@@ -22,11 +22,8 @@ The ``anib`` subcommand will carry out ANIb analysis using genome files containe
 Flagged arguments
 -----------------
 
-``-i, --input INDIR``
-    Path to the directory containing indexed genome files to be used for the analysis.
-
-``-o, --outdir OUTDIR``
-    Path to a directory where comparison output files will be written.
+``--blastn_exe BLASTN_EXE``
+    Path to the ``blastn`` executable. Default: ``blastn``
 
 ``--classes CLASSFNAME``
     Use the set of classes (one per genome sequence file) found in the file ``CLASSFNAME`` in ``INDIR``. Default: ``classes.txt``
@@ -37,9 +34,6 @@ Flagged arguments
 ``--disable_tqdm``
     Disable the ``tqdm`` progress bar while the ANIb process runs. This is useful when testing to avoid aesthetic problems with test output.
 
-``--blastn_exe BLASTN_EXE``
-    Path to the ``blastn`` executable. Default: ``blastn``
-
 ``--format_exe FORMAT_EXE``
     Path to the ``blastn`` executable. Default: ``makeblastdb``
 
@@ -48,6 +42,9 @@ Flagged arguments
 
 ``-h, --help``
     Display usage information for ``pyani anib``.
+
+``-i INDIR, --input INDIR``
+    Path to the directory containing indexed genome files to be used for the analysis.
 
 ``--jobprefix JOBPREFIX``
     Use the string ``JOBPREFIX`` as a prefix for SGE job submission names. Default: ``PYANI``
@@ -60,6 +57,9 @@ Flagged arguments
 
 ``--name NAME``
     Use the string ``NAME`` to identify this ``ANIb`` run in the ``pyani`` database.
+
+``-o OUTDIR, --outdir OUTDIR``
+    Path to a directory where comparison output files will be written.
 
 ``--recovery``
     Use existing ``ANIb`` comparison output if available, e.g. if recovering from a failed job submission. Using this option will not generate a new comparison if the old output files exist.
