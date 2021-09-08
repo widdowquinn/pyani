@@ -210,3 +210,56 @@ def distribution(dfr, outfilename, matname, title=None):
         fig.savefig(outfilename)
 
     return fig
+
+
+def scatter(
+    dfr1,
+    dfr2,
+    outfilename=None,
+    matname1="identity",
+    matname2="coverage",
+    title=None,
+    params=None,
+):
+    """Return seaborn scatterplot.
+
+    :param dfr1:  pandas DataFrame with x-axis data
+    :param dfr2:  pandas DataFrame with y-axis data
+    :param outfilename:  path to output file (indicates output format)
+    :param matname1:  name of x-axis data
+    :param matname2:  name of y-axis data
+    :param title:  title for the plot
+    :param params:  a list of parameters for plotting: [colormap, vmin, vmax]
+    """
+    # Make an empty dataframe to collect the input data in
+    combined = pd.DataFrame()
+
+    # Add data
+    combined[matname1] = dfr1.values.flatten()
+    combined[matname2] = dfr2.values.flatten()
+
+    # Add lable information, if available
+    # if params.labels:
+    #     hue = "labels"
+    #  combined['labels'] =   #  add labels to dataframe; unsure of their configuration at this point
+    # else:
+    hue = None
+
+    # Create the plot
+    fig = sns.lmplot(
+        x=matname1,
+        y=matname2,
+        data=combined,
+        hue=hue,
+        fit_reg=False,
+        scatter_kws={"s": 2},
+    )
+    fig.set(xlabel=matname1.title(), ylabel=matname2.title())
+    plt.title(title)
+
+    # Save to file
+    if outfilename:
+        fig.savefig(outfilename)
+
+    # Return clustermap
+    return fig
