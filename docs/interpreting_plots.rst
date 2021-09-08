@@ -62,7 +62,7 @@ For each of the ANI methods provided by `pyani` the values shown in the plots ar
   - in ANIb this is ``alignment_length - gaps - mismatches``
   - in ANIblastall this is ``alignment_length - gaps - mismatches``
 
-  **Alignment coverage** is the proportion of the query genome that aligns against the reference genome (this can be asymmetrical: comparing genome A to genome B may give different coverage values for A and B).
+**Alignment coverage** is the proportion of the query genome that aligns against the reference genome (this can be asymmetrical: comparing genome A to genome B may give different coverage values for A and B).
 
     - in ANIm this is ``alignment_length / genome_length`` (asymmetrical)
     - in fastANI this is ``matched_fragments / all_fragments`` (asymmetrical)
@@ -79,5 +79,7 @@ The **similarity errors** graph shows a measure of the number of bases/positions
 The **Hadamard** ouptut is the product (identity x coverage), as described at `Hadamard product`_ of identity and coverage. It's meant to provide a measure that allows you to interpret identity and coverage simultaneously.
 
   - this is always ``ANI * coverage``, but as the plot is not symmetric, coverage may differ for query and reference genomes
+
+``pyani plot`` also outputs a scatterplot of **Average nucleotide identity** versus **Alignment coverage** (calculated as described above).
 
 .. _Hadamard product: https://en.wikipedia.org/wiki/Hadamard_product_(matrices)
