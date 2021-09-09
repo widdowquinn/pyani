@@ -110,9 +110,10 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
     - non-executable file at passed path
     - no version info returned
     """
-    nucmer_path = Path(shutil.which(nucmer_exe))  # type:ignore
 
-    if nucmer_path is None:
+    try:
+        nucmer_path = Path(shutil.which(nucmer_exe))  # type:ignore
+    except TypeError:
         return f"{nucmer_exe} is not found in $PATH"
 
     if not nucmer_path.is_file():  # no executable
@@ -130,8 +131,8 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
             stderr=subprocess.PIPE,
             check=True,
         )
-    except (FileNotFoundError, PermissionError):
-        raise PyaniANImException("Couldn't run NUCmer")
+    except PermissionError:
+        raise PyaniANImException("Couldn't run NUCmer; insufficient permissions")
 
     # version information appears in different places for
     # different nucmer releases

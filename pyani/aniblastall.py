@@ -77,9 +77,9 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
     """
     logger = logging.getLogger(__name__)
 
-    blastall_path = Path(shutil.which(blast_exe))  # type:ignore
-
-    if blastall_path is None:
+    try:
+        blastall_path = Path(shutil.which(blast_exe))  # type:ignore
+    except TypeError:
         return f"{blast_exe} is not found in $PATH"
 
     if not blastall_path.is_file():  # no executable
@@ -101,8 +101,8 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
             stderr=subprocess.PIPE,
             check=False,  # blastall doesn't return 0
         )
-    except (FileNotFoundError, PermissionError):
-        raise PyaniblastallException("Couldn't run blastall")
+    except PermissionError:
+        raise PyaniblastallException("Couldn't run blastall; insufficient permissions")
 
     except OSError:
         logger.warning("blastall executable will not run", exc_info=True)
