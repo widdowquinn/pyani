@@ -125,7 +125,7 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
     The following circumstances are explicitly reported as strings
 
     - no executable at passed path
-    - non-executable file at passed path
+    - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
     - no version info returned
     """
 
@@ -138,20 +138,18 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
     if not blastn_path.is_file():  # no executable
         return f"No blastn executable at {blastn_path}"
 
+    # This should catch cases when the file can't be executed by the user
     if not os.access(blastn_path, os.X_OK):  # file exists but not executable
         return f"blastn exists at {blastn_path} but not executable"
 
-    try:
-        cmdline = [blast_exe, "-version"]
-        result = subprocess.run(
-            cmdline,  # type: ignore
-            shell=False,
-            stdout=subprocess.PIPE,  # type: ignore
-            stderr=subprocess.PIPE,
-            check=True,
-        )
-    except PermissionError:
-        raise PyaniANIbException("Couldn't run blastn; insufficient permissions")
+    cmdline = [blast_exe, "-version"]
+    result = subprocess.run(
+        cmdline,  # type: ignore
+        shell=False,
+        stdout=subprocess.PIPE,  # type: ignore
+        stderr=subprocess.PIPE,
+        check=True,
+    )
 
     version = re.search(  # type: ignore
         r"(?<=blastn:\s)[0-9\.]*\+", str(result.stdout, "utf-8")

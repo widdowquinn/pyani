@@ -71,7 +71,7 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
     The following circumstances are explicitly reported as strings
 
     - no executable at passed path
-    - non-executable file at passed path
+    - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
     - no version info returned
     - executable cannot be run on this OS
     """
@@ -85,6 +85,7 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
     if not blastall_path.is_file():  # no executable
         return f"No blastall at {blastall_path}"
 
+    # This should catch cases when the file can't be executed by the user
     if not os.access(blastall_path, os.X_OK):  # file exists but not executable
         return f"blastall exists at {blastall_path} but not executable"
 
@@ -101,8 +102,6 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
             stderr=subprocess.PIPE,
             check=False,  # blastall doesn't return 0
         )
-    except PermissionError:
-        raise PyaniblastallException("Couldn't run blastall; insufficient permissions")
 
     except OSError:
         logger.warning("blastall executable will not run", exc_info=True)
