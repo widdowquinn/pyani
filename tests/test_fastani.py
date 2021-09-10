@@ -81,10 +81,19 @@ def fastani_cmds_four(path_file_four):  # works
     )
 
 
+# Create object for accessing unittest assertions
 assertions = unittest.TestCase("__init__")
 
 
 # Test get_version()
+# Test case 0: no executable location is specified
+def test_get_version_nonetype():
+    """Test behaviour when no location for the executable is given."""
+    test_file_0 = None
+
+    assert fastani.get_version(test_file_0) == f"{test_file_0} is not found in $PATH"
+
+
 # Test case 1: there is no executable
 def test_get_version_no_exe(executable_missing, monkeypatch):
     """Test behaviour when there is no file at the specified executable location."""
