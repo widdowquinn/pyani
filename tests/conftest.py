@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# (c) The University of Strathclude 2019-2021
+# (c) The University of Strathclude 2019-2022
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -17,7 +17,7 @@
 #
 # The MIT License
 #
-# (c) The University of Strathclude 2019-2021
+# (c) The University of Strathclude 2019-2022
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -339,13 +339,6 @@ def mock_get_nucmer_4_version(monkeypatch):
     monkeypatch.setattr(os, "access", mock_access)
     monkeypatch.setattr(subprocess, "run", mock_subprocess)
     monkeypatch.setattr(platform, "system", mock_system)
-
-
-@pytest.fixture
-def unsorted_genomes(dir_anim_in):
-    """Tests ordering of genome names in output file names for asymmetric analyses."""
-    dir_anim_in = str(dir_anim_in)
-    return (MockGenome(f"{dir_anim_in}/second"), MockGenome(f"{dir_anim_in}/first"))
 
 
 @pytest.fixture
