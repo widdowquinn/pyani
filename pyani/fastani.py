@@ -87,10 +87,13 @@ def get_version(fastani_exe: Path = pyani_config.FASTANI_DEFAULT) -> str:
     The following circumstances are explicitly reported as strings:
 
     - no executable at passed path
-    - non-executable file at passed path
+    - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
     - no version info returned
     """
-    fastani_path = Path(shutil.which(fastani_exe))  # type:ignore
+    try:
+        fastani_path = Path(shutil.which(fastani_exe))  # type:ignore
+    except TypeError:
+        return f"{fastani_exe} is not found in $PATH"
 
     if fastani_path is None:
         return f"{fastani_exe} is not found in $PATH"
@@ -98,20 +101,18 @@ def get_version(fastani_exe: Path = pyani_config.FASTANI_DEFAULT) -> str:
     if not fastani_path.is_file():  # no executable
         return f"No fastANI executable at {fastani_path}"
 
+    # This should catch cases when the file can't be executed by the user
     if not os.access(fastani_path, os.X_OK):  # file exists but not executable
         return f"fastANI exists at {fastani_path} but not executable"
 
-    try:
-        cmdline = [fastani_exe, "-v"]  # type: List
-        result = subprocess.run(
-            cmdline,
-            shell=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=True,
-        )  # type CompletedProcess
-    except (FileNotFoundError, PermissionError):
-        raise PyaniFastANIException("Couldn't run fastANI")
+    cmdline = [fastani_exe, "-v"]  # type: List
+    result = subprocess.run(
+        cmdline,
+        shell=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+    )  # type CompletedProcess
 
     match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
     version = match.group()  # type: ignore
