@@ -173,6 +173,21 @@ def test_get_version_exe_no_version(executable_without_version):
     )
 
 
+# Test regex for different NUCmer versions
+def test_get_version_nucmer_3(mock_get_nucmer_3_version):
+    """Tests the regex that gets the version number for NUCmer <= 3."""
+    fake_nucmer_3 = Path("/fake/nucmer3/executable")
+
+    assert anim.get_version(fake_nucmer_3) == f"Darwin_3.1 ({fake_nucmer_3})"
+
+
+def test_get_version_nucmer_4(mock_get_nucmer_4_version):
+    """Tests the regex that gets the version number for NUCmer 4."""
+    fake_nucmer_4 = Path("/fake/nucmer4/executable")
+
+    assert anim.get_version(fake_nucmer_4) == f"Darwin_4.0.0rc1 ({fake_nucmer_4})"
+
+
 # Test .delta output file processing
 def test_deltadir_parsing(delta_output_dir):
     """Process test directory of .delta files into ANIResults."""
