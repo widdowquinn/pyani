@@ -296,17 +296,57 @@ def generate_joblist(
     fragfiles: List,
     fragsizes: List,
     args: Namespace,
-) -> NotImplementedError:
+) -> List[ComparisonJob]:
     """Return list of ComparisonJobs.
 
     :param comparisons:  list of (Genome, Genome) tuples for which comparisons are needed
     :param existingfiles:  list of pre-existing BLASTN+ outputs
-    :param fragfiles:
-    :param fragsizes:
+    :param fragfiles:  list of files containing genome fragments
+    :param fragsizes:  list of fragment lengths
     :param args:  Namespace, command-line arguments
     """
-    # logger = logging.getLogger(__name__)
-    raise NotImplementedError
+    logger = logging.getLogger(__name__)
+
+    existingfiles = set(existingfiles)  # Path objects hashable
+
+    joblist = []  # will hold ComparisonJob structs
+    for idx, (query, subject) in enumerate(
+        tqdm(comparisons, disable=args.disable_tqdm)
+    ):
+        # fname1 = Path(query.path)
+        # fname2 = Path(subject.path)
+        blastcmd = anib.generate_blastn_commands(
+            Path(query.path), Path(subject.path), args.outdir, args.blastn_exe
+        )
+        logger.debug("Commands to run:\n\t%s\n", blastcmd)
+        outprefix = blastcmd.split()[2][:-10]  # prefix for blastn output
+        outfname = Path(outprefix + ".blast_tab")
+        logger.debug("Expected output file for db: %s", outfname)
+
+        # If e're in recovery mode, we don't want to repeat a computational
+        # comparison that already exists, so we check whether the ultimate
+        # output is in the set of existing files and, if not, we add the obs
+
+        # The comparisons collection always gets updated, so that results are
+        # added to the database whether they come from recovery mode or are run
+        # in this call of the script.
+        if args.recovery and outfname in existingfiles:
+            logger.debug("Recovering output from %s, not submitting job", outfname)
+            # Need to track the expected output, but set the job itself to None:
+            joblist.append(
+                ComparisonJob(query, subject, blastcmd, outfname, args.fragsize, None)
+            )
+        else:
+            logger.debug("Building job")
+            # Build job
+            blastjob = pyani_jobs.Job("%s_%06d-blast" % (args.jobprefix, idx), blastcmd)
+            joblist.append(
+                ComparisonJob(
+                    query, subject, blastcmd, outfname, args.fragsize, blastjob
+                )
+            )
+    return joblist
+    # raise NotImplementedError
 
 
 def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path, str]:
