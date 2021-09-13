@@ -248,5 +248,5 @@ def test_parse_blastdir(anib_output_dir):
 def test_parse_blasttab(anib_output):
     """Parse ANIb BLAST+ .blast_tab output."""
     fragdata = anib.get_fraglength_dict([anib_output.fragfile])
-    result = anib.parse_blast_tab(anib_output.tabfile, fragdata, mode="ANIb")
+    result = anib.parse_blast_tab(anib_output.tabfile, fragdata)
     assert (a == b for a, b in zip(result, [4_016_551, 93, 99.997_693_577_050_029]))
