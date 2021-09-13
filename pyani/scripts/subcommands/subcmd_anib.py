@@ -382,44 +382,46 @@ def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path
     return fragpath, json.dumps(sizedict)
 
 
-# def run_anib_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
-#    """Pass ANIb blastn jobs to the scheduler.
-#
-#    :param joblist:           list of ComparisonJob namedtuples
-#    :param args:              command-line arguments for the run
-#    """
-#    logger = logging.getLogger(__name__)
-#    logger.debug("Scheduler: %s", args.scheduler)
-#
-#    # Entries with None seen in recovery mode:
-#    jobs = [_.job for _ in joblist if _.job]
-#
-#    if args.scheduler == "multiprocessing":
-#        logger.info("Running jobs with multiprocessing")
-#        if not args.workers:
-#            logger.debug("(using maximum number of worker threads)")
-#        else:
-#            logger.debug("(using %d worker threads, if available)", args.workers)
-#        cumval = run_mp.run_dependency_graph(jobs, workers=args.workers)
-#        if cumval > 0:
-#            logger.error(
-#                "At least one blastn comparison failed. Please investigate (exiting)"
-#            )
-#            raise PyaniException("Multiprocessing run failed in ANIb")
-#        logger.info("Multiprocessing run completed without error")
-#    elif args.scheduler.lower() == "sge":
-#        logger.info("Running jobs with SGE")
-#        logger.debug("Setting jobarray group size to %d", args.sgegroupsize)
-#        logger.debug("Joblist contains %d jobs", len(joblist))
-#        run_sge.run_dependency_graph(
-#            jobs,
-#            jgprefix=args.jobprefix,
-#            sgegroupsize=args.sgegroupsize,
-#            sgeargs=args.sgeargs,
-#        )
-#    else:
-#        logger.error(termcolor("Scheduler %s not recognised", "red"), args.scheduler)
-#        raise SystemError(1)
+def run_anib_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
+    """Pass ANIb blastn jobs to the scheduler.
+
+    :param joblist:           list of ComparisonJob namedtuples
+    :param args:              command-line arguments for the run
+    """
+    logger = logging.getLogger(__name__)
+    logger.debug("Scheduler: %s", args.scheduler)
+
+    # Entries with None seen in recovery mode:
+    jobs = [_.job for _ in joblist if _.job]
+
+    if args.scheduler == "multiprocessing":
+        logger.info("Running jobs with multiprocessing")
+        if not args.workers:
+            logger.debug("(using maximum number of worker threads)")
+        else:
+            logger.debug("(using %d worker threads, if available)", args.workers)
+        cumval = run_mp.run_dependency_graph(jobs, workers=args.workers)
+        if cumval > 0:
+            logger.error(
+                "At least one blastn comparison failed. Please investigate (exiting)"
+            )
+            raise PyaniException("Multiprocessing run failed in ANIb")
+        logger.info("Multiprocessing run completed without error")
+    elif args.scheduler.lower() == "sge":
+        logger.info("Running jobs with SGE")
+        logger.debug("Setting jobarray group size to %d", args.sgegroupsize)
+        logger.debug("Joblist contains %d jobs", len(joblist))
+        run_sge.run_dependency_graph(
+            jobs,
+            jgprefix=args.jobprefix,
+            sgegroupsize=args.sgegroupsize,
+            sgeargs=args.sgeargs,
+        )
+    else:
+        logger.error(termcolor("Scheduler %s not recognised", "red"), args.scheduler)
+        raise SystemError(1)
+
+
 #
 #
 # def update_comparison_results(
