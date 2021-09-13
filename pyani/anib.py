@@ -343,13 +343,15 @@ def construct_makeblastdb_cmd(
 
 # Generate list of BLASTN command lines from passed filenames
 def generate_blastn_commands(
-    filenames: List[Path],
+    query: Path,
+    subject: Path,
     outdir: Path,
     blast_exe: Optional[Path] = None,
 ) -> List[str]:
     """Return a list of blastn command-lines for ANIb.
 
-    :param filenames:  a list of paths to fragmented input FASTA files
+    :param query:  a paths to the query's fragmented input FASTA file
+    :param subject:  a paths to the subject's fragmented input FASTA file
     :param outdir:  path to output directory
     :param blastn_exe:  path to BLASTN executable
     :param method:  str, analysis type (ANIb)
@@ -359,22 +361,12 @@ def generate_blastn_commands(
     have the form ACCESSION.ext. This is the convention followed by the
     fragment_FASTA_files() function above.
     """
-    cmdlines = []
-    for idx, fname1 in enumerate(filenames[:-1]):
-        dbname1 = Path(str(fname1).replace("-fragments", ""))
-        for fname2 in filenames[idx + 1 :]:
-            dbname2 = Path(str(fname2).replace("-fragments", ""))
-            if blast_exe is None:
-                cmdlines.append(construct_blastn_cmdline(fname1, dbname2, outdir))
-                cmdlines.append(construct_blastn_cmdline(fname2, dbname1, outdir))
-            else:
-                cmdlines.append(
-                    construct_blastn_cmdline(fname1, dbname2, outdir, blast_exe)
-                )
-                cmdlines.append(
-                    construct_blastn_cmdline(fname2, dbname1, outdir, blast_exe)
-                )
-    return cmdlines
+    subj_db = outdir / "blastdbs" / Path(str(subject.name))
+    if blast_exe is None:
+        cmdline = construct_blastn_cmdline(query, subj_db, outdir)
+    else:
+        cmdline = construct_blastn_cmdline(query, subj_db, outdir, blast_exe)
+    return cmdline
 
 
 # Generate single BLASTN command line
