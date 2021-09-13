@@ -147,6 +147,7 @@ def test_blastn_graph(path_fna_all, tmp_path, fragment_length):
         assert job.dependencies[0].script.startswith("makeblastdb")
 
 
+@pytest.mark.skip(reason="unsure this is needed")
 def test_blastn_multiple(path_fna_two, tmp_path):
     """Generate BLASTN+ commands."""
     # BLAST+
@@ -201,6 +202,7 @@ def test_fragment_files(path_fna_all, tmp_path, dir_tgt_fragments, fragment_leng
 
 
 # Test BLAST+ database formatting (makeblastdb) command generation
+@pytest.mark.skip(reason="unsure this is needed")
 def test_makeblastdb_multiple(path_fna_two, tmp_path):
     """Generate multiple BLAST+ makeblastdb command-lines."""
     cmds = anib.generate_blastdb_commands(path_fna_two, tmp_path, mode="ANIb")
