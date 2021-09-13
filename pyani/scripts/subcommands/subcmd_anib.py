@@ -267,18 +267,18 @@ def subcmd_anib(args: Namespace) -> None:
         existingfiles = list()
         logger.debug("\tAssuming no pre-existing output files")
 
-    # Split the input genome files into contiguous fragments of the specified size,
-    # as described in Goris et al. We create a new directory to hold sequence
-    # fragments, away from the main genomes
-    logger.info("Splitting input genome files into %snt fragments...", args.fragsize)
-    fragdir = Path(args.outdir) / "fragments"
-    os.makedirs(fragdir, exist_ok=True)
-    fragfiles, fraglens = anib.fragment_fasta_files(
-        [Path(str(_.path)) for _ in genomes],
-        Path(args.outdir) / "fragments",
-        args.fragsize,
-    )
-    logger.debug("...wrote %s fragment files to %s", len(fragfiles), fragdir)
+    ## Split the input genome files into contiguous fragments of the specified size,
+    ## as described in Goris et al. We create a new directory to hold sequence
+    ## fragments, away from the main genomes
+    # logger.info("Splitting input genome files into %snt fragments...", args.fragsize)
+    # fragdir = Path(args.outdir) / "fragments"
+    # os.makedirs(fragdir, exist_ok=True)
+    # fragfiles, fraglens = anib.fragment_fasta_files(
+    #     [Path(str(_.path)) for _ in genomes],
+    #     Path(args.outdir) / "fragments",
+    #     args.fragsize,
+    # )
+    # logger.debug("...wrote %s fragment files to %s", len(fragfiles), fragdir)
 
     # Create list of BLASTN jobs for each comparison still to be performed
     logger.info("Creating blastn jobs for ANIb...")
