@@ -249,6 +249,7 @@ def subcmd_anib(args: Namespace) -> None:
     # run, and do not necessarily need to rerun all the jobs. In this case,
     # we prepare a list of output files we want to recover from the results
     # in the output directory.
+    # ¶ Should this use output files, or pull from the database?
     if args.recovery:
         logger.warning("Entering recovery mode...")
         logger.debug(
