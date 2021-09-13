@@ -453,7 +453,7 @@ def process_blast(
                     blastfile,
                 )
             continue
-        resultvals = parse_blast_tab(blastfile, fraglengths, method)
+        resultvals = parse_blast_tab(blastfile, fraglengths)
         query_cover = float(resultvals[0]) / org_lengths[qname]
 
         # Populate dataframes: when assigning data, we need to note that
