@@ -433,7 +433,7 @@ def filter_existing_comparisons(
     program,
     version,
     fragsize: Optional[int] = None,
-    maxmatch: Optional[bool] = None,
+    maxmatch: Optional[bool] = False,
 ) -> List:
     """Filter list of (Genome, Genome) comparisons for those not in the session db.
 
