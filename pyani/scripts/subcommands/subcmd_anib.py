@@ -282,8 +282,10 @@ def subcmd_anib(args: Namespace) -> None:
 
     # Create list of BLASTN jobs for each comparison still to be performed
     logger.info("Creating blastn jobs for ANIb...")
+    # This method considered, but doesn't get fraglens
+    # fragfiles =  [file for file in fragdir.iterdir()]
     joblist = generate_joblist(
-        comparisons_to_run, existingfiles, fragfiles, fraglens, args
+        comparisons_to_run, existingfiles, fragfiles.values(), fraglens.values(), args
     )
     logger.debug("...created %s blastn jobs", len(joblist))
 
