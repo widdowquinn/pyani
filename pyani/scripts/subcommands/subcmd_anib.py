@@ -379,7 +379,7 @@ def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path
             idx += fragsize
 
     # Write fragments to output file
-    fragpath = outdir / f"{inpath.stem}-fragments.fasta"
+    fragpath = outdir / f"{inpath.stem}-fragments.fna"
     SeqIO.write(outseqs, fragpath, "fasta")
     return fragpath, json.dumps(sizedict)
 
