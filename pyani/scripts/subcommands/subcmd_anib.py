@@ -424,44 +424,49 @@ def run_anib_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
 
 #
 #
-# def update_comparison_results(
-#    joblist: List[ComparisonJob], run, session, blastn_version: str, args: Namespace
-# ) -> None:
-#    """Update the Comparision table with the completed result set.
-#
-#    :param joblist:         list of ComparisonJob namedtuples
-#    :param run:             Run ORM object for the current ANIb run
-#    :param session:         active pyanidb session via ORM
-#    :param blastn_version:  version of blastn used for the comparison
-#    :param args:            command-line arguments for this run
-#
-#    The Comparison table stores individual comparison results, one per row.
-#    """
-#    logger = logging.getLogger(__name__)
-#
-#    # Add individual results to Comparison table
-#    for job in tqdm(joblist, disable=args.disable_tqdm):
-#        logger.debug("\t%s vs %s", job.query.description, job.subject.description)
-#        aln_length, sim_errs, ani_pid = anib.process_blast_tab(job.outfile)
-#        qcov = aln_length / job.query.length
-#        scov = aln_length / job.subject.length
-#        run.comparisons.append(
-#            Comparison(
-#                query=job.query,
-#                subject=job.subject,
-#                aln_length=aln_length,
-#                sim_errs=sim_errs,
-#                identity=ani_pid,
-#                cov_query=qcov,
-#                cov_subject=scov,
-#                program="blastn",
-#                version=blastn_version,
-#                fragsize=job.fragsize,
-#                maxmatch=False,
-#            )
-#        )
-#
-#    # Populate db
-#    logger.debug("Committing results to database")
-#    session.commit()
-#
+def update_comparison_results(
+    joblist: List[ComparisonJob],
+    run,
+    session,
+    blastn_version: str,
+    fraglens: Dict,
+    args: Namespace,
+) -> None:
+    """Update the Comparision table with the completed result set.
+    #
+       :param joblist:         list of ComparisonJob namedtuples
+       :param run:             Run ORM object for the current ANIb run
+       :param session:         active pyanidb session via ORM
+       :param blastn_version:  version of blastn used for the comparison
+       :param fraglens:     dictionary of fragment lengths for each genome
+       :param args:            command-line arguments for this run
+    #
+       The Comparison table stores individual comparison results, one per row.
+    """
+    logger = logging.getLogger(__name__)
+    #
+    # Add individual results to Comparison table
+    for job in tqdm(joblist, disable=args.disable_tqdm):
+        logger.debug("\t%s vs %s", job.query.description, job.subject.description)
+        aln_length, sim_errs, ani_pid = anib.parse_blast_tab(job.outfile, fraglens)
+        qcov = aln_length / job.query.length
+        scov = aln_length / job.subject.length
+        run.comparisons.append(
+            Comparison(
+                query=job.query,
+                subject=job.subject,
+                aln_length=aln_length,
+                sim_errs=sim_errs,
+                identity=ani_pid,
+                cov_query=qcov,
+                cov_subject=scov,
+                program="blastn",
+                version=blastn_version,
+                fragsize=job.fragsize,
+                maxmatch=False,
+            )
+        )
+    #
+    # Populate db
+    logger.debug("Committing results to database")
+    session.commit()
