@@ -36,7 +36,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 """Test aniblastall.py module.
+
 These tests are intended to be run from the repository root using:
+
 pytest -v
 """
 

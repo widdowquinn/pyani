@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# (c) University of Strathclyde 2020
+# (c) University of Strathclyde 2021
 # Author: Leighton Pritchard
 #
 # Contact: leighton.pritchard@strath.ac.uk
@@ -14,7 +14,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2020 University of Strathclyde
+# Copyright (c) 2021 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,12 @@
 # THE SOFTWARE.
 """Code to implement the ANIblastall average nucleotide identity method."""
 
+import logging
+import os
 import platform
 import re
-import subprocess
 import shutil
+import subprocess
 
 import pandas as pd
 
@@ -66,6 +68,13 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
         one-line descriptions for (V) [ersion] is bad or out of range [? to ?]
 
     This is concatenated with the OS name.
+
+    The following circumstances are explicitly reported as strings
+
+    - no executable at passed path
+    - non-executable file at passed path
+    - no version info returned
+    - executable cannot be run on this OS
     """
     cmdline = [blast_exe, "-version"]
     result = subprocess.run(
