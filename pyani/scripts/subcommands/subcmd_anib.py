@@ -288,8 +288,21 @@ def subcmd_anib(args: Namespace) -> None:
         comparisons_to_run, existingfiles, fragfiles.values(), fraglens.values(), args
     )
     logger.debug("...created %s blastn jobs", len(joblist))
+    # print(f"Joblist: {joblist}")
+    # Pass jobs to appropriate scheduler
+    logger.debug("Passing %s jobs to %s...", len(joblist), args.scheduler)
+    run_anib_jobs(joblist, args)
+    logger.info("...jobs complete.")
 
-    raise NotImplementedError
+    # Process output and add results to database
+    # This requires us to drop out of threading/multiprocessing: Python's SQLite3
+    # interface doesn't allow sharing connections and cursors
+    logger.info("Adding comparison results to database...")
+    update_comparison_results(joblist, run, session, blastn_version, fraglens, args)
+    update_comparison_matrices(session, run)
+    logger.info("...database updated.")
+
+    # raise NotImplementedError
 
 
 def generate_joblist(
