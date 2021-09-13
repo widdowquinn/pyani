@@ -226,7 +226,7 @@ def subcmd_anib(args: Namespace) -> None:
     # but remove it from the list of comparisons to be performed
     logger.info("Checking database for existing comparison data...")
     comparisons_to_run = filter_existing_comparisons(
-        session, run, comparisons, "blastn", blastn_version, args.fragsize, None
+        session, run, comparisons, "blastn", blastn_version, args.fragsize, False
     )
     logger.info(
         f"\t...after check, still need to run {len(comparisons_to_run)} comparisons"
