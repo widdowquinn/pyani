@@ -312,6 +312,39 @@ class Comparison(Base):
         return "<Comparison(comparison_id={})>".format(self.comparison_id)
 
 
+def add_blastdb(session, genome, run, fragpath, dbpath, fragsizes, dbcmd) -> None:
+    """Update the Blastdb table with a fragment dictionary for genome.
+
+    :param session:         active pyanidb session via ORM
+    :param genome:          Genome ORM object
+    :param run:             Run ORM object for the current ANIb run
+    :param fragpath:        Path to the fragment sequence file for Genome
+    :param dbpath:          Path to the database file
+    :param fragsizes:       fragment size dictionary for Genome
+    :param dbcmd:           command used to generate database
+
+    """
+    try:
+        blastdb = BlastDB(
+            genome_id=genome.genome_id,
+            run_id=run.run_id,
+            fragpath=str(fragpath),
+            dbpath=str(dbpath),
+            fragsizes=fragsizes,
+            dbcmd=dbcmd,
+        )
+    except Exception:
+        raise PyaniORMException(
+            f"Could not create {genome} blast database with command line: {dbcmd}"
+        )
+    try:
+        session.add(blastdb)
+        session.commit()
+    except Exception:
+        raise PyaniORMException(f"Could not add blastdb for {genome} to the database")
+    return blastdb
+
+
 def create_db(dbpath: Path) -> None:
     """Create an empty pyani SQLite3 database at the passed path.
 
