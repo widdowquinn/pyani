@@ -334,7 +334,7 @@ def construct_makeblastdb_cmd(
     :param outdir:  Path, directory for output
     :param blastdb_exe:  Path, path to the makeblastdb executable
     """
-    outfilename = outdir / filename.name
+    outfilename = outdir / filename.name.replace("-fragments", "")
     return (
         f"{blastdb_exe} -dbtype nucl -in {filename} -title {filename.stem} -out {outfilename}",
         outfilename,
