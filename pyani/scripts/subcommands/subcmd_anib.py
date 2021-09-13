@@ -43,16 +43,24 @@ import datetime
 import json
 import logging
 import os
+import subprocess
 
 from argparse import Namespace
 from itertools import permutations
 from pathlib import Path
-from typing import List, NamedTuple, Tuple
+from typing import List, NamedTuple, Tuple, Dict
 
 from Bio import SeqIO
 from tqdm import tqdm
 
-from pyani import anib
+from pyani import (
+    PyaniException,
+    anib,
+    pyani_config,
+    pyani_jobs,
+    run_sge,
+    run_multiprocessing as run_mp,
+)
 from pyani.pyani_files import collect_existing_output
 from pyani.pyani_orm import (
     add_run,
@@ -61,7 +69,6 @@ from pyani.pyani_orm import (
     Comparison,
     filter_existing_comparisons,
     get_session,
-    pyani_jobs,
     PyaniORMException,
     update_comparison_matrices,
 )
@@ -181,24 +188,31 @@ def subcmd_anib(args: Namespace) -> None:
     os.makedirs(fragdir, exist_ok=True)
     os.makedirs(blastdbdir, exist_ok=True)
 
-    # jobgraph = anib.make_job_graph(
-    #    infiles, fragfiles, anib.make_blastcmd_builder(args.method, blastdir)
-    # )
-
-    # Create dictionary of database building commands, keyed by dbname
-
     # Create a new sequence fragment file and a new BLAST+ database for each input genome,
     # and add this data to the database as a row in BlastDB
     logger.info("Creating input sequence fragment files")
+    fragfiles = {}
+    fraglens = {}
     for genome in genomes:
         fragpath, fragsizes = fragment_fasta_file(
             Path(str(genome.path)), Path(str(fragdir)), args.fragsize
         )
-        print(fragpath, len(fragsizes))
+        fragfiles.update({genome: fragpath})
+        fraglens.update({genome: fragsizes})
 
-        # blastdb = add_blastdb(session, genome, run, fragpath, dbpath, fragsizes, dbcmd)
+        dbcmd, blastdbpath = anib.construct_makeblastdb_cmd(
+            fragpath, blastdbdir
+        )  # args.outdir)
 
-    raise NotImplementedError
+        subprocess.run(
+            dbcmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+
+        add_blastdb(session, genome, run, fragpath, blastdbpath, fragsizes, dbcmd)
 
     # Generate all pair permutations of genome IDs as a list of (Genome, Genome) tuples
     logger.info(
