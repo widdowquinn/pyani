@@ -371,21 +371,21 @@ def generate_blastn_commands(
 
 # Generate single BLASTN command line
 def construct_blastn_cmdline(
-    fname1: Path,
-    fname2: Path,
+    query: Path,
+    subj_db: Path,
     outdir: Path,
     blastn_exe: Path = pyani_config.BLASTN_DEFAULT,
 ) -> str:
     """Return a single blastn command.
 
-    :param fname1:
-    :param fname2:
-    :param outdir:
+    :param fname1:  Path, FASTA file for query genome
+    :param fname2:  Path, database of fragments for subject genome
+    :param outdir:  Path, to the output directory
     :param blastn_exe:  str, path to blastn executable
     """
-    prefix = outdir / f"{fname1.stem.replace('-fragments', '')}_vs_{fname2.stem}"
+    prefix = outdir / f"{query.stem.replace('-fragments', '')}_vs_{subj_db.stem}"
     return (
-        f"{blastn_exe} -out {prefix}.blast_tab -query {fname1} -db {fname2} "
+        f"{blastn_exe} -out {prefix}.blast_tab -query {query} -db {subj_db} "
         "-xdrop_gap_final 150 -dust no -evalue 1e-15 -max_target_seqs 1 -outfmt "
         "'6 qseqid sseqid length mismatch pident nident qlen slen "
         "qstart qend sstart send positive ppos gaps' "
