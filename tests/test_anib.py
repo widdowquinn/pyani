@@ -124,7 +124,7 @@ def anib_output_dir(dir_anib_in):
 # Test BLAST+ (blastn) command generation
 def test_blastn_dbjobdict(path_fna_all, tmp_path):
     """Generate dictionary of BLASTN+ database jobs."""
-    blastcmds = anib.make_blastcmd_builder("ANIb", tmp_path)
+    blastcmds = anib.make_blastcmd_builder(tmp_path)
     jobdict = anib.build_db_jobs(path_fna_all, blastcmds)
     expected = [
         (
@@ -139,7 +139,7 @@ def test_blastn_dbjobdict(path_fna_all, tmp_path):
 def test_blastn_graph(path_fna_all, tmp_path, fragment_length):
     """Create jobgraph for BLASTN+ jobs."""
     fragresult = anib.fragment_fasta_files(path_fna_all, tmp_path, fragment_length)
-    blastcmds = anib.make_blastcmd_builder("ANIb", tmp_path)
+    blastcmds = anib.make_blastcmd_builder(tmp_path)
     jobgraph = anib.make_job_graph(path_fna_all, fragresult[0], blastcmds)
     # We check that the main script job is a blastn job, and that there
     # is a single dependency, which is a makeblastdb job
@@ -153,7 +153,7 @@ def test_blastn_graph(path_fna_all, tmp_path, fragment_length):
 def test_blastn_multiple(path_fna_two, tmp_path):
     """Generate BLASTN+ commands."""
     # BLAST+
-    cmds = anib.generate_blastn_commands(path_fna_two, tmp_path, mode="ANIb")
+    cmds = anib.generate_blastn_commands(path_fna_two, tmp_path)
     expected = [
         (
             f"blastn -out {tmp_path / str(path_fna_two[0].stem + '_vs_' + path_fna_two[1].stem + '.blast_tab')} "
@@ -207,7 +207,7 @@ def test_fragment_files(path_fna_all, tmp_path, dir_tgt_fragments, fragment_leng
 @pytest.mark.skip(reason="unsure this is needed")
 def test_makeblastdb_multiple(path_fna_two, tmp_path):
     """Generate multiple BLAST+ makeblastdb command-lines."""
-    cmds = anib.generate_blastdb_commands(path_fna_two, tmp_path, mode="ANIb")
+    cmds = anib.generate_blastdb_commands(path_fna_two, tmp_path)
     expected = [
         (
             (

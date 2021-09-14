@@ -96,7 +96,7 @@ def test_cmdsets(mp_dummy_cmds):
 def test_dependency_graph_run(path_fna_two, fragment_length, tmp_path):
     """Test that module runs dependency graph."""
     fragresult = fragment_fasta_files(path_fna_two, tmp_path, fragment_length)
-    blastcmds = make_blastcmd_builder("ANIb", tmp_path)
+    blastcmds = make_blastcmd_builder(tmp_path)
     jobgraph = make_job_graph(path_fna_two, fragresult[0], blastcmds)
     result = run_dependency_graph(jobgraph)
     assert 0 == result

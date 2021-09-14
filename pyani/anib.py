@@ -246,7 +246,7 @@ def build_db_jobs(infiles: List[Path], blastcmds: BLASTcmds) -> Dict:
 
 
 def make_blastcmd_builder(
-    method: str,
+    # method: str,
     outdir: Path,
     format_exe: Optional[Path] = None,
     blast_exe: Optional[Path] = None,
@@ -405,7 +405,9 @@ def construct_blastn_cmdline(
     :param outdir:  Path, to the output directory
     :param blastn_exe:  str, path to blastn executable
     """
-    prefix = outdir / f"{query.stem.replace('-fragments', '')}_vs_{subj_db.stem}"
+    prefix = Path(outdir) / Path(
+        f"{query.stem.replace('-fragments', '')}_vs_{subj_db.stem}"
+    )
     return (
         f"{blastn_exe} -out {prefix}.blast_tab -query {query} -db {subj_db} "
         "-xdrop_gap_final 150 -dust no -evalue 1e-15 -max_target_seqs 1 -outfmt "

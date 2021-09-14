@@ -161,8 +161,8 @@ def test_get_version_os_incompatible(executable_incompatible_with_os):
 # Test legacy BLAST (blastall) command generation
 def test_blastall_dbjobdict(path_fna_all, tmp_path):
     """Generate dictionary of legacy BLASTN database jobs."""
-    blastcmds = anib.make_blastcmd_builder("ANIblastall", tmp_path)
-    jobdict = anib.build_db_jobs(path_fna_all, blastcmds)
+    blastcmds = aniblastall.make_blastcmd_builder(tmp_path)
+    jobdict = aniblastall.build_db_jobs(path_fna_all, blastcmds)
     expected = [
         (tmp_path / _.name, f"formatdb -p F -i {tmp_path / _.name} -t {_.stem}")
         for _ in path_fna_all
@@ -172,9 +172,11 @@ def test_blastall_dbjobdict(path_fna_all, tmp_path):
 
 def test_blastall_graph(path_fna_all, tmp_path, fragment_length):
     """Create jobgraph for legacy BLASTN jobs."""
-    fragresult = anib.fragment_fasta_files(path_fna_all, tmp_path, fragment_length)
-    blastcmds = anib.make_blastcmd_builder("ANIblastall", tmp_path)
-    jobgraph = anib.make_job_graph(path_fna_all, fragresult[0], blastcmds)
+    fragresult = aniblastall.fragment_fasta_files(
+        path_fna_all, tmp_path, fragment_length
+    )
+    blastcmds = aniblastall.make_blastcmd_builder(tmp_path)
+    jobgraph = aniblastall.make_job_graph(path_fna_all, fragresult[0], blastcmds)
     # We check that the main script job is a blastn job, and that there
     # is a single dependency, which is a makeblastdb job
     for job in jobgraph:
@@ -185,7 +187,7 @@ def test_blastall_graph(path_fna_all, tmp_path, fragment_length):
 
 def test_blastall_multiple(path_fna_two, tmp_path):
     """Generate legacy BLASTN commands."""
-    cmds = anib.generate_blastn_commands(path_fna_two, tmp_path, mode="ANIblastall")
+    cmds = aniblastall.generate_blastn_commands(path_fna_two, tmp_path)
     expected = [
         (
             "blastall -p blastn -o "
@@ -207,7 +209,9 @@ def test_blastall_multiple(path_fna_two, tmp_path):
 
 def test_blastall_single(path_fna_two, tmp_path):
     """Generate legacy BLASTN command-line."""
-    cmd = anib.construct_blastall_cmdline(path_fna_two[0], path_fna_two[1], tmp_path)
+    cmd = aniblastall.construct_blastall_cmdline(
+        path_fna_two[0], path_fna_two[1], tmp_path
+    )
     expected = (
         f"blastall -p blastn -o {tmp_path / str(path_fna_two[0].stem + '_vs_' + path_fna_two[1].stem + '.blast_tab')} "
         f"-i {path_fna_two[0]} "
@@ -220,7 +224,7 @@ def test_blastall_single(path_fna_two, tmp_path):
 # Test legacy BLAST database formatting (formatdb) command generation
 def test_formatdb_multiple(path_fna_two, tmp_path):
     """Generate legacy BLAST db creation commands."""
-    cmds = anib.generate_blastdb_commands(path_fna_two, tmp_path, mode="ANIblastall")
+    cmds = aniblastall.generate_blastdb_commands(path_fna_two, tmp_path)
     expected = [
         (
             f"formatdb -p F -i {tmp_path / path_fna_two[0].name} -t {path_fna_two[0].stem}",
@@ -236,7 +240,7 @@ def test_formatdb_multiple(path_fna_two, tmp_path):
 
 def test_formatdb_single(path_fna, tmp_path):
     """Generate legacy BLAST formatdb command-line."""
-    cmd = anib.construct_formatdb_cmd(path_fna, tmp_path)
+    cmd = aniblastall.construct_formatdb_cmd(path_fna, tmp_path)
     expected = f"formatdb -p F -i {tmp_path / path_fna.name} -t {path_fna.stem}"
     assert cmd[0] == expected
 
@@ -245,9 +249,9 @@ def test_formatdb_single(path_fna, tmp_path):
 def test_parse_legacy_blastdir(anib_output_dir):
     """Parses directory of legacy BLAST output."""
     orglengths = pyani_files.get_sequence_lengths(anib_output_dir.infiles)
-    fraglengths = anib.get_fraglength_dict(anib_output_dir.fragfiles)
-    result = anib.process_blast(
-        anib_output_dir.legacyblastdir, orglengths, fraglengths, mode="ANIblastall"
+    fraglengths = aniblastall.get_fraglength_dict(anib_output_dir.fragfiles)
+    result = aniblastall.process_blast(
+        anib_output_dir.legacyblastdir, orglengths, fraglengths
     )
     assert_frame_equal(
         result.percentage_identity.sort_index(1).sort_index(),
@@ -257,10 +261,8 @@ def test_parse_legacy_blastdir(anib_output_dir):
 
 def test_parse_legacy_blasttab(anib_output):
     """Parses ANIB legacy .blast_tab output."""
-    fragdata = anib.get_fraglength_dict([anib_output.fragfile])
-    result = anib.parse_blast_tab(
-        anib_output.legacytabfile, fragdata, mode="ANIblastall"
-    )
+    fragdata = aniblastall.get_fraglength_dict([anib_output.fragfile])
+    result = aniblastall.parse_blast_tab(anib_output.legacytabfile, fragdata)
     assert (
         a == b for a, b in zip(result, [1_966_922, 406_104, 78.578_978_313_253_018])
     )

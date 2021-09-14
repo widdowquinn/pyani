@@ -41,6 +41,7 @@ import platform
 import re
 import shutil
 import subprocess
+from logging import Logger
 
 import pandas as pd
 
@@ -51,10 +52,11 @@ from Bio import SeqIO
 
 from . import pyani_config
 from . import pyani_jobs
-from .pyani_tools import BLASTcmds, BLASTfunctions, BLASTexes
+from .pyani_tools import BLASTcmds, BLASTfunctions, BLASTexes, ANIResults
+from pyani import pyani_files
 
 
-def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
+def get_version(blastall_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
     r"""Return BLAST blastall version as a string.
 
     :param blast_exe:  path to blastall executable
@@ -76,18 +78,46 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
     - no version info returned
     - executable cannot be run on this OS
     """
-    cmdline = [blast_exe, "-version"]
-    result = subprocess.run(
-        cmdline,  # type: ignore
-        shell=False,
-        stdout=subprocess.PIPE,  # type: ignore
-        stderr=subprocess.PIPE,
-        check=False,  # blastall doesn't return 0
-    )
+    logger = logging.getLogger(__name__)
+
+    try:
+        blastall_path = Path(shutil.which(blastall_exe))  # type:ignore
+    except TypeError:
+        return f"{blastall_exe} is not found in $PATH"
+
+    if not blastall_path.is_file():  # no executable
+        return f"No blastall at {blastall_path}"
+
+    # This should catch cases when the file can't be executed by the user
+    if not os.access(blastall_path, os.X_OK):  # file exists but not executable
+        return f"blastall exists at {blastall_path} but not executable"
+
+    if platform.system() == "Darwin":
+        cmdline = [blastall_exe, "-version"]
+    else:
+        cmdline = [blastall_exe]
+
+    try:
+        result = subprocess.run(
+            cmdline,  # type: ignore
+            shell=False,
+            stdout=subprocess.PIPE,  # type: ignore
+            stderr=subprocess.PIPE,
+            check=False,  # blastall doesn't return 0
+        )
+
+    except OSError:
+        logger.warning("blastall executable will not run", exc_info=True)
+        return f"blastall exists at {blastall_path} but could not be executed"
+
     version = re.search(  # type: ignore
         r"(?<=blastall\s)[0-9\.]*", str(result.stderr, "utf-8")
     ).group()
-    return f"{platform.system()}_{version}"
+
+    if 0 == len(version.strip()):
+        return f"blastall exists at {blastall_path} but could not retrieve version"
+
+    return f"{platform.system()}_{version} ({blastall_path})"
 
 
 # Divide input FASTA sequences into fragments
@@ -185,7 +215,7 @@ def build_db_jobs(infiles: List[Path], blastcmds: BLASTcmds) -> Dict:
 
 
 def make_blastcmd_builder(
-    method: str,
+    # method: str,
     outdir: Path,
     format_exe: Optional[Path] = None,
     blast_exe: Optional[Path] = None,
@@ -268,6 +298,7 @@ def generate_blastdb_commands(
     filenames: List[Path],
     outdir: Path,
     blastdb_exe: Optional[Path] = None,
+    # mode: "ANIblastall"
 ) -> List[Tuple[str, Path]]:
     """Return list of makeblastdb command-lines for ANIblastall.
 
@@ -295,7 +326,7 @@ def construct_formatdb_cmd(
     :param outdir:  Path, path to output directory
     :param blastdb_exe:  Path, path to the formatdb executable
     """
-    newfilename = outdir / filename.name
+    newfilename = Path(outdir) / Path(filename.name)
     shutil.copy(filename, newfilename)
     return (f"{blastdb_exe} -p F -i {newfilename} -t {filename.stem}", newfilename)
 
@@ -436,3 +467,71 @@ def parse_blast_tab(filename: Path, fraglengths: Dict) -> Tuple[int, int, int]:
     sim_errors = filtered["blast_mismatch"].sum() + filtered["blast_gaps"].sum()
     filtered.to_csv(Path(filename).with_suffix(".blast_tab.dataframe"), sep="\t")
     return aln_length, sim_errors, ani_pid
+
+
+def process_blast(
+    blast_dir: Path,
+    org_lengths: Dict,
+    fraglengths: Dict,
+    mode: str = "ANIblastall",
+    logger: Optional[Logger] = None,
+) -> ANIResults:
+    """Return tuple of ANIb results for .blast_tab files in the output dir.
+    :param blast_dir:  Path, path to the directory containing .blast_tab files
+    :param org_lengths:  Dict, the base count for each input sequence
+    :param fraglengths:  dictionary of query sequence fragment lengths, only
+        needed for BLASTALL output
+    :param mode:  str, analysis type (ANIb or ANIblastall)
+    :param logger:  a logger for messages
+    Returns the following pandas dataframes in an ANIResults object;
+    query sequences are rows, subject sequences are columns:
+    - alignment_lengths - non-symmetrical: total length of alignment
+    - percentage_identity - non-symmetrical: ANIb (Goris) percentage identity
+    - alignment_coverage - non-symmetrical: coverage of query
+    - similarity_errors - non-symmetrical: count of similarity errors
+    May throw a ZeroDivisionError if one or more BLAST runs failed, or a
+    very distant sequence was included in the analysis.
+    """
+    # Process directory to identify input files
+    blastfiles = pyani_files.get_input_files(blast_dir, ".blast_tab")
+    # Hold data in ANIResults object
+    results = ANIResults(list(org_lengths.keys()), mode)
+
+    # Fill diagonal NA values for alignment_length with org_lengths
+    for org, length in list(org_lengths.items()):
+        results.alignment_lengths[org][org] = length
+
+    # Process .blast_tab files assuming that the filename format holds:
+    # org1_vs_org2.blast_tab:
+    for blastfile in blastfiles:
+        qname, sname = blastfile.stem.split("_vs_")
+
+        # We may have BLAST files from other analyses in the same directory
+        # If this occurs, we raise a warning, and skip the file
+        if qname not in list(org_lengths.keys()):
+            if logger:
+                logger.warning(
+                    "Query name %s not in input sequence list, skipping %s",
+                    qname,
+                    blastfile,
+                )
+            continue
+        if sname not in list(org_lengths.keys()):
+            if logger:
+                logger.warning(
+                    "Subject name %s not in input sequence list, skipping %s",
+                    sname,
+                    blastfile,
+                )
+            continue
+        resultvals = parse_blast_tab(blastfile, fraglengths)
+        query_cover = float(resultvals[0]) / org_lengths[qname]
+
+        # Populate dataframes: when assigning data, we need to note that
+        # we have asymmetrical data from BLAST output, so only the
+        # upper triangle is populated
+        results.add_tot_length(qname, sname, resultvals[0], sym=False)
+        results.add_sim_errors(qname, sname, resultvals[1], sym=False)
+        results.add_pid(qname, sname, 0.01 * resultvals[2], sym=False)
+        results.add_coverage(qname, sname, query_cover)
+    return results
