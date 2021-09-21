@@ -300,6 +300,19 @@ def generate_joblist(
         # in this call of the script.
         if args.recovery and outfname.name in existingfiles:
             logger.debug("Recovering output from %s, not building job", outfname)
+            # Need to track the expected output, but set the job itself to None:
+            joblist.append(
+                ComparisonJob(
+                    query,
+                    ref,
+                    fastcmd,
+                    outfname,
+                    args.fragLen,
+                    args.kmerSize,
+                    args.minFraction,
+                    None,
+                )
+            )
         else:
             logger.debug("Building job")
             # Build jobs
