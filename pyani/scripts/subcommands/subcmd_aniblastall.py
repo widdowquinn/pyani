@@ -192,6 +192,25 @@ def subcmd_aniblastall(args: Namespace) -> None:
         fragfiles.update({Path(genome.path).stem: fragpath})
         fraglens.update({Path(genome.path).stem: fragsizes})
 
+        logger.info("Constructing formatdb command")
+        dbcmd, blastdbpath = aniblastall.construct_formatdb_cmd(
+            Path(genome.path), blastdbdir
+        )
+
+        logger.info("Running subprocess")
+        subprocess.run(
+            dbcmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+
+        logger.info("Adding blastdb")
+        add_blastdb(
+            session, genome, run, fragpath, blastdbpath, json.dumps(fragsizes), dbcmd
+        )
+
 
 def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path, str]:
     """Return path to fragmented sequence file and JSON of fragment lengths.
