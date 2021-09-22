@@ -263,6 +263,15 @@ def subcmd_aniblastall(args: Namespace) -> None:
         existing_files = list()
         logger.debug("\tAssuming no pre-existing output files")
 
+    # Create list of BLASTALL jobs for each comparison still to be performed
+    logger.info("Creating blastall jobs for ANIblastall...")
+    # This method considered, but doesn't get fraglens
+    # fragfiles =  [file for file in fragdir.iterdir()]
+    joblist = generate_joblist(
+        comparisons_to_run, existing_files, fragfiles.values(), fraglens.values(), args
+    )
+    logger.debug(f"...created {len(joblist)} blastall jobs")
+
 
 def generate_joblist(
     comparisons: List,
