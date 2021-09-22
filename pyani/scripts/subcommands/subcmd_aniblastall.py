@@ -144,3 +144,16 @@ def subcmd_aniblastall(args: Namespace) -> None:
         logger.error("Could not add run to the database (exiting)", exc_info=True)
         raise SystemExit(1)
     logger.debug(f"\t...added run ID: {run} to the database")
+
+    # Identify input files for comparison, and populate the database
+    logger.debug(f"Adding files for {run} to database...")
+    try:
+        genome_ids = add_run_genomes(
+            session, run, args.indir, args.classes, args.labels
+        )
+    except PyaniORMException:
+        logger.error(
+            f"Could not add genomes to database for run {run} (exiting)", exc_info=True
+        )
+        raise SystemExit(1)
+    logger.debug(f"\t...added gnome IDs: {genome_ids}")
