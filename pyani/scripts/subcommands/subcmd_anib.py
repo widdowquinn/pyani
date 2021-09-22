@@ -79,7 +79,7 @@ from pyani.pyani_tools import termcolor
 # implementation
 class ComparisonJob(NamedTuple):
 
-    """Pairwise comparison job for the SQLAlchemy implementation"""
+    """Pairwise comparison job for the SQLAlchemy implementation."""
 
     query: str
     subject: str
@@ -219,7 +219,7 @@ def subcmd_anib(args: Namespace) -> None:
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
     comparisons = list(permutations(tqdm(genomes, disable=args.disable_tqdm), 2))
-    logger.info(f"\t...total parwise comparisons to be performed: {len(comparisons)}")
+    logger.info(f"\t...total pairwise comparisons to be performed: {len(comparisons)}")
 
     # Check for existing comparisons; if one has already been done (for the same
     # software package, version, and setting) we add the comparison to this run,
@@ -255,17 +255,17 @@ def subcmd_anib(args: Namespace) -> None:
         logger.debug(
             "\tIn this mode, existing comparison output from %s is reused", args.outdir
         )
-        existingfiles = collect_existing_output(args.outdir, "blastn", args)
-        if existingfiles:
+        existing_files = collect_existing_output(args.outdir, "blastn", args)
+        if existing_files:
             logger.debug(
                 "\tIdentified %s existing output files for reuse, %s (etc)",
-                len(existingfiles),
-                existingfiles[0],
+                len(existing_files),
+                existing_files[0],
             )
         else:
             logger.debug("\tIdentified no existing output files")
     else:
-        existingfiles = list()
+        existing_files = list()
         logger.debug("\tAssuming no pre-existing output files")
 
     ## Split the input genome files into contiguous fragments of the specified size,
@@ -286,7 +286,7 @@ def subcmd_anib(args: Namespace) -> None:
     # This method considered, but doesn't get fraglens
     # fragfiles =  [file for file in fragdir.iterdir()]
     joblist = generate_joblist(
-        comparisons_to_run, existingfiles, fragfiles.values(), fraglens.values(), args
+        comparisons_to_run, existing_files, fragfiles.values(), fraglens.values(), args
     )
     logger.debug("...created %s blastn jobs", len(joblist))
     # print(f"Joblist: {joblist}")
@@ -308,7 +308,7 @@ def subcmd_anib(args: Namespace) -> None:
 
 def generate_joblist(
     comparisons: List,
-    existingfiles: List,
+    existing_files: List,
     fragfiles: List,
     fragsizes: List,
     args: Namespace,
@@ -316,14 +316,14 @@ def generate_joblist(
     """Return list of ComparisonJobs.
 
     :param comparisons:  list of (Genome, Genome) tuples for which comparisons are needed
-    :param existingfiles:  list of pre-existing BLASTN+ outputs
+    :param existing_files:  list of pre-existing BLASTN+ outputs
     :param fragfiles:  list of files containing genome fragments
     :param fragsizes:  list of fragment lengths
     :param args:  Namespace, command-line arguments
     """
     logger = logging.getLogger(__name__)
 
-    existingfiles = set(existingfiles)  # Path objects hashable
+    existing_files = set(existing_files)  # Path objects hashable
 
     joblist = []  # will hold ComparisonJob structs
     for idx, (query, subject) in enumerate(
@@ -339,16 +339,17 @@ def generate_joblist(
         outfname = Path(outprefix + ".blast_tab")
         logger.debug("Expected output file for db: %s", outfname)
 
-        # If e're in recovery mode, we don't want to repeat a computational
-        # comparison that already exists, so we check whether the ultimate
-        # output is in the set of existing files and, if not, we add the obs
+        # If we are in recovery mode, we are salvaging output from a previous
+        # run, and do not necessarily need to rerun all the jobs. In this case,
+        # we prepare a list of output files we want to recover from the results
+        # in the output directory.
 
         # The comparisons collection always gets updated, so that results are
         # added to the database whether they come from recovery mode or are run
         # in this call of the script.
-        if args.recovery and outfname in existingfiles:
+        if args.recovery and outfname in existing_files:
             logger.debug("Recovering output from %s, not submitting job", outfname)
-            # Need to track the expected output, but set the job itself to None:
+            # Need to track the expected output, but set the job itself to None.
             joblist.append(
                 ComparisonJob(query, subject, blastcmd, outfname, args.fragsize, None)
             )
@@ -449,18 +450,18 @@ def update_comparison_results(
     args: Namespace,
 ) -> None:
     """Update the Comparision table with the completed result set.
-    #
-       :param joblist:         list of ComparisonJob namedtuples
-       :param run:             Run ORM object for the current ANIb run
-       :param session:         active pyanidb session via ORM
-       :param blastn_version:  version of blastn used for the comparison
-       :param fraglens:     dictionary of fragment lengths for each genome
-       :param args:            command-line arguments for this run
-    #
-       The Comparison table stores individual comparison results, one per row.
+
+    :param joblist:         list of ComparisonJob namedtuples
+    :param run:             Run ORM object for the current ANIb run
+    :param session:         active pyanidb session via ORM
+    :param blastn_version:  version of blastn used for the comparison
+    :param fraglens:     dictionary of fragment lengths for each genome
+    :param args:            command-line arguments for this run
+
+    The Comparison table stores individual comparison results, one per row.
     """
     logger = logging.getLogger(__name__)
-    #
+
     # Add individual results to Comparison table
     for job in tqdm(joblist, disable=args.disable_tqdm):
         logger.debug("\t%s vs %s", job.query.description, job.subject.description)
