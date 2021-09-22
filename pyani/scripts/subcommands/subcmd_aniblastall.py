@@ -84,7 +84,7 @@ class ComparisonJob(NamedTuple):
 
     query: str
     subject: str
-    blastcmd: str
+    blastallcmd: str
     outfile: Path
     fragsize: int
     job: pyani_jobs.Job
