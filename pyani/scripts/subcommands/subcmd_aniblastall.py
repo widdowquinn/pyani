@@ -157,3 +157,24 @@ def subcmd_aniblastall(args: Namespace) -> None:
         )
         raise SystemExit(1)
     logger.debug(f"\t...added gnome IDs: {genome_ids}")
+
+    # Get list of genomes for this anlaysis from the database
+    logger.info("Compiling genomes for comparison")
+    genomes = run.genomes.all()
+    logger.debug(f"\tCollected {len(genomes)} genomes for this run")
+
+    # Create output directories. We create the amin parent directory (args.outdir), but
+    # also subdirectories for the BLAST databases.
+    logger.debug(f"Creating output directory {args.outdir}")
+    try:
+        os.makedirs(args.outdir, exist_ok=True)
+    except IOError:
+        logger.error(
+            f"Could not create output directory {args.outdir} (exiting)", exc_info=True
+        )
+        raise SystemError(1)
+    fragdir = Path(str(args.outdir)) / "fragments"
+    blastdbdir = Path(str(args.outdir)) / "blastalldbs"
+    logger.debug("\t...creating subdirectories")
+    os.makedirs(fragdir, exist_ok=True)
+    os.makedirs(blastdbdir, exist_ok=True)
