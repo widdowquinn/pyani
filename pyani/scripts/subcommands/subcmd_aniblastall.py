@@ -39,11 +39,58 @@
 # THE SOFTWARE.
 """Provides the aniblastall subcommand for pyani."""
 
+import datetime
+import json
+import logging
+import os
+import subprocess
+
 from argparse import Namespace
 from logging import Logger
+from itertools import permutations
+from pathlib import Path
+from typing import List, NamedTuple, Tuple, Dict
+
+from Bio import SeqIO
+from tqdm import tqdm
+
+from pyani import (
+    PyaniException,
+    aniblastall,
+    pyani_config,
+    pyani_jobs,
+    run_sge,
+    run_multiprocessing as run_mp,
+)
+from pyani.pyani_files import collect_existing_output
+from pyani.pyani_orm import (
+    add_run,
+    add_run_genomes,
+    add_blastdb,
+    Comparison,
+    filter_existing_comparisons,
+    get_session,
+    PyaniORMException,
+    update_comparison_matrices,
+)
+from pyani.pyani_tools import termcolor
 
 
-def subcmd_aniblastall(args: Namespace):
+# Convenience struct describing a pairwise comparison job for the SQLAlchemy
+# implementation
+class ComparisonJob(NamedTuple):
+
+    """Pairwise comparison job for the SQLAlchemy implementation."""
+
+    query: str
+    subject: str
+    blastcmd: str
+    outfile: Path
+    fragsize: int
+    job: pyani_jobs.Job
+
+
+def subcmd_aniblastall(args: Namespace) -> None:
     """Perform ANIblastall on all genome files in an input directory.
 
     :param args:
