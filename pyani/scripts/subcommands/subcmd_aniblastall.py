@@ -229,6 +229,19 @@ def subcmd_aniblastall(args: Namespace) -> None:
         f"\t...after check, still need to run {len(comparisons_to_run)} comparisons"
     )
 
+    # If there are no comparisons to run, update the Run matrices and exit
+    # from this function
+    if not comparisons_to_run:
+        logger.info(
+            termcolor(
+                "All comparison results present in database (skipping comparisons)",
+                "magenta",
+            )
+        )
+        logger.info("Updating summary matrices with existing results")
+        update_comparison_matrices(session, run)
+        return
+
 
 def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path, str]:
     """Return path to fragmented sequence file and JSON of fragment lengths.
