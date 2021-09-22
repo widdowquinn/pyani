@@ -178,6 +178,7 @@ def test_blastall_graph(path_fna_all, tmp_path, fragment_length):
         assert job.dependencies[0].script.startswith("formatdb")
 
 
+@pytest.mark.skip(reason="unsure this is needed")
 def test_blastall_multiple(path_fna_two, tmp_path):
     """Generate legacy BLASTALL commands."""
     cmds = aniblastall.generate_blastall_commands(path_fna_two, tmp_path)
@@ -215,6 +216,7 @@ def test_blastall_single(path_fna_two, tmp_path):
 
 
 # Test legacy BLAST database formatting (formatdb) command generation
+@pytest.mark.skip(reason="unsure this is needed")
 def test_formatdb_multiple(path_fna_two, tmp_path):
     """Generate legacy BLAST db creation commands."""
     cmds = aniblastall.generate_blastdb_commands(path_fna_two, tmp_path)
