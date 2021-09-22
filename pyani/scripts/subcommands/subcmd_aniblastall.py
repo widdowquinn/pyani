@@ -93,7 +93,54 @@ class ComparisonJob(NamedTuple):
 def subcmd_aniblastall(args: Namespace) -> None:
     """Perform ANIblastall on all genome files in an input directory.
 
-    :param args:
+    :param args:  Namespace, command-line arguments
     :param logger:
+
+    Finds ANI by the ANIblastall method, as described in ... some paper.
+
+    All FASTA format files (selected by suffix) in the input directory are fragmented into (by default 1020nt) consecutive sections, and a BLASTALL database constructed from the whole genome input. The BLAST+ blastall tool is then used to query each set of fragments against each BLAST+ database, in turn.
+
+    For each query, the BLAST+ .tab output is parsed to obtain alignment length, identity and similarity error count. Alignments below a threshold are not included in the calculation (this introduces systematic bias with respect to ANIm). The results are processed to calculate the ANI percentages, coverage, and similarity error.
+
+    The calculated values are stored in the local SQLite3 database.
     """
-    raise NotImplementedError
+    # Create logger
+    logger = logging.getLogger(__name__)
+
+    # Announce the analysis
+    logger.info(termcolor("Running ANIblastall analysis", "red"))
+
+    # Get BLASTALL version - this will be used in the database entreis
+    blastall_version = aniblastall.get_version(args.blastall_exe)
+    logger.info(termcolor(f"BLAST+ blastall version: {blastall_version}", "cyan"))
+
+    # Use provided name, or make new one for this analysis
+    start_time = datetime.datetime.now()
+    name = args.name or "_".join(["ANIblastall", start_time.isoformat()])
+    logger.info(termcolor(f"Analysis name: {name}", "cyan"))
+
+    # Connect to existing database (which may be "clean" or have old analyses)
+    logger.debug(f"Connecting to database {args.dbpath}")
+    try:
+        session = get_session(args.dbpath)
+    except Exception:
+        logger.error(
+            f"Could not connect to database {args.dbpath} (exiting)", exc_info=True
+        )
+        raise SystemExit(1)
+
+    # Add information about this run to the database
+    logger.debug(f"Adding run info to database {args.dbpath}...")
+    try:
+        run = add_run(
+            session,
+            method="ANIblastall",
+            cmdline=args.cmdline,
+            date=start_time,
+            status="started",
+            name=name,
+        )
+    except PyaniORMException:
+        logger.error("Could not add run to the database (exiting)", exc_info=True)
+        raise SystemExit(1)
+    logger.debug(f"\t...added run ID: {run} to the database")
