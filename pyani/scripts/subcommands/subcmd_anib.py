@@ -472,6 +472,8 @@ def update_comparison_results(
     for job in tqdm(joblist, disable=args.disable_tqdm):
         logger.debug("\t%s vs %s", job.query.description, job.subject.description)
         aln_length, sim_errs, ani_pid = anib.parse_blast_tab(job.outfile, fraglens)
+        logger.debug(f"Results: {aln_length}, {sim_errs}, {ani_pid}")
+        logger.debug(f"Results: {type(aln_length)}, {type(sim_errs)}, {type(ani_pid)}")
         qcov = aln_length / job.query.length
         scov = aln_length / job.subject.length
         run.comparisons.append(
