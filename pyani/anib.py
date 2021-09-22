@@ -254,7 +254,6 @@ def make_blastcmd_builder(
 ) -> BLASTcmds:
     """Return BLASTcmds object for construction of BLAST commands.
 
-    :param method:  str, the kind of ANI analysis (ANIb)
     :param outdir:
     :param format_exe:
     :param blast_exe:
@@ -400,8 +399,8 @@ def construct_blastn_cmdline(
 ) -> str:
     """Return a single blastn command.
 
-    :param fname1:  Path, FASTA file for query genome
-    :param fname2:  Path, database of fragments for subject genome
+    :param query:  Path, FASTA file for query genome
+    :param subj_db:  Path, database of fragments for subject genome
     :param outdir:  Path, to the output directory
     :param blastn_exe:  str, path to blastn executable
     """
