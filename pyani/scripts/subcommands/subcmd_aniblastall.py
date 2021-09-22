@@ -264,6 +264,73 @@ def subcmd_aniblastall(args: Namespace) -> None:
         logger.debug("\tAssuming no pre-existing output files")
 
 
+def generate_joblist(
+    comparisons: List,
+    existing_files: List,
+    fragfiles: List,
+    fragsizes: List,
+    args: Namespace,
+) -> List[ComparisonJob]:
+    """Return list of ComparisonJobs.
+
+    :param comparisons:  list of (Genome, Genome) tuples for which comparisons are needed
+    :param existing_files:  list of pre-existing BLASTALL outputs
+    :param fragfiles:  list of files containing genome fragments
+    :param fragsizes:  list of fragment lengths
+    :param args:  Namespace, command-line arguments
+    """
+    logger = logging.getLogger(__name__)
+
+    existing_files = set(existing_files)  # Path objects hashable
+
+    joblist = []  # will hold ComparisonJob structs
+    for idx, (query, subject) in enumerate(
+        tqdm(comparisons, disable=args.disable_tqdm)
+    ):
+        qprefix, qsuffix = (
+            args.outdir / "fragments" / Path(query.path).stem,
+            Path(query.path).suffix,
+        )
+        qfrags = Path(f"{qprefix}-fragments{qsuffix}")
+
+        blastallcmd = aniblastall.generate_blastall_commands(
+            qfrags, Path(subject.path), args.outdir, args.blastall_exe
+        )
+        logger.debug(f"Commands to run:\n\t{blastallcmd}\n")
+        outprefix = blastallcmd.split()[4][:-10]  # prefix for blastall output
+        outfname = Path(outprefix + ".blast_tab")
+        logger.debug(f"Expected output file for db: {outfname}")
+
+        # If we are in recovery mode, we are salvaging output from a previous
+        # run, and do not necessarily need to rerun all the jobs. In this case,
+        # we prepare a list of output files we want to recover from the results
+        # in the output directory.
+
+        # The comparisons collection always gets updated, so that results are
+        # added to the database whether they come from recovery mode or are run
+        # in this call of the script.
+        if args.recovery and outfname in existing_files:
+            logger.debug(f"Recovering output from {outfname}, not submitting job")
+            # Need to track the expected output, but set the job itself to None.
+            joblist.append(
+                ComparisonJob(
+                    query, subject, blastallcmd, outfname, args.fragsize, None
+                )
+            )
+        else:
+            logger.debug("Building job")
+            # Build job
+            blastalljob = pyani_jobs.Job(
+                "{args.jobprefix}_{idx:06d}-blastall", blastallcmd
+            )
+            joblist.append(
+                ComparisonJob(
+                    query, subject, blastallcmd, outfname, args.fragsize, blastalljob
+                )
+            )
+    return joblist
+
+
 def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path, str]:
     """Return path to fragmented sequence file and JSON of fragment lengths.
 
