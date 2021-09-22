@@ -324,7 +324,9 @@ def construct_formatdb_cmd(
     :param outdir:  Path, path to output directory
     :param blastdb_exe:  Path, path to the formatdb executable
     """
-    newfilename = Path(outdir) / Path(filename.name)
+    newfilename = (
+        Path(outdir) / Path(filename).name
+    )  # Path(filename.name.replace("-fragments", ""))
     shutil.copy(filename, newfilename)
     return (f"{blastdb_exe} -p F -i {newfilename} -t {filename.stem}", newfilename)
 
