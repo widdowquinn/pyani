@@ -277,6 +277,16 @@ def subcmd_aniblastall(args: Namespace) -> None:
     run_aniblastall_jobs(joblist, args)
     logger.info("...jobs complete.")
 
+    # Process output and add results to database
+    # This requires us to drop out of threading/multiprocessing: Python's SQLite3
+    # interface doesn't allow sharing connections and cursors
+    logger.info("Adding comparison results to database...")
+    update_comparison_results(joblist, run, session, blastall_version, fraglens, args)
+    update_comparison_matrices(session, run)
+    logger.info("...database updated.")
+
+    # raise NotImplementedError
+
 
 def generate_joblist(
     comparisons: List,
@@ -416,3 +426,55 @@ def run_aniblastall_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
     else:
         logger.error(termcolor(f"Scheduler {args.scheduler} not recognised", "red"))
         raise SystemError(1)
+
+
+def update_comparison_results(
+    joblist: List[ComparisonJob],
+    run,
+    session,
+    blastall_version: str,
+    fraglens: Dict,
+    args: Namespace,
+) -> None:
+    """Update the Comparison table with the completed result set.
+
+    :param joblist:  list of ComparisonJob namedtuples
+    :param run:  Run ORM object for the current ANIblastall run
+    :param session:  active pyanidb session via ORM
+    :param blastall_version:  version of blastall used for the comparison
+    :param fraglens:  dictionary of fragment lengths for each genome
+    :param args:  command-line arguments for this run
+
+    The Comparison table stores individual comparison results, one per row.
+    """
+    logger = logging.getLogger(__name__)
+
+    # Add individual results to Comparison table
+    for job in tqdm(joblist, disable=args.disable_tqdm):
+        logger.debug(f"\t{job.query.description} vs {job.subject.description}")
+        aln_length, sim_errs, ani_pid = aniblastall.parse_blast_tab(
+            job.outfile, fraglens
+        )
+        logger.debug(f"Results: {aln_length}, {sim_errs}, {ani_pid}")
+        logger.debug(f"Results: {type(aln_length)}, {type(sim_errs)}, {type(ani_pid)}")
+        qcov = aln_length / job.query.length
+        scov = aln_length / job.subject.length
+        run.comparisons.append(
+            Comparison(
+                query=job.query,
+                subject=job.subject,
+                aln_length=int(aln_length),
+                sim_errs=int(sim_errs),
+                identity=ani_pid,
+                cov_query=qcov,
+                cov_subject=scov,
+                program="blastall",
+                version=blastall_version,
+                fragsize=job.fragsize,
+                maxmatch=False,
+            )
+        )
+
+    # Populate db
+    logger.debug("Committing results to database")
+    session.commit()
