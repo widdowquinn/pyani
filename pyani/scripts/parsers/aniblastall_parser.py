@@ -39,9 +39,13 @@
 """Provides parser for aniblastall subcommand."""
 
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, _SubParsersAction
+from pathlib import Path
 from typing import List, Optional
 
+from pyani import pyani_config
 from pyani.scripts import subcommands
+
+from pyani import __version__
 
 
 def build(
@@ -51,8 +55,66 @@ def build(
 
     :param subps:  collection of subparsers in main parser
     :param parents:  parsers from which arguments are inherited
+
+    The terminology may be confusing, but in practice the main parser collects
+    command-line arguments that are then available to this parser, which inherits
+    options from the parsers in `parents` in addition to those defined below.
     """
     parser = subps.add_parser(
         "aniblastall", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
+    )
+    # Required arguments
+    parser.add_argument(
+        "-i",
+        "--indir",
+        action="store",
+        dest="indir",
+        default=None,
+        required=True,
+        type=Path,
+        help="input genome directory (required)",
+    )
+    parser.add_argument(
+        "-o",
+        "--outdir",
+        action="store",
+        dest="outdir",
+        default=None,
+        required=True,
+        type=Path,
+        help="output analysis results directory (required)",
+    )
+    # Optional arguments
+    parser.add_argument(
+        "--dbpath",
+        action="store",
+        dest="dbpath",
+        default=Path(".pyani/pyanidb"),
+        type=Path,
+        help="path to pyani database",
+    )
+    parser.add_argument(
+        "--blastall_exe",
+        action="store",
+        dest="blastall_exe",
+        default=pyani_config.BLASTALL_DEFAULT,
+        type=Path,
+        help="path to blastall executable",
+    )
+    parser.add_argument(
+        "--format_exe",
+        dest="format_exe",
+        action="store",
+        default=pyani_config.FORMATDB_DEFAULT,
+        type=Path,
+        help="path to formatdb executable",
+    )
+    parser.add_argument(
+        "--fragsize",
+        dest="fragsize",
+        action="store",
+        type=int,
+        default=pyani_config.FRAGSIZE,
+        help="blastn query fragment size",
     )
     parser.set_defaults(func=subcommands.subcmd_aniblastall)
