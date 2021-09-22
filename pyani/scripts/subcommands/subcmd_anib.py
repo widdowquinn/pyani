@@ -212,7 +212,9 @@ def subcmd_anib(args: Namespace) -> None:
             check=False,
         )
 
-        add_blastdb(session, genome, run, fragpath, blastdbpath, fragsizes, dbcmd)
+        add_blastdb(
+            session, genome, run, fragpath, blastdbpath, json.dumps(fragsizes), dbcmd
+        )
 
     # Generate all pair permutations of genome IDs as a list of (Genome, Genome) tuples
     logger.info(
@@ -400,7 +402,7 @@ def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path
     # Write fragments to output file
     fragpath = outdir / f"{inpath.stem}-fragments.fna"
     SeqIO.write(outseqs, fragpath, "fasta")
-    return fragpath, json.dumps(sizedict)
+    return fragpath, sizedict
 
 
 def run_anib_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
