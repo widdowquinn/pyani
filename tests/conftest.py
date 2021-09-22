@@ -118,6 +118,12 @@ def dir_anib_in():
 
 
 @pytest.fixture
+def dir_aniblastall_in():
+    """Input files for ANIblastall tests."""
+    return FIXTUREPATH / "anib"
+
+
+@pytest.fixture
 def dir_anim_in():
     """Input files for ANIm tests."""
     return FIXTUREPATH / "anim"
