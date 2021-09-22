@@ -324,10 +324,12 @@ def construct_formatdb_cmd(
     :param outdir:  Path, path to output directory
     :param blastdb_exe:  Path, path to the formatdb executable
     """
+    logger = logging.getLogger(__name__)
     newfilename = (
         Path(outdir) / Path(filename).name
     )  # Path(filename.name.replace("-fragments", ""))
     shutil.copy(filename, newfilename)
+    logger.debug(f"mv {filename} {newfilename}")
     return (f"{blastdb_exe} -p F -i {newfilename} -t {filename.stem}", newfilename)
 
 
@@ -401,10 +403,17 @@ def parse_blast_tab(filename: Path, fraglengths: Dict) -> Tuple[int, int, int]:
     over an alignable region of at least 70% of their length.
     '''
     """
+    logger = logging.getLogger(__name__)
+
     # Assuming that the filename format holds org1_vs_org2.blast_tab:
+    logger.debug(f"Filename: {filename}")
     qname = filename.stem.split("_vs_")[0]
+    logger.debug(f"Qname: {qname}")
     # Load output as dataframe
+    logger.debug(f"Keys: {fraglengths.keys()}")
     qfraglengths = fraglengths[qname]
+    # logger.debug(f"Qkeys: {qfraglengths.keys()}")
+    logger.debug(f"Qfraglengths: {type(qfraglengths)}")
     columns = [
         "sid",
         "blast_pid",
@@ -422,12 +431,14 @@ def parse_blast_tab(filename: Path, fraglengths: Dict) -> Tuple[int, int, int]:
     # regions of homology. This causes pandas to throw an error on CSV import.
     # To get past this, we create an empty dataframe with the appropriate
     # columns.
+    # logger.debug(pd.read_csv(filename, header=None, index_col=0))
     try:
         data = pd.read_csv(filename, header=None, sep="\t", index_col=0)
         data.columns = columns
     except pd.io.common.EmptyDataError:
         data = pd.DataFrame(columns=columns)
     # Add new column for fragment length, only for BLASTALL
+    logger.debug(f"Data: {data.head()}")
     data["qlen"] = pd.Series(
         [qfraglengths[idx] for idx in data.index], index=data.index
     )
@@ -437,6 +448,8 @@ def parse_blast_tab(filename: Path, fraglengths: Dict) -> Tuple[int, int, int]:
     data["ani_alnids"] = data["ani_alnlen"] - data["blast_mismatch"]
     data["ani_coverage"] = data["ani_alnlen"] / data["qlen"]
     data["ani_pid"] = data["ani_alnids"] / data["qlen"]
+    logger.debug(f"data: {data.head()}")
+
     # Filter rows on 'ani_coverage' > 0.7, 'ani_pid' > 0.3
     filtered = data[(data["ani_coverage"] > 0.7) & (data["ani_pid"] > 0.3)]
     # Dedupe query hits, so we only take the best hit
@@ -457,8 +470,10 @@ def parse_blast_tab(filename: Path, fraglengths: Dict) -> Tuple[int, int, int]:
     if pd.isnull(ani_pid):  # Happens if there are no matches in ANIb
         ani_pid = 0
     aln_length = filtered["ani_alnlen"].sum()
+    logger.debug(f"Alignment length, aniblastall.py: {aln_length.sum()}")
     sim_errors = filtered["blast_mismatch"].sum() + filtered["blast_gaps"].sum()
     filtered.to_csv(Path(filename).with_suffix(".blast_tab.dataframe"), sep="\t")
+    logger.debug(f"Results, aniblastall.py: {aln_length}, {sim_errors}, {ani_pid}")
     return aln_length, sim_errors, ani_pid
 
 
@@ -485,6 +500,7 @@ def process_blast(
     May throw a ZeroDivisionError if one or more BLAST runs failed, or a
     very distant sequence was included in the analysis.
     """
+    logger = logging.getLogger(__name__)
     # Process directory to identify input files
     blastfiles = pyani_files.get_input_files(blast_dir, ".blast_tab")
     # Hold data in ANIResults object
@@ -518,6 +534,7 @@ def process_blast(
                 )
             continue
         resultvals = parse_blast_tab(blastfile, fraglengths)
+        logger.debug(f"Resultvals: {resultvals}")
         query_cover = float(resultvals[0]) / org_lengths[qname]
 
         # Populate dataframes: when assigning data, we need to note that
