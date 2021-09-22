@@ -324,26 +324,26 @@ def make_job_graph(
     return joblist
 
 
-# Generate list of makeblastdb command lines from passed filenames
-def generate_blastdb_commands(
-    filenames: List[Path],
-    outdir: Path,
-    blastdb_exe: Optional[Path] = None,
-) -> List[Tuple[str, Path]]:
-    """Return list of makeblastdb command-lines for ANIb.
-
-    :param filenames:  a list of paths to input FASTA files
-    :param outdir:  path to output directory
-    :param blastdb_exe:  path to the makeblastdb executable
-    :param method:  str, ANIb analysis type (ANIb)
-    """
-    if blastdb_exe is None:
-        cmdlines = [construct_makeblastdb_cmd(fname, outdir) for fname in filenames]
-    else:
-        cmdlines = [
-            construct_makeblastdb_cmd(fname, outdir, blastdb_exe) for fname in filenames
-        ]
-    return cmdlines
+## Generate list of makeblastdb command lines from passed filenames
+# def generate_blastdb_commands(
+#     filenames: List[Path],
+#     outdir: Path,
+#     blastdb_exe: Optional[Path] = None,
+# ) -> List[Tuple[str, Path]]:
+#     """Return list of makeblastdb command-lines for ANIb.
+#
+#     :param filenames:  a list of paths to input FASTA files
+#     :param outdir:  path to output directory
+#     :param blastdb_exe:  path to the makeblastdb executable
+#     :param method:  str, ANIb analysis type (ANIb)
+#     """
+#     if blastdb_exe is None:
+#         cmdlines = [construct_makeblastdb_cmd(fname, outdir) for fname in filenames]
+#     else:
+#         cmdlines = [
+#             construct_makeblastdb_cmd(fname, outdir, blastdb_exe) for fname in filenames
+#         ]
+#     return cmdlines
 
 
 # Generate single makeblastdb command line
