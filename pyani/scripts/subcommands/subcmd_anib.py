@@ -201,7 +201,7 @@ def subcmd_anib(args: Namespace) -> None:
         fraglens.update({genome: fragsizes})
 
         dbcmd, blastdbpath = anib.construct_makeblastdb_cmd(
-            fragpath, blastdbdir
+            Path(genome.path), blastdbdir  # fragpath, blastdbdir
         )  # args.outdir)
 
         subprocess.run(
@@ -329,10 +329,14 @@ def generate_joblist(
     for idx, (query, subject) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
-        # fname1 = Path(query.path)
-        # fname2 = Path(subject.path)
+        qprefix, qsuffix = (
+            args.outdir / "fragments" / Path(query.path).stem,
+            Path(query.path).suffix,
+        )
+        qfrags = Path(f"{qprefix}-fragments{qsuffix}")
+
         blastcmd = anib.generate_blastn_commands(
-            Path(query.path), Path(subject.path), args.outdir, args.blastn_exe
+            qfrags, Path(subject.path), args.outdir, args.blastn_exe
         )
         logger.debug("Commands to run:\n\t%s\n", blastcmd)
         outprefix = blastcmd.split()[2][:-10]  # prefix for blastn output
@@ -472,8 +476,8 @@ def update_comparison_results(
             Comparison(
                 query=job.query,
                 subject=job.subject,
-                aln_length=aln_length,
-                sim_errs=sim_errs,
+                aln_length=int(aln_length),
+                sim_errs=int(sim_errs),
                 identity=ani_pid,
                 cov_query=qcov,
                 cov_subject=scov,
