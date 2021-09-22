@@ -331,14 +331,17 @@ def construct_formatdb_cmd(
 
 
 # Generate list of BLASTN command lines from passed filenames
-def generate_blastn_commands(
-    filenames: List[Path],
+def generate_blastall_commands(
+    # filenames: List[Path],
+    query: Path,
+    subject: Path,
     outdir: Path,
-    blast_exe: Optional[Path] = None,
+    blastall_exe: Optional[Path] = None,
 ) -> List[str]:
     """Return a list of blastn command-lines for ANIblastall.
 
-    :param filenames:  a list of paths to fragmented input FASTA files
+    :param query:  a paths to the query's fragmented input FASTA file
+    :param subject:  a paths to the subject's fragmented input FASTA file
     :param outdir:  path to output directory
     :param blastn_exe:  path to BLASTN executable
     :param method:  str, analysis type (ANIblastall)
@@ -348,41 +351,31 @@ def generate_blastn_commands(
     have the form ACCESSION.ext. This is the convention followed by the
     fragment_FASTA_files() function above.
     """
-    cmdlines = []
-    for idx, fname1 in enumerate(filenames[:-1]):
-        dbname1 = Path(str(fname1).replace("-fragments", ""))
-        for fname2 in filenames[idx + 1 :]:
-            dbname2 = Path(str(fname2).replace("-fragments", ""))
-            if blast_exe is None:
-                cmdlines.append(construct_blastall_cmdline(fname1, dbname2, outdir))
-                cmdlines.append(construct_blastall_cmdline(fname2, dbname1, outdir))
-            else:
-                cmdlines.append(
-                    construct_blastall_cmdline(fname1, dbname2, outdir, blast_exe)
-                )
-                cmdlines.append(
-                    construct_blastall_cmdline(fname2, dbname1, outdir, blast_exe)
-                )
-    return cmdlines
+    subj_db = outdir / "blastalldbs" / Path(str(subject.name))
+    if blastall_exe is None:
+        cmdline = construct_blastall_cmdline(query, subj_db, outdir)
+    else:
+        cmdline = construct_blastall_cmdline(query, subj_db, outdir, blastall_exe)
+        return cmdline
 
 
 # Generate single BLASTALL command line
 def construct_blastall_cmdline(
-    fname1: Path,
-    fname2: Path,
+    query: Path,
+    subj_db: Path,
     outdir: Path,
     blastall_exe: Path = pyani_config.BLASTALL_DEFAULT,
 ) -> str:
     """Return single blastall command.
 
-    :param fname1:
-    :param fname2:
-    :param outdir:
     :param blastall_exe:  str, path to BLASTALL executable
+    :param query:  Path, FASTA file for query genome
+    :param subj_db:  Path, database of fragments for subject genome
+    :param outdir:  Path, to the output directory
     """
-    prefix = outdir / f"{fname1.stem.replace('-fragments', '')}_vs_{fname2.stem}"
+    prefix = Path(outdir) / f"{query.stem.replace('-fragments', '')}_vs_{subj_db.stem}"
     return (
-        f"{blastall_exe} -p blastn -o {prefix}.blast_tab -i {fname1} -d {fname2} "
+        f"{blastall_exe} -p blastn -o {prefix}.blast_tab -i {query} -d {subj_db} "
         "-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8"
     )
 
