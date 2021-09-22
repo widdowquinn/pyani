@@ -242,6 +242,27 @@ def subcmd_aniblastall(args: Namespace) -> None:
         update_comparison_matrices(session, run)
         return
 
+    # If we are in recovery mode, we are salvaging output from a previous
+    # run, and do not necessarily need to rerun all the jobs. In this case,
+    # we prepare a list of output files we want to recover from the results
+    # in the output directory.
+    # ¶ Should this use output files, or pull from the database?
+    if args.recovery:
+        logger.warning("Entering recovery mode...")
+        logger.debug(
+            f"\tIn this mode, existing comparison output from {args.outdir} is reused"
+        )
+        existing_files = collect_existing_output(args.outdir, "blastall", args)
+        if existing_files:
+            logger.debug(
+                f"\tIdentified {len(existing_files)} existing output files for reuse, existing_files[0] (et cetera)"
+            )
+        else:
+            logger.debug("\tIdentified no existing output files")
+    else:
+        existing_files = list()
+        logger.debug("\tAssuming no pre-existing output files")
+
 
 def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path, str]:
     """Return path to fragmented sequence file and JSON of fragment lengths.
