@@ -50,72 +50,65 @@ import pytest  # noqa: F401  # pylint: disable=unused-import
 
 from pandas.util.testing import assert_frame_equal
 
-from pyani import anib, pyani_files
+from pyani import anib, pyani_files  # probably don't need anib
 from pyani import aniblastall
 
 
-class ANIbOutput(NamedTuple):
+class ANIblastallOutput(NamedTuple):
 
-    """Convenience struct for ANIb output."""
+    """Convenience struct for ANIblastall output."""
 
     fragfile: Path
-    tabfile: Path
     legacytabfile: Path
 
 
-class ANIbOutputDir(NamedTuple):
+class ANIblastallOutputDir(NamedTuple):
 
-    """Convenience struct for ANIb output."""
+    """Convenience struct for ANIblastall output."""
 
     infiles: List[Path]
     fragfiles: List[Path]
-    blastdir: Path
     legacyblastdir: Path
-    blastresult: pd.DataFrame
     legacyblastresult: pd.DataFrame
 
 
 @pytest.fixture
-def anib_output(dir_anib_in):
-    """Namedtuple of example ANIb output.
+def aniblastall_output(dir_aniblastall_in):
+    """Namedtuple of example ANIblastall output.
 
     fragfile - fragmented FASTA query file
-    tabfile  - BLAST+ tabular output
     legacytabfile - blastall tabular output
     """
-    return ANIbOutput(
-        dir_anib_in / "NC_002696-fragments.fna",
-        dir_anib_in / "NC_002696_vs_NC_011916.blast_tab",
-        dir_anib_in / "NC_002696_vs_NC_010338.blast_tab",
+    return ANIblastallOutput(
+        dir_aniblastall_in / "NC_002696-fragments.fna",
+        dir_aniblastall_in / "NC_002696_vs_NC_010338.blast_tab",
     )
 
 
 @pytest.fixture
-def anib_output_dir(dir_anib_in):
-    """Namedtuple of example ANIb output - full directory.
+def aniblastall_output_dir(dir_aniblastall_in):
+    """Namedtuple of example ANIblastall output - full directory.
 
     infiles - list of FASTA query files
     fragfiles - list of fragmented FASTA query files
-    blastdir - path to BLAST+ output data
     legacyblastdir - path to blastall output data
-    blastresult - pd.DataFrame result for BLAST+
     legacyblastresult - pd.DataFrame result for blastall
     """
-    return ANIbOutputDir(
+    return ANIblastallOutputDir(
         [
             _
-            for _ in (dir_anib_in / "sequences").iterdir()
+            for _ in (dir_aniblastall_in / "sequences").iterdir()
             if _.is_file() and _.suffix == ".fna"
         ],
         [
             _
-            for _ in (dir_anib_in / "fragfiles").iterdir()
+            for _ in (dir_aniblastall_in / "fragfiles").iterdir()
             if _.is_file() and _.suffix == ".fna"
         ],
-        dir_anib_in / "blastn",
-        dir_anib_in / "blastall",
-        pd.read_csv(dir_anib_in / "dataframes" / "blastn_result.csv", index_col=0),
-        pd.read_csv(dir_anib_in / "dataframes" / "blastall_result.csv", index_col=0),
+        dir_aniblastall_in / "blastall",
+        pd.read_csv(
+            dir_aniblastall_in / "dataframes" / "blastall_result.csv", index_col=0
+        ),
     )
 
 
@@ -186,8 +179,8 @@ def test_blastall_graph(path_fna_all, tmp_path, fragment_length):
 
 
 def test_blastall_multiple(path_fna_two, tmp_path):
-    """Generate legacy BLASTN commands."""
-    cmds = aniblastall.generate_blastn_commands(path_fna_two, tmp_path)
+    """Generate legacy BLASTALL commands."""
+    cmds = aniblastall.generate_blastall_commands(path_fna_two, tmp_path)
     expected = [
         (
             "blastall -p blastn -o "
@@ -208,7 +201,7 @@ def test_blastall_multiple(path_fna_two, tmp_path):
 
 
 def test_blastall_single(path_fna_two, tmp_path):
-    """Generate legacy BLASTN command-line."""
+    """Generate legacy BLASTALL command-line."""
     cmd = aniblastall.construct_blastall_cmdline(
         path_fna_two[0], path_fna_two[1], tmp_path
     )
@@ -246,23 +239,23 @@ def test_formatdb_single(path_fna, tmp_path):
 
 
 # Test output file parsing for ANIb methods
-def test_parse_legacy_blastdir(anib_output_dir):
+def test_parse_legacy_blastdir(aniblastall_output_dir):
     """Parses directory of legacy BLAST output."""
-    orglengths = pyani_files.get_sequence_lengths(anib_output_dir.infiles)
-    fraglengths = aniblastall.get_fraglength_dict(anib_output_dir.fragfiles)
+    orglengths = pyani_files.get_sequence_lengths(aniblastall_output_dir.infiles)
+    fraglengths = aniblastall.get_fraglength_dict(aniblastall_output_dir.fragfiles)
     result = aniblastall.process_blast(
-        anib_output_dir.legacyblastdir, orglengths, fraglengths
+        aniblastall_output_dir.legacyblastdir, orglengths, fraglengths
     )
     assert_frame_equal(
         result.percentage_identity.sort_index(1).sort_index(),
-        anib_output_dir.legacyblastresult.sort_index(1).sort_index(),
+        aniblastall_output_dir.legacyblastresult.sort_index(1).sort_index(),
     )
 
 
-def test_parse_legacy_blasttab(anib_output):
+def test_parse_legacy_blasttab(aniblastall_output):
     """Parses ANIB legacy .blast_tab output."""
-    fragdata = aniblastall.get_fraglength_dict([anib_output.fragfile])
-    result = aniblastall.parse_blast_tab(anib_output.legacytabfile, fragdata)
+    fragdata = aniblastall.get_fraglength_dict([aniblastall_output.fragfile])
+    result = aniblastall.parse_blast_tab(aniblastall_output.legacytabfile, fragdata)
     assert (
         a == b for a, b in zip(result, [1_966_922, 406_104, 78.578_978_313_253_018])
     )
