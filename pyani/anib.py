@@ -83,6 +83,7 @@ aligned sequence identity used to calculate ANI.
 
 import os
 import platform
+import logging
 import re
 import shutil
 import subprocess
@@ -509,6 +510,8 @@ def parse_blast_tab(filename: Path, fraglengths: Dict) -> Tuple[int, int, int]:
     over an alignable region of at least 70% of their length.
     '''
     """
+    logger = logging.getLogger(__name__)
+
     # Load output as dataframe
     columns = [
         "sbjct_id",
@@ -535,6 +538,8 @@ def parse_blast_tab(filename: Path, fraglengths: Dict) -> Tuple[int, int, int]:
         data.columns = columns
     except pd.io.common.EmptyDataError:
         data = pd.DataFrame(columns=columns)
+    # logger.debug(f"Index: {[idx for idx in data.index]}")
+    logger.debug(f"data: {data.head()}")
     # Add new columns for recalculated alignment length, proportion, and
     # percentage identity
     data["ani_alnlen"] = data["blast_alnlen"] - data["blast_gaps"]
