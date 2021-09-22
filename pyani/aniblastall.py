@@ -223,7 +223,6 @@ def make_blastcmd_builder(
 ) -> BLASTcmds:
     """Return BLASTcmds object for construction of BLAST commands.
 
-    :param method:  str, the kind of ANI analysis (ANIblastall)
     :param outdir:
     :param format_exe:
     :param blast_exe:
@@ -343,7 +342,7 @@ def generate_blastall_commands(
     :param query:  a paths to the query's fragmented input FASTA file
     :param subject:  a paths to the subject's fragmented input FASTA file
     :param outdir:  path to output directory
-    :param blastn_exe:  path to BLASTN executable
+    :param blastall_exe:  path to BLASTALL executable
     :param method:  str, analysis type (ANIblastall)
 
     Assumes that the fragment sequence input filenames have the form
@@ -368,10 +367,10 @@ def construct_blastall_cmdline(
 ) -> str:
     """Return single blastall command.
 
-    :param blastall_exe:  str, path to BLASTALL executable
     :param query:  Path, FASTA file for query genome
     :param subj_db:  Path, database of fragments for subject genome
     :param outdir:  Path, to the output directory
+    :param blastall_exe:  str, path to blastall executable
     """
     prefix = Path(outdir) / f"{query.stem.replace('-fragments', '')}_vs_{subj_db.stem}"
     return (
