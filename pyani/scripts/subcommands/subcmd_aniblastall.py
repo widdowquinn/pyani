@@ -272,6 +272,11 @@ def subcmd_aniblastall(args: Namespace) -> None:
     )
     logger.debug(f"...created {len(joblist)} blastall jobs")
 
+    # Pass jobs to appropriate scheduler
+    logger.debug(f"Passing {len(joblist)} jobs to {args.scheduler}")
+    run_aniblastall_jobs(joblist, args)
+    logger.info("...jobs complete.")
+
 
 def generate_joblist(
     comparisons: List,
@@ -371,3 +376,43 @@ def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path
     fragpath = outdir / f"{inpath.stem}-fragments.fna"
     SeqIO.write(outseqs, fragpath, "fasta")
     return fragpath, sizedict
+
+
+def run_aniblastall_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
+    """Pass ANIblastall blastall jobs to the scheduler.
+
+    :param joblist:  list of ComparisonJob namedtuples
+    :param args:     command-line arguments for the run
+    """
+    logger = logging.getLogger(__name__)
+    logger.debug(f"Scheduler: {args.scheduler}")
+
+    # Entries with None seen in recovery mode:
+    jobs = [_.job for _ in joblist if _.job]
+
+    if args.scheduler == "multiprocessing":
+        logger.info("Running jobs with multiprocessing")
+        if not args.workers:
+            logger.debug("(using maximum number of worker threads)")
+        else:
+            logger.debug(f"(using {args.workers} worker threads, if available)")
+        cumval = run_mp.run_dependency_graph(jobs, workers=args.workers)
+        if cumval > 0:
+            logger.error(
+                "At least one blastall comparison failed. Please investigate (exiting)."
+            )
+            raise PyaniException("Multiprocessing run failed in ANIblastall.")
+        logger.info("Multiprocessing run completed without error.")
+    elif args.scheduler.lower() == "sge":
+        logger.info("Running jobs with SGE")
+        logger.debug(f"Setting jobarray group size to {args.sgegroupsize}")
+        logger.debug(f"Joblist contains {len(joblist)}")
+        run_sge.run_dependency_graph(
+            jobs,
+            jgprefix=args.jobprefix,
+            sgegroupsize=args.sgegroupsize,
+            sgeargs=args.sgeargs,
+        )
+    else:
+        logger.error(termcolor(f"Scheduler {args.scheduler} not recognised", "red"))
+        raise SystemError(1)
