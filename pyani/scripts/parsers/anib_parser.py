@@ -65,6 +65,7 @@ def build(
     )
     parser.add_argument(
         "-i",
+        "--indir",
         action="store",
         dest="indir",
         default=None,
@@ -73,6 +74,7 @@ def build(
     )
     parser.add_argument(
         "-o",
+        "--outdir",
         action="store",
         dest="outdir",
         default=None,
