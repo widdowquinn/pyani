@@ -178,3 +178,49 @@ def subcmd_aniblastall(args: Namespace) -> None:
     logger.debug("\t...creating subdirectories")
     os.makedirs(fragdir, exist_ok=True)
     os.makedirs(blastdbdir, exist_ok=True)
+
+    # Create a new sequence fragment file and a new BLAST+ database for each input genome,
+    # and add this data to the database as a row in BlastDB
+    logger.info("Creating input sequence fragment files")
+    fragfiles = {}
+    fraglens = {}
+    for genome in genomes:
+        fragpath, fragsizes = fragment_fasta_file(
+            Path(str(genome.path)), Path(str(fragdir)), args.fragsize
+        )
+        logger.info(f"fragsizes: {type(fragsizes)}")
+        fragfiles.update({Path(genome.path).stem: fragpath})
+        fraglens.update({Path(genome.path).stem: fragsizes})
+
+
+def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path, str]:
+    """Return path to fragmented sequence file and JSON of fragment lengths.
+
+    :param inpath:  Path to genome file
+    :param outdir:  Path to directory to hold fragmented files
+    :param fragsize:  size of genome fragments
+
+    Returns a tuple of ``(path, json)`` where ``path`` is the path to the fragment
+    file and ``json`` is a JSON-ified dictionary of fragment lengths, keyed by
+    fragment sequence ID.
+    """
+    # Generate fragments for the input sequence, looping over each contig/
+    # chromosome in the input file and breaking into sections of length
+    # fragsize
+    sizedict = {}
+    outseqs = []
+    count = 0
+    for seq in SeqIO.parse(inpath, "fasta"):
+        idx = 0
+        while idx < len(seq):
+            count += 1
+            newseq = seq[idx : idx + fragsize]
+            newseq.id = f"frag{count:05d}"
+            outseqs.append(newseq)
+            sizedict[newseq.id] = len(newseq)
+            idx += fragsize
+
+    # Write fragments to output file
+    fragpath = outdir / f"{inpath.stem}-fragments.fna"
+    SeqIO.write(outseqs, fragpath, "fasta")
+    return fragpath, sizedict
