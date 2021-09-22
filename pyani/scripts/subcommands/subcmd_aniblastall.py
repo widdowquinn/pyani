@@ -211,6 +211,24 @@ def subcmd_aniblastall(args: Namespace) -> None:
             session, genome, run, fragpath, blastdbpath, json.dumps(fragsizes), dbcmd
         )
 
+    # Generate all pair permutations of genome IDs as a list of (Genome, Genome) tuples
+    logger.info(
+        "Compiling pairwise comparisons (this can take time for large datasets)..."
+    )
+    comparisons = list(permutations(tqdm(genomes, disable=args.disable_tqdm), 2))
+    logger.info(f"\t...total pairwise comparisons to be performed: {len(comparisons)}")
+
+    # Check for existing comparisons; if one has already been done (for the same
+    # software package, version, and setting) we add the comparison to this run,
+    # but remove it from the list of comparisons to be performed
+    logger.info("Checking database for existing comparison data...")
+    comparisons_to_run = filter_existing_comparisons(
+        session, run, comparisons, "blastall", blastall_version, args.fragsize, False
+    )
+    logger.info(
+        f"\t...after check, still need to run {len(comparisons_to_run)} comparisons"
+    )
+
 
 def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path, str]:
     """Return path to fragmented sequence file and JSON of fragment lengths.
