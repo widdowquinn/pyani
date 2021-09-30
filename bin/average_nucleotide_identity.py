@@ -845,7 +845,7 @@ def subsample_input(infiles):
 
 
 # Run as script
-if __name__ == "__main__":
+if __name__ == "__main__":  # noqa: C901
 
     # Parse command-line
     args = parse_cmdline()
@@ -967,9 +967,9 @@ if __name__ == "__main__":
         # and write out corresponding results.
         logger.info("Carrying out %s analysis", args.method)
         if args.method == "TETRA":
-            results = methods[args.method][0](infiles)
+            results = methods[args.method][0](infiles)  # type: ignore
         else:
-            results = methods[args.method][0](infiles, org_lengths)
+            results = methods[args.method][0](infiles, org_lengths)  # type: ignore
         write(results)
 
     # Do we want graphical output?
