@@ -128,6 +128,7 @@ class ProgParams(NamedTuple):
 
     fragsize: str
     maxmatch: bool
+    extend: bool
 
 
 def subcmd_anim(args: Namespace) -> None:
@@ -244,7 +245,14 @@ def subcmd_anim(args: Namespace) -> None:
     # but remove it from the list of comparisons to be performed
     logger.info("Checking database for existing comparison data...")
     comparisons_to_run = filter_existing_comparisons(
-        session, run, comparisons, "nucmer", nucmer_version, None, args.maxmatch
+        session,
+        run,
+        comparisons,
+        "nucmer",
+        nucmer_version,
+        None,
+        args.maxmatch,
+        args.extend,
     )
     logger.info(
         "\t...after check, still need to run %s comparisons", len(comparisons_to_run)
@@ -330,9 +338,10 @@ def generate_joblist(
             args.nucmer_exe,
             args.filter_exe,
             args.maxmatch,
+            args.extend,
         )
         logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
-        outprefix = ncmd.split()[3]  # prefix for NUCmer output
+        outprefix = ncmd.split()[4]  # prefix for NUCmer output
         if args.nofilter:
             outfname = Path(outprefix + ".delta")
         else:
@@ -438,6 +447,7 @@ def update_comparison_results(
                 version=nucmer_version,
                 fragsize=None,
                 maxmatch=args.maxmatch,
+                extend=args.extend,
             )
         )
 

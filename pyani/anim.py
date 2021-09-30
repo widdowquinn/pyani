@@ -141,6 +141,7 @@ def generate_nucmer_jobs(
     nucmer_exe: Path = pyani_config.NUCMER_DEFAULT,
     filter_exe: Path = pyani_config.FILTER_DEFAULT,
     maxmatch: bool = False,
+    extend: bool = False,
     jobprefix: str = "ANINUCmer",
 ):
     """Return list of Jobs describing NUCmer command-lines for ANIm.
@@ -150,13 +151,14 @@ def generate_nucmer_jobs(
     :param nucmer_exe:  str, location of the nucmer binary
     :param filter_exe:
     :param maxmatch:  Boolean flag indicating to use NUCmer's -maxmatch option
+    :param extend:  Boolean flag indicating whether to use NUCmer's --(no)extend (False: --noextend; True: --extend)
     :param jobprefix:
 
     Loop over all FASTA files, generating Jobs describing NUCmer command lines
     for each pairwise comparison.
     """
     ncmds, fcmds = generate_nucmer_commands(
-        filenames, outdir, nucmer_exe, filter_exe, maxmatch
+        filenames, outdir, nucmer_exe, filter_exe, maxmatch, extend
     )
     joblist = []
     for idx, ncmd in enumerate(ncmds):
@@ -175,6 +177,7 @@ def generate_nucmer_commands(
     nucmer_exe: Path = pyani_config.NUCMER_DEFAULT,
     filter_exe: Path = pyani_config.FILTER_DEFAULT,
     maxmatch: bool = False,
+    extend: bool = False,
 ) -> Tuple[List, List]:
     """Return list of NUCmer command-lines for ANIm.
 
@@ -182,6 +185,7 @@ def generate_nucmer_commands(
     :param outdir:  path to output directory
     :param nucmer_exe:  location of the nucmer binary
     :param maxmatch:  Boolean flag indicating to use NUCmer's -maxmatch option
+    :param extend:  Boolean flag indicating whether to use NUCmer's --(no)extend (False: --noextend; True: --extend)
 
     The first element returned is a list of NUCmer commands, and the
     second a corresponding list of delta_filter_wrapper.py commands.
@@ -198,7 +202,7 @@ def generate_nucmer_commands(
     for idx, fname1 in enumerate(filenames[:-1]):
         for fname2 in filenames[idx + 1 :]:
             ncmd, dcmd = construct_nucmer_cmdline(
-                fname1, fname2, outdir, nucmer_exe, filter_exe, maxmatch
+                fname1, fname2, outdir, nucmer_exe, filter_exe, maxmatch, extend
             )
             nucmer_cmdlines.append(ncmd)
             delta_filter_cmdlines.append(dcmd)
@@ -214,6 +218,7 @@ def construct_nucmer_cmdline(
     nucmer_exe: Path = pyani_config.NUCMER_DEFAULT,
     filter_exe: Path = pyani_config.FILTER_DEFAULT,
     maxmatch: bool = False,
+    extend: bool = False,
 ) -> Tuple[str, str]:
     """Return a tuple of corresponding NUCmer and delta-filter commands.
 
@@ -224,6 +229,7 @@ def construct_nucmer_cmdline(
     :param filter_exe:
     :param maxmatch:  Boolean flag indicating whether to use NUCmer's -maxmatch
     option. If not, the -mum option is used instead
+    :param extend:  Boolean flag indicating whether to use NUCmer's --(no)extend (False: --noextend; True: --extend)
 
     The split into a tuple was made necessary by changes to SGE/OGE.
     The delta-filter command must now be run as a dependency of the NUCmer
@@ -232,20 +238,25 @@ def construct_nucmer_cmdline(
     NOTE: This command-line writes output data to a subdirectory of the passed
     outdir, called "nucmer_output".
     """
+    logger = logging.getLogger(__name__)
+
     # Cast path strings to pathlib.Path for safety
     fname1, fname2 = Path(fname1), Path(fname2)
 
     # Compile commands
     outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"]
     outsubdir.mkdir(exist_ok=True)
+    logger.debug(f"{fname1.stem}_vs_{fname2.stem}")
     outprefix = outsubdir / f"{fname1.stem}_vs_{fname2.stem}"
     if maxmatch:
         mode = "--maxmatch"
     else:
         mode = "--mum"
-    nucmercmd = "{0} {1} -p {2} {3} {4}".format(
-        nucmer_exe, mode, outprefix, fname1, fname2
-    )
+    if extend:
+        ext = " --extend"
+    else:
+        ext = " --noextend"
+    nucmercmd = f"{nucmer_exe} {mode} {ext} -p {outprefix} {fname2} {fname2}"
     # There's a subtle pathlib.Path issue, here. We must use string concatenation to add suffixes
     # to the outprefix files, as using path.with_suffix() instead can replace part of the filestem
     # in those cases where there is a period in the stem (this occurs frequently as it is part
