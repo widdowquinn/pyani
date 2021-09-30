@@ -124,7 +124,7 @@ def build(
         dest="extend",
         action="store_false",
         default=False,
-        help="override default to allow overlapping NUCmer matches",
+        help="disallow overlapping NUCmer matches",
     )
     parser.add_argument(
         "--nofilter",
