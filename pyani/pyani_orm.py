@@ -44,6 +44,7 @@ This SQLAlchemy-based ORM replaces the previous SQL-based module
 
 from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple
+import logging
 
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
@@ -604,6 +605,8 @@ def update_comparison_matrices(session, run) -> None:
     :param session:       active pyanidb session via ORM
     :param run:           Run ORM object for the current ANIm run
     """
+    logger = logging.getLogger(__name__)
+
     # Create dataframes for storing in the Run table
     # Rows and columns are the (ordered) list of genome IDs
     genome_ids = sorted([_.genome_id for _ in run.genomes.all()])
@@ -623,6 +626,9 @@ def update_comparison_matrices(session, run) -> None:
 
     # Loop over all comparisons for the run and fill in result matrices
     for cmp in run.comparisons.all():
+        logger.debug(f"Comparison: {cmp}")
+        logger.debug(f"Alignment length: {cmp.aln_length}")
+        # logger.debug(f"ANI alignment length: {cmp.ani_alnlen}")
         qid, sid = cmp.query_id, cmp.subject_id
         df_identity.loc[qid, sid] = cmp.identity
         df_identity.loc[sid, qid] = cmp.identity
@@ -635,6 +641,7 @@ def update_comparison_matrices(session, run) -> None:
         df_hadamard.loc[qid, sid] = cmp.identity * cmp.cov_query
         df_hadamard.loc[sid, qid] = cmp.identity * cmp.cov_subject
 
+    logger.debug(f"Alnlength df: {df_alnlength.head()}")
     # Add matrices to the database
     run.df_identity = df_identity.to_json()
     run.df_coverage = df_coverage.to_json()
