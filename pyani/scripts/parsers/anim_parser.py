@@ -111,20 +111,12 @@ def build(
         default=False,
         help="override MUMmer to allow all NUCmer matches",
     )
-    extend = parser.add_mutually_exclusive_group()
-    extend.add_argument(
+    parser.add_argument(
         "--extend",
         dest="extend",
         action="store_true",
         default=False,
         help="override default to allow overlapping NUCmer matches",
-    )
-    extend.add_argument(
-        "--noextend",
-        dest="extend",
-        action="store_false",
-        default=False,
-        help="disallow overlapping NUCmer matches",
     )
     parser.add_argument(
         "--nofilter",

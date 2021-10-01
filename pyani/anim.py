@@ -253,10 +253,10 @@ def construct_nucmer_cmdline(
     else:
         mode = "--mum"
     if extend:
-        ext = " --extend"
+        ext = "--extend"
     else:
-        ext = " --noextend"
-    nucmercmd = f"{nucmer_exe} {mode} {ext} -p {outprefix} {fname2} {fname2}"
+        ext = "--noextend"
+    nucmercmd = f"{nucmer_exe} {mode} {ext} -p {outprefix} {fname1} {fname2}"
     # There's a subtle pathlib.Path issue, here. We must use string concatenation to add suffixes
     # to the outprefix files, as using path.with_suffix() instead can replace part of the filestem
     # in those cases where there is a period in the stem (this occurs frequently as it is part

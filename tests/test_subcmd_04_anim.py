@@ -102,6 +102,7 @@ class TestANImSubcommand(unittest.TestCase):
                 nucmer_exe=self.exes.nucmer_exe,
                 filter_exe=self.exes.filter_exe,
                 maxmatch=False,
+                extend=False,
                 nofilter=False,
                 scheduler=self.scheduler,
                 workers=None,

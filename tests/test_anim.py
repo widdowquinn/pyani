@@ -43,6 +43,7 @@ These tests are intended to be run from the repository root using:
 
 pytest -v
 """
+import sys
 
 from pathlib import Path
 from typing import List, NamedTuple, Tuple
@@ -103,12 +104,12 @@ def mummer_cmds_four(path_file_four):
     return MUMmerExample(
         path_file_four,
         [
-            "nucmer --mum -p nucmer_output/file1_vs_file2 file1.fna file2.fna",
-            "nucmer --mum -p nucmer_output/file1_vs_file3 file1.fna file3.fna",
-            "nucmer --mum -p nucmer_output/file1_vs_file4 file1.fna file4.fna",
-            "nucmer --mum -p nucmer_output/file2_vs_file3 file2.fna file3.fna",
-            "nucmer --mum -p nucmer_output/file2_vs_file4 file2.fna file4.fna",
-            "nucmer --mum -p nucmer_output/file3_vs_file4 file3.fna file4.fna",
+            "nucmer --mum --noextend -p nucmer_output/file1_vs_file2 file1.fna file2.fna",
+            "nucmer --mum --noextend -p nucmer_output/file1_vs_file3 file1.fna file3.fna",
+            "nucmer --mum --noextend -p nucmer_output/file1_vs_file4 file1.fna file4.fna",
+            "nucmer --mum --noextend -p nucmer_output/file2_vs_file3 file2.fna file3.fna",
+            "nucmer --mum --noextend -p nucmer_output/file2_vs_file4 file2.fna file4.fna",
+            "nucmer --mum --noextend -p nucmer_output/file3_vs_file4 file3.fna file4.fna",
         ],
         [
             (
@@ -199,10 +200,12 @@ def test_maxmatch_single(tmp_path, path_file_two):
     )
     dir_nucmer = tmp_path / "nucmer_output"
     expected = (
-        "nucmer --maxmatch -p "
+        "nucmer --maxmatch --noextend -p "
         f"{dir_nucmer / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem)} "
         f"{path_file_two[0]} {path_file_two[1]}"
     )
+    sys.stdout.write(f"test_maxmatch_single(): {ncmd}\n")
+    sys.stdout.write(f"expected(): {expected}")
     assert ncmd == expected
 
 
@@ -225,7 +228,7 @@ def test_mummer_single(tmp_path, path_file_two):
     dir_nucmer = tmp_path / "nucmer_output"
     expected = (
         (
-            "nucmer --mum -p "
+            "nucmer --mum --noextend -p "
             f"{dir_nucmer / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem)} "
             f"{path_file_two[0]} {path_file_two[1]}"
         ),
@@ -235,6 +238,7 @@ def test_mummer_single(tmp_path, path_file_two):
             f"{dir_nucmer / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem + '.filter')}"
         ),
     )
+    sys.stdout.write(f"test_mummer_single(): {cmds}")
     assert cmds == expected
 
 
