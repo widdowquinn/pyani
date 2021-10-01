@@ -274,7 +274,7 @@ class Comparison(Base):
             "version",
             "fragsize",
             "maxmatch",
-            "extend",
+            "noextend",
         ),
     )
 
@@ -290,7 +290,7 @@ class Comparison(Base):
     version = Column(String)
     fragsize = Column(Integer)
     maxmatch = Column(Boolean)
-    extend = Column(Boolean)
+    noextend = Column(Boolean)
 
     query = relationship(
         "Genome", foreign_keys=[query_id], back_populates="query_comparisons"
@@ -344,7 +344,7 @@ def get_comparison_dict(session: Any) -> Dict[Tuple, Any]:
     :param session:      live SQLAlchemy session of pyani database
 
     Returns Comparison objects, keyed by (_.query_id, _.subject_id,
-    _.program, _.version, _.fragsize, _.maxmatch, _.extend) tuple
+    _.program, _.version, _.fragsize, _.maxmatch, _.noextend) tuple
     """
     return {
         (
@@ -354,7 +354,7 @@ def get_comparison_dict(session: Any) -> Dict[Tuple, Any]:
             _.version,
             _.fragsize,
             _.maxmatch,
-            _.extend,
+            _.noextend,
         ): _
         for _ in session.query(Comparison).all()
     }
@@ -416,7 +416,7 @@ def filter_existing_comparisons(
     version,
     fragsize: Optional[int] = None,
     maxmatch: Optional[bool] = False,
-    extend: Optional[bool] = False,
+    noextend: Optional[bool] = False,
 ) -> List:
     """Filter list of (Genome, Genome) comparisons for those not in the session db.
 
@@ -427,7 +427,7 @@ def filter_existing_comparisons(
     :param version:       version of program for comparison
     :param fragsize:      fragment size for BLAST databases
     :param maxmatch:      maxmatch used with nucmer comparison
-    :param extend:        extend used with nucmer comparison
+    :param noextend:        noextend used with nucmer comparison
 
     When passed a list of (Genome, Genome) comparisons as comparisons, check whether
     the comparison exists in the database and, if so, associate it with the passed run.
@@ -448,7 +448,7 @@ def filter_existing_comparisons(
                         version,
                         fragsize,
                         maxmatch,
-                        extend,
+                        noextend,
                     )
                 ]
             )

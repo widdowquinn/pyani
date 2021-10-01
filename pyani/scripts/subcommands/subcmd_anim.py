@@ -128,7 +128,7 @@ class ProgParams(NamedTuple):
 
     fragsize: str
     maxmatch: bool
-    extend: bool
+    noextend: bool
 
 
 def subcmd_anim(args: Namespace) -> None:
@@ -252,7 +252,7 @@ def subcmd_anim(args: Namespace) -> None:
         nucmer_version,
         None,
         args.maxmatch,
-        args.extend,
+        args.noextend,
     )
     logger.info(
         "\t...after check, still need to run %s comparisons", len(comparisons_to_run)
@@ -338,7 +338,7 @@ def generate_joblist(
             args.nucmer_exe,
             args.filter_exe,
             args.maxmatch,
-            args.extend,
+            args.noextend,
         )
         logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
         outprefix = ncmd.split()[4]  # prefix for NUCmer output
@@ -447,7 +447,7 @@ def update_comparison_results(
                 version=nucmer_version,
                 fragsize=None,
                 maxmatch=args.maxmatch,
-                extend=args.extend,
+                noextend=args.noextend,
             )
         )
 
