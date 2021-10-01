@@ -46,6 +46,7 @@ pytest -v
 print() statements will be caught by nosetests unless there is an
 error. They can also be recovered with the -s option.
 """
+import sys
 
 import unittest
 
@@ -200,6 +201,8 @@ def test_anim_concordance(
     result_pid = (result_pid.sort_index(axis=0).sort_index(axis=1) * 100.0).values
     tgt_pid = parse_jspecies(path_concordance_jspecies)["ANIm"].values
 
+    sys.stdout.write(f"Result: {result_pid - tgt_pid}\n")
+    sys.stdout.write(f"Expected: {pytest.approx(0, abs=tolerance_anim)}")
     assert result_pid - tgt_pid == pytest.approx(0, abs=tolerance_anim)
 
 
