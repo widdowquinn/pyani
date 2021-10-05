@@ -69,7 +69,7 @@ from pyani.scripts import subcommands
 
 # Convenience struct with paths to third-party executables
 class ThirdPartyExes(NamedTuple):
-    blastall_exe: Path
+    blastn_exe: Path
     format_exe: Path
 
 

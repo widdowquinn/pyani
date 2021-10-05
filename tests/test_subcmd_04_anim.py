@@ -57,7 +57,7 @@ from pyani.scripts import subcommands
 # Convenience struct with paths to third-party executables
 class ThirdPartyExes(NamedTuple):
     nucmer_exe: Path
-    format_exe: Path
+    filter_exe: Path
 
 
 # Convenience struct with paths to working directories
