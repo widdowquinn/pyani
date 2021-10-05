@@ -77,8 +77,7 @@ DirPaths = namedtuple("DirPaths", "indir outdir")
 LabelPaths = namedtuple("LabelPaths", "classes labels")
 
 
-@pytest.mark.xfail(reason="ANIb is not currently fully implemented")
-class TestANIbsubcommand(unittest.TestCase):
+class TestANIbSubcommand(unittest.TestCase):
 
     """Class defining tests of the pyani anib subcommand."""
 
