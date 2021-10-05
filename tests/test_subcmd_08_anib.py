@@ -59,7 +59,7 @@ import os
 import unittest
 
 from argparse import Namespace
-from collections import namedtuple
+from typing import NamedTuple
 from pathlib import Path
 
 import pytest
@@ -68,13 +68,21 @@ from pyani.scripts import subcommands
 
 
 # Convenience struct with paths to third-party executables
-ThirdPartyExes = namedtuple("ThirdPartyExes", "blastn_exe format_exe")
+class ThirdPartyExes(NamedTuple):
+    blastall_exe: Path
+    format_exe: Path
+
 
 # Convenience struct with paths to working directories
-DirPaths = namedtuple("DirPaths", "indir outdir")
+class DirPaths(NamedTuple):
+    indir: Path
+    outdir: Path
+
 
 # Convenience struct for label/class files
-LabelPaths = namedtuple("LabelPaths", "classes labels")
+class LabelPaths(NamedTuple):
+    classes: Path
+    labels: Path
 
 
 class TestANIbSubcommand(unittest.TestCase):
