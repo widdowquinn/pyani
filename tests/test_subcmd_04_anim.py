@@ -48,20 +48,28 @@ import logging
 import unittest
 
 from argparse import Namespace
-from collections import namedtuple
+from typing import NamedTuple
 from pathlib import Path
 
 from pyani.scripts import subcommands
 
 
 # Convenience struct with paths to third-party executables
-ThirdPartyExes = namedtuple("ThirdPartyExes", "nucmer_exe filter_exe")
+class ThirdPartyExes(NamedTuple):
+    nucmer_exe: Path
+    format_exe: Path
+
 
 # Convenience struct with paths to working directories
-DirPaths = namedtuple("DirPaths", "indir outdir")
+class DirPaths(NamedTuple):
+    indir: Path
+    outdir: Path
+
 
 # Convenience struct for label/class files
-LabelPaths = namedtuple("LabelPaths", "classes labels")
+class LabelPaths(NamedTuple):
+    classes: Path
+    labels: Path
 
 
 class TestANImSubcommand(unittest.TestCase):
@@ -94,7 +102,7 @@ class TestANImSubcommand(unittest.TestCase):
                 outdir=self.dirpaths.outdir,
                 dbpath=self.dbpath,
                 force=False,
-                name="test_anim",
+                name="test_subcmd_anim",
                 classes=self.lblfiles.classes,
                 labels=self.lblfiles.labels,
                 recovery=False,
