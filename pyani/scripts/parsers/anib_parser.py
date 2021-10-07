@@ -68,7 +68,8 @@ def build(
         "--indir",
         action="store",
         dest="indir",
-        default=None,
+        # default=None,
+        required=True,
         type=Path,
         help="input genome directory",
     )
@@ -77,7 +78,8 @@ def build(
         "--outdir",
         action="store",
         dest="outdir",
-        default=None,
+        # default=None,
+        required=True,
         type=Path,
         help="output analysis results directory",
     )
