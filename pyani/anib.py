@@ -143,7 +143,7 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
         check=True,
     )
     version = re.search(  # type: ignore
-        r"(?<=blastn:\s)[0-9\.]*\+", str(result.stdout, "utf-8")
+        r"(?<=blastn:\s)[0-9\.]*\+", str(result.stdout + result.stderr, "utf-8")
     ).group()
 
     if 0 == len(version.strip()):

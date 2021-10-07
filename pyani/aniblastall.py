@@ -111,7 +111,7 @@ def get_version(blastall_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
         return f"blastall exists at {blastall_path} but could not be executed"
 
     version = re.search(  # type: ignore
-        r"(?<=blastall\s)[0-9\.]*", str(result.stderr, "utf-8")
+        r"(?<=blastall\s)[0-9\.]*", str(result.stderr + result.stdout, "utf-8")
     ).group()
 
     if 0 == len(version.strip()):
