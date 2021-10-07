@@ -114,7 +114,9 @@ def get_version(fastani_exe: Path = pyani_config.FASTANI_DEFAULT) -> str:
         check=True,
     )  # type CompletedProcess
 
-    match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
+    match = re.search(
+        r"(?<=version\s)[0-9\.]*", str(result.stderr + result.stdout, "utf-8")
+    )
     version = match.group()  # type: ignore
 
     if 0 == len(version.strip()):
