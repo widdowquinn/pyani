@@ -22,6 +22,7 @@ This document links out to detailed instructions for each of the ``pyani`` subco
     subcmd_createdb
     subcmd_anim
     subcmd_anib
+    subcmd_aniblastall
     subcmd_report
     subcmd_plot
     subcmd_classify
