@@ -8,7 +8,7 @@ The ``anim`` subcommand will carry out ANIm analysis using genome files containe
 
 .. code-block:: text
 
-    usage: pyani.py anim [-h] [-l LOGFILE] [-v] [--disable_tqdm]
+    usage: pyani anim [-h] [-l LOGFILE] [-v] [--disable_tqdm]
                      [--scheduler {multiprocessing,SGE}] [--workers WORKERS]
                      [--SGEgroupsize SGEGROUPSIZE] [--SGEargs SGEARGS]
                      [--jobprefix JOBPREFIX] [--name NAME] [--classes CLASSES]
