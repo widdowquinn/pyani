@@ -8,11 +8,13 @@ The ``download`` subcommand controls download of genome files from the `NCBI Ass
 
 .. code-block:: text
 
-    usage: pyani.py download [-h] [-l LOGFILE] [-v] [--debug] [--disable_tqdm] [--version]
+
+    usage: pyani download [-h] [-l LOGFILE] [-v] [--debug] [--disable_tqdm] [--version]
                          [--citation] -o OUTDIR -t TAXON --email EMAIL
                          [--api_key API_KEYPATH] [--retries RETRIES]
                          [--batchsize BATCHSIZE] [--timeout TIMEOUT] [-f]
                          [--noclobber] [--labels LABELFNAME] [--classes CLASSFNAME]
+
                          [--kraken] [--dry-run]
 
 --------------------

@@ -8,13 +8,15 @@ The ``anim`` subcommand will carry out ANIm analysis using genome files containe
 
 .. code-block:: text
 
-    usage: pyani.py anim [-h] [-l LOGFILE] [-v] [--debug] [--disable_tqdm] [--version]
+
+    usage: pyani anim [-h] [-l LOGFILE] [-v] [--debug] [--disable_tqdm] [--version]
                      [--citation] [--scheduler {multiprocessing,SGE}]
                      [--workers WORKERS] [--SGEgroupsize SGEGROUPSIZE]
                      [--SGEargs SGEARGS] [--jobprefix JOBPREFIX] [--name NAME]
                      [--classes CLASSES] [--labels LABELS] [--recovery] -i INDIR
                      -o OUTDIR [--dbpath DBPATH] [--nucmer_exe NUCMER_EXE]
                      [--filter_exe FILTER_EXE] [--maxmatch] [--nofilter]
+
 
 
 
