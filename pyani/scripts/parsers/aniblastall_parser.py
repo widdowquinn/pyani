@@ -40,6 +40,7 @@
 
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, _SubParsersAction
 from typing import List, Optional
+from pathlib import Path
 
 from pyani.scripts import subcommands
 
@@ -54,5 +55,26 @@ def build(
     """
     parser = subps.add_parser(
         "aniblastall", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
+    )
+    # Required arguments: input and output directories
+    parser.add_argument(
+        "-i",
+        "--indir",
+        action="store",
+        dest="indir",
+        default=None,
+        type=Path,
+        help="input genome directory",
+        required=True,
+    )
+    parser.add_argument(
+        "-o",
+        "--outdir",
+        action="store",
+        dest="outdir",
+        default=None,
+        type=Path,
+        help="output analysis results directory",
+        required=True,
     )
     parser.set_defaults(func=subcommands.subcmd_aniblastall)
