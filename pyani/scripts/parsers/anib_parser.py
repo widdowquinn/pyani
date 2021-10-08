@@ -63,21 +63,26 @@ def build(
     parser = subps.add_parser(
         "anib", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
+    # Required arguments: input and output directories
     parser.add_argument(
         "-i",
+        "--indir",
         action="store",
         dest="indir",
         default=None,
         type=Path,
         help="input genome directory",
+        required=True,
     )
     parser.add_argument(
         "-o",
+        "--outdir",
         action="store",
         dest="outdir",
         default=None,
         type=Path,
         help="output analysis results directory",
+        required=True,
     )
     # Optional arguments
     parser.add_argument(
