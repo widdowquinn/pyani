@@ -8,13 +8,14 @@ The ``download`` subcommand controls download of genome files from the `NCBI Ass
 
 .. code-block:: text
 
-    usage: pyani download [-h] [-l LOGFILE] [-v] [--disable_tqdm] -t TAXON
-                         --email EMAIL [--api_key API_KEYPATH]
-                         [--retries RETRIES] [--batchsize BATCHSIZE]
-                         [--timeout TIMEOUT] [-f] [--noclobber]
-                         [--labels LABELFNAME] [--classes CLASSFNAME]
+
+    usage: pyani download [-h] [-l LOGFILE] [-v] [--debug] [--disable_tqdm] [--version]
+                         [--citation] -o OUTDIR -t TAXON --email EMAIL
+                         [--api_key API_KEYPATH] [--retries RETRIES]
+                         [--batchsize BATCHSIZE] [--timeout TIMEOUT] [-f]
+                         [--noclobber] [--labels LABELFNAME] [--classes CLASSFNAME]
+
                          [--kraken] [--dry-run]
-                         outdir
 
 --------------------
 Positional arguments
@@ -46,7 +47,7 @@ Flagged arguments
     **COMPULSORY**. Provide the email address ``EMAIL`` to NCBI so that they can track problems.
 
 ``-f, --force``
-    Force use of the ``outdir`` directory when downloaded genomes, even if it already exists.
+    Force use of the ``OUTDIR`` directory when downloaded genomes, even if it already exists.
 
 ``-h, --help``
     Display usage information for ``pyani download``.
@@ -62,6 +63,9 @@ Flagged arguments
 
 ``--noclobber``
     Do not overwrite individual files in the ``outdir`` directory, when used with ``-f``.
+
+``-o OUTDIR, --outdir OUTDIR``
+    The ``OUTDIR`` argument should be the path to a directory into which genome files will be downloaded. If the directory exists, a warning will be given and the download will not proceed, to avoid overwriting existing data. To force writing into an existing directory, use the ``-f`` option.
 
 ``--retries RETRIES``
     The download process will attempt to download each batch of assemblies a maximum of ``RETRIES`` times. Default: 20

@@ -66,6 +66,7 @@ from unittest.mock import patch
 
 import pytest
 
+from pyani import download
 from pyani.scripts import subcommands
 from tools import modify_namespace
 
@@ -109,6 +110,17 @@ def kraken_namespace(base_download_namespace, tmp_path):
     return modify_namespace(
         base_download_namespace, kraken=True, outdir=tmp_path / "kraken"
     )
+
+
+# Create object for accessing unittest assertions
+assertions = TestCase("__init__")
+
+
+def test_create_hash():
+    """Test that the expected exception is raised if the file doesn't exist."""
+    test_file = "/this/is/not/a/file"
+    with assertions.assertRaises(download.PyaniIndexException):
+        download.create_hash(test_file)
 
 
 def test_download_dry_run(dryrun_namespace):
