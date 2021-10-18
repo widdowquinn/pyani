@@ -8,7 +8,7 @@ The ``listdeps`` subcommand writes an account of the local platform, the install
 
 .. code-block:: text
 
-    usage: pyani.py listdeps [-h] [-l LOGFILE] [-v]
+    usage: pyani listdeps [-h] [-l LOGFILE] [-v]
 
 -----------------
 Flagged arguments
