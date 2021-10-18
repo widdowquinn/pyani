@@ -117,6 +117,11 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
     logger.debug(
         f"Have {len(result_label_dict)} labels and {len(result_class_dict)} classes"
     )
+    result_label_dict = pyani_orm.get_matrix_labels_for_run(session, args.run_id)
+    result_class_dict = pyani_orm.get_matrix_classes_for_run(session, args.run_id)
+    logger.debug(
+        f"Have {len(result_label_dict)} labels and {len(result_class_dict)} classes"
+    )
 
     # Write heatmap and distribution plot for each results matrix
 
@@ -141,24 +146,16 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
                 [run_id, matdata, result_label_dict, result_class_dict, outfmts, args],
             )
         )
-        plotting_commands.append((write_distribution, [run_id, matdata, outfmts, args]))
-
-    id_matrix = MatrixData("identity", pd.read_json(results.df_identity), {})
-    cov_matrix = MatrixData("coverage", pd.read_json(results.df_coverage), {})
-    plotting_commands.append(
-        (
-            write_scatter,
-            [
-                run_id,
-                id_matrix,
-                cov_matrix,
-                result_label_dict,
-                result_class_dict,
-                outfmts,
-                args,
-            ],
+        plotting_commands.append(
+            (write_distribution, [run_id, matdata, outfmts, args])  # type: ignore
         )
-    )
+
+    # Run the plotting commands
+    [pool.apply_async(func, args, {}) for func, args in plotting_commands]
+
+    # Close worker pool
+    pool.close()
+    pool.join()
 
     # Run the plotting commands
     logger.debug("Running plotting commands")
