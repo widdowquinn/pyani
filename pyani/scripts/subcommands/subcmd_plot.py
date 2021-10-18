@@ -41,6 +41,7 @@
 
 import logging
 import os
+import multiprocessing
 
 from argparse import Namespace
 from pathlib import Path
@@ -114,9 +115,17 @@ def write_run_heatmaps(
     )
     result_label_dict = pyani_orm.get_matrix_labels_for_run(session, args.run_id)
     result_class_dict = pyani_orm.get_matrix_classes_for_run(session, args.run_id)
-    logger.debug(f"Have {len(result_label_dict)} labels and {len(result_class_dict)} classes")
+    logger.debug(
+        f"Have {len(result_label_dict)} labels and {len(result_class_dict)} classes"
+    )
 
-    # Write heatmap for each results matrix
+    # Write heatmap and distribution plot for each results matrix
+
+    # Create worker pool and empty command list
+    pool = multiprocessing.Pool(processes=args.workers)
+    plotting_commands = []
+
+    # Build and collect the plotting commands
     for matdata in [
         MatrixData(*_)
         for _ in [
@@ -127,14 +136,27 @@ def write_run_heatmaps(
             ("hadamard", pd.read_json(results.df_hadamard), {}),
         ]
     ]:
-        write_heatmap(
-            run_id, matdata, result_label_dict, result_class_dict, outfmts, args
+        plotting_commands.append(
+            (
+                write_heatmap,
+                [run_id, matdata, result_label_dict, result_class_dict, outfmts, args],
+            )
         )
-        write_distribution(run_id, matdata, outfmts, args)
+        plotting_commands.append((write_distribution, [run_id, matdata, outfmts, args]))
+
+    # Run the plotting commands
+    [pool.apply_async(func, args, {}) for func, args in plotting_commands]
+
+    # Close worker pool
+    pool.close()
+    pool.join()
 
 
 def write_distribution(
-    run_id: int, matdata: MatrixData, outfmts: List[str], args: Namespace,
+    run_id: int,
+    matdata: MatrixData,
+    outfmts: List[str],
+    args: Namespace,
 ) -> None:
     """Write distribution plots for each matrix type.
 

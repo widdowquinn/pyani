@@ -92,4 +92,13 @@ def build(
         help="graphics method to use for plotting",
         choices=["seaborn", "mpl", "plotly"],
     )
+    parser.add_argument(
+        "--workers",
+        dest="workers",
+        action="store",
+        default=None,
+        type=int,
+        help="Number of worker processes for multiprocessing "
+        "(default zero, meaning use all available cores)",
+    )
     parser.set_defaults(func=subcommands.subcmd_plot)

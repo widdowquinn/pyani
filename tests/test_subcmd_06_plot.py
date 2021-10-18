@@ -80,6 +80,7 @@ class TestPlotSubcommand(unittest.TestCase):
                 dbpath=self.dbpath,
                 formats="pdf",
                 method="mpl",
+                workers=None,
             ),
             "mpl_png": Namespace(
                 outdir=self.outdir / "mpl",
@@ -87,6 +88,7 @@ class TestPlotSubcommand(unittest.TestCase):
                 dbpath=self.dbpath,
                 formats="png",
                 method="mpl",
+                workers=None,
             ),
             "mpl_svg": Namespace(
                 outdir=self.outdir / "mpl",
@@ -94,6 +96,7 @@ class TestPlotSubcommand(unittest.TestCase):
                 dbpath=self.dbpath,
                 formats="svg",
                 method="mpl",
+                workers=None,
             ),
             "mpl_jpg": Namespace(
                 outdir=self.outdir / "mpl",
@@ -101,6 +104,7 @@ class TestPlotSubcommand(unittest.TestCase):
                 dbpath=self.dbpath,
                 formats="jpg",
                 method="mpl",
+                workers=None,
             ),
             "seaborn_pdf": Namespace(
                 outdir=self.outdir / "seaborn",
@@ -108,6 +112,7 @@ class TestPlotSubcommand(unittest.TestCase):
                 dbpath=self.dbpath,
                 formats="pdf",
                 method="seaborn",
+                workers=None,
             ),
             "seaborn_png": Namespace(
                 outdir=self.outdir / "seaborn",
@@ -115,6 +120,7 @@ class TestPlotSubcommand(unittest.TestCase):
                 dbpath=self.dbpath,
                 formats="png",
                 method="seaborn",
+                workers=None,
             ),
             "seaborn_svg": Namespace(
                 outdir=self.outdir / "seaborn",
@@ -122,6 +128,7 @@ class TestPlotSubcommand(unittest.TestCase):
                 dbpath=self.dbpath,
                 formats="svg",
                 method="seaborn",
+                workers=None,
             ),
             "seaborn_jpg": Namespace(
                 outdir=self.outdir / "seaborn",
@@ -129,6 +136,7 @@ class TestPlotSubcommand(unittest.TestCase):
                 dbpath=self.dbpath,
                 formats="jpg",
                 method="seaborn",
+                workers=None,
             ),
         }
 
