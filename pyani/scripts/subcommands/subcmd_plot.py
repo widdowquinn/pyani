@@ -92,14 +92,12 @@ def subcmd_plot(args: Namespace) -> int:
     run_ids = [int(run) for run in args.run_id.split(",")]
     logger.debug("Generating graphics for runs: %s", run_ids)
     for run_id in run_ids:
-        write_run_heatmaps(run_id, session, outfmts, args)
+        write_run_plots(run_id, session, outfmts, args)
 
     return 0
 
 
-def write_run_heatmaps(
-    run_id: int, session, outfmts: List[str], args: Namespace
-) -> None:
+def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -> None:
     """Write all heatmaps for a specified run to file.
 
     :param run_id:  int, run identifier in database session
