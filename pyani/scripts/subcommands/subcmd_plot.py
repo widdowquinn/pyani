@@ -42,6 +42,7 @@
 import logging
 import os
 import multiprocessing
+import time
 
 from argparse import Namespace
 from pathlib import Path
@@ -162,7 +163,8 @@ def write_run_heatmaps(
     )
 
     # Run the plotting commands
-    [pool.apply_async(func, args, {}) for func, args in plotting_commands]
+    for func, args in plotting_commands:
+        pool.apply_async(func, args, {})
 
     # Close worker pool
     pool.close()
