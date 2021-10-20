@@ -104,4 +104,12 @@ def build(
         help="graphics method to use for plotting",
         choices=["seaborn", "mpl", "plotly"],
     )
+    parser.add_argument(
+        "--tree",
+        dest="tree",
+        action="store_true",
+        default=False,
+        help="tree formats to generate",
+        # choices=["newick", "dendrogram"]
+    )
     parser.set_defaults(func=subcommands.subcmd_plot)

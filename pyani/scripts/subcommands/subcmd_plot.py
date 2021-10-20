@@ -202,6 +202,7 @@ def write_heatmap(
             outfname,
             title=f"matrix_{matdata.name}_run{run_id}",
             params=params,
+            args=args,
         )
 
     # Be tidy with matplotlib caches

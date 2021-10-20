@@ -41,9 +41,18 @@
 import matplotlib  # pylint: disable=C0411
 import pandas as pd
 import seaborn as sns
+import logging
+from pathlib import Path
+from scipy.cluster import hierarchy
+from ete3 import ClusterTree
+from ete3 import Tree, TreeStyle, faces, AttrFace, PhyloTree
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402,E501 # pylint: disable=wrong-import-position,wrong-import-order,ungrouped-imports
+
+LABEL_DICT = {}
+
+logger = logging.getLogger(__name__)
 
 
 # Add classes colorbar to Seaborn plot
@@ -97,6 +106,28 @@ def add_labels(fig, params):
     return fig
 
 
+def build_label_dict(fig, axis, params):
+    """Label info for tree plots.
+
+    :param fig:  a Seaborn clustermap instance
+    :param axis:  one of {'row', 'col'}
+    :param params:  plot parameters; this is where the labels come from
+
+    """
+    if axis == "col":
+        for idx, _ in zip(
+            fig.dendrogram_col.reordered_ind, fig.ax_heatmap.get_yticklabels()
+        ):
+            LABEL_DICT[str(idx + 1)] = params.labels.get(_, _.get_text())
+    elif axis == "row":
+        for idx, _ in zip(
+            fig.dendrogram_row.reordered_ind, fig.ax_heatmap.get_xticklabels()
+        ):
+            LABEL_DICT[str(idx + 1)] = params.labels.get(_, _.get_text())
+    logger.debug(f"{LABEL_DICT}")
+    return LABEL_DICT
+
+
 # Return a clustermap
 def get_clustermap(dfr, params, title=None, annot=True):
     """Return a Seaborn clustermap for the passed dataframe.
@@ -130,7 +161,7 @@ def get_clustermap(dfr, params, title=None, annot=True):
 
 
 # Generate Seaborn heatmap output
-def heatmap(dfr, outfilename=None, title=None, params=None):
+def heatmap(dfr, outfilename=None, title=None, params=None, args=None):
     """Return seaborn heatmap with cluster dendrograms.
 
     :param dfr:  pandas DataFrame with relevant data
@@ -164,8 +195,13 @@ def heatmap(dfr, outfilename=None, title=None, params=None):
     if outfilename:
         fig.savefig(outfilename)
 
+    # Tree
+    newicks = None
+    if args.tree:
+        newicks = tree(dfr, fig, outfilename, title, params, args)
+
     # Return clustermap
-    return fig
+    return fig, newicks
 
 
 def distribution(dfr, outfilename, matname, title=None):
@@ -263,3 +299,119 @@ def scatter(
 
     # Return clustermap
     return fig
+
+
+def get_newick(node, parentdist, leaf_names, newick=""):
+    """Generates a newick formatted file from a tree,
+    using recursion to traverse it.
+
+    :param node:  a (portion of a) tree to be traversed
+    :param parentdist:  distance from the parent node
+    :param leaf_names:  lables that will be attached to the terminal nodes
+    :param newick:  the current newick-formatted tree structure
+
+    """
+    # logger = logging.getLogger(__name__)
+    # logger.debug(f"{type(parentdist)}, {parentdist}")
+    # logger.debug(f"{type(node.dist)}, {node.dist}")
+    diff = parentdist - node.dist
+    if node.is_leaf():
+        return f"{leaf_names[node.id]}:{diff:.2f}{newick}"
+    else:
+        if len(newick) > 0:
+            newick = f"):{diff:.2f}{newick}"
+        else:
+            newick = ");"
+        newick = get_newick(node.get_left(), node.dist, leaf_names, newick)
+        newick = get_newick(node.get_right(), node.dist, leaf_names, f",{newick}")
+        newick = f"({newick}"
+        return newick
+
+
+def tree(dfr, fig, matfname, mat_title, params, args):
+    """Generate a newick file and dendrogram plot for the given dataframe.
+
+    :param dfr:  a dataframe
+    :param fig:  a figure produced by sns.clustermap
+    :param matfname:  name of the matrix plot file
+    :param params:  matrix plot parameters; including labels
+    :param args:  Namespace
+
+    """
+    logger = logging.getLogger(__name__)
+    # The header row must start with '#Names' for ClusterTree()'s text_array parameter to be satisfied
+    # Create a text stream with the dataframe contents in the necessary format for ClusterTree
+    # dfr.index.name = "#Names"
+    # matrix = dfr.to_csv(None, sep="\t", header=True)
+
+    sides = {
+        "col": {
+            "axis": fig.dendrogram_col,
+            "names": dfr.columns,  # fig.dendrogram_col.reordered_ind,
+        },
+        "row": {
+            "axis": fig.dendrogram_row,
+            "names": dfr.index,  # fig.dendrogram_row.reordered_ind,
+        },
+    }
+
+    # Create a linkage dendrogram and newick string for both rows and columns
+    # newicks = {}
+
+    for axis in sides.keys():
+        # Generate newick format
+        tree = hierarchy.to_tree(sides[axis]["axis"].linkage, False)
+        logger.debug(f"Names: {sides[axis]['names']}")
+        newick = get_newick(tree, tree.dist, sides[axis]["names"], "")
+        newick_file = Path(args.outdir) / str(
+            mat_title.replace("matrix", f"{axis}_newick") + ".nw"
+        )
+
+        # newicks.update({axis: newick})
+
+        # Generate dendrogram
+        # if 'dendrogram' in args.tree:
+        # if args.tree:
+        build_label_dict(fig, axis, params)
+        # figtree = ClusterTree(newick, text_array=matrix)
+        figtree = PhyloTree(newick)
+        figtree.set_species_naming_function(get_species_name)
+        figtree_file = str(matfname).replace("matrix", f"{axis}_tree")
+        logger.debug(f"{figtree}")
+        figtree.render(figtree_file, layout=tree_layout)
+        # with open(newick_file, 'w') as ofh:
+        figtree.write(outfile=newick_file)
+
+    # Return the newick strings so we can save them in the database (eventually)
+    # return newicks
+
+
+def tree_layout(node):
+
+    # Add taxonomy to nodes, and align to right
+    if node.is_leaf():
+        # if node.name == "F962_00589":
+        #     faces.add_face_to_node(
+        #         AttrFace("name", fgcolor="white"),
+        #         node,
+        #         column=0,
+        #         position="branch-right",
+        #     )
+        #     faces.add_face_to_node(
+        #         AttrFace("species", fgcolor="white"), node, column=0, position="aligned"
+        #     )
+        #     node.img_style["bgcolor"] == "darkred"
+        # else:
+
+        faces.add_face_to_node(
+            AttrFace("name", fgcolor="black"),
+            node,
+            column=0,
+            position="branch-right",
+        )
+        faces.add_face_to_node(AttrFace("species"), node, column=0, position="aligned")
+
+
+def get_species_name(node_name_string):
+    """Return `Genus species` (where known) for a node."""
+    return LABEL_DICT[node_name_string]
