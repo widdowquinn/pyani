@@ -161,7 +161,7 @@ def get_clustermap(dfr, params, title=None, annot=True):
 
 
 # Generate Seaborn heatmap output
-def heatmap(dfr, outfilename=None, title=None, params=None, args=None):
+def heatmap(dfr, outfilename=None, title=None, format=None, params=None, args=None):
     """Return seaborn heatmap with cluster dendrograms.
 
     :param dfr:  pandas DataFrame with relevant data
@@ -198,7 +198,7 @@ def heatmap(dfr, outfilename=None, title=None, params=None, args=None):
     # Tree
     newicks = None
     if args.tree:
-        newicks = tree(dfr, fig, outfilename, title, params, args)
+        newicks = tree(dfr, fig, title, format, params, args)
 
     # Return clustermap
     return fig, newicks
@@ -328,22 +328,23 @@ def get_newick(node, parentdist, leaf_names, newick=""):
         return newick
 
 
-def tree(dfr, fig, matfname, mat_title, params, args):
+def tree(dfr, fig, title, format, params, args):
     """Generate a newick file and dendrogram plot for the given dataframe.
 
     :param dfr:  a dataframe
     :param fig:  a figure produced by sns.clustermap
-    :param matfname:  name of the matrix plot file
+    :param title:  name of the matrix plot
+    :param format:  image file format being used
     :param params:  matrix plot parameters; including labels
     :param args:  Namespace
 
     """
     logger = logging.getLogger(__name__)
-    # The header row must start with '#Names' for ClusterTree()'s text_array parameter to be satisfied
-    # Create a text stream with the dataframe contents in the necessary format for ClusterTree
-    # dfr.index.name = "#Names"
-    # matrix = dfr.to_csv(None, sep="\t", header=True)
 
+    # Get matrix name and run_id from the plot title
+    matname, run_id = title.split("_", 1)[-1].rsplit("_", 1)
+
+    # Dictionary to allow abstraction over axes
     sides = {
         "col": {
             "axis": fig.dendrogram_col,
@@ -356,18 +357,14 @@ def tree(dfr, fig, matfname, mat_title, params, args):
     }
 
     # Create a linkage dendrogram and newick string for both rows and columns
-    # newicks = {}
+    newicks = {}
 
     for axis in sides.keys():
         # Generate newick format
         tree = hierarchy.to_tree(sides[axis]["axis"].linkage, False)
         logger.debug(f"Names: {sides[axis]['names']}")
         newick = get_newick(tree, tree.dist, sides[axis]["names"], "")
-        newick_file = Path(args.outdir) / str(
-            mat_title.replace("matrix", f"{axis}_newick") + ".nw"
-        )
-
-        # newicks.update({axis: newick})
+        newicks.update({f"[{axis}_newick_{matname}_{run_id}]": newick})
 
         # Generate dendrogram
         # if 'dendrogram' in args.tree:
@@ -376,14 +373,12 @@ def tree(dfr, fig, matfname, mat_title, params, args):
         # figtree = ClusterTree(newick, text_array=matrix)
         figtree = PhyloTree(newick)
         figtree.set_species_naming_function(get_species_name)
-        figtree_file = str(matfname).replace("matrix", f"{axis}_tree")
+        figtree_file = Path(args.outdir) / f"{axis}_tree_{matname}_{run_id}.{format}"
         logger.debug(f"{figtree}")
-        figtree.render(figtree_file, layout=tree_layout)
-        # with open(newick_file, 'w') as ofh:
-        figtree.write(outfile=newick_file)
+        figtree.render(str(figtree_file), layout=tree_layout)
 
     # Return the newick strings so we can save them in the database (eventually)
-    # return newicks
+    return newicks
 
 
 def tree_layout(node):
