@@ -51,6 +51,7 @@ import pandas as pd
 
 from pathlib import Path
 from typing import Dict, NamedTuple
+from argparse import Namespace
 
 import pytest
 
@@ -65,15 +66,17 @@ class GraphicsTestInputs(NamedTuple):
     filename: Path
     labels: Dict[str, str]
     classes: Dict[str, str]
+    args: Namespace
 
 
 @pytest.fixture
-def graphics_inputs(dir_graphics_in):
+def graphics_inputs(dir_graphics_in, plot_namespace_no_tree):
     """Returns namedtuple of graphics inputs."""
     return GraphicsTestInputs(
         dir_graphics_in / "ANIm_percentage_identity.tab",
         get_labels(dir_graphics_in / "labels.tab"),
         get_labels(dir_graphics_in / "classes.tab"),
+        plot_namespace_no_tree,
     )
 
 
@@ -89,7 +92,11 @@ def draw_format_method(fmt, mth, graphics_inputs, tmp_path):
         graphics_inputs.classes,
     )
     fn[mth](
-        df, tmp_path / f"{mth}.{fmt}", title=f"{mth}:{fmt} test", params=method_params
+        df,
+        tmp_path / f"{mth}.{fmt}",
+        title=f"{mth}:{fmt} test",
+        params=method_params,
+        args=graphics_inputs.args,
     )
     sc[mth](
         df,

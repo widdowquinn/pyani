@@ -45,6 +45,7 @@ import re
 
 from pathlib import Path
 from typing import NamedTuple
+from argparse import Namespace
 
 import pytest
 
@@ -387,6 +388,12 @@ def path_fna_two(dir_seq):
 def path_fna_all(dir_seq):
     """Paths to all .fna sequence file in dir_seq."""
     return [_ for _ in dir_seq.iterdir() if _.is_file() and _.suffix == ".fna"]
+
+
+@pytest.fixture
+def plot_namespace_no_tree():
+    """A namespace for plotting tests with no trees."""
+    return Namespace(tree=False)
 
 
 @pytest.fixture(autouse=True)
