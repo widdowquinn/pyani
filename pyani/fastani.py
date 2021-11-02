@@ -212,7 +212,7 @@ def construct_fastani_cmdline(
     :param kmerSize:        kmer size to use
     :param minFraction:     minimum portion of the genomes that must match to trust ANI
     """
-    logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     # Cast path strings to pathlib.Path for safety
     query, ref = Path(query), Path(ref)
@@ -221,7 +221,7 @@ def construct_fastani_cmdline(
     outfile = outdir / f"{query.stem}_vs_{ref.stem}.fastani"
     fastcmd = f"{fastani_exe} -q {query} -r {ref} -o {outfile} --fragLen {fragLen} -k {kmerSize} --minFraction {minFraction}"
 
-    logging.debug("Compiled command: %s", fastcmd)
+    logger.debug("Compiled command: %s", fastcmd)
 
     return fastcmd
 
@@ -267,9 +267,7 @@ def parse_fastani_file(filename: Path) -> ComparisonResult:
     )
 
 
-def process_files(
-    outdir: Path, org_lengths: Dict, logger: Optional[Logger] = None
-) -> ANIResults:
+def process_files(outdir: Path, org_lengths: Dict) -> ANIResults:
     """Return tuple of fastANI results for files in passed directory.
 
     :param outdir:  Path, path to the directory containing output files
@@ -286,6 +284,8 @@ def process_files(
     May throw a ZeroDivisionError if one or more fastANI runs failed, or a
     very distant sequence was included in the analysis.
     """
+    logger = logging.getLogger(__name__)
+
     # Process directory to identify input files
     outfiles = pyani_files.get_input_files(outdir, ".out")
 
