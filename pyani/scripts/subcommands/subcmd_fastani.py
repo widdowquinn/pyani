@@ -51,7 +51,13 @@ from typing import List, Tuple, NamedTuple
 from Bio import SeqIO  # unsure what this does [LP: bioinformatics file format IO]
 from tqdm import tqdm  # unsure what this does [LP: progress bars]
 
-from pyani import fastani, pyani_jobs, run_sge, run_multiprocessing as run_mp
+from pyani import (
+    fastani,
+    pyani_jobs,
+    run_sge,
+    pyani_config,
+    run_multiprocessing as run_mp,
+)
 from pyani.pyani_files import collect_existing_output
 from pyani.pyani_orm import (
     Comparison,
@@ -166,15 +172,19 @@ def subcmd_fastani(args: Namespace) -> None:
         )  # this differs from subcmd_anim.py
     logger.debug("\t...added genome IDs: %s", genome_ids)
 
+    # Generate command-liens for fastANI analysis
+    logger.info("Generating fastANI command-lines")
+    fastanidir = args.outdir / pyani_config.ALIGNDIR["fastANI"]
+    logger.debug(f"fastANI output will be written temporarily to {fastanidir}")
+
     # Create output directories. We create the main parent directory (args.outdir), but
     # also subdirectories for the _________________
-    logger.debug("Creating output directory %s", args.outdir)
+    logger.debug(f"Creating output directory {fastanidir}")
     try:
-        os.makedirs(args.outdir, exist_ok=True)
+        fastanidir.mkdir(exist_ok=True, parents=True)
     except IOError:
         logger.error(
-            "Could not create output directory %s; (exiting)",
-            args.outdir,
+            f"Could not create output directory {fastanidir}; (exiting)",
             exc_info=True,
         )
         raise SystemError(1)

@@ -218,7 +218,9 @@ def construct_fastani_cmdline(
     query, ref = Path(query), Path(ref)
 
     # Compile commands
-    outfile = outdir / f"{query.stem}_vs_{ref.stem}.fastani"
+    outsubdir = outdir / pyani_config.ALIGNDIR["fastANI"]
+    outsubdir.mkdir(exist_ok=True)
+    outfile = outsubdir / f"{query.stem}_vs_{ref.stem}.fastani"
     fastcmd = f"{fastani_exe} -q {query} -r {ref} -o {outfile} --fragLen {fragLen} -k {kmerSize} --minFraction {minFraction}"
 
     logger.debug("Compiled command: %s", fastcmd)

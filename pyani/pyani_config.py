@@ -84,6 +84,7 @@ ALIGNDIR = {
     "ANIm": "nucmer_output",
     "ANIb": "blastn_output",
     "ANIblastall": "blastall_output",
+    "fastANI": "fastani_output",
 }
 
 # Any valid matplotlib colour map can be used here
