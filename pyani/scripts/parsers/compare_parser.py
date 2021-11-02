@@ -32,11 +32,18 @@ def build(
         help="output directory",
     )
     parser.add_argument(
-        "--run_id",
+        "--run_a",
         action="store",
-        dest="run_id",
-        require=True,
-        help="run IDs to compare",
+        dest="run_a",
+        required=True,
+        help="ID of first run to compare",
+    )
+    parser.add_argument(
+        "--run_b",
+        action="store",
+        dest="run_b",
+        required=True,
+        help="ID of second run to compare",
     )
     # Optional arguments
     parser.add_argument(
