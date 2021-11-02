@@ -125,8 +125,8 @@ def subcmd_compare(args: Namespace):
     ]
 
     # Add hadamard columns
-    run_A_scores["hadamard"] = run_A_scores["identity"] / run_A_scores["cov_query"]
-    run_B_scores["hadamard"] = run_B_scores["identity"] / run_B_scores["cov_query"]
+    run_A_scores["hadamard"] = run_A_scores["identity"] * run_A_scores["cov_query"]
+    run_B_scores["hadamard"] = run_B_scores["identity"] * run_B_scores["cov_query"]
     logger.debug(f"\t...run_A_scores has dimensions: {run_A_scores.shape}.")
     logger.debug(f"\t...run_A_scores.head(): \n{run_A_scores.head()}")
     logger.debug(f"\t...run_B_scores has dimensions: {run_B_scores.shape}.")
@@ -157,20 +157,21 @@ def subcmd_compare(args: Namespace):
         )
 
     logger.debug(f"\t...diffs has dimensions: {diffs.shape}.")
-    logger.debug(f"\t...diffs.head(): {diffs.head()}")
+    logger.debug(f"\t...diffs.head(): \n{diffs.head()}")
     logger.debug(f"\t...abs_diffs has dimensions: {abs_diffs.shape}.")
     logger.debug(f"\t...abs_diffs.head(): \n{abs_diffs.head()}")
 
     # Send dataframes for heatmaps, scatterplots
     # Scatter plots will use merged_scores
-    # Distributions will use diff and abs_diffs
+    # Distributions will use diff and abs_diffs; can pass individual columns as
+    # single-column dfs using df[[col]] syntax
     # Heatmaps will use... something
 
     # Plot distributions of differences to look at normality
 
     # Generate summary report
 
-    raise NotImplementedError
+    # raise NotImplementedError
 
 
 def get_metadata(session: Any, run_id: int) -> RunMetadata:
