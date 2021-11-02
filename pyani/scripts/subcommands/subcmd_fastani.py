@@ -115,11 +115,37 @@ class ComparisonResult(NamedTuple):
 
 
 def subcmd_fastani(args: Namespace) -> None:
-    """ """
+    """Perform fastANI on all genome files in an input directory.
+
+    :param args:  Namespace, command-line arguments
+
+    Finds ANI by the fastANI method, as described in Jain et al (2018)
+    Nature Communications 9, 5114. doi:10.1038/s41467-018-07641-9.
+
+    All FASTA format files (selected by suffix) in the input directory
+    are compared against each other, pairwise, using fastANI (whose path
+    must be provided).
+
+    For each pairwise comparison, the fastANI .fastani file output is parsed
+    to obtain an alignment length and similarity error countfor the two
+    organisms, as represented by sequences in the FASTA files. These are
+    processed to calculate aligned sequence lengths, average nucleotide
+    identity (ANI) percentages, coverage (aligned percentage of whole
+    genome), and similarity error count for each pairwise comparison.
+
+    The calculated values are deposited in the SQLite3 database being used
+    for the analysis.
+
+    For each pairwise comparison, the fastANI output is stored in the output
+    directory for long enough to extract summary information, but for each
+    run the output is gzip compressed. Once all runs are complete, the
+    outputs for each comparison are concatenated into a single gzip archive.
+
+    """
     logger = logging.getLogger(__name__)
 
     # announce that we're starting
-    logger.info(termcolor("running FastANI analysis", "red"))
+    logger.info(termcolor("Running fastANI analysis", "red"))
 
     # Get current fastani version
     logger.info(termcolor(f"fastANI executable: {args.fastani_exe}"))

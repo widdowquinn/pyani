@@ -162,6 +162,9 @@ def add_log_headers():
         "\tFriedberg I, Hamelryck T, Kauff F, Wilczynski B and de Hoon MJL",
         "\t(2009) Biopython: freely available Python tools for computational",
         "\tmolecular biology and bioinformatics. Bioinformatics, 25, 1422-1423",
+        f"\t{termcolor('fastANI', 'cyan')}: Jain C, Rodriguez-R LM, Phillippy AM, Konstantinidis K, and",
+        "\tAluru S (2018) 'High throughput ANI analysis of 90K prokaryotic",
+        "\tgenomes reveals clear species boundaries.' Nature Communications 9, 5114",
     ]
     for line in dep_citations:
         logger.info(line)
