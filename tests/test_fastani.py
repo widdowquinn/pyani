@@ -61,22 +61,22 @@ def fastani_cmds_four(path_file_four):  # works
     return FastANIExample(
         path_file_four,
         [
-            "fastANI -q file1.fna -r file1.fna -o file1_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file1.fna -r file2.fna -o file1_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file1.fna -r file3.fna -o file1_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file1.fna -r file4.fna -o file1_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file2.fna -r file1.fna -o file2_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file2.fna -r file2.fna -o file2_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file2.fna -r file3.fna -o file2_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file2.fna -r file4.fna -o file2_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file3.fna -r file1.fna -o file3_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file3.fna -r file2.fna -o file3_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file3.fna -r file3.fna -o file3_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file3.fna -r file4.fna -o file3_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file4.fna -r file1.fna -o file4_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file4.fna -r file2.fna -o file4_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file4.fna -r file3.fna -o file4_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file4.fna -r file4.fna -o file4_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file1.fna -r file1.fna -o fastani_output/file1_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file1.fna -r file2.fna -o fastani_output/file1_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file1.fna -r file3.fna -o fastani_output/file1_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file1.fna -r file4.fna -o fastani_output/file1_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file2.fna -r file1.fna -o fastani_output/file2_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file2.fna -r file2.fna -o fastani_output/file2_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file2.fna -r file3.fna -o fastani_output/file2_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file2.fna -r file4.fna -o fastani_output/file2_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file3.fna -r file1.fna -o fastani_output/file3_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file3.fna -r file2.fna -o fastani_output/file3_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file3.fna -r file3.fna -o fastani_output/file3_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file3.fna -r file4.fna -o fastani_output/file3_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file4.fna -r file1.fna -o fastani_output/file4_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file4.fna -r file2.fna -o fastani_output/file4_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file4.fna -r file3.fna -o fastani_output/file4_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            "fastANI -q file4.fna -r file4.fna -o fastani_output/file4_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
         ],
     )
 
@@ -133,7 +133,7 @@ def test_fastani_single(tmp_path, path_file_two):  # works
     fastcmd = fastani.construct_fastani_cmdline(
         path_file_two[0], path_file_two[1], outdir=tmp_path
     )
-    dir_fastani = tmp_path
+    dir_fastani = tmp_path / "fastani_output"
     expected = (
         f"fastANI -q {path_file_two[0]} -r {path_file_two[1]} "
         f"-o {dir_fastani / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem + '.fastani')} "
