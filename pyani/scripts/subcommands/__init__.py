@@ -48,3 +48,4 @@ from .subcmd_index import subcmd_index
 from .subcmd_listdeps import subcmd_listdeps
 from .subcmd_plot import subcmd_plot
 from .subcmd_report import subcmd_report
+from .subcmd_compare import subcmd_compare
