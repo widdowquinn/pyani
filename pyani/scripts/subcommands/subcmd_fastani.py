@@ -263,7 +263,7 @@ def generate_joblist(
     comparisons: List,  # in ANIm: List[Tuple]
     existingfiles: List,  # in ANIm: List[Path]
     args: Namespace,
-) -> NotImplementedError:  # in ANIm: List[ComparisonJob]
+) -> List[ComparisonJob]:
     """Return list of ComparisonJobs
 
     :param comparisons: list of (Genome, Genome) tuples for which comparisons are needed
