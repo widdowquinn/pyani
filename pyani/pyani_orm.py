@@ -499,7 +499,7 @@ def filter_uncommon_comparisons(session, run_a_comps, run_b_comps) -> Tuple[Set,
     return run_a_common, run_b_common
 
 
-def get_df_of_scores(session, comparison_ids: List, cols: List):
+def get_df_of_scores(session: Any, comparison_ids: List, cols: List):
     """Extracts scores for a set of comparisons from the database.
 
     :param session:  live SQLAlchemy session of pyani database
