@@ -99,6 +99,16 @@ def subcmd_compare(args: Namespace):
         genome_set = set(gen for (gen, run) in genome_query)
         run_dict.update({f"{run.run_id}": parse_data(run, genome_set)})
 
+    # Loop over pairs of runs
+    for ref, query in permutations(runs, 2):
+        ref, query = run_dict[str(ref)], run_dict[str(query)]
+        # Find common genomes
+        common = ref.genomes & query.genomes
+
+        if not common:
+            logger.error(f"No genomes in common between {ref} and {query}")
+            raise SystemExit(1)
+        logger.debug(f"\t...{len(common)} genomes in common between {ref} and {query}.")
     # Send dataframes for heatmaps, scatterplots
     # Heatmaps will use... something
 
@@ -136,4 +146,15 @@ def parse_data(run, genome_set) -> RunMetadata:
         MatrixData("aln_length", pd.read_json(run.df_alnlength), {}),
         MatrixData("sim_errors", pd.read_json(run.df_simerrors), {}),
         MatrixData("hadamard", pd.read_json(run.df_hadamard), {}),
+    )
+
+
+def subset_matrix(common, run):
+    """Subsets a score matrix based on a set of indices."""
+    return SubData(
+        MatrixData("identity", run.identity.data.loc[common, common], {}),
+        MatrixData("coverage", run.coverage.data.loc[common, common], {}),
+        MatrixData("aln_length", run.aln_length.data.loc[common, common], {}),
+        MatrixData("sim_errors", run.sim_errors.data.loc[common, common], {}),
+        MatrixData("hadamard", run.hadamard.data.loc[common, common], {}),
     )
