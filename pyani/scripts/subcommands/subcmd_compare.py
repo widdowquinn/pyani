@@ -127,6 +127,18 @@ def subcmd_compare(args: Namespace):
         logger.debug(f"Difference matrix:\n {diffs}")
         logger.debug(f"Absolute difference matrix:\n {abs_diffs}")
 
+        # Tetra doesn't report all of the same things
+
+        # Get matrix labels, classes
+        labels, classes = {}, {}
+        logger.info(f"{ref.run_id}")
+        labels.update(get_matrix_labels_for_run(session, ref.run_id))
+        labels.update(get_matrix_labels_for_run(session, query.run_id))
+        classes.update(get_matrix_classes_for_run(session, ref.run_id))
+        classes.update(get_matrix_classes_for_run(session, query.run_id))
+
+        logger.info(f"Labels: {labels}")
+
     # Send dataframes for heatmaps, scatterplots
     # Heatmaps will use... something
 
