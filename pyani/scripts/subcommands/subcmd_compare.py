@@ -20,11 +20,33 @@ from typing import Any, NamedTuple, Dict, List, Set
 from itertools import combinations, permutations
 from pyani.pyani_graphics.sns import get_clustermap, get_colorbar
 
+# Distribution dictionary of matrix graphics methods
+GMETHODS = {"mpl": pyani_graphics.mpl.heatmap, "seaborn": pyani_graphics.sns.heatmap}
+# Distribution dictionary of distribution graphics methods
+DISTMETHODS = {
+    "mpl": pyani_graphics.mpl.distribution,
+    "seaborn": pyani_graphics.sns.distribution,
+}
+
 
 class RunMetadata(NamedTuple):
     run_id: int
     method: str
     cmdline: str
+    genomes: Set
+    identity: MatrixData
+    coverage: MatrixData
+    aln_length: MatrixData
+    sim_errors: MatrixData
+    hadamard: MatrixData
+
+
+class SubData(NamedTuple):
+    identity: MatrixData
+    coverage: MatrixData
+    aln_length: MatrixData
+    sim_errors: MatrixData
+    hadamard: MatrixData
 
 
 def subcmd_compare(args: Namespace):
