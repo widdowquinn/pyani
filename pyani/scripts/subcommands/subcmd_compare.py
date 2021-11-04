@@ -109,6 +109,24 @@ def subcmd_compare(args: Namespace):
             logger.error(f"No genomes in common between {ref} and {query}")
             raise SystemExit(1)
         logger.debug(f"\t...{len(common)} genomes in common between {ref} and {query}.")
+
+        # Subset matrices based on common genomes
+        sub_ref = subset_matrix(common, ref)
+        sub_query = subset_matrix(common, query)
+
+        # Generate dataframes of differences for each measure
+        diffs = {
+            a.name: MatrixData(a.name, a.data - b.data, {})
+            for a, b in zip(sub_ref, sub_query)
+        }
+        abs_diffs = {
+            a.name: MatrixData(a.name, abs(a.data - b.data), {})
+            for a, b in zip(sub_ref, sub_query)
+        }
+
+        logger.debug(f"Difference matrix:\n {diffs}")
+        logger.debug(f"Absolute difference matrix:\n {abs_diffs}")
+
     # Send dataframes for heatmaps, scatterplots
     # Heatmaps will use... something
 
