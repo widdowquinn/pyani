@@ -185,15 +185,7 @@ def subcmd_compare(args: Namespace):
             merged_scores[f"{col}_A"] - merged_scores[f"{col}_B"]
         )
 
-    logger.debug(f"\t...diffs has dimensions: {diffs.shape}.")
-    logger.debug(f"\t...diffs.head(): \n{diffs.head()}")
-    logger.debug(f"\t...abs_diffs has dimensions: {abs_diffs.shape}.")
-    logger.debug(f"\t...abs_diffs.head(): \n{abs_diffs.head()}")
-
     # Send dataframes for heatmaps, scatterplots
-    # Scatter plots will use merged_scores
-    # Distributions will use diff and abs_diffs; can pass individual columns as
-    # single-column dfs using df[[col]] syntax
     # Heatmaps will use... something
 
     # Plot distributions of differences to look at normality
@@ -211,34 +203,3 @@ def get_metadata(session: Any, run_id: int) -> RunMetadata:
 
     """
     return session.query(Run.run_id, Run.method, Run.cmdline).filter_by(run_id=run_id)
-
-
-# """
-# session = pyani_orm.get_session("/Users/baileythegreen/Software/pyani/scratch/# anim_timed_test.db")
-# help(session.query(pyani_orm.runcomparison).get)
-# dir(session.query(pyani_orm.runcomparison))
-# type(session.query(pyani_orm.runcomparison))
-# set(session.query(pyani_orm.runcomparison).filter_by(run_id = 10))
-# runs = {1, 2, 4, 3, 5}
-# [run for run in session.query(pyani_orm.Comparison).filter(pyani_orm.Comparison.comparison_id.in_(runs))]
-
-# session.query()
-
-
-# From two run IDs I need to get a list of comparisons from each
-# The Comparison_id values will be unique, no duplicates, no overlap
-# Within one run, the only things that change are the query and reference IDs
-# For each run, get the genomes involved in each comparison
-# Compare only pairs of genomes that exist under both runs
-# Perhaps the easiest way to do this is with a dictionary, keyed by
-# (Query_id, Ref_id) tuples, with Comparison_ids as the values
-# This would be the Python way, but there is likely an SQL way
-
-# comp_dict = {(_.query_id, _.subject_id): _.comparison_id for _ in session.query(pyani_orm.Comparison).filter(pyani_orm.Comparison.comparison_id.in_(runs)).all()}
-
-# [_.comparison_id for _ in set(session.query(pyani_orm.runcomparison).filter_by(run_id = 0))]
-
-# {(1, 3)} & set(comp_dict.keys())
-
-# set(x for x in [1, 1, 3])
-# """
