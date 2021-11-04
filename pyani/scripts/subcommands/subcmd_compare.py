@@ -139,8 +139,10 @@ def subcmd_compare(args: Namespace):
 
         logger.info(f"Labels: {labels}")
 
-    # Send dataframes for heatmaps, scatterplots
-    # Heatmaps will use... something
+        # Send dataframes for heatmaps, scatterplots
+        get_heatmap(
+            ref.run_id, query.run_id, diffs["identity"], labels, classes, [], args
+        )
 
     # Plot distributions of differences to look at normality
 
@@ -188,3 +190,45 @@ def subset_matrix(common, run):
         MatrixData("sim_errors", run.sim_errors.data.loc[common, common], {}),
         MatrixData("hadamard", run.hadamard.data.loc[common, common], {}),
     )
+
+
+def get_heatmap(
+    run_a: int,
+    run_b: int,
+    matdata: MatrixData,
+    result_labels: Dict,
+    result_classes: Dict,
+    outfmts: List[str],
+    args: Namespace,
+):
+    """Write a single heatmap for a pyani run.
+
+    :param run_id:  int, run_id for this run
+    :param matdata:  MatrixData object for this heatmap
+    :param result_labels:  dict of result labels
+    :param result_classes: dict of result classes
+    :param args:  Namespace for command-line arguments
+    :param outfmts:  list of output formats for files
+    """
+
+    logger = logging.getLogger(__name__)
+    mode = "diff"
+    logger.info(f"Creating {matdata.name} {mode} matrix heatmaps")
+    logger.info(
+        f"Cmap min: {matdata.data.values.min()}, cmap max: {matdata.data.values.max()}"
+    )
+    cmap = ("BuRd", matdata.data.values.min(), matdata.data.values.max())
+    params = pyani_graphics.Params(cmap, result_labels, result_classes)
+    params.colorbar = get_colorbar(matdata.data, result_classes)
+    # Draw heatmap
+    # get_clustermap(matdata.data, params, "")
+    fig = GMETHODS["seaborn"](
+        matdata.data,
+        "compare_heatmap2.pdf",
+        title=f"{mode}_{matdata.name}_run{run_a}_run{run_b}",
+        params=params,
+    )
+
+    # Be tidy with matplotlib caches
+    plt.close("all")
+    return fig
