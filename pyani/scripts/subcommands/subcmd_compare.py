@@ -19,6 +19,8 @@ from pyani.pyani_orm import (
 from typing import Any, NamedTuple, Dict, List, Set
 from itertools import combinations, permutations
 from pyani.pyani_graphics.sns import get_clustermap, get_colorbar
+from pathlib import Path
+
 
 # Distribution dictionary of matrix graphics methods
 GMETHODS = {"mpl": pyani_graphics.mpl.heatmap, "seaborn": pyani_graphics.sns.heatmap}
@@ -220,25 +222,30 @@ def get_heatmap(
     :param args:  Namespace for command-line arguments
     :param outfmts:  list of output formats for files
     """
+    cmap = ("BuRd", matdata.data.values.min(), matdata.data.values.max())
 
     logger = logging.getLogger(__name__)
-    mode = "diff"
-    logger.info(f"Creating {matdata.name} {mode} matrix heatmaps")
+
+    logger.info(f"Creating {matdata.name} matrix heatmaps")
     logger.info(
         f"Cmap min: {matdata.data.values.min()}, cmap max: {matdata.data.values.max()}"
     )
-    cmap = ("BuRd", matdata.data.values.min(), matdata.data.values.max())
-    params = pyani_graphics.Params(cmap, result_labels, result_classes)
-    params.colorbar = get_colorbar(matdata.data, result_classes)
-    # Draw heatmap
-    # get_clustermap(matdata.data, params, "")
-    fig = GMETHODS["seaborn"](
-        matdata.data,
-        "compare_heatmap2.pdf",
-        title=f"{mode}_{matdata.name}_run{run_a}_run{run_b}",
-        params=params,
-    )
+
+    for fmt in outfmts:
+        outfname = (
+            Path(args.outdir) / f"compare_{matdata.name}_run{run_a}_run{run_b}.{fmt}"
+        )
+        logger.debug(f"\tWriting graphics to {outfname}")
+        params = pyani_graphics.Params(cmap, result_labels, result_classes)
+
+        # Draw heatmap
+        # get_clustermap(matdata.data, params, "")
+        GMETHODS["seaborn"](
+            matdata.data,
+            outfname,
+            title=f"compare_{matdata.name}_run{run_a}_run{run_b}",
+            params=params,
+        )
 
     # Be tidy with matplotlib caches
     plt.close("all")
-    return fig
