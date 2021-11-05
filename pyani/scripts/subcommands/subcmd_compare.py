@@ -135,13 +135,10 @@ def subcmd_compare(args: Namespace):
             get_heatmap(
                 ref.run_id, query.run_id, matdata, labels, classes, outfmts, args
             )
+            # Plot distributions of differences to look at normality
             get_distribution(ref.run_id, query.run_id, matdata, outfmts, args)
 
-    # Plot distributions of differences to look at normality
-
-    # Generate summary report
-
-    # raise NotImplementedError
+            # Generate summary report
 
 
 def get_metadata(session: Any, run_id: int) -> RunData:
