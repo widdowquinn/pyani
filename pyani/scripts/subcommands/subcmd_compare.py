@@ -41,7 +41,7 @@ class RunMetadata(NamedTuple):
     hadamard: MatrixData
 
 
-class SubData(NamedTuple):
+class RunMatrices(NamedTuple):
     identity: MatrixData
     coverage: MatrixData
     aln_length: MatrixData
@@ -183,7 +183,7 @@ def parse_data(run, genome_set) -> RunMetadata:
 
 def subset_matrix(common, run):
     """Subsets a score matrix based on a set of indices."""
-    return SubData(
+    return RunMatrices(
         MatrixData("identity", run.identity.data.loc[common, common], {}),
         MatrixData("coverage", run.coverage.data.loc[common, common], {}),
         MatrixData("aln_length", run.aln_length.data.loc[common, common], {}),
