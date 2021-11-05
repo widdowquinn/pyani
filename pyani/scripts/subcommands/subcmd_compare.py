@@ -116,6 +116,10 @@ def subcmd_compare(args: Namespace):
             raise SystemExit(1)
         logger.debug(f"\t...{len(common)} genomes in common between {ref} and {query}.")
 
+        # Get matrix labels, classes
+        labels = get_labels(session, ref, query)
+        classes = get_classes(session, ref, query)
+
         # Subset matrices based on common genomes
         sub_ref = subset_matrix(common, ref)
         sub_query = subset_matrix(common, query)
@@ -124,16 +128,6 @@ def subcmd_compare(args: Namespace):
         difference_matrices = get_difference_matrices(sub_ref, sub_query)
 
         # Tetra doesn't report all of the same things
-
-        # Get matrix labels, classes
-        labels, classes = {}, {}
-        logger.info(f"{ref.run_id}")
-        labels.update(get_matrix_labels_for_run(session, ref.run_id))
-        labels.update(get_matrix_labels_for_run(session, query.run_id))
-        classes.update(get_matrix_classes_for_run(session, ref.run_id))
-        classes.update(get_matrix_classes_for_run(session, query.run_id))
-
-        logger.info(f"Labels: {labels}")
 
         # Send dataframes for heatmaps, scatterplots
         # Write heatmap for each results matrix
@@ -178,6 +172,34 @@ def parse_data(run, genome_set) -> RunData:
         MatrixData("sim_errors", pd.read_json(run.df_simerrors), {}),
         MatrixData("hadamard", pd.read_json(run.df_hadamard), {}),
     )
+
+
+def get_labels(session, reference, query):
+    """Grab labels information for the runs.
+
+    :param session:  live SQLAlchemy session of pyani database
+    :param reference:  reference run
+    :param query:  query run
+
+    """
+    labels = {}
+    for run in (reference, query):
+        labels.update(get_matrix_labels_for_run(session, run.run_id))
+    return labels
+
+
+def get_classes(session, reference, query):
+    """Grab class information for the runs.
+
+    :param session:  live SQLAlchemy session of pyani database
+    :param reference:  reference run
+    :param query:  query run
+
+    """
+    classes = {}
+    for run in (reference, query):
+        classes.update(get_matrix_classes_for_run(session, run.run_id))
+    return classes
 
 
 def subset_matrix(common, run):
