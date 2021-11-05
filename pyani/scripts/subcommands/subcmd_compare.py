@@ -72,6 +72,10 @@ def subcmd_compare(args: Namespace):
         )
         raise SystemExit(1)
 
+    # Parse output formats
+    outfmts = args.formats.split(",")
+    logger.debug(f"Requested output formats: {outfmts}")
+
     # Get information on the runs
     runs = [run_a, run_b]
     run_dict = {}
@@ -115,17 +119,21 @@ def subcmd_compare(args: Namespace):
         sub_query = subset_matrix(common, query)
 
         # Generate dataframes of differences for each measure
-        diffs = {
-            a.name: MatrixData(a.name, a.data - b.data, {})
-            for a, b in zip(sub_ref, sub_query)
-        }
-        abs_diffs = {
-            a.name: MatrixData(a.name, abs(a.data - b.data), {})
-            for a, b in zip(sub_ref, sub_query)
-        }
-
-        logger.debug(f"Difference matrix:\n {diffs}")
-        logger.debug(f"Absolute difference matrix:\n {abs_diffs}")
+        difference_matrices = {}
+        difference_matrices.update(
+            {
+                f"{a.name}_diffs": MatrixData(f"{a.name}_diffs", a.data - b.data, {})
+                for a, b in zip(sub_ref, sub_query)
+            }
+        )
+        difference_matrices.update(
+            {
+                f"{a.name}_absdiffs": MatrixData(
+                    f"{a.name}_absdiffs", abs(a.data - b.data), {}
+                )
+                for a, b in zip(sub_ref, sub_query)
+            }
+        )
 
         # Tetra doesn't report all of the same things
 
@@ -140,9 +148,11 @@ def subcmd_compare(args: Namespace):
         logger.info(f"Labels: {labels}")
 
         # Send dataframes for heatmaps, scatterplots
-        get_heatmap(
-            ref.run_id, query.run_id, diffs["identity"], labels, classes, [], args
-        )
+        # Write heatmap for each results matrix
+        for matdata in difference_matrices.values():
+            get_heatmap(
+                ref.run_id, query.run_id, matdata, labels, classes, outfmts, args
+            )
 
     # Plot distributions of differences to look at normality
 
