@@ -106,7 +106,7 @@ def subcmd_compare(args: Namespace):
         run_dict.update({f"{run.run_id}": parse_data(run, genome_set)})
 
     # Loop over pairs of runs
-    for ref, query in permutations(runs, 2):
+    for ref, query in combinations(runs, 2):
         ref, query = run_dict[str(ref)], run_dict[str(query)]
         # Find common genomes
         common = ref.genomes & query.genomes
