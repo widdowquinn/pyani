@@ -54,4 +54,20 @@ def build(
         type=Path,
         help="path to pyani database",
     )
+    # Graphics methods and formats
+    parser.add_argument(
+        "--formats",
+        dest="formats",
+        action="store",
+        default="png",
+        help="graphics output format (pdf/png/svg/jpg)",
+    )
+    parser.add_argument(
+        "--method",
+        dest="method",
+        action="store",
+        default="seaborn",
+        help="graphics method to use for plotting",
+        choices=["seaborn", "mpl", "plotly"],
+    )
     parser.set_defaults(func=subcommands.subcmd_compare)
