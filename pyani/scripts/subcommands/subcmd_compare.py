@@ -155,6 +155,7 @@ def subcmd_compare(args: Namespace):
             get_heatmap(
                 ref.run_id, query.run_id, matdata, labels, classes, outfmts, args
             )
+            get_distribution(ref.run_id, query.run_id, matdata, outfmts, args)
 
     # Plot distributions of differences to look at normality
 
@@ -249,3 +250,34 @@ def get_heatmap(
 
     # Be tidy with matplotlib caches
     plt.close("all")
+
+
+def get_distribution(
+    run_a: int,
+    run_b: int,
+    matdata: MatrixData,
+    outfmts: List[str],
+    args: Namespace,
+) -> None:
+    """Write distribution plots for each matrix type.
+
+    :param run_id:  int, run_id for this run
+    :param matdata:  MatrixData object for this distribution plot
+    :param args:  Namespace for command-line arguments
+    :param outfmts:  list of output formats for files
+    """
+    logger = logging.getLogger(__name__)
+
+    logger.info(f"Writing distribution plot for {matdata.name} matrix")
+    for fmt in outfmts:
+        outfname = (
+            Path(args.outdir)
+            / f"distribution_{matdata.name}_run{run_a}_run{run_b}.{fmt}"
+        )
+        logger.debug(f"\tWriting graphics to {outfname}")
+        DISTMETHODS[args.method](
+            matdata.data,
+            outfname,
+            matdata.name,
+            title=f"compare_{matdata.name}_run{run_a}_run{run_b}",
+        )
