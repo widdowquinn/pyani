@@ -121,21 +121,7 @@ def subcmd_compare(args: Namespace):
         sub_query = subset_matrix(common, query)
 
         # Generate dataframes of differences for each measure
-        difference_matrices = {}
-        difference_matrices.update(
-            {
-                f"{a.name}_diffs": MatrixData(f"{a.name}_diffs", a.data - b.data, {})
-                for a, b in zip(sub_ref, sub_query)
-            }
-        )
-        difference_matrices.update(
-            {
-                f"{a.name}_absdiffs": MatrixData(
-                    f"{a.name}_absdiffs", abs(a.data - b.data), {}
-                )
-                for a, b in zip(sub_ref, sub_query)
-            }
-        )
+        difference_matrices = get_difference_matrices(sub_ref, sub_query)
 
         # Tetra doesn't report all of the same things
 
@@ -203,6 +189,25 @@ def subset_matrix(common, run):
         MatrixData("sim_errors", run.sim_errors.data.loc[common, common], {}),
         MatrixData("hadamard", run.hadamard.data.loc[common, common], {}),
     )
+
+
+def get_difference_matrices(reference, query):
+    difference_matrices = {}
+    difference_matrices.update(
+        {
+            f"{a.name}_diffs": MatrixData(f"{a.name}_diffs", a.data - b.data, {})
+            for a, b in zip(reference, query)
+        }
+    )
+    difference_matrices.update(
+        {
+            f"{a.name}_absdiffs": MatrixData(
+                f"{a.name}_absdiffs", abs(a.data - b.data), {}
+            )
+            for a, b in zip(reference, query)
+        }
+    )
+    return difference_matrices
 
 
 def get_heatmap(
