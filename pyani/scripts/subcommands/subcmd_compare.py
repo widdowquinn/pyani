@@ -31,7 +31,7 @@ DISTMETHODS = {
 }
 
 
-class RunMetadata(NamedTuple):
+class RunData(NamedTuple):
     run_id: int
     method: str
     cmdline: str
@@ -150,7 +150,7 @@ def subcmd_compare(args: Namespace):
     # raise NotImplementedError
 
 
-def get_metadata(session: Any, run_id: int) -> RunMetadata:
+def get_metadata(session: Any, run_id: int) -> RunData:
     """Get metadata for a run in the database.
 
     :param session:  live SQLAlchemy session of pyani database
@@ -160,14 +160,14 @@ def get_metadata(session: Any, run_id: int) -> RunMetadata:
     return session.query(Run.run_id, Run.method, Run.cmdline).filter_by(run_id=run_id)
 
 
-def parse_data(run, genome_set) -> RunMetadata:
+def parse_data(run, genome_set) -> RunData:
     """Get metadata for a run in the database.
 
     :param run:  data pertaining to one run in the database
     :param genome_set:  a set of genome_ids included in the run
 
     """
-    return RunMetadata(
+    return RunData(
         run.run_id,
         run.method,
         run.cmdline,
