@@ -17,6 +17,7 @@ from typing import Any, NamedTuple, Dict, List, Set
 from itertools import combinations, permutations
 from pyani.pyani_graphics.sns import get_clustermap, get_colorbar
 from pathlib import Path
+import multiprocessing
 
 
 # Distribution dictionary of matrix graphics methods
@@ -126,16 +127,33 @@ def subcmd_compare(args: Namespace):
 
         # Tetra doesn't report all of the same things
 
+        # Create worker pool and empty command list
+        pool = multiprocessing.Pool(processes=args.workers)
+        plotting_commands = []
+
         # Send dataframes for heatmaps, scatterplots
-        # Write heatmap for each results matrix
         for matdata in difference_matrices.values():
-            get_heatmap(
-                ref.run_id, query.run_id, matdata, labels, classes, outfmts, args
+            # Write heatmap for each results matrix
+            plotting_commands.append(
+                (
+                    get_heatmap,
+                    [ref.run_id, query.run_id, matdata, labels, classes, outfmts, args],
+                )
             )
             # Plot distributions of differences to look at normality
-            get_distribution(ref.run_id, query.run_id, matdata, outfmts, args)
+            plotting_commands.append(
+                (get_distribution, [ref.run_id, query.run_id, matdata, outfmts, args])
+            )
 
-            # Generate summary report
+        # Run the plotting commands
+        for func, args in plotting_commands:
+            pool.apply_async(func, args, {})
+
+        # Close worker pool
+        pool.close()
+        pool.join()
+
+        # Generate summary report
 
 
 def get_metadata(session: Any, run_id: int) -> RunData:
