@@ -7,11 +7,8 @@ from pyani.pyani_tools import termcolor, MatrixData
 from pyani.pyani_orm import (
     PyaniORMException,
     get_session,
-    get_genome_pair_dict,
     get_matrix_classes_for_run,
     get_matrix_labels_for_run,
-    filter_uncommon_comparisons,
-    get_df_of_scores,
     Comparison,
     Run,
     rungenome,
