@@ -19,6 +19,7 @@ from pyani.pyani_graphics.sns import get_clustermap, get_colorbar
 from pathlib import Path
 import multiprocessing
 
+import sys
 
 # Distribution dictionary of matrix graphics methods
 GMETHODS = {"mpl": pyani_graphics.mpl.heatmap, "seaborn": pyani_graphics.sns.heatmap}
@@ -27,6 +28,8 @@ DISTMETHODS = {
     "mpl": pyani_graphics.mpl.distribution,
     "seaborn": pyani_graphics.sns.distribution,
 }
+# Dictionary of scatter graphics methods
+SMETHODS = {"seaborn": pyani_graphics.sns.scatter}  # "mpl": pyani_graphics.mpl.scatter,
 
 
 class RunData(NamedTuple):
@@ -130,6 +133,14 @@ def subcmd_compare(args: Namespace):
         # Create worker pool and empty command list
         pool = multiprocessing.Pool(processes=args.workers)
         plotting_commands = []
+
+        for A, B in zip(sub_ref, sub_query):
+            # Plot scatter plots for each score
+            logger.info(f"{A.name}, {B.name}")
+            logger.info(f"{ref.run_id}, {query.run_id}")
+            plotting_commands.append(
+                (get_scatter, [ref.run_id, query.run_id, A, B, outfmts, args])
+            )
 
         # Send dataframes for heatmaps, scatterplots
         for matdata in difference_matrices.values():
@@ -320,3 +331,50 @@ def get_distribution(
             matdata.name,
             title=f"compare_{matdata.name}_run{run_a}_run{run_b}",
         )
+
+
+def get_scatter(
+    run_a: int,
+    run_b: int,
+    matdata1: MatrixData,
+    matdata2: MatrixData,
+    outfmts: List[str],
+    args: Namespace,
+) -> None:
+    """Write a single scatterplot for a pyani run.
+
+    :param run_a:  int, run_id for the reference
+    :param run_b:  int, run_id for the query
+    :param matdata1:  MatrixData object for this scatterplot
+    :param matdata2:  MatrixData object for this scatterplot
+    :param result_labels:  dict of result labels
+    :param result_classes: dict of result classes
+    :param args:  Namespace for command-line arguments
+    :param outfmts:  list of output formats for files
+    """
+    logger = logging.getLogger(__name__)
+    sys.stderr.write("Grapevine Fires\n")
+    sys.stderr.write(f"Writing {matdata1.name} vs {matdata2.name} scatterplot\n")
+    cmap = ("BuRd", matdata1.data.values.min(), matdata1.data.values.max())
+    for fmt in outfmts:
+        outfname = (
+            Path(args.outdir)
+            / f"scatter_{matdata1.name}_run{run_a}_vs_{matdata2.name}_run{run_b}.{fmt}"
+        )
+        sys.stderr.write(f"{outfname}\n")
+        logger.debug("\tWriting graphics to %s", outfname)
+        params = pyani_graphics.Params(cmap, {}, {})
+        # Draw scatterplot
+        sys.stderr.write(f"{SMETHODS[args.method]}")
+        SMETHODS[args.method](
+            matdata1.data,
+            matdata2.data,
+            outfname,
+            f"{matdata1.name} run {run_a}",
+            f"{matdata2.name} run {run_b}",
+            title=f"{matdata1.name.title()} run {run_a} vs {matdata2.name.title()} run {run_b}",
+            params=params,
+        )
+
+        # Be tidy with matplotlib caches
+        # plt.close("all")
