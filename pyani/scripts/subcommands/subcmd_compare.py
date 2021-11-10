@@ -1,7 +1,14 @@
-import pandas as pd
 from argparse import Namespace
+from pathlib import Path
+from typing import Any, NamedTuple, Dict, List, Set
+from itertools import combinations, permutations
+
 import logging
+import multiprocessing
+
+import pandas as pd
 import matplotlib.pyplot as plt
+
 from pyani import pyani_config, pyani_graphics
 from pyani.pyani_tools import termcolor, MatrixData
 from pyani.pyani_orm import (
@@ -13,11 +20,8 @@ from pyani.pyani_orm import (
     Run,
     rungenome,
 )
-from typing import Any, NamedTuple, Dict, List, Set
-from itertools import combinations, permutations
 from pyani.pyani_graphics.sns import get_clustermap, get_colorbar
-from pathlib import Path
-import multiprocessing
+
 
 import sys
 
