@@ -33,7 +33,7 @@ DISTMETHODS = {
     "seaborn": pyani_graphics.sns.distribution,
 }
 # Dictionary of scatter graphics methods
-SMETHODS = {"seaborn": pyani_graphics.sns.scatter}  # "mpl": pyani_graphics.mpl.scatter,
+SMETHODS = {"seaborn": pyani_graphics.sns.scatter, "mpl": pyani_graphics.mpl.scatter}
 
 
 # Convenience struct for run data
