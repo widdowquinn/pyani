@@ -21,9 +21,8 @@ from pyani.pyani_orm import (
     rungenome,
 )
 from pyani.pyani_graphics.sns import get_clustermap, get_colorbar
-
-
 import sys
+import time
 
 # Distribution dictionary of matrix graphics methods
 GMETHODS = {"mpl": pyani_graphics.mpl.heatmap, "seaborn": pyani_graphics.sns.heatmap}
@@ -71,7 +70,7 @@ def subcmd_compare(args: Namespace):
     # Setup
     # Create logger
     logger = logging.getLogger(__name__)
-
+    time0 = time.time()
     # Get run ids
     run_a, run_b = int(args.run_a), int(args.run_b)
 
@@ -141,6 +140,11 @@ def subcmd_compare(args: Namespace):
         # Generate dataframes of differences for each measure
         difference_matrices = get_difference_matrices(sub_ref, sub_query)
 
+        logger.info(
+            termcolor("Matrix manipulation completed. Time taken: %.3f", bold=True),
+            (time.time() - time0),
+        )
+
         # Tetra doesn't report all of the same things
 
         # Create worker pool and empty command list
@@ -172,7 +176,8 @@ def subcmd_compare(args: Namespace):
 
         # Run the plotting commands
         for func, args in plotting_commands:
-            pool.apply_async(func, args, {})
+            # pool.apply_async(func, args, {})
+            logger.info(f"{func}")
 
         # Close worker pool
         pool.close()
