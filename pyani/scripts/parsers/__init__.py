@@ -91,7 +91,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
     """
     # Main parent parser
     parser_main = ArgumentParser(
-        prog="pyani.py", formatter_class=ArgumentDefaultsHelpFormatter
+        prog="pyani", formatter_class=ArgumentDefaultsHelpFormatter
     )
     subparsers = parser_main.add_subparsers(
         title="subcommands", description="valid subcommands", help="additional help"

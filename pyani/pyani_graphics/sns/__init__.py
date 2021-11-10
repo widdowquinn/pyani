@@ -232,10 +232,6 @@ def scatter(
     :param title:  title for the plot
     :param params:  a list of parameters for plotting: [colormap, vmin, vmax]
     """
-    logger = logging.getLogger(__name__)
-    sys.stderr.write("Narrow Stairs\n")
-    logger.info(f"\tWriting graphics to {outfilename}")
-
     # Make an empty dataframe to collect the input data in
     combined = pd.DataFrame()
 
@@ -263,8 +259,8 @@ def scatter(
     plt.title(title)
 
     # Save to file
-    # if outfilename:
-    fig.savefig(outfilename)
+    if outfilename:
+        fig.savefig(outfilename)
 
     # Return clustermap
     return fig
