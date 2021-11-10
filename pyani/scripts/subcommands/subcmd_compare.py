@@ -36,6 +36,7 @@ DISTMETHODS = {
 SMETHODS = {"seaborn": pyani_graphics.sns.scatter}  # "mpl": pyani_graphics.mpl.scatter,
 
 
+# Convenience struct for run data
 class RunData(NamedTuple):
     run_id: int
     method: str
@@ -48,6 +49,7 @@ class RunData(NamedTuple):
     hadamard: MatrixData
 
 
+# Convenience struct for a set of matrices
 class RunMatrices(NamedTuple):
     identity: MatrixData
     coverage: MatrixData
@@ -57,6 +59,15 @@ class RunMatrices(NamedTuple):
 
 
 def subcmd_compare(args: Namespace):
+    """Performs a comparison between two completed pyani runs. Runs
+    may differ in method used, parameter values, or both.
+
+    :param args:  Namespace, command-line arguments
+
+    Produces a series of scatter, heatpmap, and distribution plots, and a
+    summary report.
+
+    """
     # Setup
     # Create logger
     logger = logging.getLogger(__name__)
@@ -66,8 +77,6 @@ def subcmd_compare(args: Namespace):
 
     # Announce the analysis
     logger.info(termcolor(f"Comparing runs {run_a} and {run_b}", bold=True))
-
-    # ¶ No need to get version info here
 
     # Get connection to existing database. This may or may not have data
     logger.debug(f"Connecting to database {args.dbpath}")
@@ -145,6 +154,7 @@ def subcmd_compare(args: Namespace):
             plotting_commands.append(
                 (get_scatter, [ref.run_id, query.run_id, A, B, outfmts, args])
             )
+            # Create Bland-Altman plots
 
         # Send dataframes for heatmaps, scatterplots
         for matdata in difference_matrices.values():
@@ -240,7 +250,15 @@ def subset_matrix(common, run):
     )
 
 
-def get_difference_matrices(reference, query):
+def get_difference_matrices(reference, query) -> Dict:
+    """Calculate difference matrices between two sets of runs.
+
+    :param reference:  a set of score matrices to be used as the references
+    :param query:  a set of score matrices to subtract from the references
+
+    Returns a dictionary object with absolute and relative difference matrices
+    as values, keyed by e.g., 'identity_diffs', 'identity_absdiffs'.
+    """
     difference_matrices = {}
     difference_matrices.update(
         {
