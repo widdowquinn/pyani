@@ -370,8 +370,8 @@ def get_scatter(
             matdata1.data,
             matdata2.data,
             outfname,
-            f"{matdata1.name} run {run_a}",
-            f"{matdata2.name} run {run_b}",
+            f"{matdata1.name}_{run_a}",
+            f"{matdata2.name}_{run_b}",
             title=f"{matdata1.name.title()} run {run_a} vs {matdata2.name.title()} run {run_b}",
             params=params,
         )
