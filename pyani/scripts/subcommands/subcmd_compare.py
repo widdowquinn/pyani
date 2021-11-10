@@ -377,7 +377,8 @@ def get_scatter(
     logger = logging.getLogger(__name__)
     sys.stderr.write("Grapevine Fires\n")
     sys.stderr.write(f"Writing {matdata1.name} vs {matdata2.name} scatterplot\n")
-    cmap = ("BuRd", matdata1.data.values.min(), matdata1.data.values.max())
+    extreme = max(abs(matdata1.data.values.min()), abs(matdata1.data.values.max()))
+    cmap = ("BuRd", extreme * -1, extreme)
     for fmt in outfmts:
         outfname = (
             Path(args.outdir)
