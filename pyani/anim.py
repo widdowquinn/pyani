@@ -236,7 +236,10 @@ def construct_nucmer_cmdline(
     fname1, fname2 = Path(fname1), Path(fname2)
 
     # Compile commands
-    # Nested output folders to avoid N^2 scaling in files-per-folder:
+    # Nested output folders to avoid N^2 scaling in files-per-folder
+    # Create folders incrementally (want an error if outdir does not exist)
+    outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"]
+    outsubdir.mkdir(exist_ok=True)
     outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"] / fname1.stem
     outsubdir.mkdir(exist_ok=True)
     outprefix = outsubdir / f"{fname1.stem}_vs_{fname2.stem}"
