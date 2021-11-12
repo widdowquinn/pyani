@@ -62,7 +62,7 @@ def build(
     # Required arguments: input and output directories
     parser.add_argument(
         "-i",
-        "--input",
+        "--indir",
         required=True,
         action="store",
         dest="indir",
@@ -72,7 +72,7 @@ def build(
     )
     parser.add_argument(  # I think this should be handled with pyani's overall output
         "-o",
-        "--out",
+        "--outdir",
         required=True,
         action="store",
         dest="outdir",
