@@ -356,7 +356,7 @@ def process_deltadir(
 
     # Process directory to identify input files - as of v0.2.4 we use the
     # .filter files that result from delta-filter (1:1 alignments)
-    deltafiles = sorted(delta_dir.glob("*.filter"))
+    deltafiles = sorted(delta_dir.glob("*/*.filter"))
 
     logger.info("%s has %d files to load", delta_dir, len(deltafiles))
     if not deltafiles:
