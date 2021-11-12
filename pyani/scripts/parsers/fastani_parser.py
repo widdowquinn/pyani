@@ -98,7 +98,6 @@ def build(
         help="path to fastani executable",
     )
     parser.add_argument(
-        "-k",
         "--kmer",
         dest="kmerSize",
         action="store",
