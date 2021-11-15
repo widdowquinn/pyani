@@ -225,7 +225,7 @@ def subcmd_anib(args: Namespace) -> None:
                 existingfiles[0],
             )
         else:
-            logger.debug(f"\tIdentified no existing output files")
+            logger.debug("\tIdentified no existing output files")
     else:
         existingfiles = list()
         logger.debug("\tAssuming no pre-existing output files")
@@ -248,7 +248,7 @@ def subcmd_anib(args: Namespace) -> None:
     joblist = generate_joblist(
         comparisons_to_run, existingfiles, fragfiles, fraglens, args
     )
-    logger.debug(f"...created %s blastn jobs", len(joblist))
+    logger.debug("...created %s blastn jobs", len(joblist))
 
     raise NotImplementedError
 
