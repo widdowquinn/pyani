@@ -320,6 +320,7 @@ def generate_joblist(
     existingfiles = set(existingfiles)  # Path objects hashable
 
     joblist = []  # will hold ComparisonJob structs
+    jobs = {"new": 0, "old": 0}  # will hold counts of new/old jobs for reporting
     for idx, (query, subject) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
@@ -350,6 +351,7 @@ def generate_joblist(
             logger.debug("Recovering output from %s, not submitting job", outfname)
             # Need to track the expected output, but set the job itself to None:
             joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, None))
+            jobs["new"] += 1
         else:
             logger.debug("Building job")
             # Build jobs
@@ -357,6 +359,10 @@ def generate_joblist(
             fjob = pyani_jobs.Job("%s_%06d-f" % (args.jobprefix, idx), dcmd)
             fjob.add_dependency(njob)
             joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, fjob))
+            jobs["old"] += 1
+    logger.info(f"New comparisons to run: {jobs['new']}.")
+    if jobs["old"]:
+        logger.info(f"\nRetrieving output from {jobs['old']} previous comparisons.")
     return joblist
 
 
