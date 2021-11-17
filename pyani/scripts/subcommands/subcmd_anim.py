@@ -323,6 +323,7 @@ def generate_joblist(
     for idx, (query, subject) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
+        assert query.path < subject.path, f"Bad sorting {query.path} vs {subject.path}"
         ncmd, dcmd = anim.construct_nucmer_cmdline(
             query.path,
             subject.path,
