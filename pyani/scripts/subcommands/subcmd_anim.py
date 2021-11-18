@@ -229,7 +229,7 @@ def subcmd_anim(args: Namespace) -> None:
 
     # Get list of genome IDs for this analysis from the database
     logger.info("Compiling genomes for comparison")
-    genomes = run.genomes.all()
+    genomes = sorted(run.genomes.all())
     logger.debug("Collected %s genomes for this run", len(genomes))
 
     # Generate all pair combinations of genome IDs as a list of (Genome, Genome) tuples
@@ -320,10 +320,8 @@ def generate_joblist(
     existingfiles = set(existingfiles)  # Path objects hashable
 
     joblist = []  # will hold ComparisonJob structs
-    for idx, (query, subject) in enumerate(
-        tqdm(comparisons, disable=args.disable_tqdm)
-    ):
-        assert query.path < subject.path, f"Bad sorting {query.path} vs {subject.path}"
+    for idx, (A, B) in enumerate(tqdm(comparisons, disable=args.disable_tqdm)):
+        query, subject = sorted(A.path, B.path)
         ncmd, dcmd = anim.construct_nucmer_cmdline(
             query.path,
             subject.path,
