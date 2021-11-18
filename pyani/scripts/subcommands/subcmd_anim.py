@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2020
+# (c) University of Strathclyde 2019-2022
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2020 University of Strathclyde
+# Copyright (c) 2019-2022 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -229,7 +229,7 @@ def subcmd_anim(args: Namespace) -> None:
 
     # Get list of genome IDs for this analysis from the database
     logger.info("Compiling genomes for comparison")
-    genomes = run.genomes.all()
+    genomes = sorted(run.genomes.all())
     logger.debug("Collected %s genomes for this run", len(genomes))
 
     # Generate all pair combinations of genome IDs as a list of (Genome, Genome) tuples
