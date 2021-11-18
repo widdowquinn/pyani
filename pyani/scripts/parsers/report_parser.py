@@ -108,7 +108,7 @@ def build(
         "--run_results",
         action="store",
         dest="run_results",
-        metavar="RUN_ID",
+        metavar="RUN_IDS",
         default=False,
         help="Report table of results for comma separated list of runs",
     )
@@ -116,7 +116,7 @@ def build(
         "--run_matrices",
         action="store",
         dest="run_matrices",
-        metavar="RUN_ID",
+        metavar="RUN_IDS",
         default=False,
         help="Report matrices of results for comma separated list of runs",
     )
