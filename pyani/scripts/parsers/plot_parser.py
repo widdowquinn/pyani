@@ -94,7 +94,8 @@ def build(
         dest="formats",
         action="store",
         default="png",
-        help="graphics output format (pdf/png/svg/jpg)",
+        choices=["pdf", "png", "svg", "jpg"],
+        help="graphics output format",
     )
     parser.add_argument(
         "--method",
