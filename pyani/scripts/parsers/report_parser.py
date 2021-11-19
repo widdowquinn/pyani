@@ -95,29 +95,30 @@ def build(
         action="store_true",
         dest="show_runs_genomes",
         default=False,
-        help="Report table of all genomes for each run in " + "database",
+        help="Report table of all genomes for each run in database",
     )
     parser.add_argument(
         "--genomes_runs",
         action="store_true",
         dest="show_genomes_runs",
         default=False,
-        help="Report table of all runs in which each genome "
-        + "in the database participates",
+        help="Report table of all runs in which each genome in the database participates",
     )
     parser.add_argument(
         "--run_results",
         action="store",
         dest="run_results",
-        default=False,
-        help="Report table of results for a pyani run",
+        metavar="RUN_IDS",
+        default=None,
+        help="Report table of results for comma separated list of runs",
     )
     parser.add_argument(
         "--run_matrices",
         action="store",
         dest="run_matrices",
-        default=False,
-        help="Report matrices of results for a pyani run",
+        metavar="RUN_IDS",
+        default=None,
+        help="Report matrices of results for comma separated list of runs",
     )
     parser.add_argument(
         "--formats",
