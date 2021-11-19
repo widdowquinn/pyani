@@ -182,7 +182,7 @@ def subcmd_anib(args: Namespace) -> None:
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
     comparisons = list(permutations(tqdm(genomes, disable=args.disable_tqdm), 2))
-    logger.info(f"\t...total pairwise comparisons to be performed: {len(comparisons)}")
+    logger.info("\t...total pairwise comparisons to be performed: %s", len(comparisons))
 
     # Check for existing comparisons; if one has already been done (for the same
     # software package, version, and setting) we add the comparison to this run,
