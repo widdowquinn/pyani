@@ -303,9 +303,8 @@ def label_results_matrix(matrix: pd.DataFrame, labels: Dict) -> pd.DataFrame:
     Applies the labels from the dictionary to the dataframe in
     matrix, and returns the result.
     """
-    # The dictionary uses string keys!
-    matrix.columns = [f"{labels.get(str(_), _)}:{_}" for _ in matrix.columns]
-    matrix.index = [f"{labels.get(str(_), _)}:{_}" for _ in matrix.index]
+    matrix.columns = [f"{labels.get(_, _)}:{_}" for _ in matrix.columns]
+    matrix.index = [f"{labels.get(_, _)}:{_}" for _ in matrix.index]
     return matrix
 
 

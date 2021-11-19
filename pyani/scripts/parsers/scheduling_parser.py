@@ -57,7 +57,7 @@ def build() -> ArgumentParser:
         action="store",
         default="multiprocessing",
         choices=["multiprocessing", "SGE"],
-        help="Job scheduler (default multiprocessing, i.e. locally)",
+        help="Job scheduler (default multiprocessing, " + "i.e. locally)",
     )
     parser.add_argument(
         "--workers",
@@ -65,7 +65,8 @@ def build() -> ArgumentParser:
         action="store",
         default=None,
         type=int,
-        help="Number of worker processes for multiprocessing (default zero, meaning use all available cores)",
+        help="Number of worker processes for multiprocessing "
+        "(default zero, meaning use all available cores)",
     )
     parser.add_argument(
         "--SGEgroupsize",
@@ -73,7 +74,7 @@ def build() -> ArgumentParser:
         action="store",
         default=10000,
         type=int,
-        help="Number of jobs to place in an SGE array group (default 10000)",
+        help="Number of jobs to place in an SGE array group " "(default 10000)",
     )
     parser.add_argument(
         "--SGEargs",
