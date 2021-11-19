@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2013-2019
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2022
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -19,7 +19,7 @@
 # The MIT License
 #
 # Copyright (c) 2013-2019 The James Hutton Institute
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2022
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -303,13 +303,8 @@ def label_results_matrix(matrix: pd.DataFrame, labels: Dict) -> pd.DataFrame:
     Applies the labels from the dictionary to the dataframe in
     matrix, and returns the result.
     """
-    # The dictionary uses string keys!
-    # Create a label function that produces <label>:<genome_id>
-    # when a label is available; and just Genome_id:<genome_id> when no
-    # label exists
-    label = lambda gen_id: f"{labels.get(str(gen_id), 'Genome_id')}:{gen_id}"
-    matrix.columns = [label(_) for _ in matrix.columns]
-    matrix.index = [label(_) for _ in matrix.index]
+    matrix.columns = [f"{labels.get(_, _)}:{_}" for _ in matrix.columns]
+    matrix.index = [f"{labels.get(_, _)}:{_}" for _ in matrix.index]
     return matrix
 
 
