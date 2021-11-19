@@ -109,7 +109,7 @@ def build(
         action="store",
         dest="run_results",
         metavar="RUN_IDS",
-        default=False,
+        default=None,
         help="Report table of results for comma separated list of runs",
     )
     parser.add_argument(
@@ -117,7 +117,7 @@ def build(
         action="store",
         dest="run_matrices",
         metavar="RUN_IDS",
-        default=False,
+        default=None,
         help="Report matrices of results for comma separated list of runs",
     )
     parser.add_argument(
