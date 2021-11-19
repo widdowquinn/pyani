@@ -125,6 +125,7 @@ def build(
         dest="formats",
         action="store",
         default=None,
+        choices=["html", "excel", "stdout"],
         help="Output formats (in addition to .tab)",
     )
     parser.set_defaults(func=subcommands.subcmd_report)
