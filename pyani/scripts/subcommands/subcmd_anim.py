@@ -324,8 +324,6 @@ def generate_joblist(
     for idx, (query, subject) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
-        if subject.path < query.path:
-            query, subject = subject, query  # sort them
         ncmd, dcmd = anim.construct_nucmer_cmdline(
             query.path,
             subject.path,
