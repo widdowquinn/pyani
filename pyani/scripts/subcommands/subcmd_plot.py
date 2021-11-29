@@ -42,7 +42,6 @@
 import logging
 import os
 import multiprocessing
-import time
 
 from argparse import Namespace
 from pathlib import Path
