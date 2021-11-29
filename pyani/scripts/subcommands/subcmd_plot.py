@@ -161,8 +161,8 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
     )
 
     # Run the plotting commands
-    for func, args in plotting_commands:
-        pool.apply_async(func, args, {})
+    for func, options in plotting_commands:
+        pool.apply_async(func, options, {})
 
     # Close worker pool
     pool.close()
