@@ -189,7 +189,7 @@ def write_dbtable(
     dfm: pd.DataFrame,
     path: Path,
     formats: Sequence[str] = ("tab",),
-    show_index: bool = False,
+    show_index: bool = True,
     colour_num: bool = False,
 ) -> None:
     """Write database result table to output file in named format.
@@ -197,7 +197,7 @@ def write_dbtable(
     :param dfm:  pd.Dataframe
     :param path:  Path to output file
     :param formats:  tuple of str, output file formats
-    :param show_index:  Boolean
+    :param show_index:  output row and column labels
     :param colour_num:  use colours for values in HTML output
 
     colours are used for identity/coverage tables

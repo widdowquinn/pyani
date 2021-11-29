@@ -121,6 +121,13 @@ def build(
         help="Report matrices of results for comma separated list of runs",
     )
     parser.add_argument(
+        "--no_matrix_labels",
+        action="store_true",
+        dest="no_matrix_labels",
+        default=False,
+        help="Turn off row/column labels in output matrix files",
+    )
+    parser.add_argument(
         "--formats",
         dest="formats",
         action="store",
