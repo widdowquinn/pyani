@@ -361,10 +361,12 @@ def generate_joblist(
             joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, fjob))
             jobs["new"] += 1
     logger.info(
-        f"No results found for {jobs['new']} comparisons; {jobs['new']} new jobs built."
+        "Results not found for %d comparisons; %d new jobs built.",
+        jobs["new"],
+        jobs["new"],
     )
     if existingfiles:
-        logger.info(f"Retrieving results for {jobs['old']} previous comparisons.")
+        logger.info("Retrieving results for %d previous comparisons.", jobs["old"])
     return joblist
 
 
