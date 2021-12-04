@@ -8,6 +8,7 @@ import multiprocessing
 
 import pandas as pd
 import matplotlib.pyplot as plt
+from itertools import product
 
 from pyani import pyani_config, pyani_graphics
 from pyani.pyani_tools import termcolor, MatrixData
@@ -73,26 +74,34 @@ def subcmd_compare(args: Namespace):
     run_a, run_b = int(args.run_a), int(args.run_b)
 
     # Announce the analysis
-    logger.info(termcolor(f"Comparing runs {run_a} and {run_b}", bold=True))
+    logger.info(
+        termcolor(
+            "Running %d comparisons between refs: %s and runs: %s",
+            args.ref_ids,
+            args.run_ids,
+            bold=True,
+        )
+    )
 
     # Get connection to existing database. This may or may not have data
-    logger.debug(f"Connecting to database {args.dbpath}")
+    logger.debug("Connecting to database %s", args.dbpath)
     try:
         session = get_session(args.dbpath)
     except PyaniORMException:
         logger.error(
-            f"Could not connect to database {args.dbpath} (exiting)", exc_info=True
+            "Could not connect to database %s (exiting)", args.dbpath, exc_info=True
         )
         raise SystemExit(1)
 
     # Parse output formats
     outfmts = args.formats.split(",")
-    logger.debug(f"Requested output formats: {outfmts}")
+    outfmts = args.formats
+    logger.debug("Requested output formats: %s", outfmts)
 
     # Get information on the runs
     runs = [run_a, run_b]
     run_dict = {}
-    logger.debug(f"Getting run data from database {args.dbpath}")
+    logger.debug("Getting run data from database %s", args.dbpath)
     try:
         run_data = session.query(
             Run.run_id,
@@ -106,7 +115,8 @@ def subcmd_compare(args: Namespace):
         ).filter(Run.run_id.in_(runs))
     except PyaniORMException:
         logger.error(
-            f"At least one specified run not found in the database {args.dbpath} (exiting)"
+            "At least one specified run not found in the database %s (exiting)",
+            args.dbpath,
         )
         raise SystemExit(1)
 
@@ -123,9 +133,11 @@ def subcmd_compare(args: Namespace):
         common = ref.genomes & query.genomes
 
         if not common:
-            logger.error(f"No genomes in common between {ref} and {query}")
+            logger.error("No genomes in common between %s and %s", ref, query)
             raise SystemExit(1)
-        logger.debug(f"\t...{len(common)} genomes in common between {ref} and {query}.")
+        logger.debug(
+            "\t...%d genomes in common between %s and %s.", len(common), ref, query
+        )
 
         # Get matrix labels, classes
         labels = get_labels(session, ref, query)
@@ -297,16 +309,18 @@ def get_heatmap(
 
     logger = logging.getLogger(__name__)
 
-    logger.info(f"Creating {matdata.name} matrix heatmaps")
+    logger.info("Creating %s matrix heatmaps", matdata.name)
     logger.info(
-        f"Cmap min: {matdata.data.values.min()}, cmap max: {matdata.data.values.max()}"
+        "Cmap min: %s, cmap max: %s",
+        matdata.data.values.min(),
+        matdata.data.values.max(),
     )
 
     for fmt in outfmts:
         outfname = (
             Path(args.outdir) / f"compare_{matdata.name}_run{run_a}_run{run_b}.{fmt}"
         )
-        logger.debug(f"\tWriting graphics to {outfname}")
+        logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
 
         # Draw heatmap
@@ -338,13 +352,13 @@ def get_distribution(
     """
     logger = logging.getLogger(__name__)
 
-    logger.info(f"Writing distribution plot for {matdata.name} matrix")
+    logger.info("Writing distribution plot for %s matrix", matdata.name)
     for fmt in outfmts:
         outfname = (
             Path(args.outdir)
             / f"distribution_{matdata.name}_run{run_a}_run{run_b}.{fmt}"
         )
-        logger.debug(f"\tWriting graphics to {outfname}")
+        logger.debug("\tWriting graphics to %s", outfname)
         DISTMETHODS[args.method](
             matdata.data,
             outfname,
