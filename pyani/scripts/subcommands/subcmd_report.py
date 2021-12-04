@@ -265,6 +265,7 @@ def subcmd_report(args: Namespace) -> int:
     # JSON, we don't bother with a helper function like report(), and write out
     # our matrices directly, here
     if args.run_matrices:
+        show_index = not args.no_matrix_labels
         for run_id in [run_id for run_id in args.run_matrices]:
             logger.debug("Extracting matrices for run %s", run_id)
             run = session.query(Run).filter(Run.run_id == run_id).first()
@@ -292,7 +293,7 @@ def subcmd_report(args: Namespace) -> int:
                         )
                     ),
                     formats,
-                    show_index=True,
+                    show_index=show_index,
                     **matdata.graphic_args,
                 )
 

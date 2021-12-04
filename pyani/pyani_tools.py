@@ -304,8 +304,12 @@ def label_results_matrix(matrix: pd.DataFrame, labels: Dict) -> pd.DataFrame:
     matrix, and returns the result.
     """
     # The dictionary uses string keys!
-    matrix.columns = [f"{labels.get(str(_), _)}:{_}" for _ in matrix.columns]
-    matrix.index = [f"{labels.get(str(_), _)}:{_}" for _ in matrix.index]
+    # Create a label function that produces <label>:<genome_id>
+    # when a label is available; and just Genome_id:<genome_id> when no
+    # label exists
+    label = lambda gen_id: f"{labels.get(str(gen_id), 'Genome_id')}:{gen_id}"
+    matrix.columns = [label(_) for _ in matrix.columns]
+    matrix.index = [label(_) for _ in matrix.index]
     return matrix
 
 

@@ -250,3 +250,14 @@ def test_mummer_job_generation(mummer_cmds_four):
         assert job.name == "test_%06d-f" % idx  # filter job name
         assert len(job.dependencies) == 1  # has NUCmer job
         assert job.dependencies[0].name == "test_%06d-n" % idx
+
+
+def test_genome_sorting(tmp_path, unsorted_genomes):
+    second, first = [Path(_.path) for _ in unsorted_genomes]
+    outprefix = f"{tmp_path}/nucmer_output/{first.stem}/{first.stem}_vs_{second.stem}"
+    expected = (
+        f"nucmer --mum -p {outprefix} {first} {second}",
+        f"delta_filter_wrapper.py delta-filter -1 {outprefix}.delta {outprefix}.filter",
+    )
+    nucmercmd, filtercmd = anim.construct_nucmer_cmdline(second, first, tmp_path)
+    assert (nucmercmd, filtercmd) == expected
