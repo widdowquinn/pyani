@@ -148,7 +148,7 @@ def subcmd_fastani(args: Namespace) -> None:
     logger.info(termcolor("Running fastANI analysis", "red"))
 
     # Get current fastani version
-    logger.info(termcolor(f"fastANI executable: {args.fastani_exe}"))
+    logger.info(termcolor("fastANI executable: %s", args.fastani_exe))
     fastani_version = fastani.get_version(args.fastani_exe)
     logger.info(termcolor("FastANI version: %s", "cyan"), fastani_version)
 
@@ -182,17 +182,17 @@ def subcmd_fastani(args: Namespace) -> None:
     except PyaniORMException:
         logger.error("Could not add run to the database; (exiting)", exc_info=True)
         raise SystemExit(1)
-    logger.debug("\t...added run ID: %s to the database", run)
+    logger.debug("\t...added run ID: %d to the database", run)
 
     # Identify input files for comparison, and populate the database
-    logger.debug("Adding genomes for run %s to database...", run)
+    logger.debug("Adding genomes for run %d to database...", run)
     try:
         genome_ids = add_run_genomes(
             session, run, args.indir, args.classes, args.labels
         )
     except PyaniORMException:
         logger.error(
-            "Could not add genomes to database for run %s; (exiting)",
+            "Could not add genomes to database for run %d; (exiting)",
             run,
             exc_info=True,
         )  # this differs from subcmd_anim.py
@@ -201,16 +201,17 @@ def subcmd_fastani(args: Namespace) -> None:
     # Generate command-liens for fastANI analysis
     logger.info("Generating fastANI command-lines")
     fastanidir = args.outdir / pyani_config.ALIGNDIR["fastANI"]
-    logger.debug(f"fastANI output will be written temporarily to {fastanidir}")
+    logger.debug("fastANI output will be written temporarily to %s", fastanidir)
 
     # Create output directories. We create the main parent directory (args.outdir), but
     # also subdirectories for the _________________
-    logger.debug(f"Creating output directory {fastanidir}")
+    logger.debug("Creating output directory %s", fastanidir)
     try:
         fastanidir.mkdir(exist_ok=True, parents=True)
     except IOError:
         logger.error(
-            f"Could not create output directory {fastanidir}; (exiting)",
+            "Could not create output directory %s; (exiting)",
+            fastanidir,
             exc_info=True,
         )
         raise SystemError(1)
@@ -218,7 +219,7 @@ def subcmd_fastani(args: Namespace) -> None:
     # Get list of genomes for this analysis from the database
     logger.info("Compiling genomes for comparison")
     genomes = run.genomes.all()
-    logger.debug("\tCollected %s genomes for this run", len(genomes))
+    logger.debug("\tCollected %d genomes for this run", len(genomes))
 
     # Generate all pair permutations of genome IDs as a list of (Genome, Geneme) tuples
     logger.info(
@@ -270,7 +271,7 @@ def subcmd_fastani(args: Namespace) -> None:
         )
         existingfiles = collect_existing_output(args.outdir, "fastani", args)
         logger.debug(
-            "\tIdentified %s existing output files for reuse", len(existingfiles)
+            "\tIdentified %d existing output files for reuse", len(existingfiles)
         )
     else:
         existingfiles = None  # in anim this was an empty list; in anib None
@@ -282,7 +283,7 @@ def subcmd_fastani(args: Namespace) -> None:
     logger.debug("...created %d fastani jobs", len(job))
 
     # Pass jobs to appropriate scheduler
-    logger.debug("Passing %s jobs to %s...", len(job), args.scheduler)
+    logger.debug("Passing %d jobs to %s...", len(job), args.scheduler)
     run_fastani_jobs(job, args)
     logger.info("...jobs complete")
 
@@ -441,9 +442,9 @@ def update_comparison_results(
             print(contents)
         # if len(contents) > 1:
         #     raise ValueError(
-        #         f"fastANI output file {job.outfile} has more than one line"
+        #         "fastANI output file %s has more than one line", job.outfile
         #     )
-        logger.debug(f"Parsed fastANI file contents: {contents}")
+        logger.debug("Parsed fastANI file contents: %s", contents)
         query, ref, ani, matches, num_frags = contents
 
         ani = float(ani)  # should be in the range 0–1
