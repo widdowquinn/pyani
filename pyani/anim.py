@@ -233,10 +233,14 @@ def construct_nucmer_cmdline(
     outdir, called "nucmer_output".
     """
     # Cast path strings to pathlib.Path for safety
-    fname1, fname2 = Path(fname1), Path(fname2)
+    fname1, fname2 = sorted([Path(fname1), Path(fname2)])
 
     # Compile commands
+    # Nested output folders to avoid N^2 scaling in files-per-folder
+    # Create folders incrementally (want an error if outdir does not exist)
     outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"]
+    outsubdir.mkdir(exist_ok=True)
+    outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"] / fname1.stem
     outsubdir.mkdir(exist_ok=True)
     outprefix = outsubdir / f"{fname1.stem}_vs_{fname2.stem}"
     if maxmatch:
@@ -352,7 +356,7 @@ def process_deltadir(
 
     # Process directory to identify input files - as of v0.2.4 we use the
     # .filter files that result from delta-filter (1:1 alignments)
-    deltafiles = sorted(delta_dir.glob("*.filter"))
+    deltafiles = sorted(delta_dir.glob("*/*.filter"))
 
     logger.info("%s has %d files to load", delta_dir, len(deltafiles))
     if not deltafiles:
