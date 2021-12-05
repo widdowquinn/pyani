@@ -124,8 +124,7 @@ def get_clustermap(dfr, params, title=None, annot=True):
 
     fig.cax.yaxis.set_label_position("left")
     if title:
-        fig.cax.set_ylabel(title)
-
+        fig.ax_heatmap.set_title(title, pad=1000, fontdict={"fontsize": 75})
     # Return clustermap
     return fig
 
