@@ -70,18 +70,6 @@ def subcmd_compare(args: Namespace):
     # Setup
     # Create logger
     logger = logging.getLogger(__name__)
-    # Get run ids
-    run_a, run_b = int(args.run_a), int(args.run_b)
-
-    # Announce the analysis
-    logger.info(
-        termcolor(
-            "Running %d comparisons between refs: %s and runs: %s",
-            args.ref_ids,
-            args.run_ids,
-            bold=True,
-        )
-    )
 
     # Get connection to existing database. This may or may not have data
     logger.debug("Connecting to database %s", args.dbpath)
@@ -93,13 +81,25 @@ def subcmd_compare(args: Namespace):
         )
         raise SystemExit(1)
 
+    # Get run ids
+    # run_a, run_b = int(args.run_a), int(args.run_b)
+    comparisons = [_ for _ in product(args.ref_ids, args.run_ids)]
+
+    # Announce the analysis
+    logger.info(
+        "Running %d comparisons between refs: %s and runs: %s",
+        len(comparisons),
+        args.ref_ids,
+        args.run_ids,
+    )
+    logger.debug("Comparisons to run: %s", comparisons)
     # Parse output formats
-    outfmts = args.formats.split(",")
     outfmts = args.formats
     logger.debug("Requested output formats: %s", outfmts)
 
     # Get information on the runs
-    runs = [run_a, run_b]
+    # runs = [run_a, run_b]
+    runs = args.ref_ids + args.run_ids
     run_dict = {}
     logger.debug("Getting run data from database %s", args.dbpath)
     try:
@@ -127,7 +127,7 @@ def subcmd_compare(args: Namespace):
         run_dict.update({f"{run.run_id}": parse_data(run, genome_set)})
 
     # Loop over pairs of runs
-    for ref, query in combinations(runs, 2):
+    for ref, query in comparisons:
         ref, query = run_dict[str(ref)], run_dict[str(query)]
         # Find common genomes
         common = ref.genomes & query.genomes
