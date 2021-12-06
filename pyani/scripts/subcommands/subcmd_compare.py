@@ -1,4 +1,6 @@
 import os
+import sys
+
 from argparse import Namespace
 from pathlib import Path
 from typing import Any, NamedTuple, Dict, List, Set
@@ -23,7 +25,6 @@ from pyani.pyani_orm import (
     rungenome,
 )
 from pyani.pyani_graphics.sns import get_clustermap, get_colorbar
-import sys
 
 # Distribution dictionary of matrix graphics methods
 GMETHODS = {"mpl": pyani_graphics.mpl.heatmap, "seaborn": pyani_graphics.sns.heatmap}
@@ -216,7 +217,7 @@ def subcmd_compare(args: Namespace):
 
         # Run the plotting commands
         for func, args in plotting_commands:
-            # pool.apply_async(func, args, {})
+            pool.apply_async(func, args, {})
             logger.info(f"{func}")
 
         # Close worker pool
@@ -332,7 +333,7 @@ def get_heatmap(
     outfmts: List[str],
     args: Namespace,
 ):
-    """Write a single heatmap for a pyani run.
+    """Write a single heatmap for a comparison between two pyani runs.
 
     :param run_id:  int, run_id for this run
     :param matdata:  MatrixData object for this heatmap
@@ -358,7 +359,6 @@ def get_heatmap(
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
 
         # Draw heatmap
-        # get_clustermap(matdata.data, params, "")
         GMETHODS["seaborn"](
             matdata.data,
             outfname,
@@ -388,6 +388,7 @@ def get_distribution(
     logger = logging.getLogger(__name__)
 
     logger.info("Writing distribution plot for %s matrix", matdata.name)
+
     for fmt in outfmts:
         outfname = (
             Path(outdir) / f"distribution_{matdata.name}_run{run_a}_run{run_b}.{fmt}"
@@ -410,7 +411,7 @@ def get_scatter(
     outfmts: List[str],
     args: Namespace,
 ) -> None:
-    """Write a single scatterplot for a pyani run.
+    """Write a single scatterplot for a comparison between two pyani runs.
 
     :param run_a:  int, run_id for the reference
     :param run_b:  int, run_id for the query
@@ -422,8 +423,6 @@ def get_scatter(
     :param outfmts:  list of output formats for files
     """
     logger = logging.getLogger(__name__)
-    sys.stderr.write("Grapevine Fires\n")
-    sys.stderr.write(f"Writing {matdata1.name} vs {matdata2.name} scatterplot\n")
     extreme = max(abs(matdata1.data.values.min()), abs(matdata1.data.values.max()))
     cmap = ("BuRd", extreme * -1, extreme)
     for fmt in outfmts:
@@ -431,11 +430,10 @@ def get_scatter(
             Path(outdir)
             / f"scatter_{matdata1.name}_run{run_a}_vs_{matdata2.name}_run{run_b}.{fmt}"
         )
-        sys.stderr.write(f"{outfname}\n")
+
         logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, {}, {})
         # Draw scatterplot
-        sys.stderr.write(f"{SMETHODS[args.method]}")
         SMETHODS[args.method](
             matdata1.data,
             matdata2.data,
