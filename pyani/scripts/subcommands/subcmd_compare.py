@@ -36,6 +36,9 @@ DISTMETHODS = {
 # Dictionary of scatter graphics methods
 SMETHODS = {"seaborn": pyani_graphics.sns.scatter, "mpl": pyani_graphics.mpl.scatter}
 
+# Dictionary of Bland-ALtman graphics methods
+BMETHODS = {"seaborn": pyani_graphics.sns.bland_altman}
+
 
 # Convenience struct for run data
 class RunData(NamedTuple):
@@ -181,6 +184,14 @@ def subcmd_compare(args: Namespace):
                 )
             )
             # Create Bland-Altman plots
+            info = get_info_text([ref.run_id, query.run_id], run_dict)
+            sys.stderr.write(info)
+            plotting_commands.append(
+                (
+                    get_bland_altman,
+                    [ref.run_id, query.run_id, A, B, info, outsubdir, outfmts, args],
+                )
+            )
 
         # Send dataframes for heatmaps, scatterplots
         for matdata in difference_matrices.values():
@@ -446,3 +457,87 @@ def get_scatter(
 
         # Be tidy with matplotlib caches
         # plt.close("all")
+
+
+def get_bland_altman(
+    run_a: int,
+    run_b: int,
+    matdata1: MatrixData,
+    matdata2: MatrixData,
+    info: str,
+    outdir: Path,
+    outfmts: List[str],
+    args: Namespace,
+) -> None:
+    """Write a Bland-Altman plot for a comparison between two pyani runs.
+
+    :param run_a:  int, run_id for the reference
+    :param run_b:  int, run_id for the query
+    :param matdata1:  MatrixData object for this scatterplot
+    :param matdata2:  MatrixData object for this scatterplot
+    :param result_labels:  dict of result labels
+    :param result_classes: dict of result classes
+    :param args:  Namespace for command-line arguments
+    :param outfmts:  list of output formats for files
+    """
+
+    extreme = max(abs(matdata1.data.values.min()), abs(matdata1.data.values.max()))
+    cmap = ("BuRd", extreme * -1, extreme)
+    for fmt in outfmts:
+        outfname = (
+            Path(outdir)
+            / f"bland-altman_{matdata1.name}_run{run_a}_vs_{matdata2.name}_run{run_b}.{fmt}"
+        )
+        # sys.stderr.write(f"{outfname}\n")
+        # logger.debug("\tWriting graphics to %s", outfname)
+        params = pyani_graphics.Params(cmap, {}, {})
+        # Draw scatterplot
+        BMETHODS[args.method](
+            matdata1.data,
+            matdata2.data,
+            outfname,
+            info,
+            f"{matdata1.name}",
+            f"{matdata2.name}",
+            title=f"{matdata1.name.title().replace('_', ' ')} run {run_a} vs {matdata2.name.title()} run {run_b}",
+            params=params,
+        )
+
+        # Be tidy with matplotlib caches
+        # plt.close("all")
+
+
+def get_info_text(run_ids: List[int], run_dict: Dict) -> str:
+    defaults = {
+        "anib": {"fragsize": pyani_config.FRAGSIZE},
+        "aniblastall": {"fragsize": pyani_config.FRAGSIZE},
+        "anim": {
+            "maxmatch": False,
+            # 'noextend':
+        },
+        "fastani": {"kmer": 16, "fragLen": 3000, "minFraction": 0.2},
+    }
+    s = ""
+    for id in run_ids:
+        id = str(id)
+        # ignore = {'dbpath', 'labels', 'classes', 'i', 'indir',  'l', 'log', 'o', 'outdir'}
+        keep = {
+            "k",
+            "kmer",
+            "fragLen",
+            "minFraction",
+            "fragsize",
+            "maxmatch",
+            "noextend",
+        }
+        command_list = list(filter(bool, run_dict[id].cmdline.split("-")))
+        method = run_dict[id].method.lower()
+        arguments = [tuple(x.split()) for x in command_list[1:]]
+        legend_info = {k: v for k, v in arguments if k in keep}
+        defaults[method].update(legend_info)
+
+        s += f"Run {id}\nMethod: {run_dict[id].method}\n"
+        for key in defaults[method]:
+            s += f"    {key}: {str(defaults[method][key])}\n"
+        s += "\n"
+    return s
