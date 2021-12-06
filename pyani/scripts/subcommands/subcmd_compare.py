@@ -1,3 +1,4 @@
+import os
 from argparse import Namespace
 from pathlib import Path
 from typing import Any, NamedTuple, Dict, List, Set
@@ -93,6 +94,13 @@ def subcmd_compare(args: Namespace):
         args.run_ids,
     )
     logger.debug("Comparisons to run: %s", comparisons)
+
+    # Create subdirectories for output
+    outsubdir = Path(args.outdir) / "compare"
+    os.makedirs(outsubdir, exist_ok=True)
+
+    logger.info("Writing output to: %s", outsubdir)
+
     # Parse output formats
     outfmts = args.formats
     logger.debug("Requested output formats: %s", outfmts)
@@ -128,6 +136,11 @@ def subcmd_compare(args: Namespace):
 
     # Loop over pairs of runs
     for ref, query in comparisons:
+
+        outsubdir = Path(outsubdir) / f"ref_{ref}_vs_query_{query}"
+        os.makedirs(outsubdir, exist_ok=True)
+        logger.debug("Outsubdir: %s", outsubdir)
+
         ref, query = run_dict[str(ref)], run_dict[str(query)]
         # Find common genomes
         common = ref.genomes & query.genomes
@@ -161,7 +174,10 @@ def subcmd_compare(args: Namespace):
             logger.info(f"{A.name}, {B.name}")
             logger.info(f"{ref.run_id}, {query.run_id}")
             plotting_commands.append(
-                (get_scatter, [ref.run_id, query.run_id, A, B, outfmts, args])
+                (
+                    get_scatter,
+                    [ref.run_id, query.run_id, A, B, outsubdir, outfmts, args],
+                )
             )
             # Create Bland-Altman plots
 
@@ -171,12 +187,31 @@ def subcmd_compare(args: Namespace):
             plotting_commands.append(
                 (
                     get_heatmap,
-                    [ref.run_id, query.run_id, matdata, labels, classes, outfmts, args],
+                    [
+                        ref.run_id,
+                        query.run_id,
+                        matdata,
+                        labels,
+                        classes,
+                        outsubdir,
+                        outfmts,
+                        args,
+                    ],
                 )
             )
             # Plot distributions of differences to look at normality
             plotting_commands.append(
-                (get_distribution, [ref.run_id, query.run_id, matdata, outfmts, args])
+                (
+                    get_distribution,
+                    [
+                        ref.run_id,
+                        query.run_id,
+                        matdata,
+                        outsubdir,
+                        outfmts,
+                        args,
+                    ],
+                )
             )
 
         # Run the plotting commands
@@ -293,6 +328,7 @@ def get_heatmap(
     matdata: MatrixData,
     result_labels: Dict,
     result_classes: Dict,
+    outdir: Path,
     outfmts: List[str],
     args: Namespace,
 ):
@@ -317,9 +353,7 @@ def get_heatmap(
     )
 
     for fmt in outfmts:
-        outfname = (
-            Path(args.outdir) / f"compare_{matdata.name}_run{run_a}_run{run_b}.{fmt}"
-        )
+        outfname = Path(outdir) / f"heatmap_{matdata.name}_run{run_a}_run{run_b}.{fmt}"
         logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
 
@@ -340,6 +374,7 @@ def get_distribution(
     run_a: int,
     run_b: int,
     matdata: MatrixData,
+    outdir: Path,
     outfmts: List[str],
     args: Namespace,
 ) -> None:
@@ -355,8 +390,7 @@ def get_distribution(
     logger.info("Writing distribution plot for %s matrix", matdata.name)
     for fmt in outfmts:
         outfname = (
-            Path(args.outdir)
-            / f"distribution_{matdata.name}_run{run_a}_run{run_b}.{fmt}"
+            Path(outdir) / f"distribution_{matdata.name}_run{run_a}_run{run_b}.{fmt}"
         )
         logger.debug("\tWriting graphics to %s", outfname)
         DISTMETHODS[args.method](
@@ -372,6 +406,7 @@ def get_scatter(
     run_b: int,
     matdata1: MatrixData,
     matdata2: MatrixData,
+    outdir: Path,
     outfmts: List[str],
     args: Namespace,
 ) -> None:
@@ -393,7 +428,7 @@ def get_scatter(
     cmap = ("BuRd", extreme * -1, extreme)
     for fmt in outfmts:
         outfname = (
-            Path(args.outdir)
+            Path(outdir)
             / f"scatter_{matdata1.name}_run{run_a}_vs_{matdata2.name}_run{run_b}.{fmt}"
         )
         sys.stderr.write(f"{outfname}\n")
