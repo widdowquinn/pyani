@@ -362,7 +362,7 @@ def get_heatmap(
         GMETHODS["seaborn"](
             matdata.data,
             outfname,
-            title=f"compare_{matdata.name}_run{run_a}_run{run_b}",
+            title=f"Compare {matdata.name.title().replace('_', ' ')} run {run_a} vs run {run_b}",
             params=params,
         )
 
@@ -397,7 +397,7 @@ def get_distribution(
             matdata.data,
             outfname,
             matdata.name,
-            title=f"compare_{matdata.name}_run{run_a}_run{run_b}",
+            title=f"Compare {matdata.name.title().replace('_', ' ')} run {run_a} vs run {run_b}",
         )
 
 
@@ -442,7 +442,7 @@ def get_scatter(
             outfname,
             f"{matdata1.name}_{run_a}",
             f"{matdata2.name}_{run_b}",
-            title=f"{matdata1.name.title()} run {run_a} vs {matdata2.name.title()} run {run_b}",
+            title=f"{matdata1.name.title().replace('_', ' ')} run {run_a} vs {matdata2.name.title()} run {run_b}",
             params=params,
         )
 
