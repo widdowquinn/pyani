@@ -371,7 +371,7 @@ def get_heatmap(
     outfstem: str,
     outfmts: List[str],
     args: Namespace,
-):
+) -> None:
     """Write a single heatmap for a comparison between two pyani runs.
 
     :param run_id:  int, run_id for this run
@@ -574,7 +574,13 @@ def get_info_text(run_ids: List[int], run_dict: Dict) -> str:
     return s
 
 
-def write_summary(reference, sub_ref, query, sub_query, summary_file):
+def write_summary(
+    reference: RunData,
+    sub_ref: RunMatrices,
+    query: RunData,
+    sub_query: RunMatrices,
+    summary_file: Path,
+) -> None:
     """Write out a summary of the comparison.
 
     :param reference:  RunData object for reference
