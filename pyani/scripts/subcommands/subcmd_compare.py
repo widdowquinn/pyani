@@ -191,10 +191,10 @@ def subcmd_compare(args: Namespace):
                     [ref.run_id, query.run_id, A, B, scatterstem, outfmts, args],
                 )
             )
+
             # Create Bland-Altman plots
             # info = get_info_text([ref.run_id, query.run_id], run_dict)
             # sys.stderr.write(info)
-
             blandstem = (
                 Path(outsubdir)
                 / f"bland-altman_{A.name}_run{ref.run_id}_vs_{B.name}_run{query.run_id}"
@@ -260,6 +260,10 @@ def subcmd_compare(args: Namespace):
         pool.join()
 
         # Generate summary report
+        summary_file = (
+            Path(outsubdir) / f"summary_run{ref.run_id}_vs_run{query.run_id}.md"
+        )
+        write_summary(ref, sub_ref, query, sub_query, summary_file)
 
 
 def get_metadata(session: Any, run_id: int) -> RunData:
@@ -568,3 +572,32 @@ def get_info_text(run_ids: List[int], run_dict: Dict) -> str:
             s += f"    {key}: {str(defaults[method][key])}\n"
         s += "\n"
     return s
+
+
+def write_summary(reference, sub_ref, query, sub_query, summary_file):
+    """Write out a summary of the comparison.
+
+    :param reference:  RunData object for reference
+    :param sub_ref:    RunMatrices object for reference, containing information common with the query
+    :param query:      RunData object for query
+    :param sub_query:  RunMatrices object for query, containing information common with the reference
+    :param summary_file:  Path object for summary file
+
+    """
+    output = f"## Run {reference.run_id} (reference) vs Run {query.run_id}  \n"
+    output += "### Reference  \n"
+    output += f"**ID**: {reference.run_id}  \n"
+    output += f"**Method**: {reference.method}  \n"
+    output += f"**Command line**: {reference.cmdline}  \n"
+    output += f"**Highest ANI**: {sub_ref.identity.data.max().max()}  \n"
+    output += f"**Lowest coverage**: {sub_ref.coverage.data.min().min()}  \n"
+
+    output += "### Query  \n"
+    output += f"**ID**: {query.run_id}  \n"
+    output += f"**Method**: {query.method}  \n"
+    output += f"**Command line**: {query.cmdline}  \n"
+    output += f"**Highest ANI**: {sub_query.identity.data.max().max()}  \n"
+    output += f"**Lowest coverage**: {sub_query.coverage.data.min().min()}"
+
+    with open(summary_file, "a") as ofh:
+        ofh.write(output)
