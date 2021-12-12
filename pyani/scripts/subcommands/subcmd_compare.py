@@ -228,8 +228,8 @@ def subcmd_compare(args: Namespace):
 
         # Run the plotting commands
         for func, args in plotting_commands:
-            pool.apply_async(func, args, {})
-            logger.info(f"{func}")
+            result = pool.apply_async(func, args, {})
+            result.get()
 
         # Close worker pool
         pool.close()
