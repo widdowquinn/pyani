@@ -179,7 +179,7 @@ def subcmd_anib(args: Namespace) -> None:
         os.makedirs(args.outdir, exist_ok=True)
     except IOError:
         logger.error(
-            f"Could not create output directory {args.outdir} (exiting)", exc_info=True
+            "Could not create output directory %s (exiting)", args.outdir, exc_info=True
         )
         raise SystemError(1)
     fragdir = Path(str(args.outdir)) / "fragments"
@@ -231,7 +231,7 @@ def subcmd_anib(args: Namespace) -> None:
         session, run, comparisons, "blastn", blastn_version, args.fragsize, False
     )
     logger.info(
-        f"\t...after check, still need to run {len(comparisons_to_run)} comparisons"
+        "\t...after check, still need to run %s comparisons", len(comparisons_to_run)
     )
 
     # If there are no comparisons to run, update the Run matrices and exit
@@ -291,7 +291,7 @@ def subcmd_anib(args: Namespace) -> None:
         comparisons_to_run, existing_files, fragfiles.values(), fraglens.values(), args
     )
     logger.debug("...created %s blastn jobs", len(joblist))
-    # print(f"Joblist: {joblist}")
+
     # Pass jobs to appropriate scheduler
     logger.debug("Passing %s jobs to %s...", len(joblist), args.scheduler)
     run_anib_jobs(joblist, args)
@@ -304,8 +304,6 @@ def subcmd_anib(args: Namespace) -> None:
     update_comparison_results(joblist, run, session, blastn_version, fraglens, args)
     update_comparison_matrices(session, run)
     logger.info("...database updated.")
-
-    # raise NotImplementedError
 
 
 def generate_joblist(
@@ -472,8 +470,7 @@ def update_comparison_results(
     for job in tqdm(joblist, disable=args.disable_tqdm):
         logger.debug("\t%s vs %s", job.query.description, job.subject.description)
         aln_length, sim_errs, ani_pid = anib.parse_blast_tab(job.outfile, fraglens)
-        logger.debug(f"Results: {aln_length}, {sim_errs}, {ani_pid}")
-        logger.debug(f"Results: {type(aln_length)}, {type(sim_errs)}, {type(ani_pid)}")
+
         qcov = aln_length / job.query.length
         scov = aln_length / job.subject.length
         run.comparisons.append(
