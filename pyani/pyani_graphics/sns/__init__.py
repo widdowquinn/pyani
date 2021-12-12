@@ -268,8 +268,19 @@ def scatter(
 
 
 def bland_altman(
-    dfr1, dfr2, outfilename, info, matname1, matname2, title=None, params=None
+    dfr1, dfr2, outfilename, matname1, matname2, title=None, info=None, params=None
 ):
+    """Return seaborn Bland-Altman plot.
+
+    :param dfr1:  pandas DataFrame with x-axis data
+    :param dfr2:  pandas DataFrame with y-axis data
+    :param outfilename:  path to output file (indicates output format)
+    :param matname1:  name of x-axis data
+    :param matname2:  name of y-axis data
+    :param title:  title for the plot
+    :param info:   information about the data in the plot
+    :param params:  a list of parameters for plotting: [colormap, vmin, vmax]
+    """
     data = pd.DataFrame()
 
     data["avg"] = (dfr1 + dfr2).values.flatten() / 2
