@@ -62,14 +62,26 @@ def build(
     parser = subps.add_parser(
         "classify", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
-    # Required positional arguments: output directory and run ID
+    # Required arguments: output directory and run ID
     parser.add_argument(
-        action="store", dest="outdir", default=None, type=Path, help="output directory"
+        "-o",
+        "--outdir",
+        action="store",
+        dest="outdir",
+        default=None,
+        type=Path,
+        help="output directory",
+        required=True,
     )
     parser.add_argument(
-        action="store", dest="run_id", default=None, help="run ID to classify"
+        "--run_id",
+        action="store",
+        dest="run_id",
+        default=None,
+        help="run ID to classify",
+        required=True,
     )
-    # Other optional arguments
+    # Optional arguments
     parser.add_argument(
         "--dbpath",
         action="store",

@@ -11,11 +11,11 @@ Using non-NCBI genomes
 It is usual to want to include or work only with genomes that have been generated locally, or that were not downloaded from NCBI using
 `pyani download`. To use these genomes with the `pyani` analysis subcommands, the genomes must be *indexed* [1]_.
 
-To *index* a set of genomes, use the `pyani index` subcommand on the input directory. To index the directory ``mygenomes``, for example:
+To *index* a set of genomes, use the `pyani index` subcommand on the input directory, which is passed to the ``-i`` argument. To index the directory ``mygenomes``, for example:
 
 .. code-block:: bash
 
-    pyani index mygenomes
+    pyani index -i mygenomes
 
 This will create a ``.md5`` file (containing the *hash*) for each genome, as well as class and label files listing all the input genomes.
 
@@ -31,7 +31,7 @@ The location of the labels and classes files may be changed using the ``--labels
 
 .. code-block:: bash
 
-    pyani index mygenomes --classes myclasses.txt --labels mylabels.txt
+    pyani index -i mygenomes --classes myclasses.txt --labels mylabels.txt
 
 
 

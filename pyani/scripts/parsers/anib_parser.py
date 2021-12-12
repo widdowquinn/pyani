@@ -63,6 +63,7 @@ def build(
     parser = subps.add_parser(
         "anib", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
+    # Required arguments: input and output directories
     parser.add_argument(
         "-i",
         "--indir",

@@ -155,7 +155,10 @@ def subcmd_report(args: Namespace) -> int:
             "genome class",
         ]
         report(
-            args, session, formats, ReportParams("runs_genomes", statement, headers),
+            args,
+            session,
+            formats,
+            ReportParams("runs_genomes", statement, headers),
         )
 
     # Report table of all runs in which a genome is involved
@@ -194,7 +197,10 @@ def subcmd_report(args: Namespace) -> int:
             "date run",
         ]
         report(
-            args, session, formats, ReportParams("genomes_runs", statement, headers),
+            args,
+            session,
+            formats,
+            ReportParams("genomes_runs", statement, headers),
         )
 
     # Report table of comparison results for the indicated runs
@@ -259,6 +265,7 @@ def subcmd_report(args: Namespace) -> int:
     # JSON, we don't bother with a helper function like report(), and write out
     # our matrices directly, here
     if args.run_matrices:
+        show_index = not args.no_matrix_labels
         for run_id in [run_id.strip() for run_id in args.run_matrices.split(",")]:
             logger.debug("Extracting matrices for run %s", run_id)
             run = session.query(Run).filter(Run.run_id == run_id).first()
@@ -286,14 +293,19 @@ def subcmd_report(args: Namespace) -> int:
                         )
                     ),
                     formats,
-                    show_index=True,
+                    show_index=show_index,
                     **matdata.graphic_args,
                 )
 
     return 0
 
 
-def report(args: Namespace, session, formats: List[str], params: ReportParams,) -> None:
+def report(
+    args: Namespace,
+    session,
+    formats: List[str],
+    params: ReportParams,
+) -> None:
     """Write tabular report of pyani runs from database.
 
     :param args:  Namespace of command-line arguments

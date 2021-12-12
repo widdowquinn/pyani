@@ -66,6 +66,12 @@ FIXTUREPATH = TESTSPATH / "fixtures"
 
 
 # Convenience structs to emulate returned objects
+class MockGenome(NamedTuple):
+    """Mock genome object."""
+
+    path: str
+
+
 class MockProcess(NamedTuple):
     """Mock process object."""
 
@@ -271,6 +277,13 @@ def executable_without_version(monkeypatch):
 def fragment_length():
     """Fragment size for ANIb-related analyses."""
     return FRAGSIZE
+
+
+@pytest.fixture
+def unsorted_genomes(dir_anim_in):
+    """Tests ordering of genome names in output file names for asymmetric analyses."""
+    dir_anim_in = str(dir_anim_in)
+    return (MockGenome(f"{dir_anim_in}/second"), MockGenome(f"{dir_anim_in}/first"))
 
 
 @pytest.fixture
