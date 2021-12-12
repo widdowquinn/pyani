@@ -37,7 +37,10 @@ DISTMETHODS = {
 SMETHODS = {"seaborn": pyani_graphics.sns.scatter, "mpl": pyani_graphics.mpl.scatter}
 
 # Dictionary of Bland-ALtman graphics methods
-BMETHODS = {"seaborn": pyani_graphics.sns.bland_altman}
+BMETHODS = {
+    "seaborn": pyani_graphics.sns.bland_altman,
+    "mpl": pyani_graphics.mpl.bland_altman,
+}
 
 
 # Convenience struct for run data
