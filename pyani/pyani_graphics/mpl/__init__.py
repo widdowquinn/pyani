@@ -310,7 +310,8 @@ def heatmap(dfr, outfilename=None, title=None, params=None):
 
     # Layout figure grid and add title
     # Set figure size by the number of rows in the dataframe
-    figsize = max(8, dfr.shape[0] * 0.175)
+    figsize = max(8, dfr.shape[0] * 0.3)
+
     fig = plt.figure(figsize=(figsize, figsize))
     # if title:
     #     fig.suptitle(title)
