@@ -249,7 +249,7 @@ def subcmd_compare(args: Namespace):
 
         # Run the plotting commands
         for func, args in plotting_commands:
-            result = pool.apply_async(func, args, {})
+            result = pool.apply_async(func, args, {}, callback=logger.debug)
             result.get()
 
         # Close worker pool
@@ -375,19 +375,15 @@ def get_heatmap(
     :param outfstem:  stem for output graphics files
     :param outfmts:  list of output formats for files
     """
+    # Collect logging statements here while in multiprocessing mode
+    logs = []
+    proname = multiprocessing.current_process().name
+
     cmap = ("BuRd", matdata.data.values.min(), matdata.data.values.max())
-
-    logger = logging.getLogger(__name__)
-
-    logger.info("Creating %s matrix heatmaps", matdata.name)
-    logger.info(
-        "Cmap min: %s, cmap max: %s",
-        matdata.data.values.min(),
-        matdata.data.values.max(),
-    )
 
     for fmt in outfmts:
         outfname = f"{outfstem}.{fmt}"
+        logs.append(f"{proname}: Writing graphics to {outfname}")
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
 
         # Draw heatmap
@@ -400,6 +396,7 @@ def get_heatmap(
 
     # Be tidy with matplotlib caches
     plt.close("all")
+    return "".join(logs)
 
 
 def get_distribution(
@@ -418,18 +415,23 @@ def get_distribution(
     :param outfstem:  stem for output graphics files
     :param outfmts:  list of output formats for files
     """
-    logger = logging.getLogger(__name__)
-
-    logger.info("Writing distribution plot for %s matrix", matdata.name)
+    # Collect logging statements here while in multiprocessing mode
+    logs = []
+    proname = multiprocessing.current_process().name
 
     for fmt in outfmts:
         outfname = f"{outfstem}.{fmt}"
+        logs.append(f"{proname}: Writing graphics to {outfname}")
+
+        # Draw distributions
         DISTMETHODS[args.method](
             matdata.data,
             outfname,
             matdata.name,
             title=f"Compare {matdata.name.title().replace('_', ' ')} run {run_a} vs run {run_b}",
         )
+
+    return "".join(logs)
 
 
 def get_scatter(
@@ -453,11 +455,17 @@ def get_scatter(
     :param outfstem:  stem for output graphics files
     :param outfmts:  list of output formats for files
     """
+    # Collect logging statements here while in multiprocessing mode
+    logs = []
+    proname = multiprocessing.current_process().name
+
     extreme = max(abs(matdata1.data.values.min()), abs(matdata1.data.values.max()))
     cmap = ("BuRd", extreme * -1, extreme)
     for fmt in outfmts:
         outfname = f"{outfstem}.{fmt}"
+        logs.append(f"{proname}: Writing graphics to {outfname}")
         params = pyani_graphics.Params(cmap, {}, {})
+
         # Draw scatterplot
         SMETHODS[args.method](
             matdata1.data,
@@ -471,6 +479,7 @@ def get_scatter(
 
         # Be tidy with matplotlib caches
         # plt.close("all")
+    return "".join(logs)
 
 
 def get_bland_altman(
@@ -495,11 +504,16 @@ def get_bland_altman(
     :param args:  Namespace for command-line arguments
     :param outfmts:  list of output formats for files
     """
+    # Collect logging statements here while in multiprocessing mode
+    logs = []
+    proname = multiprocessing.current_process().name
 
     extreme = max(abs(matdata1.data.values.min()), abs(matdata1.data.values.max()))
     cmap = ("BuRd", extreme * -1, extreme)
     for fmt in outfmts:
         outfname = f"{outfstem}.{fmt}"
+
+        logs.append(f"{proname}: Writing graphics to {outfname}")
         params = pyani_graphics.Params(cmap, {}, {})
         # Draw scatterplot
         BMETHODS[args.method](
@@ -515,6 +529,7 @@ def get_bland_altman(
 
         # Be tidy with matplotlib caches
         # plt.close("all")
+    return "".join(logs)
 
 
 def get_info_text(run_ids: List[int], run_dict: Dict) -> str:
