@@ -294,39 +294,3 @@ def bland_altman(
         plt.savefig(outfilename)
 
     return fig
-
-
-def get_info_text(run_ids: List[int], run_dict: Dict) -> str:
-    defaults = {
-        "anib": {"fragsize": pyani_config.FRAGSIZE},
-        "aniblastall": {"fragsize": pyani_config.FRAGSIZE},
-        "anim": {
-            "maxmatch": False,
-            # 'noextend':
-        },
-        "fastani": {"kmer": 16, "fragLen": 3000, "minFraction": 0.2},
-    }
-    s = ""
-    for id in run_ids:
-        id = str(id)
-        # ignore = {'dbpath', 'labels', 'classes', 'i', 'indir',  'l', 'log', 'o', 'outdir'}
-        keep = {
-            "k",
-            "kmer",
-            "fragLen",
-            "minFraction",
-            "fragsize",
-            "maxmatch",
-            "noextend",
-        }
-        command_list = list(filter(bool, run_dict[id].cmdline.split("-")))
-        method = run_dict[id].method.lower()
-        arguments = [tuple(x.split()) for x in command_list[1:]]
-        legend_info = {k: v for k, v in arguments if k in keep}
-        defaults[method].update(legend_info)
-
-        s += f"Run {id}\nMethod: {run_dict[id].method}\n"
-        for key in defaults[method]:
-            s += f"    {key}: {str(defaults[method][key])}\n"
-        s += "\n"
-    return s
