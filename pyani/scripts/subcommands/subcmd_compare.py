@@ -369,11 +369,9 @@ def get_heatmap(
 
     :param run_id:  int, run_id for this run
     :param matdata:  MatrixData object for this heatmap
-    :param result_labels:  dict of result labels
-    :param result_classes: dict of result classes
-    :param args:  Namespace for command-line arguments
     :param outfstem:  stem for output graphics files
     :param outfmts:  list of output formats for files
+    :param args:  Namespace for command-line arguments
     """
     # Collect logging statements here while in multiprocessing mode
     logs = []
@@ -387,15 +385,16 @@ def get_heatmap(
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
 
         # Draw heatmap
-        GMETHODS["seaborn"](
+        GMETHODS[args.method](
             matdata.data,
             outfname,
             title=f"Compare {matdata.name.title().replace('_', ' ')} run {run_a} vs run {run_b}",
             params=params,
         )
 
-    # Be tidy with matplotlib caches
-    plt.close("all")
+        # Be tidy with matplotlib caches
+        plt.close("all")
+
     return "".join(logs)
 
 
@@ -411,9 +410,9 @@ def get_distribution(
 
     :param run_id:  int, run_id for this run
     :param matdata:  MatrixData object for this distribution plot
-    :param args:  Namespace for command-line arguments
     :param outfstem:  stem for output graphics files
     :param outfmts:  list of output formats for files
+    :param args:  Namespace for command-line arguments
     """
     # Collect logging statements here while in multiprocessing mode
     logs = []
@@ -430,6 +429,9 @@ def get_distribution(
             matdata.name,
             title=f"Compare {matdata.name.title().replace('_', ' ')} run {run_a} vs run {run_b}",
         )
+
+        # Be tidy with matplotlib caches
+        plt.close("all")
 
     return "".join(logs)
 
@@ -449,11 +451,9 @@ def get_scatter(
     :param run_b:  int, run_id for the query
     :param matdata1:  MatrixData object for this scatterplot
     :param matdata2:  MatrixData object for this scatterplot
-    :param result_labels:  dict of result labels
-    :param result_classes: dict of result classes
-    :param args:  Namespace for command-line arguments
     :param outfstem:  stem for output graphics files
     :param outfmts:  list of output formats for files
+    :param args:  Namespace for command-line arguments
     """
     # Collect logging statements here while in multiprocessing mode
     logs = []
@@ -487,7 +487,6 @@ def get_bland_altman(
     run_b: int,
     matdata1: MatrixData,
     matdata2: MatrixData,
-    info: str,
     outfstem: str,
     outfmts: List[str],
     args: Namespace,
@@ -498,11 +497,9 @@ def get_bland_altman(
     :param run_b:  int, run_id for the query
     :param matdata1:  MatrixData object for this scatterplot
     :param matdata2:  MatrixData object for this scatterplot
-    :param result_labels:  dict of result labels
-    :param result_classes: dict of result classes
     :param outfstem:  stem for output graphics files
+    :param outfmts:   list of output formats for files
     :param args:  Namespace for command-line arguments
-    :param outfmts:  list of output formats for files
     """
     # Collect logging statements here while in multiprocessing mode
     logs = []
@@ -515,12 +512,13 @@ def get_bland_altman(
 
         logs.append(f"{proname}: Writing graphics to {outfname}")
         params = pyani_graphics.Params(cmap, {}, {})
-        # Draw scatterplot
+
+        # Draw Bland-Altman
         BMETHODS[args.method](
             matdata1.data,
             matdata2.data,
             outfname,
-            info,
+            # info,
             f"{matdata1.name}",
             f"{matdata2.name}",
             title=f"{matdata1.name.title().replace('_', ' ')} run {run_a} vs {matdata2.name.title()} run {run_b}",
@@ -528,7 +526,8 @@ def get_bland_altman(
         )
 
         # Be tidy with matplotlib caches
-        # plt.close("all")
+        plt.close("all")
+
     return "".join(logs)
 
 
