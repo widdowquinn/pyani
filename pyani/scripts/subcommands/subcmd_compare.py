@@ -177,25 +177,41 @@ def subcmd_compare(args: Namespace):
             # Plot scatter plots for each score
             logger.info(f"{A.name}, {B.name}")
             logger.info(f"{ref.run_id}, {query.run_id}")
+            scatterstem = (
+                Path(outsubdir)
+                / f"scatter_{A.name}_run{ref.run_id}_vs_{B.name}_run{query.run_id}"
+            )
+            logger.info("Writing scatter plots to: %s.*", scatterstem)
             plotting_commands.append(
                 (
                     get_scatter,
-                    [ref.run_id, query.run_id, A, B, outsubdir, outfmts, args],
+                    [ref.run_id, query.run_id, A, B, scatterstem, outfmts, args],
                 )
             )
             # Create Bland-Altman plots
-            info = get_info_text([ref.run_id, query.run_id], run_dict)
-            sys.stderr.write(info)
+            # info = get_info_text([ref.run_id, query.run_id], run_dict)
+            # sys.stderr.write(info)
+
+            blandstem = (
+                Path(outsubdir)
+                / f"bland-altman_{A.name}_run{ref.run_id}_vs_{B.name}_run{query.run_id}"
+            )
+            logger.info("Writing Bland-Altman plots to: %s.*", blandstem)
             plotting_commands.append(
                 (
                     get_bland_altman,
-                    [ref.run_id, query.run_id, A, B, info, outsubdir, outfmts, args],
+                    [ref.run_id, query.run_id, A, B, blandstem, outfmts, args],
                 )
             )
 
         # Send dataframes for heatmaps, scatterplots
         for matdata in difference_matrices.values():
             # Write heatmap for each results matrix
+            heatstem = (
+                Path(outsubdir)
+                / f"heatmap_{matdata.name}_run{ref.run_id}_vs_run{query.run_id}"
+            )
+            logger.info("Writing heatmaps to: %s.*", heatstem)
             plotting_commands.append(
                 (
                     get_heatmap,
@@ -205,13 +221,18 @@ def subcmd_compare(args: Namespace):
                         matdata,
                         labels,
                         classes,
-                        outsubdir,
+                        heatstem,
                         outfmts,
                         args,
                     ],
                 )
             )
             # Plot distributions of differences to look at normality
+            diststem = (
+                Path(outsubdir)
+                / f"distribution_{matdata.name}_run{ref.run_id}_run{query.run_id}"
+            )
+            logger.info("Writing distribution plots to: %s.*", diststem)
             plotting_commands.append(
                 (
                     get_distribution,
@@ -219,7 +240,7 @@ def subcmd_compare(args: Namespace):
                         ref.run_id,
                         query.run_id,
                         matdata,
-                        outsubdir,
+                        diststem,
                         outfmts,
                         args,
                     ],
@@ -340,7 +361,7 @@ def get_heatmap(
     matdata: MatrixData,
     result_labels: Dict,
     result_classes: Dict,
-    outdir: Path,
+    outfstem: str,
     outfmts: List[str],
     args: Namespace,
 ):
@@ -351,6 +372,7 @@ def get_heatmap(
     :param result_labels:  dict of result labels
     :param result_classes: dict of result classes
     :param args:  Namespace for command-line arguments
+    :param outfstem:  stem for output graphics files
     :param outfmts:  list of output formats for files
     """
     cmap = ("BuRd", matdata.data.values.min(), matdata.data.values.max())
@@ -365,8 +387,7 @@ def get_heatmap(
     )
 
     for fmt in outfmts:
-        outfname = Path(outdir) / f"heatmap_{matdata.name}_run{run_a}_run{run_b}.{fmt}"
-        logger.debug("\tWriting graphics to %s", outfname)
+        outfname = f"{outfstem}.{fmt}"
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
 
         # Draw heatmap
@@ -385,7 +406,7 @@ def get_distribution(
     run_a: int,
     run_b: int,
     matdata: MatrixData,
-    outdir: Path,
+    outfstem: str,
     outfmts: List[str],
     args: Namespace,
 ) -> None:
@@ -394,6 +415,7 @@ def get_distribution(
     :param run_id:  int, run_id for this run
     :param matdata:  MatrixData object for this distribution plot
     :param args:  Namespace for command-line arguments
+    :param outfstem:  stem for output graphics files
     :param outfmts:  list of output formats for files
     """
     logger = logging.getLogger(__name__)
@@ -401,10 +423,7 @@ def get_distribution(
     logger.info("Writing distribution plot for %s matrix", matdata.name)
 
     for fmt in outfmts:
-        outfname = (
-            Path(outdir) / f"distribution_{matdata.name}_run{run_a}_run{run_b}.{fmt}"
-        )
-        logger.debug("\tWriting graphics to %s", outfname)
+        outfname = f"{outfstem}.{fmt}"
         DISTMETHODS[args.method](
             matdata.data,
             outfname,
@@ -418,7 +437,7 @@ def get_scatter(
     run_b: int,
     matdata1: MatrixData,
     matdata2: MatrixData,
-    outdir: Path,
+    outfstem: str,
     outfmts: List[str],
     args: Namespace,
 ) -> None:
@@ -431,18 +450,13 @@ def get_scatter(
     :param result_labels:  dict of result labels
     :param result_classes: dict of result classes
     :param args:  Namespace for command-line arguments
+    :param outfstem:  stem for output graphics files
     :param outfmts:  list of output formats for files
     """
-    logger = logging.getLogger(__name__)
     extreme = max(abs(matdata1.data.values.min()), abs(matdata1.data.values.max()))
     cmap = ("BuRd", extreme * -1, extreme)
     for fmt in outfmts:
-        outfname = (
-            Path(outdir)
-            / f"scatter_{matdata1.name}_run{run_a}_vs_{matdata2.name}_run{run_b}.{fmt}"
-        )
-
-        logger.debug("\tWriting graphics to %s", outfname)
+        outfname = f"{outfstem}.{fmt}"
         params = pyani_graphics.Params(cmap, {}, {})
         # Draw scatterplot
         SMETHODS[args.method](
@@ -465,7 +479,7 @@ def get_bland_altman(
     matdata1: MatrixData,
     matdata2: MatrixData,
     info: str,
-    outdir: Path,
+    outfstem: str,
     outfmts: List[str],
     args: Namespace,
 ) -> None:
@@ -477,6 +491,7 @@ def get_bland_altman(
     :param matdata2:  MatrixData object for this scatterplot
     :param result_labels:  dict of result labels
     :param result_classes: dict of result classes
+    :param outfstem:  stem for output graphics files
     :param args:  Namespace for command-line arguments
     :param outfmts:  list of output formats for files
     """
@@ -484,12 +499,7 @@ def get_bland_altman(
     extreme = max(abs(matdata1.data.values.min()), abs(matdata1.data.values.max()))
     cmap = ("BuRd", extreme * -1, extreme)
     for fmt in outfmts:
-        outfname = (
-            Path(outdir)
-            / f"bland-altman_{matdata1.name}_run{run_a}_vs_{matdata2.name}_run{run_b}.{fmt}"
-        )
-        # sys.stderr.write(f"{outfname}\n")
-        # logger.debug("\tWriting graphics to %s", outfname)
+        outfname = f"{outfstem}.{fmt}"
         params = pyani_graphics.Params(cmap, {}, {})
         # Draw scatterplot
         BMETHODS[args.method](
