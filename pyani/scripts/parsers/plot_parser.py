@@ -107,7 +107,7 @@ def build(
         action="store",
         default="seaborn",
         metavar="METHOD",
-        nargs=1,
+        nargs="?",
         choices=["seaborn", "mpl", "plotly"],
         help="graphics method to use for plotting; options (seaborn, mpl, plotly)",
     )
