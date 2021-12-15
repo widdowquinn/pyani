@@ -635,5 +635,5 @@ def write_summary(
     output += f"**Highest ANI**: {sub_query.identity.data.max().max()}  \n"
     output += f"**Lowest coverage**: {sub_query.coverage.data.min().min()}"
 
-    with open(summary_file, "a") as ofh:
+    with open(summary_file, "w") as ofh:
         ofh.write(output)
