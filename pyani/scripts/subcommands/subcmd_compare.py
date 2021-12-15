@@ -149,6 +149,8 @@ def subcmd_compare(args: Namespace):
         logger.debug("Outsubdir: %s", outsubdir)
 
         ref, query = run_dict[str(ref)], run_dict[str(query)]
+        logger.info(f"Reference ID: {ref.run_id}, Run ID: {query.run_id}")
+
         # Find common genomes
         common = ref.genomes & query.genomes
 
@@ -178,8 +180,6 @@ def subcmd_compare(args: Namespace):
 
         for A, B in zip(sub_ref, sub_query):
             # Plot scatter plots for each score
-            logger.info(f"{A.name}, {B.name}")
-            logger.info(f"{ref.run_id}, {query.run_id}")
             scatterstem = (
                 Path(outsubdir)
                 / f"scatter_{A.name}_run{ref.run_id}_vs_{B.name}_run{query.run_id}"
@@ -207,7 +207,7 @@ def subcmd_compare(args: Namespace):
                 )
             )
 
-        # Send dataframes for heatmaps, scatterplots
+        # Send dataframes for heatmaps, distributions
         for matdata in difference_matrices.values():
             # Write heatmap for each results matrix
             heatstem = (
@@ -250,6 +250,7 @@ def subcmd_compare(args: Namespace):
                 )
             )
 
+        # Record output directories in the logfile
         logger.info(
             "Writing scatter plots to: %s/scatter_*_run%s_run%s.*",
             Path(outsubdir),
