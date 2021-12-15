@@ -184,7 +184,7 @@ def subcmd_compare(args: Namespace):
                 Path(outsubdir)
                 / f"scatter_{A.name}_run{ref.run_id}_vs_{B.name}_run{query.run_id}"
             )
-            logger.info("Writing scatter plots to: %s.*", scatterstem)
+
             plotting_commands.append(
                 (
                     get_scatter,
@@ -199,7 +199,7 @@ def subcmd_compare(args: Namespace):
                 Path(outsubdir)
                 / f"bland-altman_{A.name}_run{ref.run_id}_vs_{B.name}_run{query.run_id}"
             )
-            logger.info("Writing Bland-Altman plots to: %s.*", blandstem)
+
             plotting_commands.append(
                 (
                     get_bland_altman,
@@ -214,7 +214,7 @@ def subcmd_compare(args: Namespace):
                 Path(outsubdir)
                 / f"heatmap_{matdata.name}_run{ref.run_id}_vs_run{query.run_id}"
             )
-            logger.info("Writing heatmaps to: %s.*", heatstem)
+
             plotting_commands.append(
                 (
                     get_heatmap,
@@ -235,7 +235,7 @@ def subcmd_compare(args: Namespace):
                 Path(outsubdir)
                 / f"distribution_{matdata.name}_run{ref.run_id}_run{query.run_id}"
             )
-            logger.info("Writing distribution plots to: %s.*", diststem)
+
             plotting_commands.append(
                 (
                     get_distribution,
@@ -249,6 +249,31 @@ def subcmd_compare(args: Namespace):
                     ],
                 )
             )
+
+        logger.info(
+            "Writing scatter plots to: %s/scatter_*_run%s_run%s.*",
+            Path(outsubdir),
+            ref.run_id,
+            query.run_id,
+        )
+        logger.info(
+            "Writing Bland-Altman plots to: %s/bland-altman_*_run%s_run%s.*",
+            Path(outsubdir),
+            ref.run_id,
+            query.run_id,
+        )
+        logger.info(
+            "Writing heatmaps to: %s/heatmap_*_run%s_run%s.*",
+            Path(outsubdir),
+            ref.run_id,
+            query.run_id,
+        )
+        logger.info(
+            "Writing distribution plots to: %s/distribution_*_run%s_run%s.*",
+            Path(outsubdir),
+            ref.run_id,
+            query.run_id,
+        )
 
         # Run the plotting commands
         for func, argv in plotting_commands:
