@@ -290,6 +290,10 @@ def subcmd_compare(args: Namespace):
         )
         write_summary(ref, sub_ref, query, sub_query, summary_file)
 
+        # Reset output subdirectory
+        # Failure to do this causes nesting
+        outsubdir = Path(args.outdir) / "compare"
+
 
 def get_metadata(session: Any, run_id: int) -> RunData:
     """Get metadata for a run in the database.
