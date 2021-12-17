@@ -72,11 +72,13 @@ def build(
         required=True,
     )
     parser.add_argument(
-        "--run_id",
+        "--run_ids",
         action="store",
-        dest="run_id",
+        dest="run_ids",
         default=None,
-        help="run ID to plot",
+        metavar="RUN_ID",
+        nargs="+",
+        help="run IDs to plot",
         required=True,
     )
     # Other optional arguments
@@ -93,16 +95,21 @@ def build(
         "--formats",
         dest="formats",
         action="store",
-        default="png",
-        help="graphics output format (pdf/png/svg/jpg)",
+        default=["png"],
+        metavar="FORMAT",
+        nargs="+",
+        choices=["pdf", "png", "svg", "jpg"],
+        help="graphics output format; options: (pdf, png, svg, jpg)",
     )
     parser.add_argument(
         "--method",
         dest="method",
         action="store",
         default="seaborn",
-        help="graphics method to use for plotting",
+        metavar="METHOD",
+        nargs=1,
         choices=["seaborn", "mpl", "plotly"],
+        help="graphics method to use for plotting; options (seaborn, mpl, plotly)",
     )
     parser.add_argument(
         "--workers",

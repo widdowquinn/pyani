@@ -84,11 +84,12 @@ def subcmd_plot(args: Namespace) -> int:
     session = pyani_orm.get_session(args.dbpath)
 
     # Parse output formats
-    outfmts = args.formats.split(",")
+    outfmts = args.formats  # .formats.split(",")
     logger.debug("Requested output formats: %s", outfmts)
+    logger.debug("Type of formats variable: %s", type(outfmts))
 
     # Work on each run:
-    run_ids = [int(run) for run in args.run_id.split(",")]
+    run_ids = [int(run) for run in args.run_ids]
     logger.debug("Generating graphics for runs: %s", run_ids)
     for run_id in run_ids:
         write_run_plots(run_id, session, outfmts, args)
@@ -109,10 +110,10 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
     # Get results matrices for the run
     logger.debug("Retrieving results matrices for run %s", run_id)
     results = (
-        session.query(pyani_orm.Run).filter(pyani_orm.Run.run_id == args.run_id).first()
+        session.query(pyani_orm.Run).filter(pyani_orm.Run.run_id == run_id).first()
     )
-    result_label_dict = pyani_orm.get_matrix_labels_for_run(session, args.run_id)
-    result_class_dict = pyani_orm.get_matrix_classes_for_run(session, args.run_id)
+    result_label_dict = pyani_orm.get_matrix_labels_for_run(session, run_id)
+    result_class_dict = pyani_orm.get_matrix_classes_for_run(session, run_id)
     logger.debug(
         f"Have {len(result_label_dict)} labels and {len(result_class_dict)} classes"
     )

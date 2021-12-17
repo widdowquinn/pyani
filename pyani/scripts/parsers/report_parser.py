@@ -108,17 +108,19 @@ def build(
         "--run_results",
         action="store",
         dest="run_results",
-        metavar="RUN_IDS",
+        metavar="RUN_ID",
+        nargs="+",
         default=None,
-        help="Report table of results for comma separated list of runs",
+        help="Report table of results for space-separated list of runs",
     )
     parser.add_argument(
         "--run_matrices",
         action="store",
         dest="run_matrices",
-        metavar="RUN_IDS",
+        metavar="RUN_ID",
+        nargs="+",
         default=None,
-        help="Report matrices of results for comma separated list of runs",
+        help="Report matrices of results for space-separated list of runs",
     )
     parser.add_argument(
         "--no_matrix_labels",
@@ -132,7 +134,9 @@ def build(
         dest="formats",
         action="store",
         default=None,
-        choices=["html", "excel", "stdout"],
-        help="Output formats (in addition to .tab)",
+        metavar="FORMAT",
+        nargs="+",
+        choices=("html", "excel", "stdout"),
+        help="Space-separated list of output formats (in addition to .tab); possible values: {html, excel, stdout}",
     )
     parser.set_defaults(func=subcommands.subcmd_report)
