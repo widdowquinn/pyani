@@ -358,3 +358,51 @@ def heatmap(dfr, outfilename=None, title=None, params=None):
     if outfilename:
         fig.savefig(outfilename)
     return fig
+
+
+def scatter(
+    dfr1,
+    dfr2,
+    outfilename=None,
+    matname1="identity",
+    matname2="coverage",
+    title=None,
+    params=None,
+):
+    """Return matplotlib scatterplot.
+
+    :param dfr1:  pandas DataFrame with x-axis data
+    :param dfr2:  pandas DataFrame with y-axis data
+    :param outfilename:  path to output file (indicates output format)
+    :param matname1:  name of x-axis data
+    :param matname2:  name of y-axis data
+    :param title:  title for the plot
+    :param params:  a list of parameters for plotting: [colormap, vmin, vmax]
+    """
+    # Make an empty dataframe to collect the input data in
+    combined = pd.DataFrame()
+
+    # Add data
+    combined[matname1] = dfr1.values.flatten()
+    combined[matname2] = dfr2.values.flatten()
+
+    # Add lable information, if available
+    # if params.labels:
+    #     hue = "labels"
+    #  combined['labels'] =   #  add labels to dataframe; unsure of their configuration at this point
+    # else:
+    hue = None
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    fig.suptitle(title)
+    ax.set_xlabel(f"{matname1.title()}")
+    ax.set_ylabel(f"{matname2.title()}")
+
+    plt.scatter(matname1, matname2, data=combined, c=hue, s=2)
+
+    # Return figure output, and write, if required
+    plt.subplots_adjust(top=0.85)  # Leave room for title
+    fig.set_tight_layout(True)
+    if outfilename:
+        fig.savefig(outfilename)
+    return fig

@@ -67,6 +67,12 @@ FIXTUREPATH = TESTSPATH / "fixtures"
 
 
 # Convenience structs to emulate returned objects
+class MockGenome(NamedTuple):
+    """Mock genome object."""
+
+    path: str
+
+
 class MockProcess(NamedTuple):
     """Mock process object."""
 
@@ -333,6 +339,13 @@ def mock_get_nucmer_4_version(monkeypatch):
     monkeypatch.setattr(os, "access", mock_access)
     monkeypatch.setattr(subprocess, "run", mock_subprocess)
     monkeypatch.setattr(platform, "system", mock_system)
+
+
+@pytest.fixture
+def unsorted_genomes(dir_anim_in):
+    """Tests ordering of genome names in output file names for asymmetric analyses."""
+    dir_anim_in = str(dir_anim_in)
+    return (MockGenome(f"{dir_anim_in}/second"), MockGenome(f"{dir_anim_in}/first"))
 
 
 @pytest.fixture

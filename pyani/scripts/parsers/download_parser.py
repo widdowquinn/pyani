@@ -70,9 +70,16 @@ def build(
     parser = subps.add_parser(
         "download", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
-    # Required positional argument: output directory
+    # Required argument: output directory
     parser.add_argument(
-        action="store", dest="outdir", default=None, type=Path, help="output directory"
+        "-o",
+        "--outdir",
+        action="store",
+        dest="outdir",
+        default=None,
+        type=Path,
+        help="output directory",
+        required=True,
     )
     # Required arguments for NCBI query
     parser.add_argument(

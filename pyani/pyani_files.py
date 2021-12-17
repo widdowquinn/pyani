@@ -74,15 +74,15 @@ def get_fasta_paths(
     :param dirname:  Path, path to directory containing input FASTA files
     :param extlist:  List, file suffixes for FASTA files
 
-    Returns the full path to each file.
+    Returns sorted list of the full path to each file.
     """
     # Lists are dangerous to have as default function arguments
     extlist = extlist or [".fna", ".fa", ".fasta", ".fas"]
-    return [
+    return sorted(
         fname
         for fname in dirname.iterdir()
         if fname.is_file() and fname.suffix in extlist
-    ]
+    )
 
 
 # Get a list of FASTA files and corresponding hashes from the input directory
@@ -116,12 +116,12 @@ def get_fasta_and_hash_paths(dirname: Path = Path(".")) -> List[Tuple[Path, Path
 
 # Get list of FASTA files in a directory
 def get_input_files(dirname: Path, *ext) -> List[Path]:
-    """Return files in passed directory, filtered by extension.
+    """Return sorted files in passed directory, filtered by extension.
 
     :param dirname:  Path, path to input directory
     :param *ext:  optional iterable of arguments describing permitted file extensions
     """
-    return [fname for fname in dirname.iterdir() if fname.suffix in ext]
+    return sorted(fname for fname in dirname.iterdir() if fname.suffix in ext)
 
 
 # Get lengths of input sequences

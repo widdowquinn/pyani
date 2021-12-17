@@ -237,7 +237,7 @@ def subcmd_anim(args: Namespace) -> None:
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
     comparisons = list(combinations(tqdm(genomes, disable=args.disable_tqdm), 2))
-    logger.info("\t...total parwise comparisons to be performed: %s", len(comparisons))
+    logger.info("\t...total pairwise comparisons to be performed: %s", len(comparisons))
 
     # Check for existing comparisons; if one has been done (for the same
     # software package, version, and setting) we add the comparison to this run,
@@ -320,6 +320,7 @@ def generate_joblist(
     existingfiles = set(existingfiles)  # Path objects hashable
 
     joblist = []  # will hold ComparisonJob structs
+    jobs = {"new": 0, "old": 0}  # will hold counts of new/old jobs for reporting
     for idx, (query, subject) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
@@ -350,6 +351,7 @@ def generate_joblist(
             logger.debug("Recovering output from %s, not submitting job", outfname)
             # Need to track the expected output, but set the job itself to None:
             joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, None))
+            jobs["old"] += 1
         else:
             logger.debug("Building job")
             # Build jobs
@@ -357,6 +359,14 @@ def generate_joblist(
             fjob = pyani_jobs.Job("%s_%06d-f" % (args.jobprefix, idx), dcmd)
             fjob.add_dependency(njob)
             joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, fjob))
+            jobs["new"] += 1
+    logger.info(
+        "Results not found for %d comparisons; %d new jobs built.",
+        jobs["new"],
+        jobs["new"],
+    )
+    if existingfiles:
+        logger.info("Retrieving results for %d previous comparisons.", jobs["old"])
     return joblist
 
 
