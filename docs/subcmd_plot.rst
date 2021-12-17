@@ -3,11 +3,6 @@
 ==============
 ``pyani plot``
 ==============
-.. _pyani-subcmd-plot:
-
-==============
-``pyani plot``
-==============
 
 The ``plot`` subcommand will plot the results of an ANI analysis, specified by ``run_id``, contained within a local `SQLite3`_ database, located at ``dbpath``. Plot files will be written to the ``outdir`` directory.
 
