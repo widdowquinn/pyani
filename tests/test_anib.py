@@ -77,6 +77,10 @@ class ANIbOutputDir(NamedTuple):
     legacyblastresult: pd.DataFrame
 
 
+# Create object for accessing unittest assertions
+assertions = unittest.TestCase("__init__")
+
+
 @pytest.fixture
 def anib_output(dir_anib_in):
     """Namedtuple of example ANIb output.
@@ -122,6 +126,14 @@ def anib_output_dir(dir_anib_in):
 
 
 # Test get_version()
+# Test case 0: no executable location is specified
+def test_get_version_nonetype():
+    """Test behaviour when no location for the executable is given."""
+    test_file_0 = None
+
+    assert anib.get_version(test_file_0) == f"{test_file_0} is not found in $PATH"
+
+
 # Test case 1: there is no executable
 def test_get_version_no_exe(executable_missing, monkeypatch):
     """Test behaviour when there is no file at the specified executable location."""

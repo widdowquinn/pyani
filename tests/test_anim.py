@@ -43,12 +43,13 @@ These tests are intended to be run from the repository root using:
 
 pytest -v
 """
-
+import sys
 from pathlib import Path
 from typing import List, NamedTuple, Tuple
 
 import pandas as pd
 import pytest
+import unittest
 
 from pandas.util.testing import assert_frame_equal
 
@@ -145,7 +146,19 @@ def mummer_cmds_four(path_file_four):
     )
 
 
+# Create object for accessing unittest assertions
+assertions = unittest.TestCase("__init__")
+
+
 # Test get_version()
+# Test case 0: no executable location is specified
+def test_get_version_nonetype():
+    """Test behaviour when no location for the executable is given."""
+    test_file_0 = None
+
+    assert anim.get_version(test_file_0) == f"{test_file_0} is not found in $PATH"
+
+
 # Test case 1: there is no executable
 def test_get_version_no_exe(executable_missing):
     """Test behaviour when there is no file at the specified executable location."""
@@ -171,6 +184,21 @@ def test_get_version_exe_no_version(executable_without_version):
         anim.get_version(test_file_3)
         == f"nucmer exists at {test_file_3} but could not retrieve version"
     )
+
+
+# Test regex for different NUCmer versions
+def test_get_version_nucmer_3(mock_get_nucmer_3_version):
+    """Tests the regex that gets the version number for NUCmer <= 3."""
+    fake_nucmer_3 = Path("/fake/nucmer3/executable")
+
+    assert anim.get_version(fake_nucmer_3) == f"Darwin_3.1 ({fake_nucmer_3})"
+
+
+def test_get_version_nucmer_4(mock_get_nucmer_4_version):
+    """Tests the regex that gets the version number for NUCmer 4."""
+    fake_nucmer_4 = Path("/fake/nucmer4/executable")
+
+    assert anim.get_version(fake_nucmer_4) == f"Darwin_4.0.0rc1 ({fake_nucmer_4})"
 
 
 # Test .delta output file processing
