@@ -83,7 +83,7 @@ class TestReportSubcommand(unittest.TestCase):
                 run_matrices=False,
                 no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "genomes": Namespace(
                 outdir=self.outdir,
@@ -96,7 +96,7 @@ class TestReportSubcommand(unittest.TestCase):
                 run_matrices=False,
                 no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "runs_genomes": Namespace(
                 outdir=self.outdir,
@@ -109,7 +109,7 @@ class TestReportSubcommand(unittest.TestCase):
                 run_matrices=False,
                 no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "genomes_runs": Namespace(
                 outdir=self.outdir,
@@ -122,7 +122,7 @@ class TestReportSubcommand(unittest.TestCase):
                 run_matrices=False,
                 no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "run_results": Namespace(
                 outdir=self.outdir,
@@ -135,7 +135,7 @@ class TestReportSubcommand(unittest.TestCase):
                 run_matrices=False,
                 no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "run_matrices": Namespace(
                 outdir=self.outdir,
@@ -148,7 +148,7 @@ class TestReportSubcommand(unittest.TestCase):
                 run_matrices="1",
                 no_matrix_labels=False,
                 force=True,
-                formats="html,excel",
+                formats=["html", "excel"],
             ),
             "no_matrix_labels": Namespace(
                 outdir=self.outdir,
@@ -161,7 +161,7 @@ class TestReportSubcommand(unittest.TestCase):
                 run_matrices="1",
                 no_matrix_labels=True,
                 force=True,
-                formats="html,excel",
+                formats=["html", "excel"],
             ),
         }
 
