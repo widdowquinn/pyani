@@ -76,7 +76,7 @@ class TestPlotSubcommand(unittest.TestCase):
         self.argsdict = {
             "mpl_pdf": Namespace(
                 outdir=self.outdir / "mpl",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="pdf",
                 method="mpl",
@@ -84,7 +84,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "mpl_png": Namespace(
                 outdir=self.outdir / "mpl",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="png",
                 method="mpl",
@@ -92,7 +92,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "mpl_svg": Namespace(
                 outdir=self.outdir / "mpl",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="svg",
                 method="mpl",
@@ -100,7 +100,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "mpl_jpg": Namespace(
                 outdir=self.outdir / "mpl",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="jpg",
                 method="mpl",
@@ -108,7 +108,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "seaborn_pdf": Namespace(
                 outdir=self.outdir / "seaborn",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="pdf",
                 method="seaborn",
@@ -116,7 +116,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "seaborn_png": Namespace(
                 outdir=self.outdir / "seaborn",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="png",
                 method="seaborn",
@@ -124,7 +124,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "seaborn_svg": Namespace(
                 outdir=self.outdir / "seaborn",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="svg",
                 method="seaborn",
@@ -132,7 +132,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "seaborn_jpg": Namespace(
                 outdir=self.outdir / "seaborn",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="jpg",
                 method="seaborn",
