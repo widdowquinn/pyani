@@ -40,10 +40,25 @@
 
 import sys
 
+import seaborn as sns
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
 import pandas as pd  # type: ignore
+
+
+def cluster_data(dfr):
+    """Reorder contents of matrices to match the clustering performed
+    by pyani plot.
+
+    :param dfr:  the dataframe to be reordered
+
+    """
+    fig = sns.clustermap(dfr)
+    cols = [f"Genome_id:{_+1}" for _ in fig.dendrogram_col.reordered_ind]
+    rows = [f"Genome_id:{_+1}" for _ in fig.dendrogram_row.reordered_ind]
+    return dfr.loc[rows, cols]
 
 
 def colour_rows(

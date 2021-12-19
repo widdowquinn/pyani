@@ -91,6 +91,13 @@ def build(
         help="Report table of genomes in database",
     )
     parser.add_argument(
+        "--cluster",
+        action="store_true",
+        dest="cluster",
+        default=False,
+        help="Cluster output matrices based on similarity (will match `pyani plot` output.)",
+    )
+    parser.add_argument(
         "--runs_genomes",
         action="store_true",
         dest="show_runs_genomes",

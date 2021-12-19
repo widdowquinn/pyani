@@ -285,6 +285,10 @@ def subcmd_report(args: Namespace) -> int:
                 # Matrix rows and columns are labelled if there's a label dictionary,
                 # and take the dataframe index otherwise
                 matrix = label_results_matrix(matrix, matlabel_dict)
+                if args.cluster:
+                    logger.debug("Index: %s", matrix.index)
+                    logger.debug("Columns: %s", matrix.columns)
+                    matrix = pyani_report.cluster_data(matrix)
                 pyani_report.write_dbtable(
                     matrix,
                     Path(
