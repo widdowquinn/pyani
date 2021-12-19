@@ -155,7 +155,10 @@ def subcmd_report(args: Namespace) -> int:
             "genome class",
         ]
         report(
-            args, session, formats, ReportParams("runs_genomes", statement, headers),
+            args,
+            session,
+            formats,
+            ReportParams("runs_genomes", statement, headers),
         )
 
     # Report table of all runs in which a genome is involved
@@ -194,12 +197,15 @@ def subcmd_report(args: Namespace) -> int:
             "date run",
         ]
         report(
-            args, session, formats, ReportParams("genomes_runs", statement, headers),
+            args,
+            session,
+            formats,
+            ReportParams("genomes_runs", statement, headers),
         )
 
     # Report table of comparison results for the indicated runs
     if args.run_results:
-        run_ids = [run_id.strip() for run_id in args.run_results.split(",")]
+        run_ids = [run_id for run_id in args.run_results]
         logger.debug("Attempting to write results tables for runs: %s", run_ids)
         for run_id in run_ids:
             logger.debug("Processing run ID %s", run_id)
@@ -259,7 +265,8 @@ def subcmd_report(args: Namespace) -> int:
     # JSON, we don't bother with a helper function like report(), and write out
     # our matrices directly, here
     if args.run_matrices:
-        for run_id in [run_id.strip() for run_id in args.run_matrices.split(",")]:
+        show_index = not args.no_matrix_labels
+        for run_id in [run_id for run_id in args.run_matrices]:
             logger.debug("Extracting matrices for run %s", run_id)
             run = session.query(Run).filter(Run.run_id == run_id).first()
             matlabel_dict = get_matrix_labels_for_run(session, run_id)
@@ -286,14 +293,19 @@ def subcmd_report(args: Namespace) -> int:
                         )
                     ),
                     formats,
-                    show_index=True,
+                    show_index=show_index,
                     **matdata.graphic_args,
                 )
 
     return 0
 
 
-def report(args: Namespace, session, formats: List[str], params: ReportParams,) -> None:
+def report(
+    args: Namespace,
+    session,
+    formats: List[str],
+    params: ReportParams,
+) -> None:
     """Write tabular report of pyani runs from database.
 
     :param args:  Namespace of command-line arguments
@@ -319,5 +331,5 @@ def process_formats(args: Namespace) -> List[str]:
     """
     formats = ["tab"]
     if args.formats:
-        formats += [fmt.strip() for fmt in args.formats.split(",")]
+        formats += [fmt for fmt in args.formats]
     return list(set(formats))  # remove duplicates

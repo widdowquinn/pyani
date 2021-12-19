@@ -41,6 +41,7 @@
 
 import logging
 import os
+import multiprocessing
 
 from argparse import Namespace
 from pathlib import Path
@@ -86,14 +87,15 @@ def subcmd_plot(args: Namespace) -> int:
     session = pyani_orm.get_session(args.dbpath)
 
     # Parse output formats
-    outfmts = args.formats.split(",")
+    outfmts = args.formats  # .formats.split(",")
     logger.debug("Requested output formats: %s", outfmts)
+    logger.debug("Type of formats variable: %s", type(outfmts))
 
     # Work on each run:
-    run_ids = [int(run) for run in args.run_id.split(",")]
+    run_ids = [int(run) for run in args.run_ids]
     logger.debug("Generating graphics for runs: %s", run_ids)
     for run_id in run_ids:
-        write_run_heatmaps(run_id, session, outfmts, args)
+        write_run_plots(run_id, session, outfmts, args)
 
         if NEWICKS:
             write_newicks(args, run_id)
@@ -102,9 +104,7 @@ def subcmd_plot(args: Namespace) -> int:
     return 0
 
 
-def write_run_heatmaps(
-    run_id: int, session, outfmts: List[str], args: Namespace
-) -> None:
+def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -> None:
     """Write all heatmaps for a specified run to file.
 
     :param run_id:  int, run identifier in database session
@@ -117,15 +117,21 @@ def write_run_heatmaps(
     # Get results matrices for the run
     logger.debug("Retrieving results matrices for run %s", run_id)
     results = (
-        session.query(pyani_orm.Run).filter(pyani_orm.Run.run_id == args.run_id).first()
+        session.query(pyani_orm.Run).filter(pyani_orm.Run.run_id == run_id).first()
     )
-    result_label_dict = pyani_orm.get_matrix_labels_for_run(session, args.run_id)
-    result_class_dict = pyani_orm.get_matrix_classes_for_run(session, args.run_id)
+    result_label_dict = pyani_orm.get_matrix_labels_for_run(session, run_id)
+    result_class_dict = pyani_orm.get_matrix_classes_for_run(session, run_id)
     logger.debug(
         f"Have {len(result_label_dict)} labels and {len(result_class_dict)} classes"
     )
 
-    # Write heatmap for each results matrix
+    # Write heatmap and distribution plot for each results matrix
+
+    # Create worker pool and empty command list
+    pool = multiprocessing.Pool(processes=args.workers)
+    plotting_commands = []
+
+    # Build and collect the plotting commands
     for matdata in [
         MatrixData(*_)
         for _ in [
@@ -136,19 +142,38 @@ def write_run_heatmaps(
             ("hadamard", pd.read_json(results.df_hadamard), {}),
         ]
     ]:
-        write_heatmap(
-            run_id, matdata, result_label_dict, result_class_dict, outfmts, args
+        plotting_commands.append(
+            (
+                write_heatmap,
+                [run_id, matdata, result_label_dict, result_class_dict, outfmts, args],
+            )
         )
-        write_distribution(run_id, matdata, outfmts, args)
-    write_scatter(
-        run_id,
-        MatrixData("identity", pd.read_json(results.df_identity), {}),
-        MatrixData("coverage", pd.read_json(results.df_coverage), {}),
-        result_label_dict,
-        result_class_dict,
-        outfmts,
-        args,
+        plotting_commands.append((write_distribution, [run_id, matdata, outfmts, args]))
+
+    id_matrix = MatrixData("identity", pd.read_json(results.df_identity), {})
+    cov_matrix = MatrixData("coverage", pd.read_json(results.df_coverage), {})
+    plotting_commands.append(
+        (
+            write_scatter,
+            [
+                run_id,
+                id_matrix,
+                cov_matrix,
+                result_label_dict,
+                result_class_dict,
+                outfmts,
+                args,
+            ],
+        )
     )
+
+    # Run the plotting commands
+    for func, options in plotting_commands:
+        pool.apply_async(func, options, {})
+
+    # Close worker pool
+    pool.close()
+    pool.join()
 
 
 def write_distribution(

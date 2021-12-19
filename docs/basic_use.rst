@@ -12,4 +12,4 @@ Basic Use
     indexing
     createdb
     run_anim
-
+    interpreting_plots

@@ -42,6 +42,7 @@ import subprocess
 import shutil
 import os
 import re
+import platform
 
 from pathlib import Path
 from typing import NamedTuple
@@ -67,6 +68,12 @@ FIXTUREPATH = TESTSPATH / "fixtures"
 
 
 # Convenience structs to emulate returned objects
+class MockGenome(NamedTuple):
+    """Mock genome object."""
+
+    path: str
+
+
 class MockProcess(NamedTuple):
     """Mock process object."""
 
@@ -266,6 +273,80 @@ def executable_without_version(monkeypatch):
 def fragment_length():
     """Fragment size for ANIb-related analyses."""
     return FRAGSIZE
+
+
+@pytest.fixture
+def mock_get_nucmer_3_version(monkeypatch):
+    """Mock the output from NUCmer <= 3's version flag."""
+
+    def mock_which(*args, **kwargs):
+        """Mock an absolute file path."""
+        return args[0]
+
+    def mock_isfile(*args, **kwargs):
+        """Mock a call to `os.path.isfile()`."""
+        return True
+
+    def mock_access(*args, **kwargs):
+        """Mock a call to `os.access()`."""
+        return True
+
+    def mock_subprocess(*args, **kwargs):
+        """Mock a call to `subprocess.run()`."""
+        return MockProcess(
+            stdout=b"",
+            stderr=b"nucmer \nNUCmer (NUCleotide MUMmer) version 3.1\n    \n",
+        )
+
+    def mock_system(*args, **kwargs):
+        """Mock a call to `platform.system()`."""
+        return "Darwin"
+
+    monkeypatch.setattr(shutil, "which", mock_which)
+    monkeypatch.setattr(Path, "is_file", mock_isfile)
+    monkeypatch.setattr(os.path, "isfile", mock_isfile)
+    monkeypatch.setattr(os, "access", mock_access)
+    monkeypatch.setattr(subprocess, "run", mock_subprocess)
+    monkeypatch.setattr(platform, "system", mock_system)
+
+
+@pytest.fixture
+def mock_get_nucmer_4_version(monkeypatch):
+    """Mock the output from NUCmer 4's version flag."""
+
+    def mock_which(*args, **kwargs):
+        """Mock an absolute file path."""
+        return args[0]
+
+    def mock_isfile(*args, **kwargs):
+        """Mock a call to `os.path.isfile()`."""
+        return True
+
+    def mock_access(*args, **kwargs):
+        """Mock a call to `os.access()`."""
+        return True
+
+    def mock_subprocess(*args, **kwargs):
+        """Mock a call to `subprocess.run()`."""
+        return MockProcess(stdout=b"4.0.0rc1\n", stderr=b"")
+
+    def mock_system(*args, **kwargs):
+        """Mock a call to `platform.system()`."""
+        return "Darwin"
+
+    monkeypatch.setattr(shutil, "which", mock_which)
+    monkeypatch.setattr(Path, "is_file", mock_isfile)
+    monkeypatch.setattr(os.path, "isfile", mock_isfile)
+    monkeypatch.setattr(os, "access", mock_access)
+    monkeypatch.setattr(subprocess, "run", mock_subprocess)
+    monkeypatch.setattr(platform, "system", mock_system)
+
+
+@pytest.fixture
+def unsorted_genomes(dir_anim_in):
+    """Tests ordering of genome names in output file names for asymmetric analyses."""
+    dir_anim_in = str(dir_anim_in)
+    return (MockGenome(f"{dir_anim_in}/second"), MockGenome(f"{dir_anim_in}/first"))
 
 
 @pytest.fixture

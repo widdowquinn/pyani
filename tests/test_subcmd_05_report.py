@@ -81,8 +81,9 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes_runs=False,
                 run_results=False,
                 run_matrices=False,
+                no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "genomes": Namespace(
                 outdir=self.outdir,
@@ -93,8 +94,9 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes_runs=False,
                 run_results=False,
                 run_matrices=False,
+                no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "runs_genomes": Namespace(
                 outdir=self.outdir,
@@ -105,8 +107,9 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes_runs=False,
                 run_results=False,
                 run_matrices=False,
+                no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "genomes_runs": Namespace(
                 outdir=self.outdir,
@@ -117,8 +120,9 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes_runs=True,
                 run_results=False,
                 run_matrices=False,
+                no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "run_results": Namespace(
                 outdir=self.outdir,
@@ -129,8 +133,9 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes_runs=False,
                 run_results="1",
                 run_matrices=False,
+                no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "run_matrices": Namespace(
                 outdir=self.outdir,
@@ -141,8 +146,22 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes_runs=False,
                 run_results=False,
                 run_matrices="1",
+                no_matrix_labels=False,
                 force=True,
-                formats="html,excel",
+                formats=["html", "excel"],
+            ),
+            "no_matrix_labels": Namespace(
+                outdir=self.outdir,
+                dbpath=self.dbpath,
+                show_runs=False,
+                show_genomes=True,
+                show_runs_genomes=False,
+                show_genomes_runs=False,
+                run_results=False,
+                run_matrices="1",
+                no_matrix_labels=True,
+                force=True,
+                formats=["html", "excel"],
             ),
         }
 
@@ -169,3 +188,7 @@ class TestReportSubcommand(unittest.TestCase):
     def test_matrices(self):
         """Test reporting of run matrices in the database."""
         subcommands.subcmd_report(self.argsdict["run_matrices"])
+
+    def test_no_matrix_labels(self):
+        """Test row and column labeling of run matrices."""
+        subcommands.subcmd_report(self.argsdict["no_matrix_labels"])
