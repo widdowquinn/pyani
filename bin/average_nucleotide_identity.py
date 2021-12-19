@@ -904,6 +904,11 @@ if __name__ == "__main__":
             logger.error("This will cause issues with MUMmer and BLAST")
             logger.error("(exiting)")
             sys.exit(1)
+        if any(['(' in fname, ')' in fname]):
+            logger.error("File or directory '%s' contains parentheses", fname)
+            logger.error("This will cause issues with MUMmer and BLAST")
+            logger.error("(exiting)")
+            sys.exit(1)
 
     if args.labels and not os.path.isfile(args.labels):
         logger.error("Missing labels file: %s", args.labels)
