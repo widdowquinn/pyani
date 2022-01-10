@@ -56,6 +56,14 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 (If I've missed out your paper, please do put in a pull request on ``GitHub`` or get in touch and I'll be happy to add it!)
 
 ^^^^
+2022
+^^^^
+
+* Castro-Jaimes *et al.* (2022) "Replication initiator proteins of *Acinetobacter baumannii* plasmids: An update note" *Plasmid* `doi:10.1016/j.plasmid.2021.102616 <https://doi.org/10.1016/j.plasmid.2021.102616>`_
+* Jiang *et al.* (2022) "Vibrio Clade 3.0: New *Vibrionaceae* Evolutionary Units Using Genome-Based Approach." *Curr Microbiol* `doi:10.1007/s00284-021-02725-0 <https://doi.org/10.1007/s00284-021-02725-0>`_
+* Narsing Rao *et al.* (2022) "Genome-based reclassification of *Evansella polygoni* as a later heterotypic synonym of *Evansella clarkii* and transfer of *Bacillus shivajii* and *Bacillus tamaricis* to the genus *Evansella* as *Evansella shivajii* comb. nov. and *Evansella tamaricis* comb. nov." *Arch Microbiol* `doi:10.1007/s00203-021-02720-w <https://doi.org/10.1007/s00203-021-02720-w>`_
+
+^^^^
 2021
 ^^^^
 
@@ -76,11 +84,14 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Carlin *et al.* (2021) "*Listeria cossartiae sp. nov.*, *Listeria immobilis sp. nov.*, *Listeria portnoyi sp. nov.* and *Listeria rustica sp. nov.*, isolated from agricultural water and natural environments" *Int. J. Syst. Evol. Microbiol.* `doi:10.1099/ijsem.0.004795 <https://doi.org/10.1099/ijsem.0.004795>`_
 * Chen *et al.* (2021) "Integrated Phenotypic-Genotypic Analysis of *Latilactobacillus sakei* from Different Niches" *preprints* `doi:10.20944/preprints202107.0457.v1 <https://doi.org/10.20944/preprints202107.0457.v1>`_
 * Chew *et al.* (2021) "First isolation of *Candida oceani* from a clinical specimen" *Antonie van Leeuwenhoek* `doi:10.1007/s10482-020-01512-4 <https://doi.org/10.1007/s10482-020-01512-4>`_
+* Chew *et al.* (2021) "Molecular epidemiology and phylogenomic analysis of *Mycobacterium abscessus* clinical isolates in an Asian population" *Microb. Genom.* `doi:10.1099/mgen.0.000708 <https://doi.org/10.1099/mgen.0.000708>`_
 * Chew *et al.* (2021) "Genomic characterization of *Klebsiella quasipneumoniae* from clinical specimens - a retrospective study, Singapore" *Antimicrob. Chemother.* `doi:10.1128/AAC.00412-21 <https://doi.org/10.1128/AAC.00412-21>`_
+* Christensen *et al.* High natural PHA production from acetate in *Cobetia* sp. MC34 and *Cobetia marina* DSM 4741T and in silico analyses of the genus specific PhaC2 polymerase variant" *Microb Cell Fact* `doi:10.1186/s12934-021-01713-0 <https://doi.org/10.1186/s12934-021-01713-0>`_
 * Clabaut *et al.* (2021) "Variability of the response of human vaginal *Lactobacillus crispatus* to 17β-estradiol" *Sci. Reports* `doi:10.1038/s41598-021-91017-5 <https://doi.org/10.1038/s41598-021-91017-5>`_
 * Danneels *et al.* (2021) "Patterns of transmission and horizontal gene transfer in the *Dioscorea sansibarensis* leaf symbiosis revealed by whole-genome sequencing" *Curr. Biol.* `doi:10.1016/j.cub.2021.03.049 <https://doi.org/10.1016/j.cub.2021.03.049>`_
 * Das *et al.* (2021) "Description of *Acinetobacter kanungonis* sp. nov., based on phylogenomic analysis" *Int. J. Sys. Evol. Microbiol.* `doi:10.1099/ijsem.0.004833 <https://doi.org/10.1099/ijsem.0.004833>`_
 * Costatini *et al.* (2021) "Insight into phenotypic and genotypic differences between vaginal *Lactobacillus crispatus* BC5 and *Lactobacillus gasseri* BC12 to unravel nutritional and stress factors influencing their metabolic activity" *Microb. Genomics* `doi:10.1099/mgen.0.000575 <https://doi.org/10.1099/mgen.0.000575>`_
+* Davison *et al.* (2021) "Large-scale comparative genomics unravels great genomic diversity across the *Rickettsia* and *Ca. Megaira* genera and identifies *Torix* group as an evolutionarily distinct clade." *bioRxiv* `doi:10.1101/2021.10.06.463315 <https://doi.org/10.1101/2021.10.06.463315>`_
 * de Silva *et al.* (2021) "Revisiting the *Colletotrichum* species causing anthracnose of almond in Australia" *Aust. Plant Path.* `doi:10.1007/s13313-020-00765-x <https://doi.org/10.1007/s13313-020-00765-x>`_
 * Delgado-Blas *et al.* (2021) "Population genomics and antimicrobial resistance dynamics of *Escherichia coli* in wastewater and river environments" *Commun Biol* `doi:10.1038/s42003-021-01949-x <https://doi.org/10.1038/s42003-021-01949-x>`_
 * Devika *et al.* (2021) "In Silico Prediction of Novel Probiotic Species Limiting Pathogenic *Vibrio* Growth Using Constraint-Based Genome Scale Metabolic Modeling" *Front. Cell. Inf. Microbiol.* `doi:10.3389/fcimb.2021.752477 <https://doi.org/10.3389/fcimb.2021.752477>`_
@@ -117,6 +128,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Karaseva *et al.* (2021) "*Fervidicoccus fontis* Strain 3639Fd, the First Crenarchaeon Capable of Growth on Lipids" *Microbiol.* `doi:10.1134/S002626172104007X <https://doi.org/10.1134/S002626172104007X>`_
 * Keen *et al.* (2021) "Comparative Genomics of *Mycobacterium avium* Complex Reveals Signatures of Environment-Specific Adaptation and Community Acquisition" *mSystems* `doi:10.1128/mSystems.01194-21 <https://doi.org/10.1128/mSystems.01194-21>`_
 * Kim *et al.* (2021) "Real-Time PCR Method for the Rapid Detection and Quantification of Pathogenic *Staphylococcus* Species Based on Novel Molecular Target Genes" *foods* `doi:10.3390/foods10112839 <https://doi.org/10.3390/foods10112839>`_
+* Kim *et al.* (2021) "*Altererythrobacter lutimaris* sp. nov., a marine bacterium isolated from a tidal flat and reclassification of *Altererythrobacter deserti*, *Altererythrobacter estronivorus* and *Altererythrobacter muriae* as *Tsuneonella deserti* comb. nov., *Croceicoccus estronivorus* comb. nov. and *Alteripontixanthobacter muriae* comb. nov." *Int. J. Syst. Evol. Microbiol.* `doi:10.1099/ijsem.0.005134 <https://doi.org/10.1099/ijsem.0.005134>`_
 * Koirala *et al.* (2021) "Identification of two novel pathovars of *Pantoea stewartii* subsp. *indologenes* affecting Allium sp. and millets" *Phytopathology* `doi:10.1094/PHYTO-11-20-0508-R <https://doi.org/10.1094/PHYTO-11-20-0508-R>`_
 * Kuźmińska-Bajor *et al.* (2021) "Genomic and functional characterization of five novel *Salmonella*-targeting bacteriophages." *Virol J* `doi:10.1186/s12985-021-01655-4 <https://doi.org/10.1186/s12985-021-01655-4>`_
 * Lakra *et al.* (2021) "Genome based reclassification of *Deinococcus swuensis* as a heterotypic synonym of *Deinococcus radiopugnans*" *Int. J. Syst. Evol. Microbiol.* `doi:10.1099/ijsem.0.004879 <https://doi.org/10.1099/ijsem.0.004879>`_
@@ -142,7 +154,9 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Matarrita-Carranza *et al.* (2021) "*Streptomyces* sp. M54: an actinobacteria associated with a neotropical social wasp with high potential for antibiotic production." *Antonie van Leeuwenhoek* `doi:10.1007/s10482-021-01520-y <https://doi.org/10.1007/s10482-021-01520-y>`_
 * Matsumoto *et al.* (2021) "Complete Genome Sequence of *Acinetobacter pittii* OCU_Ac17, Isolated from Human Venous Blood" *Microbiol. Res. Ann.* `doi:10.1128/MRA.00696-21 <https://doi.org/10.1128/MRA.00696-21>`_
 * Mao *et al.* (2021) "Comparative Genomic Analysis of *Lactiplantibacillus plantarum* Isolated from Different Niches" *genes* `doi:10.3390/genes12020241 <https://doi.org/10.3390/genes12020241>`_
+* Marks *et al.* "*Staphylococcus aureus* injection drug use-associated bloodstream infections are propagated by community outbreaks of diverse lineages" *Commun Med* `doi:10.1038/s43856-021-00053-9 <https://doi.org/10.1038/s43856-021-00053-9>`_
 * McKay *et al.* (2021) "Sulfur cycling and host-virus interactions in *Aquificales*-dominated biofilms from Yellowstone’s hottest ecosystems." *ISME J* `doi:10.1038/s41396-021-01132-4 <https://doi.org/10.1038/s41396-021-01132-4>`_
+* Misztak *et al.* (2021) "Comparative Genomics and Physiological Investigation of a New *Arthrospira/Limnospira* Strain O9.13F Isolated from an Alkaline, Winter Freezing, Siberian Lake" *cells* `doi:10.3390/cells10123411 <https://doi.org/10.3390/cells10123411>`_
 * Moon *et al* (2021) "Mobile Colistin Resistance Gene mcr-1 Detected on an IncI2 Plasmid in *Salmonella Typhimurium* Sequence Type 19 from a Healthy Pig in South Korea" *microorganisms* `doi:10.3390/microorganisms9020398 <https://doi.org/10.3390/microorganisms9020398>`_
 * Moya-Beltrán *et al.* (2021) "Genomic evolution of the class *Acidithiobacillia*: deep-branching *Proteobacteria* living in extreme acidic conditions" *ISME J.* `doi:0.1038/s41396-021-00995-x <https://doi.org/0.1038/s41396-021-00995-x>`_
 * Mullins *et al.* (2021) "Discovery of the Pseudomonas Polyyne Protegencin by a Phylogeny-Guided Study of Polyyne Biosynthetic Gene Cluster Diversity" *mBio* `doi:10.1128/mBio.00715-21 <https://doi.org/10.1128/mBio.00715-21>`_
@@ -158,6 +172,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Panwar *et al.* (2021) "Remarkably coherent population structure for a dominant Antarctic *Chlorobium* species" *Microbiome* `doi:10.1186/s40168-021-01173-z <https://doi.org/10.1186/s40168-021-01173-z>`_
 * Pardo-Esté *et al.* (2021) "Genetic Characterization of *Salmonella infantis* with Multiple Drug Resistance Profiles Isolated from a Poultry-Farm in Chile" *microorganisms* `doi:10.3390/microorganisms9112370 <https://doi.org/10.3390/microorganisms9112370>`_
 * Pédron *et al.* (2021) "Early Emergence of *Dickeya solani* Revealed by Analysis of *Dickeya* Diversity of Potato Blackleg and Soft Rot Causing Pathogens in Switzerland" *microorganisms* `doi:10.3390/microorganisms9061187  <https://doi.org/10.3390/microorganisms9061187>`_
+* Pedron *et al.* (2021) "*Mesorhizobium comanense* sp. nov., isolated from groundwater" *Int. J. Syst. Evol. Microbiol.* `doi:10.1099/ijsem.0.005131 <https://doi.org/10.1099/ijsem.0.005131>`_
 * Pérez-Carrascal *et al.* (2021) "Single-colony sequencing reveals microbe-by-microbiome phylosymbiosis between the cyanobacterium *Microcystis* and its associated bacteria." *Microbiome* `doi:10.1186/s40168-021-01140-8 <https://doi.org/10.1186/s40168-021-01140-8>`_
 * Petriglieri *et al.* (2021) "Candidatus *Dechloromonas phosphoritropha* and Ca. *D. phosphorivorans*, novel polyphosphate accumulating organisms abundant in wastewater treatment systems" *ISME J.* `doi:10.1038/s41396-021-01029-2 <https://doi.org/10.1038/s41396-021-01029-2>`_
 * Pidcock *et al.* (2021) "Phylogenetic systematics of *Butyrivibrio* and *Pseudobutyrivibrio* genomes illustrate vast taxonomic diversity, open genomes and an abundance of carbohydrate-active enzyme family isoforms" *Microbial Genomics* `doi:10.1099/mgen.0.000638 <https://doi.org/10.1099/mgen.0.000638>`_
@@ -169,6 +184,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Sakiyama *et al.* (2021) "Complete Genome Sequence of a Clinical Isolate of *Acinetobacter baumannii* Harboring 11 Plasmids" *Microbiol. Res. Ann.* `doi:10.1128/MRA.00695-21 <https://doi.org/10.1128/MRA.00695-21>`_
 * Schlez *et al.* (2021) "*Corynebacterium rouxii*, a recently described member of the *C. diphtheriae* group isolated from three dogs with ulcerative skin lesions" *Ant. van Leeuw.* `doi:10.1007/s10482-021-01605-8 <https://doi.org/10.1007/s10482-021-01605-8>`_
 * Santos *et al.* (2021) "*Phaffia brasiliana* sp. nov., a yeast species isolated from soil in a Cerrado–Atlantic Rain Forest ecotone site in Brazil" *Int. J. Syst. Evol. Microbiol.* `doi:10.1099/ijsem.0.005080 <https://doi.org/10.1099/ijsem.0.005080>`_
+* Saw *et al.* (2021) "Complete Genome Sequencing of a Novel *Gloeobacter* Species from a Waterfall Cave in Mexico" *Genome Biol. Evol.* `doi:10.1093/gbe/evab264 <https://doi.org/10.1093/gbe/evab264>`_
 * Schörner *et al.* (2021) "Genomic analysis of *Neisseria elongata* isolate from a patient with infective endocarditis" *FEBS Open Bio* `doi:10.1002/2211-5463.13201 <https://doi.org/10.1002/2211-5463.13201>`_
 * von Schwartzenberg *et al.* (2021) "Caloric restriction disrupts the microbiota and colonization resistance" *Nature* `doi:10.1038/s41586-021-03663-4 <https://doi.org/10.1038/s41586-021-03663-4>`_
 * Sedaghatjoo *et al.* (2021) "Development of a loop-mediated isothermal amplification assay for the detection of *Tilletia controversa* based on genome comparison" *Sci. Reports.* `doi:10.1038/s41598-021-91098-2 <https://doi.org/10.1038/s41598-021-91098-2>`_
@@ -182,6 +198,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Tegopoulos *et al.* (2021) "Genomic and Phylogenetic Analysis of *Lactiplantibacillus plantarum* L125, and Evaluation of Its Anti-Proliferative and Cytotoxic Activity in Cancer Cells" *biomedicines* `doi:10.3390/biomedicines9111718 <https://doi.org/10.3390/biomedicines9111718>`_
 * Tian *et al.* (2021) "LINflow: a computational pipeline that combines an alignment-free with an alignment-based method to accelerate generation of similarity matrices for prokaryotic genomes" *PeerJ* `doi:10.7717/peerj.10906 <https://doi.org/10.7717/peerj.10906>`_
 * Tian *et al.* (2021) "Antifungal mechanism of *Bacillus amyloliquefaciens* strain GKT04 against *Fusarium* wilt revealed using genomic and transcriptomic analyses" *Microbiol. Open* `doi:10.1002/mbo3.1192 <https://doi.org/10.1002/mbo3.1192>`_
+* Turco *et al.* (2021) "Draft Genome Sequence of a New *Fusarium* Isolate Belonging to *Fusarium tricinctum* Species Complex Collected From Hazelnut in Central Italy" *Front. Plant Sci.* `doi:10.3389/fpls.2021.788584 <https://doi.org/10.3389/fpls.2021.788584>`_
 * Undabarrena *et al.* (2021) "*Rhodococcus* comparative genomics reveals a phylogenomic-dependent non-ribosomal peptide synthetase distribution: insights into biosynthetic gene cluster connection to an orphan metabolite" *Microb. Genom.* `doi:10.1099/mgen.0.000621 <https://doi.org/10.1099/mgen.0.000621>`_
 * van der Lelie *et al.* (2021) "Rationally designed bacterial consortia to treat chronic immune-mediated colitis and restore intestinal homeostasis" *Nat. Comms.* `doi:10.1038/s41467-021-23460-x <https://doi.org/10.1038/s41467-021-23460-x>`_
 * Vargas-Peralta *et al.* (2021) "Identification of *Pectobacterium* species isolated from the soft rot of tetecho (*Neobuxbaumia tetetzo*), a columnar cactus, and associated metagenomics" *bioRxiv* `doi:10.1101/2021.02.01.429127 <https://doi.org/10.1101/2021.02.01.429127>`_
@@ -200,6 +217,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 * Young *et al.* (2021) "Defining the *Rhizobium leguminosarum* Species Complex" *genes* `doi:10.3390/genes12010111 <https://doi.org/10.3390/genes12010111>`_
 * Zeng *et al.* (2021) "Novel phage vB_CtuP_B1 for controlling *Cronobacter malonaticus* and *Cronobacter turicensis* in ready-to-eat lettuce and powered infant formula" *Food Res. Int.* `doi:10.1016/j.foodres.2021.110255 <https://doi.org/10.1016/j.foodres.2021.110255>`_
 * Zhou *et al.* (2021) "Comparative genomic analysis of *Mycoplasma anatis* strains" *Genes and Genomics* `doi:0.1007/s13258-021-01129-5 <https://doi.org/0.1007/s13258-021-01129-5>`_
+* Zhou *et al.* (2021) "Development of a high resolution melting method based on a novel molecular target for discrimination between *Bacillus cereus* and *Bacillus thuringiensis*" *Food Res. Int.* `doi:10.1016/j.foodres.2021.110845 <https://doi.org/10.1016/j.foodres.2021.110845>`_
 * Zvi-Kedem *et al.* (2021) "The worm affair: Genetic diversity in two species of symbionts that co-occur in tubeworms from the Mediterranean Sea" *Env. Microbiol.* `doi:10.1111/1758-2229.12994 <https://doi.org/10.1111/1758-2229.12994>`_
 
 ^^^^
