@@ -59,6 +59,7 @@ If you are using ``pyani``, you are in good company. These authors and manuscrip
 2022
 ^^^^
 
+* Botelho *et al.* (2022) "The ESKAPE mobilome contributes to the spread of antimicrobial resistance and CRISPR-1 mediated conflict between mobile genetic elements" *bioRxiv* `doi:10.1101/2022.01.03.474784 <https://doi.org/10.1101/2022.01.03.474784>`_
 * Castro-Jaimes *et al.* (2022) "Replication initiator proteins of *Acinetobacter baumannii* plasmids: An update note" *Plasmid* `doi:10.1016/j.plasmid.2021.102616 <https://doi.org/10.1016/j.plasmid.2021.102616>`_
 * Jiang *et al.* (2022) "Vibrio Clade 3.0: New *Vibrionaceae* Evolutionary Units Using Genome-Based Approach." *Curr Microbiol* `doi:10.1007/s00284-021-02725-0 <https://doi.org/10.1007/s00284-021-02725-0>`_
 * Narsing Rao *et al.* (2022) "Genome-based reclassification of *Evansella polygoni* as a later heterotypic synonym of *Evansella clarkii* and transfer of *Bacillus shivajii* and *Bacillus tamaricis* to the genus *Evansella* as *Evansella shivajii* comb. nov. and *Evansella tamaricis* comb. nov." *Arch Microbiol* `doi:10.1007/s00203-021-02720-w <https://doi.org/10.1007/s00203-021-02720-w>`_
