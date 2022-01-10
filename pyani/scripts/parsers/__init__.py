@@ -57,6 +57,7 @@ from pyani.scripts.parsers import (
     common_parser,
     run_common_parser,
     listdeps_parser,
+    tree_parser,
 )
 
 
@@ -127,6 +128,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
     )
     report_parser.build(subparsers, parents=[parser_common])
     plot_parser.build(subparsers, parents=[parser_common])
+    tree_parser.build(subparsers, parents=[parser_common])
     classify_parser.build(subparsers, parents=[parser_common])
     listdeps_parser.build(subparsers, parents=[parser_common])
 
