@@ -47,7 +47,7 @@ walkthrough: clean_walkthrough
 	pyani report --runs -o C_blochmannia_ANIm/ --formats html excel stdout
 	pyani report --run_results 1 --formats html excel stdout -o C_blochmannia_ANIm/
 	pyani report --run_matrices 1 --formats html excel stdout -o C_blochmannia_ANIm/
-	pyani plot --formats png pdf --method seaborn -o C_blochmannia_ANIm --run_ids 1
+	pyani plot --formats png pdf --method seaborn -o C_blochmannia_ANIm --run_id 1
 	# pyani anib C_blochmannia C_blochmannia_ANIb \
     #     --name "C. blochmannia run 2" \
     #     --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
