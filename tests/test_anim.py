@@ -208,8 +208,8 @@ def test_deltadir_parsing(delta_output_dir):
     orglengths = pyani_files.get_sequence_lengths(seqfiles)
     result = anim.process_deltadir(delta_output_dir.deltadir, orglengths)
     assert_frame_equal(
-        result.percentage_identity.sort_index(1).sort_index(),
-        delta_output_dir.deltaresult.sort_index(1).sort_index(),
+        result.percentage_identity.sort_index(axis=1).sort_index(),
+        delta_output_dir.deltaresult.sort_index(axis=1).sort_index(),
     )
 
 
