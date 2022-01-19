@@ -15,16 +15,6 @@ The ``plot`` subcommand will plot the results of an ANI analysis, specified by `
 
 .. _SQLite3: https://www.sqlite.org/index.html
 
---------------------
-Positional arguments
---------------------
-
-``outdir``
-   Path to a directory where comparison plot files will be written.
-
-``run_id``
-  Unique database ID of the run to be plotted.
-
 -----------------
 Flagged arguments
 -----------------

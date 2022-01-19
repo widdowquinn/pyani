@@ -16,12 +16,6 @@ usage: pyani report [-h] [-l LOGFILE] [-v] [--debug] [--disable_tqdm] [--version
 
 .. _SQLite3: https://www.sqlite.org/index.html
 
---------------------
-Positional arguments
---------------------
-
-``outdir``
-    Directory where output analysis reports will be written.
 
 -----------------
 Flagged arguments
