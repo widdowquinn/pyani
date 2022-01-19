@@ -320,6 +320,7 @@ def generate_joblist(
     existingfiles = set(existingfiles)  # Path objects hashable
 
     joblist = []  # will hold ComparisonJob structs
+    jobs = {"new": 0, "old": 0}  # will hold counts of new/old jobs for reporting
     for idx, (query, subject) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
