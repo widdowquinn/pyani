@@ -43,7 +43,7 @@ These tests are intended to be run from the repository root using:
 
 pytest -v
 """
-import sys
+
 from pathlib import Path
 from typing import List, NamedTuple, Tuple
 
@@ -257,10 +257,8 @@ def test_mummer_single(tmp_path, path_file_two):
         / str(path_file_two[0].stem + "_vs_" + path_file_two[1].stem)
     )
     expected = (
-        (f"nucmer --mum -p {outprefix} {path_file_two[0]} {path_file_two[1]}"),
-        (
-            f"delta_filter_wrapper.py delta-filter -1 {outprefix}.delta {outprefix}.filter"
-        ),
+        f"nucmer --mum -p {outprefix} {path_file_two[0]} {path_file_two[1]}",
+        f"delta_filter_wrapper.py delta-filter -1 {outprefix}.delta {outprefix}.filter",
     )
     assert cmds == expected
 
