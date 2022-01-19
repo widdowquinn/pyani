@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2022
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2022 University of Strathclyde
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -117,11 +117,6 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
     logger.debug(
         f"Have {len(result_label_dict)} labels and {len(result_class_dict)} classes"
     )
-    result_label_dict = pyani_orm.get_matrix_labels_for_run(session, args.run_id)
-    result_class_dict = pyani_orm.get_matrix_classes_for_run(session, args.run_id)
-    logger.debug(
-        f"Have {len(result_label_dict)} labels and {len(result_class_dict)} classes"
-    )
 
     # Write heatmap and distribution plot for each results matrix
 
@@ -146,9 +141,24 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
                 [run_id, matdata, result_label_dict, result_class_dict, outfmts, args],
             )
         )
-        plotting_commands.append(
-            (write_distribution, [run_id, matdata, outfmts, args])  # type: ignore
+        plotting_commands.append((write_distribution, [run_id, matdata, outfmts, args]))
+
+    id_matrix = MatrixData("identity", pd.read_json(results.df_identity), {})
+    cov_matrix = MatrixData("coverage", pd.read_json(results.df_coverage), {})
+    plotting_commands.append(
+        (
+            write_scatter,
+            [
+                run_id,
+                id_matrix,
+                cov_matrix,
+                result_label_dict,
+                result_class_dict,
+                outfmts,
+                args,
+            ],
         )
+    )
 
     # Run the plotting commands
     [pool.apply_async(func, args, {}) for func, args in plotting_commands]
@@ -169,7 +179,10 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
 
 
 def write_distribution(
-    run_id: int, matdata: MatrixData, outfmts: List[str], args: Namespace
+    run_id: int,
+    matdata: MatrixData,
+    outfmts: List[str],
+    args: Namespace,
 ) -> None:
     """Write distribution plots for each matrix type.
 
