@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2022
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2022 University of Strathclyde
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -196,10 +196,10 @@ def subcmd_anim(args: Namespace) -> None:
         )
     except PyaniORMException:
         logger.error(
-            "Could not add run %s to the database (exiting)", name, exc_info=True
+            "Could not add run %s to the database (exiting)", run, exc_info=True
         )
         raise SystemExit(1)
-    logger.debug("...added run ID: %s (%s) to the database", run, name)
+    logger.debug("...added run ID: %s to the database", run)
 
     # Identify input files for comparison, and populate the database
     logger.debug("Adding genomes for run %s to database...", run)
@@ -324,8 +324,6 @@ def generate_joblist(
     for idx, (query, subject) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
-        if subject.path < query.path:
-            query, subject = subject, query  # sort them
         ncmd, dcmd = anim.construct_nucmer_cmdline(
             query.path,
             subject.path,
