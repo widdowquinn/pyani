@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2021
+# (c) University of Strathclyde 2019-2022
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2021 University of Strathclyde
+# Copyright (c) 2019-2022 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -251,16 +251,15 @@ def test_mummer_single(tmp_path, path_file_two):
         path_file_two[0], path_file_two[1], outdir=tmp_path
     )
     dir_nucmer = tmp_path / "nucmer_output"
+    outprefix = (
+        dir_nucmer
+        / str(path_file_two[0].stem)
+        / str(path_file_two[0].stem + "_vs_" + path_file_two[1].stem)
+    )
     expected = (
+        (f"nucmer --mum -p {outprefix} {path_file_two[0]} {path_file_two[1]}"),
         (
-            "nucmer --mum -p "
-            f"{dir_nucmer / str(path_file_two[0].stem) / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem)} "
-            f"{path_file_two[0]} {path_file_two[1]}"
-        ),
-        (
-            "delta_filter_wrapper.py delta-filter -1 "
-            f"{dir_nucmer / str(path_file_two[0].stem ) / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem + '.delta')} "
-            f"{dir_nucmer / str(path_file_two[0].stem ) / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem + '.filter')}"
+            f"delta_filter_wrapper.py delta-filter -1 {outprefix}.delta {outprefix}.filter"
         ),
     )
     assert cmds == expected
