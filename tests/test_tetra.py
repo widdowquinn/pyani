@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2022
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -19,7 +19,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2022
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 
 from pyani.tetra import (
     calculate_correlations,
