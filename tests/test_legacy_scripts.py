@@ -102,6 +102,7 @@ def legacy_ani_namespace(path_fixtures_base, tmp_path):
         subsample=None,
         seed=None,
         jobprefix="ANI",
+        tree=False,
     )
 
 
