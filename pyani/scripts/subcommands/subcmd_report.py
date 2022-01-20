@@ -323,6 +323,28 @@ def report(args: Namespace, session, formats: List[str], params: ReportParams) -
                 'element\\(s\\) "runs" and FROM element "genome_query"'
             ),
         )
+        warnings.filterwarnings(
+            "ignore",
+            message=(
+                "SELECT statement has a cartesian product between FROM "
+                'element\\(s\\) "runs" and FROM element "comparisons"'
+            ),
+        )
+        warnings.filterwarnings(
+            "ignore",
+            message=(
+                "SELECT statement has a cartesian product between FROM "
+                'element\\(s\\) "runs" and FROM element "genome_subject"'
+            ),
+        )
+        warnings.filterwarnings(
+            "ignore",
+            message=(
+                "SELECT statement has a cartesian product between FROM "
+                'element\\(s\\) "genome_query", "genome_subject", "comparisons" '
+                'and FROM element "runs"'
+            ),
+        )
         data = pd.read_sql(params.statement, session.bind)
 
     data.columns = params.headers
