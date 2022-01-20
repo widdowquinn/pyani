@@ -161,7 +161,7 @@ def get_clustermap(dfr, params, title=None, annot=True):
 
 
 # Generate Seaborn heatmap output
-def heatmap(dfr, outfilename=None, title=None, format=None, params=None, args=None):
+def heatmap(dfr, outfilename=None, title=None, params=None, format=None, args=None):
     """Return seaborn heatmap with cluster dendrograms.
 
     :param dfr:  pandas DataFrame with relevant data

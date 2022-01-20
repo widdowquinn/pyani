@@ -292,7 +292,7 @@ def add_colorscale(fig, heatmap_gs, ax_map, params, title=None):
 
 
 # Generate Matplotlib heatmap output
-def heatmap(dfr, outfilename=None, title=None, params=None):
+def heatmap(dfr, outfilename=None, title=None, params=None, format=None, args=None):
     """Return matplotlib heatmap with cluster dendrograms.
 
     :param dfr:  pandas DataFrame with relevant data
@@ -357,7 +357,13 @@ def heatmap(dfr, outfilename=None, title=None, params=None):
         heatmap_gs.tight_layout(fig, h_pad=0.1, w_pad=0.5)
     if outfilename:
         fig.savefig(outfilename)
-    return fig
+
+    # Tree
+    newicks = None
+    if args.tree:
+        pass
+
+    return fig, newicks
 
 
 def scatter(

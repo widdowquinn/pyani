@@ -820,11 +820,11 @@ def draw(args: Namespace, filestems: List[str], gformat: str) -> None:
         )
         if args.gmethod == "mpl":
             pyani_graphics.mpl.heatmap(
-                dfm, outfilename=outfilename, title=filestem, params=params
+                dfm, outfilename=outfilename, title=filestem, params=params, args=args
             )
         elif args.gmethod == "seaborn":
             pyani_graphics.sns.heatmap(
-                dfm, outfilename=outfilename, title=filestem, params=params
+                dfm, outfilename=outfilename, title=filestem, params=params, args=args
             )
 
 

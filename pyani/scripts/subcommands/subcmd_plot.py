@@ -234,8 +234,8 @@ def write_heatmap(
             matdata.data,
             outfname,
             title=f"matrix_{matdata.name}_run{run_id}",
-            format=fmt,
             params=params,
+            format=fmt,
             args=args,
         )
 
