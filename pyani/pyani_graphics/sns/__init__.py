@@ -119,7 +119,14 @@ def get_clustermap(dfr, params, title=None, annot=True):
     # the warning in a context manager for this function call only, because we
     # know the warning is not relevant.
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings(
+            "ignore",
+            message=(
+                "scipy.cluster: The symmetric non-negative "
+                "hollow observation matrix looks suspiciously like an "
+                "uncondensed distance matrix"
+            ),
+        )
         fig = sns.clustermap(
             dfr,
             cmap=params.cmap,
