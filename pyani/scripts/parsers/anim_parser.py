@@ -61,7 +61,7 @@ def build(
     parser = subps.add_parser(
         "anim", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
-    # Required positional arguments: input and output directories
+    # Required arguments: input and output directories
     parser.add_argument(
         "-i",
         "--indir",
@@ -70,6 +70,7 @@ def build(
         default=None,
         type=Path,
         help="input genome directory",
+        required=True,
     )
     parser.add_argument(
         "-o",
@@ -79,7 +80,9 @@ def build(
         default=None,
         type=Path,
         help="output analysis results directory",
+        required=True,
     )
+    # Optional arguments
     parser.add_argument(
         "--dbpath",
         action="store",

@@ -60,9 +60,16 @@ def build(
     parser = subps.add_parser(
         "index", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
-    # Required positional argument: input directory
+    # Required argument: input directory
     parser.add_argument(
-        action="store", dest="indir", default=None, type=Path, help="input directory"
+        "-i",
+        "--indir",
+        action="store",
+        dest="indir",
+        default=None,
+        type=Path,
+        help="input directory",
+        required=True,
     )
     # Names for output files
     parser.add_argument(

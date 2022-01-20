@@ -39,15 +39,15 @@ clean_walkthrough:
 
 # Run walkthrough
 walkthrough: clean_walkthrough
-	pyani download --email my.email@my.domain -t 203804 C_blochmannia
+	pyani download --email my.email@my.domain -t 203804 -o C_blochmannia
 	pyani createdb -f
-	pyani anim C_blochmannia C_blochmannia_ANIm \
+	pyani anim -i C_blochmannia -o C_blochmannia_ANIm \
         --name "C. blochmannia run 1" \
         --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
-	pyani report --runs C_blochmannia_ANIm/ --formats html,excel,stdout
-	pyani report --run_results 1 --formats html,excel,stdout C_blochmannia_ANIm/
-	pyani report --run_matrices 1 --formats html,excel,stdout C_blochmannia_ANIm/
-	pyani plot --formats png,pdf --method seaborn C_blochmannia_ANIm 1
+	pyani report --runs -o C_blochmannia_ANIm/ --formats html excel stdout
+	pyani report --run_results 1 --formats html excel stdout -o C_blochmannia_ANIm/
+	pyani report --run_matrices 1 --formats html excel stdout -o C_blochmannia_ANIm/
+	pyani plot --formats png pdf --method seaborn -o C_blochmannia_ANIm --run_ids 1
 	# pyani anib C_blochmannia C_blochmannia_ANIb \
     #     --name "C. blochmannia run 2" \
     #     --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt

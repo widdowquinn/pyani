@@ -19,15 +19,15 @@ The basic form of the command is:
 
 .. code-block:: bash
 
-    pyani download --email my.email@my.domain -t <TAXON_ID> <OUTPUT_DIRECTORY>
+    pyani download --email my.email@my.domain -t <TAXON_ID> -o <OUTPUT_DIRECTORY>
 
-This instructs ``pyani`` to use the ``download`` subcommand to obtain all available genome assemblies below the taxon ID ``<TAXON_ID>``, passed with the ``-t`` argument, and place the downloaded files - along with label and class information files created by ``pyani`` in the subdirectory ``<OUTPUT_DIRECTORY>``.
+This instructs ``pyani`` to use the ``download`` subcommand to obtain all available genome assemblies below the taxon ID ``<TAXON_ID>``, passed with the ``-t`` argument, and place the downloaded files - along with label and class information files created by ``pyani`` in the subdirectory ``<OUTPUT_DIRECTORY>``, passed with the ``-o`` argument.
 
-For example, if we wished to download all available assemblies for the bacterium *Pseudomonas flexibilis* we would `identify the taxon ID <https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=706570&lvl=3&lin=f&keep=1&srchmode=1&unlock>`_ to be 706570, and use this as the argument to ``-t``, placing the output in a convenient subdirectory (e.g. ``genomes``), with the command:
+For example, if we wished to download all available assemblies for the bacterium *Pseudomonas flexibilis* we would `identify the taxon ID <https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=706570&lvl=3&lin=f&keep=1&srchmode=1&unlock>`_ to be 706570, and use this as the argument to ``-t``, placing the output in a convenient subdirectory (e.g. ``genomes``, the argument to ``-o``), with the command:
 
 .. code-block:: bash
 
-    $ pyani download --email my.email@my.domain -t 706570 genomes
+    $ pyani download --email my.email@my.domain -t 706570 -o genomes
     GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_genomic.fna.gz: 2097152it [00:00, 3224293.90it/s]
     GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_hashes.txt: 1048576it [00:00, 110097041.36it/s]
     GCF_900101515.1_IMG-taxon_2596583557_annotated_assembly_genomic.fna.gz: 2097152it [00:00, 3125724.89it/s]
@@ -47,23 +47,23 @@ This displays each assembly as a download is attempted, and places all output in
     genomes/
     ├── GCA_001312105.1_ASM131210v1_genomic.fna
     ├── GCA_001312105.1_ASM131210v1_genomic.fna.gz
-    ├── GCA_001312105.1_ASM131210v1_genomic.md5
+    ├── GCA_001312105.1_ASM131210v1_genomic.fna.md5
     ├── GCA_001312105.1_ASM131210v1_hashes.txt
     ├── GCF_000802425.1_ASM80242v1_genomic.fna
     ├── GCF_000802425.1_ASM80242v1_genomic.fna.gz
-    ├── GCF_000802425.1_ASM80242v1_genomic.md5
+    ├── GCF_000802425.1_ASM80242v1_genomic.fna.md5
     ├── GCF_000802425.1_ASM80242v1_hashes.txt
     ├── GCF_000806415.1_ASM80641v1_genomic.fna
     ├── GCF_000806415.1_ASM80641v1_genomic.fna.gz
-    ├── GCF_000806415.1_ASM80641v1_genomic.md5
+    ├── GCF_000806415.1_ASM80641v1_genomic.fna.md5
     ├── GCF_000806415.1_ASM80641v1_hashes.txt
     ├── GCF_900101515.1_IMG-taxon_2596583557_annotated_assembly_genomic.fna
     ├── GCF_900101515.1_IMG-taxon_2596583557_annotated_assembly_genomic.fna.gz
-    ├── GCF_900101515.1_IMG-taxon_2596583557_annotated_assembly_genomic.md5
+    ├── GCF_900101515.1_IMG-taxon_2596583557_annotated_assembly_genomic.fna.md5
     ├── GCF_900101515.1_IMG-taxon_2596583557_annotated_assembly_hashes.txt
     ├── GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_genomic.fna
     ├── GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_genomic.fna.gz
-    ├── GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_genomic.md5
+    ├── GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_genomic.fna.md5
     ├── GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_hashes.txt
     ├── classes.txt
     └── labels.txt
@@ -72,7 +72,7 @@ Each genome is downloaded in compressed format (``.fna.gz`` files) and expanded 
 
 .. code-block:: bash
 
-    $ head genomes/GCA_001312105.1_ASM131210v1_genomic.md5
+    $ head genomes/GCA_001312105.1_ASM131210v1_genomic.fna.md5
     e55cd3d913a198ac60afd8d509c02ab4	genomes/GCA_001312105.1_ASM131210v1_genomic.fna
 
 ``pyani`` also creates two files:
@@ -107,13 +107,13 @@ To download genomes from more than one taxon, you can provide a comma-separated 
 
 .. code-block:: bash
 
-    pyani download --email my.email@my.domain -t <TAXON_ID1>,<TAXON_ID2>,... <OUTPUT_DIRECTORY>
+    pyani download --email my.email@my.domain -t <TAXON_ID1>,<TAXON_ID2>,... -o <OUTPUT_DIRECTORY>
 
 The following command can be used to download assemblies from three different *Pseudomonas* taxa (*P. flexibilis*: 706570, *P. mosselli*: 78327, and *P. fulva*: 47880):
 
 .. code-block:: bash
 
-    $ pyani download --email my.email@my.domain -t 706570,78327,47880 multi_taxa
+    $ pyani download --email my.email@my.domain -t 706570,78327,47880 -o multi_taxa
     GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_genomic.fna.gz: 2097152it [00:00, 3081776.59it/s]
     GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_hashes.txt: 1048576it [00:00, 63489526.95it/s]
     GCF_900101515.1_IMG-taxon_2596583557_annotated_assembly_genomic.fna.gz: 2097152it [00:00, 3194885.99it/s]
@@ -127,7 +127,7 @@ If you only want to see which genomes will be downloaded from NCBI with a given 
 
 .. code-block:: bash
 
-    $ pyani download --email my.email@my.domain -t 706570,78327,47880 multi_taxa --dry-run
+    $ pyani download --email my.email@my.domain -t 706570,78327,47880 -o multi_taxa --dry-run
     WARNING: Dry run only: will not overwrite or download
     WARNING: (dry-run) skipping download of GCF_900155995.1
     WARNING: (dry-run) skipping download of GCF_900101515.1
@@ -145,7 +145,7 @@ The ``pyani download`` command can prepare downloaded genome files for immediate
 
 .. code-block:: bash
 
-    $ pyani download --email my.email@my.domain -t 706570,78327,47880 genomes_kraken --kraken
+    $ pyani download --email my.email@my.domain -t 706570,78327,47880 -o genomes_kraken --kraken
     GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_genomic.fna.gz: 2097152it [00:00, 3085741.03it/s]
     GCF_900155995.1_IMG-taxon_2681812811_annotated_assembly_hashes.txt: 1048576it [00:00, 140958511.30it/s]
     WARNING: Modifying downloaded sequence for Kraken compatibility
@@ -169,9 +169,9 @@ Using this option does affects downstream performance or use of ``pyani`` only i
 
 .. code-block:: bash
 
-    $ head multi_taxa/GCA_001312105.1_ASM131210v1_genomic.md5
+    $ head multi_taxa/GCA_001312105.1_ASM131210v1_genomic.fna.md5
     e55cd3d913a198ac60afd8d509c02ab4	multi_taxa/GCA_001312105.1_ASM131210v1_genomic.fna
-    $ head genomes_kraken/GCA_001312105.1_ASM131210v1_genomic.md5
+    $ head genomes_kraken/GCA_001312105.1_ASM131210v1_genomic.fna.md5
     053fd98d8c9ab30de46f56fd601ef529	genomes_kraken/GCA_001312105.1_ASM131210v1_genomic.fna
 
 and so will not be considered to be the "same sequence" when repeating comparisons.

@@ -43,12 +43,13 @@ These tests are intended to be run from the repository root using:
 
 pytest -v
 """
-
+import sys
 from pathlib import Path
 from typing import List, NamedTuple, Tuple
 
 import pandas as pd
 import pytest
+import unittest
 
 from pandas.util.testing import assert_frame_equal
 
@@ -103,49 +104,61 @@ def mummer_cmds_four(path_file_four):
     return MUMmerExample(
         path_file_four,
         [
-            "nucmer --mum -p nucmer_output/file1_vs_file2 file1.fna file2.fna",
-            "nucmer --mum -p nucmer_output/file1_vs_file3 file1.fna file3.fna",
-            "nucmer --mum -p nucmer_output/file1_vs_file4 file1.fna file4.fna",
-            "nucmer --mum -p nucmer_output/file2_vs_file3 file2.fna file3.fna",
-            "nucmer --mum -p nucmer_output/file2_vs_file4 file2.fna file4.fna",
-            "nucmer --mum -p nucmer_output/file3_vs_file4 file3.fna file4.fna",
+            "nucmer --mum -p nucmer_output/file1/file1_vs_file2 file1.fna file2.fna",
+            "nucmer --mum -p nucmer_output/file1/file1_vs_file3 file1.fna file3.fna",
+            "nucmer --mum -p nucmer_output/file1/file1_vs_file4 file1.fna file4.fna",
+            "nucmer --mum -p nucmer_output/file2/file2_vs_file3 file2.fna file3.fna",
+            "nucmer --mum -p nucmer_output/file2/file2_vs_file4 file2.fna file4.fna",
+            "nucmer --mum -p nucmer_output/file3/file3_vs_file4 file3.fna file4.fna",
         ],
         [
             (
                 "delta_filter_wrapper.py delta-filter -1 "
-                "nucmer_output/file1_vs_file2.delta "
-                "nucmer_output/file1_vs_file2.filter"
+                "nucmer_output/file1/file1_vs_file2.delta "
+                "nucmer_output/file1/file1_vs_file2.filter"
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
-                "nucmer_output/file1_vs_file3.delta "
-                "nucmer_output/file1_vs_file3.filter"
+                "nucmer_output/file1/file1_vs_file3.delta "
+                "nucmer_output/file1/file1_vs_file3.filter"
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
-                "nucmer_output/file1_vs_file4.delta "
-                "nucmer_output/file1_vs_file4.filter"
+                "nucmer_output/file1/file1_vs_file4.delta "
+                "nucmer_output/file1/file1_vs_file4.filter"
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
-                "nucmer_output/file2_vs_file3.delta "
-                "nucmer_output/file2_vs_file3.filter"
+                "nucmer_output/file2/file2_vs_file3.delta "
+                "nucmer_output/file2/file2_vs_file3.filter"
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
-                "nucmer_output/file2_vs_file4.delta "
-                "nucmer_output/file2_vs_file4.filter"
+                "nucmer_output/file2/file2_vs_file4.delta "
+                "nucmer_output/file2/file2_vs_file4.filter"
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
-                "nucmer_output/file3_vs_file4.delta "
-                "nucmer_output/file3_vs_file4.filter"
+                "nucmer_output/file3/file3_vs_file4.delta "
+                "nucmer_output/file3/file3_vs_file4.filter"
             ),
         ],
     )
 
 
+# Create object for accessing unittest assertions
+assertions = unittest.TestCase("__init__")
+
+
 # Test get_version()
+# Test case 0: no executable location is specified
+def test_get_version_nonetype():
+    """Test behaviour when no location for the executable is given."""
+    test_file_0 = None
+
+    assert anim.get_version(test_file_0) == f"{test_file_0} is not found in $PATH"
+
+
 # Test case 1: there is no executable
 def test_get_version_no_exe(executable_missing):
     """Test behaviour when there is no file at the specified executable location."""
@@ -171,6 +184,21 @@ def test_get_version_exe_no_version(executable_without_version):
         anim.get_version(test_file_3)
         == f"nucmer exists at {test_file_3} but could not retrieve version"
     )
+
+
+# Test regex for different NUCmer versions
+def test_get_version_nucmer_3(mock_get_nucmer_3_version):
+    """Tests the regex that gets the version number for NUCmer <= 3."""
+    fake_nucmer_3 = Path("/fake/nucmer3/executable")
+
+    assert anim.get_version(fake_nucmer_3) == f"Darwin_3.1 ({fake_nucmer_3})"
+
+
+def test_get_version_nucmer_4(mock_get_nucmer_4_version):
+    """Tests the regex that gets the version number for NUCmer 4."""
+    fake_nucmer_4 = Path("/fake/nucmer4/executable")
+
+    assert anim.get_version(fake_nucmer_4) == f"Darwin_4.0.0rc1 ({fake_nucmer_4})"
 
 
 # Test .delta output file processing
@@ -200,7 +228,7 @@ def test_maxmatch_single(tmp_path, path_file_two):
     dir_nucmer = tmp_path / "nucmer_output"
     expected = (
         "nucmer --maxmatch -p "
-        f"{dir_nucmer / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem)} "
+        f"{dir_nucmer / str(path_file_two[0].stem ) / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem)} "
         f"{path_file_two[0]} {path_file_two[1]}"
     )
     assert ncmd == expected
@@ -226,13 +254,13 @@ def test_mummer_single(tmp_path, path_file_two):
     expected = (
         (
             "nucmer --mum -p "
-            f"{dir_nucmer / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem)} "
+            f"{dir_nucmer / str(path_file_two[0].stem) / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem)} "
             f"{path_file_two[0]} {path_file_two[1]}"
         ),
         (
             "delta_filter_wrapper.py delta-filter -1 "
-            f"{dir_nucmer / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem + '.delta')} "
-            f"{dir_nucmer / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem + '.filter')}"
+            f"{dir_nucmer / str(path_file_two[0].stem ) / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem + '.delta')} "
+            f"{dir_nucmer / str(path_file_two[0].stem ) / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem + '.filter')}"
         ),
     )
     assert cmds == expected
@@ -250,3 +278,14 @@ def test_mummer_job_generation(mummer_cmds_four):
         assert job.name == "test_%06d-f" % idx  # filter job name
         assert len(job.dependencies) == 1  # has NUCmer job
         assert job.dependencies[0].name == "test_%06d-n" % idx
+
+
+def test_genome_sorting(tmp_path, unsorted_genomes):
+    second, first = [Path(_.path) for _ in unsorted_genomes]
+    outprefix = f"{tmp_path}/nucmer_output/{first.stem}/{first.stem}_vs_{second.stem}"
+    expected = (
+        f"nucmer --mum -p {outprefix} {first} {second}",
+        f"delta_filter_wrapper.py delta-filter -1 {outprefix}.delta {outprefix}.filter",
+    )
+    nucmercmd, filtercmd = anim.construct_nucmer_cmdline(second, first, tmp_path)
+    assert (nucmercmd, filtercmd) == expected

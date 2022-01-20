@@ -69,6 +69,7 @@ def args_single_genome_download(email_address, tmp_path):
         "218491",
         "--email",
         email_address,
+        "-o",
         tmp_path,
         "--force",
     ]

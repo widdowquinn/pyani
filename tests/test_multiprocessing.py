@@ -46,10 +46,15 @@ pytest -v
 """
 
 import unittest
+import logging
 
 from pathlib import Path
 
 import pytest
+from typing import Dict, List, NamedTuple, Tuple
+import subprocess
+import pickle
+import multiprocessing
 
 from pyani.anib import fragment_fasta_files, make_blastcmd_builder, make_job_graph
 from pyani.pyani_jobs import Job
@@ -58,6 +63,9 @@ from pyani.run_multiprocessing import (
     populate_cmdsets,
     run_dependency_graph,
 )
+
+assertions = unittest.TestCase("__init__")
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -100,3 +108,50 @@ def test_dependency_graph_run(path_fna_two, fragment_length, tmp_path):
     jobgraph = make_job_graph(path_fna_two, fragresult[0], blastcmds)
     result = run_dependency_graph(jobgraph)
     assert 0 == result
+
+
+# Convenience struct wich mocks a multiprocessing.pool worker's task
+# pool.apply_async returns a multiprocessing.pool.ApplyResult object,
+# which is essentially a NamedTuple, but has a get method, hence
+# the need to define one here that doesn't appear to do much
+class MockProcess(NamedTuple):
+    returncode: int
+    args: List[str]
+    stdout: str
+    stderr: str
+
+    def get(self):
+        return self
+
+
+# This must be a top-level function so that the pool workers can pickle it
+def mock_run(*args, **kwargs):
+    """Mock a call to `subprocess.run()`."""
+    return MockProcess(1, ["ls", "-ltrh"], b"mock bytes", b"mock bytes")
+
+
+@pytest.fixture
+def bad_comparison(monkeypatch):
+    """
+    Mocks a call to `run_multiprocessing.multiprocessing_run()` that fails.
+    """
+    pool = multiprocessing.Pool(processes=8)
+
+    def mock_apply_async(*args, **kwargs):
+        """Mock a call to `multiprocessing.Pool().apply_async()`."""
+        return multiprocessing.reduction.ForkingPickler.dumps(
+            MockProcess(1, ["ls", "-ltrh"], b"mock bytes", b"mock bytes")
+        )
+
+    monkeypatch.setattr(pool, "apply_async", mock_apply_async)
+    monkeypatch.setattr(subprocess, "run", mock_run)
+
+
+def test_failed_comparison(mp_cmdlist, bad_comparison, monkeypatch):
+    """Test that a warning is logged when an individual comparison fails."""
+
+    with assertions.assertLogs(logger, level="WARNING") as scribe:
+        multiprocessing_run(mp_cmdlist, logger=logger)
+        assertions.assertEqual(
+            scribe.output[0], "WARNING:test_multiprocessing:Comparison failed: ls -ltrh"
+        )

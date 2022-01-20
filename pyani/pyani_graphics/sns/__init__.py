@@ -176,14 +176,21 @@ def distribution(dfr, outfilename, matname, title=None):
     :param matname:  str, type of matrix being plotted
     :param title:  str, optional title
     """
+    fill = "#A6C8E0"
+    rug = "#2678B2"
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     fig.suptitle(title)
-    sns.distplot(
-        dfr.values.flatten(), kde=False, rug=False, ax=axes[0], norm_hist=False
+    sns.histplot(
+        dfr.values.flatten(),
+        ax=axes[0],
+        stat="count",
+        element="step",
+        color=fill,
+        edgecolor=fill,
     )
-    sns.distplot(
-        dfr.values.flatten(), hist=False, rug=True, ax=axes[1], norm_hist=False
-    )
+    axes[0].set_ylim(ymin=0)
+    sns.kdeplot(dfr.values.flatten(), ax=axes[1])
+    sns.rugplot(dfr.values.flatten(), ax=axes[1], color=rug)
 
     # Modify axes after data is plotted
     for _ in axes:
@@ -202,4 +209,57 @@ def distribution(dfr, outfilename, matname, title=None):
         # sns.distplot, rather than a Figure, so we need this hack
         fig.savefig(outfilename)
 
+    return fig
+
+
+def scatter(
+    dfr1,
+    dfr2,
+    outfilename=None,
+    matname1="identity",
+    matname2="coverage",
+    title=None,
+    params=None,
+):
+    """Return seaborn scatterplot.
+
+    :param dfr1:  pandas DataFrame with x-axis data
+    :param dfr2:  pandas DataFrame with y-axis data
+    :param outfilename:  path to output file (indicates output format)
+    :param matname1:  name of x-axis data
+    :param matname2:  name of y-axis data
+    :param title:  title for the plot
+    :param params:  a list of parameters for plotting: [colormap, vmin, vmax]
+    """
+    # Make an empty dataframe to collect the input data in
+    combined = pd.DataFrame()
+
+    # Add data
+    combined[matname1] = dfr1.values.flatten()
+    combined[matname2] = dfr2.values.flatten()
+
+    # Add lable information, if available
+    # if params.labels:
+    #     hue = "labels"
+    #  combined['labels'] =   #  add labels to dataframe; unsure of their configuration at this point
+    # else:
+    hue = None
+
+    # Create the plot
+    fig = sns.lmplot(
+        x=matname1,
+        y=matname2,
+        data=combined,
+        hue=hue,
+        fit_reg=False,
+        scatter_kws={"s": 2},
+    )
+    fig.set(xlabel=matname1.title(), ylabel=matname2.title())
+    plt.title(title)
+
+    # Save to file
+    if outfilename:
+        fig.savefig(outfilename)
+
+    # Return clustermap
     return fig

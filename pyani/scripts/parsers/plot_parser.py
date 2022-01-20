@@ -60,12 +60,26 @@ def build(
     parser = subps.add_parser(
         "plot", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
-    # Required positional arguments: output directory and run ID
+    # Required arguments: output directory and run ID
     parser.add_argument(
-        action="store", dest="outdir", default=None, type=Path, help="output directory"
+        "-o",
+        "--outdir",
+        action="store",
+        dest="outdir",
+        default=None,
+        type=Path,
+        help="output directory",
+        required=True,
     )
     parser.add_argument(
-        action="store", dest="run_id", default=None, help="run ID to plot"
+        "--run_ids",
+        action="store",
+        dest="run_ids",
+        default=None,
+        metavar="RUN_ID",
+        nargs="+",
+        help="run IDs to plot",
+        required=True,
     )
     # Other optional arguments
     parser.add_argument(
@@ -81,15 +95,29 @@ def build(
         "--formats",
         dest="formats",
         action="store",
-        default="png",
-        help="graphics output format (pdf/png/svg/jpg)",
+        default=["png"],
+        metavar="FORMAT",
+        nargs="+",
+        choices=["pdf", "png", "svg", "jpg"],
+        help="graphics output format; options: (pdf, png, svg, jpg)",
     )
     parser.add_argument(
         "--method",
         dest="method",
         action="store",
         default="seaborn",
-        help="graphics method to use for plotting",
+        metavar="METHOD",
+        nargs=1,
         choices=["seaborn", "mpl", "plotly"],
+        help="graphics method to use for plotting; options (seaborn, mpl, plotly)",
+    )
+    parser.add_argument(
+        "--workers",
+        dest="workers",
+        action="store",
+        default=None,
+        type=int,
+        help="Number of worker processes for multiprocessing "
+        "(default zero, meaning use all available cores)",
     )
     parser.set_defaults(func=subcommands.subcmd_plot)
