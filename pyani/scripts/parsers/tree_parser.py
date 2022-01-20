@@ -45,6 +45,22 @@ from typing import List, Optional
 from pyani.scripts import subcommands
 
 
+def get_tree_list(tree_string: str):
+    possible_trees = {
+        "i": "identity",
+        "c": "coverage",
+        "a": "aln_lengths",
+        "s": "sim_errors",
+        "h": "hadamard",
+    }
+    return [possible_trees[_] for _ in tree_string]
+
+
+def get_axes_list(axes_string: str):
+    axes = {"c": "columns", "r": "rows"}
+    return [axes[_] for _ in axes_string]
+
+
 def build(
     subps: _SubParsersAction, parents: Optional[List[ArgumentParser]] = None
 ) -> None:
@@ -120,12 +136,21 @@ def build(
         help="Number of worker processes for multiprocessing "
         "(default zero, meaning use all available cores)",
     )
-    # parser.add_argument(
-    #     "--tree",
-    #     dest="tree",
-    #     action="store_true",
-    #     default=False,
-    #     help="tree formats to generate",
-    #     # choices=["newick", "dendrogram"]
-    # )
+    parser.add_argument(
+        "--trees",
+        dest="trees",
+        #     action="store_true",
+        #     default=False,
+        type=get_tree_list,
+        metavar="TREES",
+        help="A string (such as: icash, cah, shi) specifying which trees to generate, made up of their initials: {'i': 'identity', 'c': 'coverage', 'a': 'aln_length', 's': 'sim_errors', 'h': 'hadamard'}",
+    )
+    parser.add_argument(
+        "--axes",
+        dest="axes",
+        default="cr",
+        type=get_axes_list,
+        metavar="AXES",
+        help="A string indicating which axes to plot. One of (c, r, cr); c = columns, r = rows, cr = both",
+    )
     parser.set_defaults(func=subcommands.subcmd_tree)

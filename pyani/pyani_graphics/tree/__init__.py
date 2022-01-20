@@ -1,5 +1,12 @@
-'''
 import logging
+from pyani import pyani_graphics
+from scipy.cluster import hierarchy
+from ete3 import ClusterTree, Tree, TreeStyle, faces, AttrFace, PhyloTree
+from pathlib import Path
+import sys
+import seaborn as sns
+
+LABEL_DICT = {}
 
 
 def build_label_dict(fig, axis, params):
@@ -10,6 +17,7 @@ def build_label_dict(fig, axis, params):
     :param params:  plot parameters; this is where the labels come from
 
     """
+    logger = logging.getLogger(__name__)
     if axis == "col":
         for idx, _ in zip(
             fig.dendrogram_col.reordered_ind, fig.ax_heatmap.get_yticklabels()
@@ -20,7 +28,7 @@ def build_label_dict(fig, axis, params):
             fig.dendrogram_row.reordered_ind, fig.ax_heatmap.get_xticklabels()
         ):
             LABEL_DICT[str(idx + 1)] = params.labels.get(_, _.get_text())
-    logger.debug(f"{LABEL_DICT}")
+    logger.debug(f"Label dict: {LABEL_DICT}")
     return LABEL_DICT
 
 
@@ -51,11 +59,11 @@ def get_newick(node, parentdist, leaf_names, newick=""):
         return newick
 
 
-def tree(dfr, fig, title, format, params, args):
+def tree(dfr, outfname, title, params, format, args):
     """Generate a newick file and dendrogram plot for the given dataframe.
 
     :param dfr:  a dataframe
-    :param fig:  a figure produced by sns.clustermap
+    # :param fig:  a figure produced by sns.clustermap
     :param title:  name of the matrix plot
     :param format:  image file format being used
     :param params:  matrix plot parameters; including labels
@@ -67,13 +75,32 @@ def tree(dfr, fig, title, format, params, args):
     # Get matrix name and run_id from the plot title
     matname, run_id = title.split("_", 1)[-1].rsplit("_", 1)
 
+    maxfigsize = 120
+    calcfigsize = dfr.shape[0] * 1.1
+    figsize = min(max(8, calcfigsize), maxfigsize)
+    if figsize == maxfigsize:
+        scale = maxfigsize / calcfigsize
+        sns.set_context("notebook", font_scale=scale)
+
+    # Add a colorbar?
+    if params.classes is None:
+        col_cb = None
+    else:
+        col_cb = pyani_graphics.sns.get_colorbar(dfr, params.classes)
+
+    params.colorbar = col_cb
+    params.figsize = figsize
+    params.linewidths = 0.25
+
+    fig = pyani_graphics.sns.get_clustermap(dfr, params)
+
     # Dictionary to allow abstraction over axes
     sides = {
-        "col": {
+        "columns": {
             "axis": fig.dendrogram_col,
             "names": dfr.columns,  # fig.dendrogram_col.reordered_ind,
         },
-        "row": {
+        "rows": {
             "axis": fig.dendrogram_row,
             "names": dfr.index,  # fig.dendrogram_row.reordered_ind,
         },
@@ -82,10 +109,11 @@ def tree(dfr, fig, title, format, params, args):
     # Create a linkage dendrogram and newick string for both rows and columns
     newicks = {}
 
-    for axis in sides.keys():
+    for axis in args.axes:
         # Generate newick format
         tree = hierarchy.to_tree(sides[axis]["axis"].linkage, False)
         logger.debug(f"Names: {sides[axis]['names']}")
+
         newick = get_newick(tree, tree.dist, sides[axis]["names"], "")
         newicks.update({f"[{axis}_newick_{matname}_{run_id}]": newick})
 
@@ -93,11 +121,14 @@ def tree(dfr, fig, title, format, params, args):
         # if 'dendrogram' in args.tree:
         # if args.tree:
         build_label_dict(fig, axis, params)
+        sys.stderr.write(f"Label dict: {LABEL_DICT}\n")
         # figtree = ClusterTree(newick, text_array=matrix)
         figtree = PhyloTree(newick)
         figtree.set_species_naming_function(get_species_name)
         figtree_file = Path(args.outdir) / f"{axis}_tree_{matname}_{run_id}.{format}"
         logger.debug(f"{figtree}")
+
+        # Write the tree to file
         figtree.render(str(figtree_file), layout=tree_layout)
 
     # Return the newick strings so we can save them in the database (eventually)
@@ -133,4 +164,3 @@ def tree_layout(node):
 def get_species_name(node_name_string):
     """Return `Genus species` (where known) for a node."""
     return LABEL_DICT[node_name_string]
-'''
