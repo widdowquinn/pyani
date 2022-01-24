@@ -44,7 +44,7 @@ Percentage Identity/ANI
     Percentage identity matrix for *Candidatus Blochmannia* ANIm analysis
 
     Each cell represents a pairwise comparison between the named genomes on rows and columns, and the number in each cell is the pairwise identity *of all aligned regions*. The dendrograms are produced by single-linkage hierarchical clustering trees from the matrix of pairwise identity results. The default colour scheme colours cells with identity > 0.95 as red, and those with < 0.95 as blue. This division corresponds to a widely-used convention for bacterial species boundaries.
-    
+
 .. note::
 
     No single ANI threshold should be considered universally applicable to distinguish between species for all bacterial genomes.
@@ -56,7 +56,7 @@ Taking the 95% threshold between red and blue cells to be equivalent to a specie
 * the two genomes BPEN and 640 could be classified as the same species
 * the remaining four genomes each represent a distinct species
 
-In particular, we can see that the off-diagonal identity values are all around 85%, consistent with the limit of detection for homologous nucleotide regions. 
+In particular, we can see that the off-diagonal identity values are all around 85%, consistent with the limit of detection for homologous nucleotide regions.
 
 .. note::
 
@@ -143,13 +143,13 @@ Plot Asymmetry
 
     Each ANI method in `pyani` calculates results by a different method. The difference between methods is usually that alternative third-party alignment tools are used. However, there may also be differences between the ways those alignment outputs are used. Please see the relevant documentation for details of each method.
 
-**Average nucleotide identity** is a measure of similarity between two genomes. Depending on the ANI method used, this may be symmetrical: comparing genome A to genome B is the same as comparing genome B to genome A; or asymmetrical: the result of comparing genome A with genome B can be different from comparing genome B with genome A. 
+**Average nucleotide identity** is a measure of similarity between two genomes. Depending on the ANI method used, this may be symmetrical: comparing genome A to genome B is the same as comparing genome B to genome A; or asymmetrical: the result of comparing genome A with genome B can be different from comparing genome B with genome A.
 
 Asymmetry can arise as a consequence of the way the sequence alignment algorithm used for calculating genome alignments works. For instance, the initial seed alignment for a pair of genomes may be very similar, but not identical, and this difference may propagate through an extension step into differences in the final alignment. Alternatively, an aspect of the ANI algorithm may introduce asymmetry. For instance, the genome fragmentation step in ANIb may break each participating genome in different ways.
 
 `pyani` provides both symmetrical and asymmetrical ANI methods:
 
-  - ANIm — symmetrical
+  - ANIm — asymmetrical
   - FastANI — asymmetrical (only available in version 0.3.0-alpha)
   - ANIb — asymmetrical
   - ANIblastall — asymmetrical

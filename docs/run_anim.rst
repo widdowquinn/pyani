@@ -20,7 +20,8 @@ In brief, the analysis proceeds as follows for a set of input prokaryotic genome
 The output values are recorded in the ``pyani`` database.
 
 .. NOTE::
-    A single ``MUMmer`` comparison is performed between each pair of genomes. Input genomes are sorted into alphabetical order by filename, and the query sequence is the genome that occurs earliest in the list; the subject sequence is the genome that occurs latest in the list.
+    Two ``Mummer`` comparisons are performed between each pair of genomes, so that each genome serves as the reference sequence, and as the subject sequence.
+    .. A single ``MUMmer`` comparison is performed between each pair of genomes. Input genomes are sorted into alphabetical order by filename, and the query sequence is the genome that occurs earliest in the list; the subject sequence is the genome that occurs latest in the list.
 
 .. TIP::
     The ``MUMmer`` comparisons are embarrasingly parallel, and can be distributed across cores on an `Open Grid Scheduler`_-compatible cluster, using the ``--scheduler SGE`` option.
