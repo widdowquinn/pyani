@@ -209,7 +209,7 @@ def generate_nucmer_commands(
     pairwise comparison.
     """
     nucmer_cmdlines, delta_filter_cmdlines = [], []
-    filenames = sorted(filenames)  # enforce ordering of filenames
+    # filenames = sorted(filenames)  # enforce ordering of filenames
     for idx, fname1 in enumerate(filenames[:-1]):
         for fname2 in filenames[idx + 1 :]:
             ncmd, dcmd = construct_nucmer_cmdline(
@@ -248,7 +248,8 @@ def construct_nucmer_cmdline(
     outdir, called "nucmer_output".
     """
     # Cast path strings to pathlib.Path for safety
-    fname1, fname2 = sorted([Path(fname1), Path(fname2)])
+    # fname1, fname2 = sorted([Path(fname1), Path(fname2)])
+    fname1, fname2 = Path(fname1), Path(fname2)
 
     # Compile commands
     # Nested output folders to avoid N^2 scaling in files-per-folder
