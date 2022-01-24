@@ -171,7 +171,7 @@ def subcmd_fastani(args: Namespace) -> None:
     # Add information about this run to the database
     logger.debug("Adding run info to database %s...", args.dbpath)
     try:
-        run = add_run(
+        run, run_id = add_run(
             session,
             method="FastANI",
             cmdline=args.cmdline,
@@ -182,10 +182,12 @@ def subcmd_fastani(args: Namespace) -> None:
     except PyaniORMException:
         logger.error("Could not add run to the database; (exiting)", exc_info=True)
         raise SystemExit(1)
-    logger.debug("\t...added run ID: %d to the database", run)
+    logger.debug(
+        "\t...added run ID: %s to the database", run_id
+    )  # this should use the run_id
 
     # Identify input files for comparison, and populate the database
-    logger.debug("Adding genomes for run %d to database...", run)
+    logger.debug("Adding genomes for run %s to database...", run_id)
     try:
         genome_ids = add_run_genomes(
             session, run, args.indir, args.classes, args.labels
@@ -193,7 +195,7 @@ def subcmd_fastani(args: Namespace) -> None:
     except PyaniORMException:
         logger.error(
             "Could not add genomes to database for run %d; (exiting)",
-            run,
+            run_id,
             exc_info=True,
         )  # this differs from subcmd_anim.py
     logger.debug("\t...added genome IDs: %s", genome_ids)

@@ -519,7 +519,7 @@ def add_run(session, method, cmdline, date, status, name):
         session.commit()
     except Exception:
         raise PyaniORMException(f"Could not add run {run} to the database")
-    return run
+    return run, run.run_id
 
 
 def add_run_genomes(
