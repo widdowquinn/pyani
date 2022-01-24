@@ -10,5 +10,5 @@ Pillow
 PyQt5
 scipy
 seaborn
-sqlalchemy==1.3.10
+sqlalchemy
 tqdm

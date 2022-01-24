@@ -194,6 +194,9 @@ def write_distribution(
             title=f"matrix_{matdata.name}_run{run_id}",
         )
 
+    # Be tidy with matplotlib caches
+    plt.close("all")
+
 
 def write_heatmap(
     run_id: int,
