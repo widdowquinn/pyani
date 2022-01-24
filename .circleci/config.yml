@@ -60,6 +60,15 @@ jobs:
             tar -zxf legacy_blast.tar.gz
             echo 'export PATH=$PWD/blast-2.2.26/bin:$PATH' >> $BASH_ENV
             source $BASH_ENV
+      - run:
+          name: install fastANI
+          command: |
+            wget https://github.com/ParBLiSS/FastANI/releases/download/v1.33/fastANI-Linux64-v1.33.zip
+            unzip fastANI-Linux64-v1.33.zip
+            echo 'export PATH=$PWD:$PATH' >> $BASH_ENV
+            source $BASH_ENV
+            fastANI -h
+
 
       - run:
           name: install dependencies

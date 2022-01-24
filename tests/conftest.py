@@ -131,6 +131,12 @@ def dir_anim_in():
 
 
 @pytest.fixture
+def dir_fastani_in():
+    """Input files for fastANI tests."""
+    return FIXTUREPATH / "fastani"
+
+
+@pytest.fixture
 def dir_graphics_in():
     """Input files for graphics tests."""
     return FIXTUREPATH / "graphics"
