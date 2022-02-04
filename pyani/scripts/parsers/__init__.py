@@ -58,6 +58,7 @@ from pyani.scripts.parsers import (
     common_parser,
     run_common_parser,
     listdeps_parser,
+    versiondb_parser,
 )
 
 
@@ -76,6 +77,8 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         index genome sequence files in a subdirectory, for analysis
     - createdb
         generate SQLite database for data and analysis results
+    - versiondb
+        upgrade/downgrade pyani SQLite database between schemas
     - anim
         conduct ANIm analysis
     - anib
@@ -119,6 +122,7 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
     download_parser.build(subparsers, parents=[parser_common])
     index_parser.build(subparsers, parents=[parser_common])
     createdb_parser.build(subparsers, parents=[parser_common])
+    versiondb_parser.build(subparsers, parents=[parser_common])
     anim_parser.build(
         subparsers, parents=[parser_common, parser_scheduler, parser_run_common]
     )

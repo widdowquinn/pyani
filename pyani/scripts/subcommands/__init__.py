@@ -43,6 +43,7 @@ from .subcmd_aniblastall import subcmd_aniblastall
 from .subcmd_anim import subcmd_anim
 from .subcmd_classify import subcmd_classify
 from .subcmd_createdb import subcmd_createdb
+from .subcmd_versiondb import subcmd_versiondb
 from .subcmd_download import subcmd_download
 from .subcmd_index import subcmd_index
 from .subcmd_listdeps import subcmd_listdeps
