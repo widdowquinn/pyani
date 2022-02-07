@@ -58,6 +58,7 @@ REQUIREMENTS = [
     "seaborn",
     "sqlalchemy",
     "tqdm",
+    "alembic",
 ]
 
 DEVELOPMENT = [
