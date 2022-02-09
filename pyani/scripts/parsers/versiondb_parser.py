@@ -4,6 +4,8 @@ from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, _SubParsersA
 from pathlib import Path
 from typing import List, Optional
 
+from pyani import pyani_config
+
 from pyani.scripts import subcommands
 
 
@@ -46,5 +48,31 @@ def build(
         default=None,
         metavar="VERSION",
         help="revert an existing database to a older schema",
+    )
+    parser.add_argument(
+        "--alembic_exe",
+        action="store",
+        dest="alembic_exe",
+        default=pyani_config.ALEMBIC_DEFAULT,
+        type=Path,
+        help="path to alembic executable",
+    )
+    parser.add_argument(
+        "-n",
+        "--name",
+        action="store",
+        dest="dbname",
+        default=None,
+        metavar="NAME",
+        help="used to specify an individual database in a multidb setup",
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        action="store",
+        dest="alembic_config",
+        default=None,
+        metavar="FILE",
+        help="used to specify a config file for alembic",
     )
     parser.set_defaults(func=subcommands.subcmd_versiondb)
