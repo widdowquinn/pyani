@@ -83,40 +83,51 @@ def construct_alembic_cmdline(
     alembic_exe=pyani_config.ALEMBIC_DEFAULT,
 ):
     if direction == "upgrade":
-        return [alembic_exe, direction, args.upgrade, *get_optional_args(args)]
+        return [str(alembic_exe), direction, args.upgrade, *get_optional_args(args)]
     elif direction == "downgrade":
-        return [alembic_exe, direction, args.downgrade, *get_optional_args(args)]
+        return [str(alembic_exe), direction, args.downgrade, *get_optional_args(args)]
+
+
+def log_output_and_errors(result):
+    logger = logging.getLogger(__name__)
+    if result.stdout:
+        logger.info("Alembic stdout:")
+    for line in str(result.stdout, "utf-8").split("\n"):
+        if line:
+            logger.info(line)
+    if result.stderr:
+        logger.info("Alembic stderr:")
+    for line in str(result.stderr, "utf-8").split("\n"):
+        if line:
+            logger.info(line)
 
 
 def upgrade_database(args: Namespace):
-    logger = logging.getLogger(__name__)
     cmdline = construct_alembic_cmdline("upgrade", args)
     result = subprocess.run(
         cmdline,
         shell=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=True,
+        # stdout=subprocess.PIPE,
+        # stderr=subprocess.PIPE,
+        # check=True,
+        capture_output=True,
     )
     # with str(result.stdout, "utf-8") as pipe:
     # for line in str(result.stdout, "utf-8"):
-    # logger.info('Alembic: %s', str(result.stderr, "utf-8"))
-    for line in str(result.stderr, "utf-8").split("\n"):
-        if line:
-            logger.info("Alembic: %s", line)
+
+    log_output_and_errors(result)
 
 
 def downgrade_database(args: Namespace):
-    logger = logging.getLogger(__name__)
     cmdline = construct_alembic_cmdline("downgrade", args)
+
     result = subprocess.run(
         cmdline,
         shell=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=True,
+        # stdout=subprocess.PIPE,
+        # stderr=subprocess.PIPE,
+        # check=True,
+        capture_output=True,
     )
-    # logger.info('A: %s', str(result.stderr, "utf-8"))
-    for line in str(result.stderr, "utf-8").split("\n"):
-        if line:
-            logger.info("Alembic: %s", line)
+
+    log_output_and_errors(result)
