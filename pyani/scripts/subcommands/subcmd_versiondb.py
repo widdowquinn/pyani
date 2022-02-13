@@ -32,6 +32,7 @@ def subcmd_versiondb(args: Namespace) -> int:
     logger = logging.getLogger(__name__)
 
     # Announce what's happening
+    logger.info(termcolor("Database: %s", "cyan"), str(args.dbpath.resolve()))
     if args.upgrade:
         logger.info(termcolor("Downgrading database to %s", bold=True), args.downgrade)
     else:
@@ -45,6 +46,10 @@ def subcmd_versiondb(args: Namespace) -> int:
     if not args.dbpath.is_file():
         logger.error("Database %s does not exist (exiting)", args.dbpath)
         raise SystemError(1)
+
+    # Create environment variables for alembic to access
+    os.environ["PYANI_DATABASE"] = str(args.dbpath.resolve())
+    os.environ["ALEMBIC_MIGRATIONS_DIR"] = "alembic"
 
     # Up/downgrade database
     if args.downgrade:
