@@ -5,6 +5,7 @@ import re
 import shutil
 import subprocess
 import sys
+import datetime
 
 from logging import Logger
 from pathlib import Path
@@ -48,8 +49,13 @@ def subcmd_versiondb(args: Namespace) -> int:
         raise SystemError(1)
 
     # Create environment variables for alembic to access
-    os.environ["PYANI_DATABASE"] = str(args.dbpath.resolve())
+    abs_path = args.dbpath.resolve()
+    os.environ["PYANI_DATABASE"] = str(abs_path)
     os.environ["ALEMBIC_MIGRATIONS_DIR"] = "alembic"
+
+    # Create a backup of the database
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    shutil.copy(args.dbpath.resolve(), f"{abs_path}.{timestamp}.bak")
 
     # Up/downgrade database
     if args.downgrade:
