@@ -34,7 +34,7 @@ def subcmd_versiondb(args: Namespace) -> int:
 
     # Announce what's happening
     logger.info(termcolor("Database: %s", "cyan"), str(args.dbpath.resolve()))
-    if args.upgrade:
+    if args.downgrade:
         logger.info(termcolor("Downgrading database to %s", bold=True), args.downgrade)
     else:
         logger.info(termcolor("Upgrading database to %s", bold=True), args.upgrade)
@@ -64,8 +64,6 @@ def subcmd_versiondb(args: Namespace) -> int:
     elif args.upgrade:
         logger.info("Upgrading database schema to: %s", args.upgrade)
         versiondb.upgrade_database(args)
-
-    # Do some stuff in alembic
 
     return 0
 
