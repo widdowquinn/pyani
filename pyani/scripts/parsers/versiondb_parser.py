@@ -9,6 +9,10 @@ from pyani import pyani_config
 from pyani.scripts import subcommands
 
 
+def get_dry_run_args():
+    pass
+
+
 def build(
     subps: _SubParsersAction, parents: Optional[List[ArgumentParser]] = None
 ) -> None:
@@ -19,7 +23,10 @@ def build(
 
     """
     parser = subps.add_parser(
-        "versiondb", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
+        "versiondb",
+        parents=parents,
+        formatter_class=ArgumentDefaultsHelpFormatter,
+        description="One of --upgrade, --downgrade, or --dry-run must be specified.",
     )
     # Path to database (default: .pyani/pyanidb)
     parser.add_argument(
@@ -30,24 +37,35 @@ def build(
         type=Path,
         help="path to pyani database",
     )
-    direction = parser.add_mutually_exclusive_group(required=False)
+    direction = parser.add_mutually_exclusive_group(required=True)
     direction.add_argument(
-        "-u",
         "--upgrade",
         action="store",
         dest="upgrade",
-        default="head",
+        nargs="?",
+        default=None,
+        const="head",
         metavar="VERSION",
-        help="update an existing database to a newer schema; default is to upgrade to the newest version",
+        help="update an existing database to a newer schema; if no argument is given, 'head' will be used",
     )
     direction.add_argument(
-        "-d",
         "--downgrade",
         action="store",
         dest="downgrade",
+        nargs="?",
         default=None,
+        const="base",
         metavar="VERSION",
-        help="revert an existing database to a older schema",
+        help="revert an existing database to a older schema; if no argument is given, 'base' will be used",
+    )
+    direction.add_argument(
+        "--dry-run",
+        action="store",
+        dest="dry_run",
+        nargs="?",
+        metavar="START:END",
+        default=None,
+        help="produce the SQL that would be run in migrations, without altering the database; start and end versions must be specified",
     )
     parser.add_argument(
         "--alembic_exe",
