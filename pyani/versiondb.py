@@ -82,7 +82,15 @@ def construct_alembic_cmdline(
     args: Namespace,
     alembic_exe=pyani_config.ALEMBIC_DEFAULT,
 ):
-    if direction == "upgrade":
+    if args.dry_run:
+        return [
+            str(alembic_exe),
+            direction,
+            args.dry_run,
+            "--sql",
+            *get_optional_args(args),
+        ]  # FAILED: downgrade with --sql requires <fromrev>:<torev>
+    elif direction == "upgrade":
         return [str(alembic_exe), direction, args.upgrade, *get_optional_args(args)]
     elif direction == "downgrade":
         return [str(alembic_exe), direction, args.downgrade, *get_optional_args(args)]
