@@ -97,14 +97,14 @@ def test_get_version_nonetype():
 # Test case 1: there is no executable
 def test_get_version_no_exe(executable_missing, monkeypatch):
     """Test behaviour when there is no file at the specified executable location."""
-    test_file_1 = Path("/non/existent/blastn")
+    test_file_1 = Path("/non/existent/fastani")
     assert fastani.get_version(test_file_1) == f"No fastANI executable at {test_file_1}"
 
 
 # Test case 2: there is a file, but it is not executable
 def test_get_version_exe_not_executable(executable_not_executable, monkeypatch):
     """Test behaviour when the file at the executable location is not executable."""
-    test_file_2 = Path("/non/executable/blastn")
+    test_file_2 = Path("/non/executable/fastani")
     assert (
         fastani.get_version(test_file_2)
         == f"fastANI exists at {test_file_2} but not executable"
@@ -114,7 +114,7 @@ def test_get_version_exe_not_executable(executable_not_executable, monkeypatch):
 # Test case 3: there is an executable file, but the version can't be retrieved
 def test_get_version_exe_no_version(executable_without_version, monkeypatch):
     """Test behaviour when the version for the executable can not be retrieved."""
-    test_file_3 = Path("/missing/version/blastn")
+    test_file_3 = Path("/missing/version/fastani")
     assert (
         fastani.get_version(test_file_3)
         == f"fastANI exists at {test_file_3} but could not retrieve version"

@@ -52,7 +52,7 @@ class TestfastANISubcommand(unittest.TestCase):
         self.scheduler = "multiprocessing"
 
         # Null logger instance
-        self.logger = logging.getLogger("TestIndexSubcommand logger")
+        self.logger = logging.getLogger("TestfastANISubcommand logger")
         self.logger.addHandler(logging.NullHandler())
 
         # Command line namespaces
