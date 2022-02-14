@@ -80,6 +80,25 @@ def run_migrations_online():
 
 
 if context.is_offline_mode():
+    # Track the current version of the database in a local file
+    # this value is used in the --dry-run option
+    version_file = os.path.join(
+        os.path.dirname(config.config_file_name), "alembic/version.txt"
+    )
+    if os.path.exists(version_file):
+        current_version = open(version_file).read().strip()
+    else:
+        current_version = None
+    context.configure(dialect_name="sqlite", starting_rev=current_version)
+
+    # Perform the dry run
     run_migrations_offline()
+
+    # Write 'new' version to file
+    end_version = context.get_revision_argument()
+    if end_version and end_version != current_version:
+        open(version_file, "w").write(end_version)
+    elif end_version is None:
+        open(version_file, "w").write("base")
 else:
     run_migrations_online()
