@@ -32,9 +32,7 @@ def test_get_version_nonetype():
 def test_get_version_no_exe(executable_missing, monkeypatch):
     """Test behaviour when there is no file at the specified executable location."""
     test_file_1 = Path("/non/existent/alembic")
-    assert (
-        versiondb.get_version(test_file_1) == f"No alembic executable at {test_file_1}"
-    )
+    assert versiondb.get_version(test_file_1) == f"No alembic at {test_file_1}"
 
 
 # Test case 2: there is a file, but it is not executable
