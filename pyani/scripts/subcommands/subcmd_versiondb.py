@@ -55,15 +55,21 @@ def subcmd_versiondb(args: Namespace) -> int:
 
     # Create a backup of the database
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    shutil.copy(args.dbpath.resolve(), f"{abs_path}.{timestamp}.bak")
 
     # Up/downgrade database
-    if args.downgrade:
+    if args.dry_run:
+        logger.info(
+            "(Dry run): Migrating database from %s to %s", *args.dry_run.split(":")
+        )
+        versiondb.migrate_database(args.direction, args, timestamp=timestamp)
+    elif args.downgrade:
         logger.info("Downgrading database schema to: %s", args.downgrade)
-        versiondb.downgrade_database(args)
+        shutil.copy(args.dbpath.resolve(), f"{abs_path}.{timestamp}.bak")
+        versiondb.migrate_database("downgrade", args)
     elif args.upgrade:
         logger.info("Upgrading database schema to: %s", args.upgrade)
-        versiondb.upgrade_database(args)
+        shutil.copy(args.dbpath.resolve(), f"{abs_path}.{timestamp}.bak")
+        versiondb.migrate_database("upgrade", args)
 
     return 0
 

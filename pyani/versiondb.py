@@ -96,38 +96,29 @@ def construct_alembic_cmdline(
         return [str(alembic_exe), direction, args.downgrade, *get_optional_args(args)]
 
 
-def log_output_and_errors(result):
+def log_output_and_errors(result, args: Namespace, timestamp=None):
     logger = logging.getLogger(__name__)
     if result.stdout:
         logger.info("Alembic stdout:")
-    for line in str(result.stdout, "utf-8").split("\n"):
-        if line:
-            logger.info(line)
+        for line in str(result.stdout, "utf-8").split("\n"):
+            if line:
+                logger.info(line)
+        if args.dry_run:
+            abs_path = args.dbpath.resolve()
+            with open(f"{abs_path}.{timestamp}.sql", "w") as sqlfile:
+                for line in str(result.stdout, "utf-8").split("\n"):
+                    if line:
+                        sqlfile.write(f"{line}\n")
+
     if result.stderr:
         logger.info("Alembic stderr:")
-    for line in str(result.stderr, "utf-8").split("\n"):
-        if line:
-            logger.info(line)
+        for line in str(result.stderr, "utf-8").split("\n"):
+            if line:
+                logger.info(line)
 
 
-def upgrade_database(args: Namespace):
-    cmdline = construct_alembic_cmdline("upgrade", args)
-    result = subprocess.run(
-        cmdline,
-        shell=False,
-        # stdout=subprocess.PIPE,
-        # stderr=subprocess.PIPE,
-        # check=True,
-        capture_output=True,
-    )
-    # with str(result.stdout, "utf-8") as pipe:
-    # for line in str(result.stdout, "utf-8"):
-
-    log_output_and_errors(result)
-
-
-def downgrade_database(args: Namespace):
-    cmdline = construct_alembic_cmdline("downgrade", args)
+def migrate_database(direction, args: Namespace):
+    cmdline = construct_alembic_cmdline(direction, args)
 
     result = subprocess.run(
         cmdline,
@@ -138,4 +129,4 @@ def downgrade_database(args: Namespace):
         capture_output=True,
     )
 
-    log_output_and_errors(result)
+    log_output_and_errors(result, args)

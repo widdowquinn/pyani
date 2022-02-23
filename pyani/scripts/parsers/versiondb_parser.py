@@ -1,6 +1,11 @@
 """Provides parser for versiondb subcommand."""
 
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, _SubParsersAction
+from argparse import (
+    ArgumentDefaultsHelpFormatter,
+    ArgumentParser,
+    _SubParsersAction,
+    Action,
+)
 from pathlib import Path
 from typing import List, Optional
 
@@ -9,8 +14,14 @@ from pyani import pyani_config
 from pyani.scripts import subcommands
 
 
-def get_dry_run_args():
-    pass
+class DryRunAction(Action):
+    def __init__(self, option_strings, **kwargs):
+        super().__init__(option_strings, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        print("%r %r %r" % (namespace, values, option_string))
+        setattr(namespace, "direction", values.pop(0))
+        setattr(namespace, "dry_run", values.pop(0))
 
 
 def build(
@@ -60,12 +71,13 @@ def build(
     )
     direction.add_argument(
         "--dry-run",
-        action="store",
+        action=DryRunAction,
         dest="dry_run",
-        nargs="?",
-        metavar="START:END",
+        required=False,
+        nargs=2,
+        metavar=("DIRECTION", "START:END"),
         default=None,
-        help="produce the SQL that would be run in migrations, without altering the database; start and end versions must be specified",
+        help="produce the SQL that would be run in migrations, without altering the database; a direction {upgrade or downgrade} and start and end versions e.g., {head:base, base:head, base:<revision_id>} must be specified",
     )
     parser.add_argument(
         "--alembic_exe",
