@@ -71,6 +71,7 @@ def build(
         "--alembic_exe",
         action="store",
         dest="alembic_exe",
+        required=False,
         default=pyani_config.ALEMBIC_DEFAULT,
         type=Path,
         help="path to alembic executable",
@@ -81,6 +82,7 @@ def build(
         action="store",
         dest="dbname",
         default=None,
+        required=False,
         metavar="NAME",
         help="used to specify an individual database in a multidb setup",
     )
@@ -90,6 +92,7 @@ def build(
         action="store",
         dest="alembic_config",
         default=None,
+        required=False,
         metavar="FILE",
         help="used to specify a config file for alembic",
     )
