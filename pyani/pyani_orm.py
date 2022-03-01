@@ -297,6 +297,7 @@ class Comparison(Base):
             "maxmatch",
             "kmersize",
             "minmatch",
+            name="fastani_reqs",
         ),
     )
 
