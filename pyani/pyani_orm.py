@@ -53,7 +53,17 @@ import pandas as pd  # type: ignore
 from sqlalchemy import and_  # type: ignore
 import sqlalchemy
 from sqlalchemy import UniqueConstraint, create_engine, Table
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Boolean
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Float,
+    Boolean,
+    types,
+    PrimaryKeyConstraint,
+)
 from sqlalchemy.ext.declarative import declarative_base  # type: ignore
 from sqlalchemy.orm import relationship, sessionmaker  # type: ignore
 
@@ -102,6 +112,14 @@ class LabelTuple(NamedTuple):
 
     label: str
     class_label: str
+
+
+class Alembic(Base):
+    __tablename__ = "alembic_version"
+    __table_args__ = (PrimaryKeyConstraint("version_num", name="alembic_version_pkc"),)
+    # __table_args__ = tuple([PrimaryKeyConstraint('alembic_version_pkc', name='version_num')])
+
+    version_num = Column(types.VARCHAR(32), primary_key=True, nullable=False)
 
 
 class Label(Base):
@@ -345,6 +363,19 @@ def get_session(dbpath: Path) -> Any:
     engine = create_engine("sqlite:///{}".format(dbpath), echo=False)
     Session.configure(bind=engine)
     return Session()
+
+
+def add_alembic(session, version_num):
+    try:
+        db_version = Alembic(version_num=version_num)
+    except Exception:
+        raise PyaniORMException(f"Could not create Alembic() object {version_num}")
+    try:
+        session.add(db_version)
+        session.commit()
+    except Exception:
+        raise PyaniORMException(f"Could not add version {version_num}")
+    return db_version.version_num
 
 
 def get_comparison_dict(session: Any) -> Dict[Tuple, Any]:
