@@ -45,6 +45,8 @@ from argparse import Namespace
 
 from pyani import pyani_orm
 
+from pyani.pyani_orm import PyaniORMException, get_session, add_alembic
+
 
 def subcmd_createdb(args: Namespace) -> int:
     """Create an empty pyani database.
@@ -71,5 +73,30 @@ def subcmd_createdb(args: Namespace) -> int:
     # Create the empty database
     logger.info("Creating pyani database at %s", args.dbpath)
     pyani_orm.create_db(args.dbpath)
+
+    # Get connection to existing database. This may or may not have data
+    logger.debug("Connecting to database %s", args.dbpath)
+    try:
+        session = get_session(args.dbpath)
+    except Exception:
+        logger.error(
+            "Could not connect to database %s (exiting)", args.dbpath, exc_info=True
+        )
+        raise SystemExit(1)
+
+    # Add information about the database version to the database
+    logger.debug("Adding database version to database %s...", args.dbpath)
+    try:
+        version_num = add_alembic(
+            session, version_num="92f7f6b1626e"  # most current version (fastani)
+        )
+    except PyaniORMException:
+        logger.error(
+            "Could not add db_version %s to the database (exiting)",
+            version_num,
+            exc_info=True,
+        )
+        raise SystemExit(1)
+    logger.debug("...added db_version: %s to the database", version_num)
 
     return 0
