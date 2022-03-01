@@ -7,12 +7,15 @@ pytest -v
 
 import os
 
+from argparse import Namespace
 from pathlib import Path
 from typing import List, NamedTuple, Tuple
 
 import pandas as pd
 import pytest
 import unittest
+import shutil
+import filecmp
 
 from pandas.util.testing import assert_frame_equal
 
@@ -55,6 +58,56 @@ def test_get_version_exe_no_version(executable_without_version, monkeypatch):
     )
 
 
+@pytest.fixture
+def versiondb_namespaces(dir_versiondb_in):
+    {
+        "upgrade": Namespace(
+            dbpath=dir_versiondb_in / "pyanidb_upgrade",
+            upgrade="head",
+            downgrade=None,
+            dry_run=None,
+            direction=None,
+        ),
+        "downgrade": Namespace(
+            dbpath=dir_versiondb_in / "pyanidb_downgrade",
+            upgrade=None,
+            downgrade="base",
+            dry_run=None,
+            direction=None,
+        ),
+        "dry_down": Namespace(
+            dbpath=dir_versiondb_in / "pyanidb_dry_down",
+            upgrade=None,
+            downgrade=None,
+            dry_run="head:base",
+            direction="downgrade",
+        ),
+        "dry_up": Namespace(
+            dbpath=dir_versiondb_in / "pyanidb_dry_up",
+            upgrade=None,
+            downgrade=None,
+            dry_run="base:head",
+            direction="upgrade",
+        ),
+        "altdb": Namespace(
+            dbpath=dir_versiondb_in / "pyanidb_altdb",
+            upgrade="head",
+            downgrade=None,
+            dry_run=None,
+            direction=None,
+            name="altdb",
+        ),
+        "alt_config": Namespace(
+            dbpath=dir_versiondb_in / "pyanidb_alt_config",
+            upgrade="head",
+            downgrade=None,
+            dry_run=None,
+            direction=None,
+            config="alt_config",
+        ),
+    }
+
+
 # Test alembic command generation
 def test_alembic_cmdline_generation():
     """Generate single alembic command line."""
@@ -65,12 +118,41 @@ def test_alembic_cmdline_generation():
 
 
 # Test upgrade
-def test_versiondb_upgrade():
+def test_versiondb_upgrade(dir_versiondb_in):
     """ """
-    pass
+    shutil.copy(dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_upgrade")
 
 
 # Test downgrade
+def test_versiondb_downgrade(dir_versiondb_in):
+    """ """
+    shutil.copy(dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_downgrade")
 
 
-# Test dry-run result
+# Test dry-run upgrade result
+def test_versiondb_dry_upgrade(dir_versiondb_in):
+    shutil.copy(dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_dry_up")
+
+    assert filecmp.cmp(
+        dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_dry_up"
+    )
+
+
+# Test dry-run upgrade result
+def test_versiondb_dry_downgrade(dir_versiondb_in):
+    shutil.copy(dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_dry_down")
+
+    assert filecmp.cmp(
+        dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_dry_down"
+    )
+
+
+# Test dry-run upgrade result
+def test_versiondb_altname(dir_versiondb_in):
+    shutil.copy(dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_altdb")
+
+
+# Test dry-run upgrade result
+def test_versiondb_alt_config(dir_versiondb_in):
+
+    shutil.copy(dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_alt_config")

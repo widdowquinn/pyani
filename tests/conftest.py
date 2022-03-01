@@ -66,6 +66,11 @@ TESTSPATH = Path(__file__).parents[0]
 FIXTUREPATH = TESTSPATH / "fixtures"
 
 
+def pytest_configure():
+    pytest.testspath = Path(__file__).parents[0]
+    pytest.fixturepath = pytest.testspath / "fixtures"
+
+
 # Convenience structs to emulate returned objects
 class MockGenome(NamedTuple):
     """Mock genome object."""
@@ -140,6 +145,12 @@ def dir_fastani_in():
 def dir_graphics_in():
     """Input files for graphics tests."""
     return FIXTUREPATH / "graphics"
+
+
+@pytest.fixture
+def dir_versiondb_in():
+    """Input files for versiondb ests."""
+    return FIXTUREPATH / "versiondb"
 
 
 @pytest.fixture
