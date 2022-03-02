@@ -96,7 +96,7 @@ def construct_alembic_cmdline(
         return [str(alembic_exe), direction, args.downgrade, *get_optional_args(args)]
 
 
-def log_output_and_errors(result, args: Namespace, timestamp=None):
+def log_output_and_errors(result, direction, args: Namespace, timestamp=None):
     logger = logging.getLogger(__name__)
     if result.stdout:
         logger.info("Alembic stdout:")
@@ -105,7 +105,7 @@ def log_output_and_errors(result, args: Namespace, timestamp=None):
                 logger.info(line)
         if args.dry_run:
             abs_path = args.dbpath.resolve()
-            with open(f"{abs_path}.{timestamp}.sql", "w") as sqlfile:
+            with open(f"{abs_path}.{direction}.{timestamp}.sql", "w") as sqlfile:
                 for line in str(result.stdout, "utf-8").split("\n"):
                     if line:
                         sqlfile.write(f"{line}\n")
@@ -117,7 +117,7 @@ def log_output_and_errors(result, args: Namespace, timestamp=None):
                 logger.info(line)
 
 
-def migrate_database(direction, args: Namespace):
+def migrate_database(direction, args: Namespace, timestamp=None):
     cmdline = construct_alembic_cmdline(direction, args)
 
     result = subprocess.run(
@@ -129,4 +129,4 @@ def migrate_database(direction, args: Namespace):
         capture_output=True,
     )
 
-    log_output_and_errors(result, args)
+    log_output_and_errors(result, direction, args, timestamp)

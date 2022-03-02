@@ -65,11 +65,11 @@ def subcmd_versiondb(args: Namespace) -> int:
     elif args.downgrade:
         logger.info("Downgrading database schema to: %s", args.downgrade)
         shutil.copy(args.dbpath.resolve(), f"{abs_path}.{timestamp}.bak")
-        versiondb.migrate_database("downgrade", args)
+        versiondb.migrate_database("downgrade", args, timestamp=timestamp)
     elif args.upgrade:
         logger.info("Upgrading database schema to: %s", args.upgrade)
         shutil.copy(args.dbpath.resolve(), f"{abs_path}.{timestamp}.bak")
-        versiondb.migrate_database("upgrade", args)
+        versiondb.migrate_database("upgrade", args, timestamp=timestamp)
 
     return 0
 
