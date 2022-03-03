@@ -120,39 +120,78 @@ def test_alembic_cmdline_generation():
 # Test upgrade
 def test_versiondb_upgrade(dir_versiondb_in):
     """ """
-    shutil.copy(dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_upgrade")
+    args = versiondb_namespaces["upgrade"]
+    timestamp = "testing"
+    shutil.copy(dir_versiondb_in / "base_pyanidb", dir_versiondb_in / "pyanidb_upgrade")
+    versiondb.migrate_database(args.direction, args, timestamp)
+
+    assert filecmp.cmp(
+        dir_versiondb_in / "pyanidb_upgrade", dir_versiondb_in / "head_pyanidb"
+    )
 
 
 # Test downgrade
 def test_versiondb_downgrade(dir_versiondb_in):
     """ """
-    shutil.copy(dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_downgrade")
+    args = versiondb_namespaces["downgrade"]
+    timestamp = "testing"
+    shutil.copy(
+        dir_versiondb_in / "head_pyanidb", dir_versiondb_in / "pyanidb_downgrade"
+    )
+    versiondb.migrate_database(args.direction, args, timestamp)
+
+    assert filecmp.cmp(
+        dir_versiondb_in / "pyanidb_downgrade", dir_versiondb_in / "base_pyanidb"
+    )
 
 
 # Test dry-run upgrade result
 def test_versiondb_dry_upgrade(dir_versiondb_in):
-    shutil.copy(dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_dry_up")
+    args = versiondb_namespaces["dry_up"]
+    timestamp = "testing"
+    shutil.copy(dir_versiondb_in / "base_pyanidb", dir_versiondb_in / "pyanidb_dry_up")
+    versiondb.migrate_database(args.direction, args, timestamp)
 
     assert filecmp.cmp(
-        dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_dry_up"
+        dir_versiondb_in / "pyanidb_dry_up", dir_versiondb_in / "head_pyanidb"
     )
 
 
 # Test dry-run upgrade result
 def test_versiondb_dry_downgrade(dir_versiondb_in):
-    shutil.copy(dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_dry_down")
+    args = versiondb_namespaces["dry_down"]
+    timestamp = "testing"
+    shutil.copy(
+        dir_versiondb_in / "head_pyanidb", dir_versiondb_in / "pyanidb_dry_down"
+    )
+    versiondb.migrate_database(args.direction, args, timestamp)
 
     assert filecmp.cmp(
-        dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_dry_down"
+        dir_versiondb_in / "pyanidb_dry_down", dir_versiondb_in / "base_pyanidb"
     )
 
 
 # Test dry-run upgrade result
 def test_versiondb_altname(dir_versiondb_in):
-    shutil.copy(dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_altdb")
+    args = versiondb_namespaces["altname"]
+    timestamp = "testing"
+    shutil.copy(dir_versiondb_in / "head_pyanidb", dir_versiondb_in / "pyanidb_altdb")
+    versiondb.migrate_database(args.direction, args, timestamp)
+
+    assert filecmp.cmp(
+        dir_versiondb_in / "pyanidb_altdb", dir_versiondb_in / "head_pyanidb"
+    )
 
 
 # Test dry-run upgrade result
 def test_versiondb_alt_config(dir_versiondb_in):
+    args = versiondb_namespaces["alt_config"]
+    timestamp = "testing"
+    shutil.copy(
+        dir_versiondb_in / "head_pyanidb", dir_versiondb_in / "pyanidb_alt_config"
+    )
+    versiondb.migrate_database(args.direction, args, timestamp)
 
-    shutil.copy(dir_versiondb_in / "pyanidb", dir_versiondb_in / "pyanidb_alt_config")
+    assert filecmp.cmp(
+        dir_versiondb_in / "pyanidb_alt_config", dir_versiondb_in / "head_pyanidb"
+    )
