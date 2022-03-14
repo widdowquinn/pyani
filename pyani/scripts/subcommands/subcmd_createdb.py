@@ -45,7 +45,7 @@ from argparse import Namespace
 
 from pyani import pyani_orm
 
-from pyani.pyani_orm import PyaniORMException, get_session, add_alembic
+from pyani.pyani_orm import PyaniORMException, get_session
 
 
 def subcmd_createdb(args: Namespace) -> int:
@@ -87,9 +87,8 @@ def subcmd_createdb(args: Namespace) -> int:
     # Add information about the database version to the database
     logger.debug("Adding database version to database %s...", args.dbpath)
     try:
-        version_num = add_alembic(
-            session, version_num="92f7f6b1626e"  # most current version (fastani)
-        )
+        version_num = "92f7f6b1626e"  # most current version (fastani)
+        pyani_orm.add_alembic(session, version_num=version_num)
     except PyaniORMException:
         logger.error(
             "Could not add db_version %s to the database (exiting)",
