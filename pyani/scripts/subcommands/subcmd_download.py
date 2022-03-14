@@ -40,6 +40,7 @@
 """Provides the download subcommand for pyani."""
 
 import logging
+import subprocess
 
 from argparse import Namespace
 from typing import Dict, List, NamedTuple, Optional, Tuple
@@ -98,7 +99,9 @@ def dl_info_to_str(esummary, uid_class) -> str:
 
 
 def download_data(
-    args: Namespace, api_key: Optional[str], asm_dict: Dict[str, List],
+    args: Namespace,
+    api_key: Optional[str],
+    asm_dict: Dict[str, List],
 ) -> Tuple[List, List, List]:
     """Download the accessions indicated in the passed dictionary.
 
@@ -131,7 +134,14 @@ def download_data(
                     exc_info=True,
                 )
                 skippedlist.append(
-                    Skipped(tid, uid, "", "", None, "RefSeq",)
+                    Skipped(
+                        tid,
+                        uid,
+                        "",
+                        "",
+                        None,
+                        "RefSeq",
+                    )
                 )  # pylint: disable=no-member
                 continue
 
@@ -182,7 +192,11 @@ def extract_genomes(args: Namespace, dlstatus: download.DLStatus, esummary) -> N
         logger.warning("Output file %s exists, not extracting", ename)
     else:
         logger.debug("Extracting archive %s to %s", dlstatus.outfname, ename)
-        download.extract_contigs(dlstatus.outfname, ename)
+        try:
+            download.extract_contigs(dlstatus.outfname, ename)
+        except subprocess.CalledProcessError:
+            logger.warning("Could not extract %s; continuing", dlstatus.outfname)
+            pass
 
     # Modify sequence ID header if Kraken option active
     if args.kraken:
