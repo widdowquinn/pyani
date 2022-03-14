@@ -78,6 +78,7 @@ jobs:
             echo 'export PATH=$PWD/sqlite-tools-linux-x86-3380100/sqlite3:$PATH' >> $BASH_ENV
             source $BASH_ENV
             echo $PATH
+            /home/circleci/repo/sqlite-tools-linux-x86-3380100/sqlite3 -help
             sqlite3 -help
 
 
