@@ -74,7 +74,7 @@ jobs:
             wget https://www.sqlite.org/2022/sqlite-tools-linux-x86-3380100.zip
             unzip sqlite-tools-linux-x86-3380100.zip
             ls sqlite-tools-linux-x86-3380100
-            echo 'export PATH=$PWD:$PATH' >> $BASH_ENV
+            echo 'export PATH=$PWD/sqlite-tools-linux-x86-3380100/:$PATH' >> $BASH_ENV
             source $BASH_ENV
             echo $PATH
 
