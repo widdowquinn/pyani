@@ -76,6 +76,7 @@ jobs:
             ls
             echo 'export PATH=$PWD:$PATH' >> $BASH_ENV
             source $BASH_ENV
+            echo $PATH
 
 
       - run:
