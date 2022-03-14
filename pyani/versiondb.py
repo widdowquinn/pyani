@@ -73,7 +73,7 @@ def get_optional_args(args: Namespace):
     if args.dbname:
         opts.extend(["-n", args.dbname])
     if args.alembic_config:
-        opts.extend(["-c", args.config])
+        opts.extend(["-c", args.alembic_config])
     return opts
 
 
@@ -123,9 +123,6 @@ def migrate_database(direction, args: Namespace, timestamp=None):
     result = subprocess.run(
         cmdline,
         shell=False,
-        # stdout=subprocess.PIPE,
-        # stderr=subprocess.PIPE,
-        # check=True,
         capture_output=True,
     )
 
