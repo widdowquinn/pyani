@@ -68,6 +68,8 @@ def test_get_version_exe_no_version(executable_without_version, monkeypatch):
 
 
 def versiondb_namespaces(namespace, dir_versiondb_in):
+    """Namespaces for different alembic scenarios."""
+
     return {
         "upgrade": Namespace(
             dbpath="pyanidb_upgrade",
@@ -135,6 +137,7 @@ def versiondb_namespaces(namespace, dir_versiondb_in):
 
 
 def expected_diffs():
+    """Expected (acceptable) differences between output and target databases."""
     return {
         "upgrade": b"2a3,7\n> CREATE TABLE alembic_version (\n> \tversion_num VARCHAR(32) NOT NULL, \n> \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n> );\n> INSERT INTO alembic_version VALUES('92f7f6b1626e');\n54,65c59\n< CREATE TABLE runs_comparisons (\n< \tcomparison_id INTEGER, \n< \trun_id INTEGER, \n< \tFOREIGN KEY(comparison_id) REFERENCES comparisons (comparison_id), \n< \tFOREIGN KEY(run_id) REFERENCES runs (run_id)\n< );\n< CREATE TABLE alembic_version (\n< \tversion_num VARCHAR(32) NOT NULL, \n< \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n< );\n< INSERT INTO alembic_version VALUES('92f7f6b1626e');\n< CREATE TABLE IF NOT EXISTS \"comparisons\" (\n---\n> CREATE TABLE comparisons (\n81d74\n< \tCHECK (maxmatch IN (0, 1)), \n85a79,84\n> CREATE TABLE runs_comparisons (\n> \tcomparison_id INTEGER, \n> \trun_id INTEGER, \n> \tFOREIGN KEY(comparison_id) REFERENCES comparisons (comparison_id), \n> \tFOREIGN KEY(run_id) REFERENCES runs (run_id)\n> );\n",
         "downgrade": b'3,6d2\n< CREATE TABLE alembic_version (\n< \tversion_num VARCHAR(32) NOT NULL, \n< \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n< );\n58,64c54\n< CREATE TABLE runs_comparisons (\n< \tcomparison_id INTEGER, \n< \trun_id INTEGER, \n< \tFOREIGN KEY(comparison_id) REFERENCES comparisons (comparison_id), \n< \tFOREIGN KEY(run_id) REFERENCES runs (run_id)\n< );\n< CREATE TABLE IF NOT EXISTS "comparisons" (\n---\n> CREATE TABLE comparisons (\n78,79c68\n< \tCHECK (maxmatch IN (0, 1)), \n< \tCONSTRAINT base_reqs UNIQUE (query_id, subject_id, program, version, fragsize, maxmatch), \n---\n> \tUNIQUE (query_id, subject_id, program, version, fragsize, maxmatch), \n82a72,77\n> CREATE TABLE runs_comparisons (\n> \tcomparison_id INTEGER, \n> \trun_id INTEGER, \n> \tFOREIGN KEY(comparison_id) REFERENCES comparisons (comparison_id), \n> \tFOREIGN KEY(run_id) REFERENCES runs (run_id)\n> );\n',
@@ -145,6 +148,8 @@ def expected_diffs():
 
 # Create database dump
 def dumpdb(abs_dbpath):
+    """Dump contents of database to a plain-text file."""
+
     cmdline = ["sqlite3", f"{abs_dbpath}", ".dump"]
     with open(f"{abs_dbpath}.sql", "w") as outfile:
         subprocess.run(
@@ -194,8 +199,47 @@ def cleanup(abs_dbpath, dir_versiondb_out, args):
 
 
 # Test alembic command generation
-def test_alembic_cmdline_generation():
-    """Generate single alembic command line."""
+def test_alembic_cmdline_generation(dir_versiondb_in):
+    """Generate alembic command lines."""
+
+    alembic_cmds = []
+    upgrade_args = versiondb_namespaces("upgrade", dir_versiondb_in)
+    alembic_cmds.append(
+        " ".join(
+            versiondb.construct_alembic_cmdline(upgrade_args.direction, upgrade_args)
+        )
+    )
+
+    downgrade_args = versiondb_namespaces("downgrade", dir_versiondb_in)
+    alembic_cmds.append(
+        " ".join(
+            versiondb.construct_alembic_cmdline(
+                downgrade_args.direction, downgrade_args
+            )
+        )
+    )
+
+    altdb_args = versiondb_namespaces("altdb", dir_versiondb_in)
+    alembic_cmds.append(
+        " ".join(versiondb.construct_alembic_cmdline(altdb_args.direction, altdb_args))
+    )
+
+    alt_config_args = versiondb_namespaces("alt_config", dir_versiondb_in)
+    alembic_cmds.append(
+        " ".join(
+            versiondb.construct_alembic_cmdline(
+                alt_config_args.direction, alt_config_args
+            )
+        )
+    )
+
+    assert alembic_cmds == [
+        "alembic upgrade head",
+        "alembic downgrade base",
+        f"alembic upgrade head -n {altdb_args.dbname}",
+        f"alembic upgrade head -c {alt_config_args.alembic_config}",
+    ]
+
     pass
     # alembic_cmd = versiondb.construct_alembic_cmdline()
     # dir_alembic = tmp_path / "versiondb_output"
