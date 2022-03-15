@@ -7,7 +7,7 @@ numpy
 openpyxl
 pandas
 Pillow
-PyQt5
+PyQt
 scipy
 seaborn
 sqlalchemy
