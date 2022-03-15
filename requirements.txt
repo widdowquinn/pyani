@@ -1,5 +1,4 @@
 biopython
-ete3
 matplotlib
 namedlist
 networkx
@@ -7,7 +6,6 @@ numpy
 openpyxl
 pandas
 Pillow
-PyQt
 scipy
 seaborn
 sqlalchemy

@@ -8,6 +8,7 @@ setup_env:
 	@conda install --file requirements-dev.txt --yes
 	@conda install --file requirements.txt --yes
 	@conda install --file requirements-thirdparty.txt --yes
+	@conda install --file requirements-pyqt-conda.txt --yes
 	@pip install -r requirements-pip.txt
 	@pre-commit install
 	@pip install -U -e .
