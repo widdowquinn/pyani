@@ -146,7 +146,7 @@ def expected_diffs(namespace):
         "downgrade": b'3,6d2\n< CREATE TABLE alembic_version (\n< \tversion_num VARCHAR(32) NOT NULL, \n< \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n< );\n58,64c54\n< CREATE TABLE runs_comparisons (\n< \tcomparison_id INTEGER, \n< \trun_id INTEGER, \n< \tFOREIGN KEY(comparison_id) REFERENCES comparisons (comparison_id), \n< \tFOREIGN KEY(run_id) REFERENCES runs (run_id)\n< );\n< CREATE TABLE IF NOT EXISTS "comparisons" (\n---\n> CREATE TABLE comparisons (\n78,79c68\n< \tCHECK (maxmatch IN (0, 1)), \n< \tCONSTRAINT base_reqs UNIQUE (query_id, subject_id, program, version, fragsize, maxmatch), \n---\n> \tUNIQUE (query_id, subject_id, program, version, fragsize, maxmatch), \n82a72,77\n> CREATE TABLE runs_comparisons (\n> \tcomparison_id INTEGER, \n> \trun_id INTEGER, \n> \tFOREIGN KEY(comparison_id) REFERENCES comparisons (comparison_id), \n> \tFOREIGN KEY(run_id) REFERENCES runs (run_id)\n> );\n',
         "altdb": b"2a3,7\n> CREATE TABLE alembic_version (\n> \tversion_num VARCHAR(32) NOT NULL, \n> \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n> );\n> INSERT INTO alembic_version VALUES('92f7f6b1626e');\n66a72,73\n> \tkmersize INTEGER, \n> \tminmatch FLOAT, \n68c75\n< \tCONSTRAINT base_reqs UNIQUE (query_id, subject_id, program, version, fragsize, maxmatch), \n---\n> \tCONSTRAINT fastani_reqs UNIQUE (query_id, subject_id, program, version, fragsize, maxmatch, kmersize, minmatch), \n",
         "alt_config": b"2a3,7\n> CREATE TABLE alembic_version (\n> \tversion_num VARCHAR(32) NOT NULL, \n> \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n> );\n> INSERT INTO alembic_version VALUES('92f7f6b1626e');\n66a72,73\n> \tkmersize INTEGER, \n> \tminmatch FLOAT, \n68c75\n< \tCONSTRAINT base_reqs UNIQUE (query_id, subject_id, program, version, fragsize, maxmatch), \n---\n> \tCONSTRAINT fastani_reqs UNIQUE (query_id, subject_id, program, version, fragsize, maxmatch, kmersize, minmatch), \n",
-    }
+    }.get(namespace, None)
 
 
 # Create database dump
@@ -298,7 +298,7 @@ def test_versiondb_upgrade(
     # Move files
     cleanup(abs_dbpath, dir_versiondb_out, args)
 
-    assert result.stdout == expected_diffs()["upgrade"]
+    assert result.stdout == expected_diffs("upgrade")
 
 
 def test_versiondb_downgrade(downgrade_namespace, dir_versiondb_in, dir_versiondb_out):
@@ -343,7 +343,7 @@ def test_versiondb_downgrade(downgrade_namespace, dir_versiondb_in, dir_versiond
     # Move output files
     cleanup(abs_dbpath, dir_versiondb_out, args)
 
-    assert result.stdout == expected_diffs()["downgrade"]
+    assert result.stdout == expected_diffs("downgrade")
 
 
 # Test alternate dbname
@@ -387,7 +387,7 @@ def test_versiondb_altdb(altdb_namespace, dir_versiondb_in, dir_versiondb_out):
     # Move files
     cleanup(abs_dbpath, dir_versiondb_out, args)
 
-    assert result.stdout == expected_diffs()["altdb"]
+    assert result.stdout == expected_diffs("altdb")
 
 
 # Test alt_config result
@@ -433,4 +433,4 @@ def test_versiondb_alt_config(
     # Move files
     cleanup(abs_dbpath, dir_versiondb_out, args)
 
-    assert result.stdout == expected_diffs()["alt_config"]
+    assert result.stdout == expected_diffs("alt_config")
