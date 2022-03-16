@@ -159,6 +159,7 @@ def dumpdb(abs_dbpath):
             cmdline,
             shell=False,
             stdout=outfile,
+            stderr=subprocess.PIPE,
         )
     return f"{abs_dbpath}.sql"
 
@@ -182,7 +183,8 @@ def name_base_reqs(startdb_dump):
     subprocess.run(
         sed_cmd,
         shell=False,
-        capture_output=True,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
     )
 
 
@@ -277,7 +279,8 @@ def test_versiondb_upgrade(
         init_cmd,
         stdin=open(startdb_dump),
         shell=False,
-        capture_output=True,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
     )
 
     # Run test migration
@@ -292,7 +295,8 @@ def test_versiondb_upgrade(
     result = subprocess.run(
         diff_cmd,
         shell=False,
-        capture_output=True,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
     )
 
     # Move files
@@ -319,7 +323,8 @@ def test_versiondb_downgrade(downgrade_namespace, dir_versiondb_in, dir_versiond
         init_cmd,
         stdin=open(startdb_dump),
         shell=False,
-        capture_output=True,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
     )
 
     # Run test migration
@@ -329,15 +334,13 @@ def test_versiondb_downgrade(downgrade_namespace, dir_versiondb_in, dir_versiond
     enddb_dump = dumpdb(abs_dbpath)
     targetdb_dump = dumpdb(args.target)
 
-    sys.stdout.write(f"{enddb_dump}\n")
-    sys.stdout.write(f"{targetdb_dump}\n")
-
     # Run diff
     diff_cmd = ["diff", "--suppress-common-lines", enddb_dump, targetdb_dump]
     result = subprocess.run(
         diff_cmd,
         shell=False,
-        capture_output=True,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
     )
 
     # Move output files
@@ -366,7 +369,8 @@ def test_versiondb_altdb(altdb_namespace, dir_versiondb_in, dir_versiondb_out):
         init_cmd,
         stdin=open(startdb_dump),
         shell=False,
-        capture_output=True,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
     )
 
     # Run test migration
@@ -381,7 +385,8 @@ def test_versiondb_altdb(altdb_namespace, dir_versiondb_in, dir_versiondb_out):
     result = subprocess.run(
         diff_cmd,
         shell=False,
-        capture_output=True,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
     )
 
     # Move files
@@ -412,7 +417,8 @@ def test_versiondb_alt_config(
         init_cmd,
         stdin=open(startdb_dump),
         shell=False,
-        capture_output=True,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
     )
 
     # Run test migration
@@ -427,7 +433,8 @@ def test_versiondb_alt_config(
     result = subprocess.run(
         diff_cmd,
         shell=False,
-        capture_output=True,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
     )
 
     # Move files
