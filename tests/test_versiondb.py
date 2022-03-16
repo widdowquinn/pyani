@@ -8,6 +8,7 @@ pytest -v
 import os
 import sys
 import subprocess
+import platform
 
 from argparse import Namespace
 from pathlib import Path
@@ -173,13 +174,21 @@ def name_base_reqs(startdb_dump):
 
     # Edit .dump file so that the unique constraint is named
     # This is required in order to subsequently modify it
-    sed_cmd = [
-        "sed",
-        "-i",
-        ".bak",
-        f"s/{old_constraint}/{new_constraint}/",
-        startdb_dump,
-    ]
+    if platform.system() == "Darwin":
+        sed_cmd = [
+            "sed",
+            "-i",
+            ".bak",
+            f"s/{old_constraint}/{new_constraint}/",
+            startdb_dump,
+        ]
+    else:
+        sed_cmd = [
+            "sed",
+            "-i",
+            f"s/{old_constraint}/{new_constraint}/",
+            startdb_dump,
+        ]
     subprocess.run(
         sed_cmd,
         shell=False,
