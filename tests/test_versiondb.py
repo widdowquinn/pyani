@@ -188,17 +188,33 @@ def name_base_reqs(startdb_dump):
     )
 
 
-def cleanup(abs_dbpath, dir_versiondb_out, args):
+def cleanup(abs_dbpath, test, dir_versiondb_out, args):
     """Remove files created for test."""
+    # db = abs_dbpath.name
+    # target = args.target.name
+    # start = args.start.name
 
-    shutil.move(abs_dbpath, dir_versiondb_out)
-    shutil.move(f"{abs_dbpath}.sql", dir_versiondb_out)
-    shutil.move(f"{args.target}.sql", dir_versiondb_out)
-    shutil.move(f"{args.start}.sql", dir_versiondb_out)
+    dir_versiondb_out.mkdir(exist_ok=True)
+    Path(f"{dir_versiondb_out}/{test}").mkdir(exist_ok=True)
+
+    # The files must be moved, but shutil.move() does not work
+    # if the file already exists, so this is a two-step process
+    # Copy files to new location
+    shutil.copy(abs_dbpath, dir_versiondb_out / test)
+    shutil.copy(f"{abs_dbpath}.sql", dir_versiondb_out / test)
+    shutil.copy(f"{args.target}.sql", dir_versiondb_out / test)
+    shutil.copy(f"{args.start}.sql", dir_versiondb_out / test)
+
+    # Remove old files
+    os.remove(abs_dbpath)
+    os.remove(f"{abs_dbpath}.sql")
+    os.remove(f"{args.target}.sql")
+    os.remove(f"{args.start}.sql")
 
     # This file is not generated in the downgrade test
     try:
-        shutil.move(f"{args.start}.sql.bak", dir_versiondb_out)
+        shutil.copy(f"{args.start}.sql.bak", dir_versiondb_out / test)
+        os.remove(f"{args.start}.sql.bak")
     except FileNotFoundError:
         pass
 
@@ -300,7 +316,7 @@ def test_versiondb_upgrade(
     )
 
     # Move files
-    cleanup(abs_dbpath, dir_versiondb_out, args)
+    cleanup(abs_dbpath, "upgrade", dir_versiondb_out, args)
 
     assert result.stdout == expected_diffs("upgrade")
 
@@ -344,7 +360,7 @@ def test_versiondb_downgrade(downgrade_namespace, dir_versiondb_in, dir_versiond
     )
 
     # Move output files
-    cleanup(abs_dbpath, dir_versiondb_out, args)
+    cleanup(abs_dbpath, "downgrade", dir_versiondb_out, args)
 
     assert result.stdout == expected_diffs("downgrade")
 
@@ -390,7 +406,7 @@ def test_versiondb_altdb(altdb_namespace, dir_versiondb_in, dir_versiondb_out):
     )
 
     # Move files
-    cleanup(abs_dbpath, dir_versiondb_out, args)
+    cleanup(abs_dbpath, "altdb", dir_versiondb_out, args)
 
     assert result.stdout == expected_diffs("altdb")
 
@@ -438,6 +454,6 @@ def test_versiondb_alt_config(
     )
 
     # Move files
-    cleanup(abs_dbpath, dir_versiondb_out, args)
+    cleanup(abs_dbpath, "alt_config", dir_versiondb_out, args)
 
     assert result.stdout == expected_diffs("alt_config")

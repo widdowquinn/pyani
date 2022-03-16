@@ -156,7 +156,7 @@ def dir_versiondb_in():
 @pytest.fixture
 def dir_versiondb_out():
     """Output files for versiondb tests."""
-    return TESTSPATH / "test_output/versiondb"
+    return TESTSPATH / "test_output/subcmd_versiondb"
 
 
 @pytest.fixture
