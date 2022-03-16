@@ -52,6 +52,7 @@ jobs:
       - run:
           name: install third-party tools
           command: |
+            sudo apt list -a sqlite3
             sudo apt-get install csh mummer ncbi-blast+ sqlite3
       - run:
           name: install legacy BLAST
