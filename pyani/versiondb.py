@@ -121,9 +121,7 @@ def migrate_database(direction, args: Namespace, timestamp=None):
     cmdline = construct_alembic_cmdline(direction, args)
 
     result = subprocess.run(
-        cmdline,
-        shell=False,
-        capture_output=True,
+        cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
 
     log_output_and_errors(result, direction, args, timestamp)
