@@ -23,6 +23,7 @@ from pandas.util.testing import assert_frame_equal
 from pyani import versiondb, pyani_files, pyani_tools
 
 from pyani.pyani_orm import PyaniORMException, get_session, add_alembic
+from tools import modify_namespace
 
 
 # Create environment variables for alembic to access
@@ -67,76 +68,78 @@ def test_get_version_exe_no_version(executable_without_version, monkeypatch):
     )
 
 
-def versiondb_namespaces(namespace, dir_versiondb_in):
-    """Namespaces for different alembic scenarios."""
-
-    return {
-        "upgrade": Namespace(
-            dbpath="pyanidb_upgrade",
-            upgrade="head",
-            downgrade=None,
-            dry_run=None,
-            direction="upgrade",
-            dbname=None,
-            alembic_config=None,
-            start=dir_versiondb_in / "base_pyanidb",
-            target=dir_versiondb_in / "head_pyanidb",
-        ),
-        "downgrade": Namespace(
-            dbpath="pyanidb_downgrade",
-            upgrade=None,
-            downgrade="base",
-            dry_run=None,
-            direction="downgrade",
-            dbname=None,
-            alembic_config=None,
-            start=dir_versiondb_in / "head_pyanidb",
-            target=dir_versiondb_in / "base_pyanidb",
-        ),
-        "dry_down": Namespace(
-            dbpath="pyanidb_dry_down",
-            upgrade=None,
-            downgrade=None,
-            dry_run="head:base",
-            direction="downgrade",
-            dbname=None,
-            alembic_config=None,
-        ),
-        "dry_up": Namespace(
-            dbpath="pyanidb_dry_up",
-            upgrade=None,
-            downgrade=None,
-            dry_run="base:head",
-            direction="upgrade",
-            dbname=None,
-            alembic_config=None,
-        ),
-        "altdb": Namespace(
-            dbpath="pyanidb_altdb",
-            upgrade="head",
-            downgrade=None,
-            dry_run=None,
-            direction="upgrade",
-            dbname="altdb",
-            alembic_config=None,
-            start=dir_versiondb_in / "base_pyanidb",
-            target=dir_versiondb_in / "head_pyanidb",
-        ),
-        "alt_config": Namespace(
-            dbpath="pyanidb_alt_config",
-            upgrade="head",
-            downgrade=None,
-            dry_run=None,
-            direction="upgrade",
-            dbname=None,
-            alembic_config="alt_config",
-            start=dir_versiondb_in / "base_pyanidb",
-            target=dir_versiondb_in / "head_pyanidb",
-        ),
-    }.get(namespace, None)
+@pytest.fixture
+def generic_versiondb_namespace(dir_versiondb_in):
+    """Generic namespace for the pyani versiondb subcommand."""
+    return Namespace(
+        dbpath="pyanidb_upgrade",
+        upgrade="head",
+        downgrade=None,
+        dry_run=None,
+        direction="upgrade",
+        dbname=None,
+        alembic_config=None,
+        start=dir_versiondb_in / "base_pyanidb",
+        target=dir_versiondb_in / "head_pyanidb",
+    )
 
 
-def expected_diffs():
+@pytest.fixture
+def downgrade_namespace(generic_versiondb_namespace, dir_versiondb_in):
+    """Namespace for pyani versiondb downgrade."""
+    return modify_namespace(
+        generic_versiondb_namespace,
+        dbpath="pyanidb_downgrade",
+        upgrade=None,
+        downgrade="base",
+        direction="downgrade",
+        start=dir_versiondb_in / "head_pyanidb",
+        target=dir_versiondb_in / "base_pyanidb",
+    )
+
+
+@pytest.fixture
+def altdb_namespace(generic_versiondb_namespace):
+    """Namespace for pyani versiondb -n altdb."""
+    return modify_namespace(
+        generic_versiondb_namespace, dbpath="pyanidb_altdb", dbname="altdb"
+    )
+
+
+@pytest.fixture
+def alt_config_namespace(generic_versiondb_namespace):
+    """Namespace for pyani versiondb -c alt_config."""
+    return modify_namespace(
+        generic_versiondb_namespace,
+        dbpath="pyanidb_alt_config",
+        alembic_config="alt_config",
+    )
+
+
+@pytest.fixture
+def dry_up_namespace(generic_versiondb_namespace):
+    """Namespace for pyani versiondb dry-run upgrade."""
+    return modify_namespace(
+        generic_versiondb_namespace,
+        dbpath="pyanidb_dry_up",
+        upgrade=None,
+        dry_run="base:head",
+    )
+
+
+@pytest.fixture
+def dry_down_namespace(generic_versiondb_namespace):
+    """Namespace for pyani versiondb dry-run downgrade."""
+    return modify_namespace(
+        generic_versiondb_namespace,
+        dbpath="pyanidb_dry_down",
+        direction="downgrade",
+        downgrade=None,
+        dry_run="head:base",
+    )
+
+
+def expected_diffs(namespace):
     """Expected (acceptable) differences between output and target databases."""
     return {
         "upgrade": b"2a3,7\n> CREATE TABLE alembic_version (\n> \tversion_num VARCHAR(32) NOT NULL, \n> \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n> );\n> INSERT INTO alembic_version VALUES('92f7f6b1626e');\n54,65c59\n< CREATE TABLE runs_comparisons (\n< \tcomparison_id INTEGER, \n< \trun_id INTEGER, \n< \tFOREIGN KEY(comparison_id) REFERENCES comparisons (comparison_id), \n< \tFOREIGN KEY(run_id) REFERENCES runs (run_id)\n< );\n< CREATE TABLE alembic_version (\n< \tversion_num VARCHAR(32) NOT NULL, \n< \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n< );\n< INSERT INTO alembic_version VALUES('92f7f6b1626e');\n< CREATE TABLE IF NOT EXISTS \"comparisons\" (\n---\n> CREATE TABLE comparisons (\n81d74\n< \tCHECK (maxmatch IN (0, 1)), \n85a79,84\n> CREATE TABLE runs_comparisons (\n> \tcomparison_id INTEGER, \n> \trun_id INTEGER, \n> \tFOREIGN KEY(comparison_id) REFERENCES comparisons (comparison_id), \n> \tFOREIGN KEY(run_id) REFERENCES runs (run_id)\n> );\n",
@@ -199,18 +202,24 @@ def cleanup(abs_dbpath, dir_versiondb_out, args):
 
 
 # Test alembic command generation
-def test_alembic_cmdline_generation(dir_versiondb_in):
+def test_alembic_cmdline_generation(
+    generic_versiondb_namespace,
+    downgrade_namespace,
+    altdb_namespace,
+    alt_config_namespace,
+    dir_versiondb_in,
+):
     """Generate alembic command lines."""
 
     alembic_cmds = []
-    upgrade_args = versiondb_namespaces("upgrade", dir_versiondb_in)
+    upgrade_args = generic_versiondb_namespace
     alembic_cmds.append(
         " ".join(
             versiondb.construct_alembic_cmdline(upgrade_args.direction, upgrade_args)
         )
     )
 
-    downgrade_args = versiondb_namespaces("downgrade", dir_versiondb_in)
+    downgrade_args = downgrade_namespace
     alembic_cmds.append(
         " ".join(
             versiondb.construct_alembic_cmdline(
@@ -219,12 +228,12 @@ def test_alembic_cmdline_generation(dir_versiondb_in):
         )
     )
 
-    altdb_args = versiondb_namespaces("altdb", dir_versiondb_in)
+    altdb_args = altdb_namespace
     alembic_cmds.append(
         " ".join(versiondb.construct_alembic_cmdline(altdb_args.direction, altdb_args))
     )
 
-    alt_config_args = versiondb_namespaces("alt_config", dir_versiondb_in)
+    alt_config_args = alt_config_namespace
     alembic_cmds.append(
         " ".join(
             versiondb.construct_alembic_cmdline(
@@ -247,12 +256,14 @@ def test_alembic_cmdline_generation(dir_versiondb_in):
 
 
 # Test upgrade
-def test_versiondb_upgrade(dir_versiondb_in, dir_versiondb_out):
+def test_versiondb_upgrade(
+    generic_versiondb_namespace, dir_versiondb_in, dir_versiondb_out
+):
     """Test upgrade of database."""
     # Test setup
     # Retrieve test namespace and
     # Set environment variables and resolve absolute path of database
-    args = versiondb_namespaces("upgrade", dir_versiondb_in)
+    args = generic_versiondb_namespace
     setenv(dir_versiondb_in, args.dbpath)
     abs_dbpath = os.environ.get("PYANI_DATABASE")
 
@@ -290,12 +301,12 @@ def test_versiondb_upgrade(dir_versiondb_in, dir_versiondb_out):
     assert result.stdout == expected_diffs()["upgrade"]
 
 
-def test_versiondb_downgrade(dir_versiondb_in, dir_versiondb_out):
+def test_versiondb_downgrade(downgrade_namespace, dir_versiondb_in, dir_versiondb_out):
     """Test downgrade of database."""
     # Test setup
     # Retrieve test namespace and
     # Set environment variables and resolve absolute path of database
-    args = versiondb_namespaces("downgrade", dir_versiondb_in)
+    args = downgrade_namespace
     setenv(dir_versiondb_in, args.dbpath)
     abs_dbpath = os.environ.get("PYANI_DATABASE")
 
@@ -336,12 +347,12 @@ def test_versiondb_downgrade(dir_versiondb_in, dir_versiondb_out):
 
 
 # Test alternate dbname
-def test_versiondb_altdb(dir_versiondb_in, dir_versiondb_out):
+def test_versiondb_altdb(altdb_namespace, dir_versiondb_in, dir_versiondb_out):
     """Test upgrade of database using an alternate database name, such as in a multidb situation."""
     # Test setup
     # Retrieve test namespace and
     # Set environment variables and resolve absolute path of database
-    args = versiondb_namespaces("altdb", dir_versiondb_in)
+    args = altdb_namespace
     setenv(dir_versiondb_in, args.dbpath)
     abs_dbpath = os.environ.get("PYANI_DATABASE")
 
@@ -380,12 +391,14 @@ def test_versiondb_altdb(dir_versiondb_in, dir_versiondb_out):
 
 
 # Test alt_config result
-def test_versiondb_alt_config(dir_versiondb_in, dir_versiondb_out):
+def test_versiondb_alt_config(
+    alt_config_namespace, dir_versiondb_in, dir_versiondb_out
+):
     """Test upgrade of database using an alternate config file."""
     # Test setup
     # Retrieve test namespace and
     # Set environment variables and resolve absolute path of database
-    args = versiondb_namespaces("alt_config", dir_versiondb_in)
+    args = alt_config_namespace
     setenv(dir_versiondb_in, args.dbpath)
     abs_dbpath = os.environ.get("PYANI_DATABASE")
 
