@@ -91,9 +91,9 @@ def construct_alembic_cmdline(
             *get_optional_args(args),
         ]  # FAILED: downgrade with --sql requires <fromrev>:<torev>
     elif direction == "upgrade":
-        return [str(alembic_exe), direction, args.upgrade, *get_optional_args(args)]
+        return [str(alembic_exe), *get_optional_args(args), direction, args.upgrade]
     elif direction == "downgrade":
-        return [str(alembic_exe), direction, args.downgrade, *get_optional_args(args)]
+        return [str(alembic_exe), *get_optional_args(args), direction, args.downgrade]
 
 
 def log_output_and_errors(result, direction, args: Namespace, timestamp=None):

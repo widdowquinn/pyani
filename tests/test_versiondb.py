@@ -103,7 +103,10 @@ def downgrade_namespace(generic_versiondb_namespace, dir_versiondb_in):
 def altdb_namespace(generic_versiondb_namespace):
     """Namespace for pyani versiondb -n altdb."""
     return modify_namespace(
-        generic_versiondb_namespace, dbpath="pyanidb_altdb", dbname="altdb"
+        generic_versiondb_namespace,
+        dbpath="pyanidb_altdb",
+        dbname="pyanidb_altdb",
+        alembic_config="alt_alembic_config.ini",
     )
 
 
@@ -113,7 +116,8 @@ def alt_config_namespace(generic_versiondb_namespace):
     return modify_namespace(
         generic_versiondb_namespace,
         dbpath="pyanidb_alt_config",
-        alembic_config="alt_config",
+        dbname="pyanidb_altdb",
+        alembic_config="alt_alembic_config.ini",
     )
 
 
@@ -233,7 +237,6 @@ def test_alembic_cmdline_generation(
     generic_versiondb_namespace,
     downgrade_namespace,
     altdb_namespace,
-    alt_config_namespace,
     dir_versiondb_in,
 ):
     """Generate alembic command lines."""
@@ -260,31 +263,19 @@ def test_alembic_cmdline_generation(
         " ".join(versiondb.construct_alembic_cmdline(altdb_args.direction, altdb_args))
     )
 
-    alt_config_args = alt_config_namespace
-    alembic_cmds.append(
-        " ".join(
-            versiondb.construct_alembic_cmdline(
-                alt_config_args.direction, alt_config_args
-            )
-        )
-    )
-
     assert alembic_cmds == [
         "alembic upgrade head",
         "alembic downgrade base",
-        f"alembic upgrade head -n {altdb_args.dbname}",
-        f"alembic upgrade head -c {alt_config_args.alembic_config}",
+        f"alembic -n {altdb_args.dbname} -c {altdb_args.alembic_config} upgrade head",
     ]
-
-    pass
-    # alembic_cmd = versiondb.construct_alembic_cmdline()
-    # dir_alembic = tmp_path / "versiondb_output"
-    # expected = "alembic upgrade"
 
 
 # Test upgrade
 def test_versiondb_upgrade(
-    generic_versiondb_namespace, dir_versiondb_in, dir_versiondb_out
+    generic_versiondb_namespace,
+    dir_versiondb_in,
+    dir_versiondb_out,
+    dir_versiondb_targets,
 ):
     """Test upgrade of database."""
     # Test setup
@@ -313,10 +304,11 @@ def test_versiondb_upgrade(
 
     # Dump altered and target databases
     enddb_dump = dumpdb(abs_dbpath)
+
     targetdb_dump = dumpdb(args.target)
 
     # Run diff
-    diff_cmd = ["diff", "--suppress-common-lines", enddb_dump, targetdb_dump]
+    diff_cmd = ["diff", "-y", "--suppress-common-lines", enddb_dump, targetdb_dump]
     result = subprocess.run(
         diff_cmd,
         shell=False,
@@ -324,13 +316,19 @@ def test_versiondb_upgrade(
         stdout=subprocess.PIPE,
     )
 
+    actual_diff = "".join(
+        open(dir_versiondb_targets / "upgrade_minus_head.diff", "r").readlines()
+    )
+
     # Move files
     cleanup(abs_dbpath, "upgrade", dir_versiondb_out, args)
 
-    assert result.stdout == expected_diffs("upgrade")
+    assert result.stdout.decode() == actual_diff
 
 
-def test_versiondb_downgrade(downgrade_namespace, dir_versiondb_in, dir_versiondb_out):
+def test_versiondb_downgrade(
+    downgrade_namespace, dir_versiondb_in, dir_versiondb_out, dir_versiondb_targets
+):
     """Test downgrade of database."""
     # Test setup
     # Retrieve test namespace and
@@ -360,7 +358,7 @@ def test_versiondb_downgrade(downgrade_namespace, dir_versiondb_in, dir_versiond
     targetdb_dump = dumpdb(args.target)
 
     # Run diff
-    diff_cmd = ["diff", "--suppress-common-lines", enddb_dump, targetdb_dump]
+    diff_cmd = ["diff", "-y", "--suppress-common-lines", enddb_dump, targetdb_dump]
     result = subprocess.run(
         diff_cmd,
         shell=False,
@@ -368,15 +366,21 @@ def test_versiondb_downgrade(downgrade_namespace, dir_versiondb_in, dir_versiond
         stdout=subprocess.PIPE,
     )
 
+    actual_diff = "".join(
+        open(dir_versiondb_targets / "downgrade_minus_base.diff", "r").readlines()
+    )
+
     # Move output files
     cleanup(abs_dbpath, "downgrade", dir_versiondb_out, args)
 
-    assert result.stdout == expected_diffs("downgrade")
+    assert result.stdout.decode() == actual_diff
 
 
 # Test alternate dbname
-def test_versiondb_altdb(altdb_namespace, dir_versiondb_in, dir_versiondb_out):
-    """Test upgrade of database using an alternate database name, such as in a multidb situation."""
+def test_versiondb_altdb(
+    altdb_namespace, dir_versiondb_in, dir_versiondb_out, dir_versiondb_targets
+):
+    """Test upgrade of database using an alternate database name and config file, such as in a multidb situation."""
     # Test setup
     # Retrieve test namespace and
     # Set environment variables and resolve absolute path of database
@@ -388,6 +392,7 @@ def test_versiondb_altdb(altdb_namespace, dir_versiondb_in, dir_versiondb_out):
     startdb_dump = dumpdb(args.start)
     name_base_reqs(startdb_dump)
 
+    # assert False
     # Run `sqlite3 -init <file>
     init_cmd = ["sqlite3", abs_dbpath]
     subprocess.run(
@@ -406,7 +411,7 @@ def test_versiondb_altdb(altdb_namespace, dir_versiondb_in, dir_versiondb_out):
     targetdb_dump = dumpdb(args.target)
 
     # Run diff
-    diff_cmd = ["diff", "--suppress-common-lines", enddb_dump, targetdb_dump]
+    diff_cmd = ["diff", "-y", "--suppress-common-lines", enddb_dump, targetdb_dump]
     result = subprocess.run(
         diff_cmd,
         shell=False,
@@ -414,13 +419,18 @@ def test_versiondb_altdb(altdb_namespace, dir_versiondb_in, dir_versiondb_out):
         stdout=subprocess.PIPE,
     )
 
+    actual_diff = "".join(
+        open(dir_versiondb_targets / "altdb_minus_head.diff", "r").readlines()
+    )
+
     # Move files
     cleanup(abs_dbpath, "altdb", dir_versiondb_out, args)
 
-    assert result.stdout == expected_diffs("altdb")
+    assert result.stdout.decode() == actual_diff
 
 
 # Test alt_config result
+@pytest.mark.skip(reason="May no be needed.")
 def test_versiondb_alt_config(
     alt_config_namespace, dir_versiondb_in, dir_versiondb_out
 ):
@@ -462,7 +472,14 @@ def test_versiondb_alt_config(
         stdout=subprocess.PIPE,
     )
 
+    actual_diff = "".join(
+        open(
+            "/Users/baileythegreen/Software/pyani/tests/fixtures/versiondb/upgrade_minus_head.diff",
+            "r",
+        ).readlines()
+    )
+
     # Move files
     cleanup(abs_dbpath, "alt_config", dir_versiondb_out, args)
 
-    assert result.stdout == expected_diffs("alt_config")
+    assert result.stdout.decode() == actual_diff
