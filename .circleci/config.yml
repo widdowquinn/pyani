@@ -82,7 +82,8 @@ jobs:
              ls
              echo 'export PATH=$PWD/sqlite3:$PATH' >> $BASH_ENV
              source $BASH_ENV
-             
+             cd
+             sqlite -h
 
 
       - run:
