@@ -26,6 +26,8 @@ from pyani import versiondb, pyani_files, pyani_tools
 from pyani.pyani_orm import PyaniORMException, get_session, add_alembic
 from tools import modify_namespace
 
+import pyani_config
+
 
 # Create environment variables for alembic to access
 def setenv(dir_versiondb_in, dbfile: Path):
@@ -158,7 +160,7 @@ def expected_diffs(namespace):
 def dumpdb(abs_dbpath):
     """Dump contents of database to a plain-text file."""
 
-    cmdline = ["sqlite3", f"{abs_dbpath}", ".dump"]
+    cmdline = [pyani_config.SQLITE_DEFAULT, f"{abs_dbpath}", ".dump"]
     with open(f"{abs_dbpath}.sql", "w") as outfile:
         subprocess.run(
             cmdline,
@@ -290,7 +292,7 @@ def test_versiondb_upgrade(
     name_base_reqs(startdb_dump)
 
     # Run `sqlite3 -init <file>
-    init_cmd = ["sqlite3", abs_dbpath]
+    init_cmd = [pyani_config.SQLITE_DEFAULT, abs_dbpath]
     subprocess.run(
         init_cmd,
         stdin=open(startdb_dump),
@@ -341,7 +343,7 @@ def test_versiondb_downgrade(
     startdb_dump = dumpdb(args.start)
 
     # Run `sqlite3 -init <file>
-    init_cmd = ["sqlite3", abs_dbpath]
+    init_cmd = [pyani_config.SQLITE_DEFAULT, abs_dbpath]
     subprocess.run(
         init_cmd,
         stdin=open(startdb_dump),
@@ -394,7 +396,7 @@ def test_versiondb_altdb(
 
     # assert False
     # Run `sqlite3 -init <file>
-    init_cmd = ["sqlite3", abs_dbpath]
+    init_cmd = [pyani_config.SQLITE_DEFAULT, abs_dbpath]
     subprocess.run(
         init_cmd,
         stdin=open(startdb_dump),
@@ -447,7 +449,7 @@ def test_versiondb_alt_config(
     name_base_reqs(startdb_dump)
 
     # Run `sqlite3 -init <file>
-    init_cmd = ["sqlite3", abs_dbpath]
+    init_cmd = [pyani_config.SQLITE_DEFAULT, abs_dbpath]
     subprocess.run(
         init_cmd,
         stdin=open(startdb_dump),

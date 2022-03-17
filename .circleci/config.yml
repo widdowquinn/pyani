@@ -68,7 +68,22 @@ jobs:
             echo 'export PATH=$PWD:$PATH' >> $BASH_ENV
             source $BASH_ENV
             fastANI -h
-
+      - run:
+           name: install sqlite3
+           command: |
+             wget https://github.com/sqlite/sqlite/archive/refs/tags/version-3.36.0.tar.gz
+             tar xzf version-3.36.0.tar.gz    ;#  Unpack the source tree into "sqlite"
+             mkdir bld                ;#  Build will occur in a sibling directory
+             cd bld                   ;#  Change to the build directory
+             ../sqlite-version-3.36.0/configure      ;#  Run the configure script
+             make                     ;#  Run the makefile.
+             make sqlite3.c           ;#  Build the "amalgamation" source file
+             make test                ;#  Run some tests (requires Tcl)
+             ls
+             echo 'export PATH=$PWD/sqlite3:$PATH' >> $BASH_ENV
+             source $BASH_ENV
+             # cd
+             # sqlite3 -help
 
       - run:
           name: install dependencies
