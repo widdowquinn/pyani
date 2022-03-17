@@ -160,6 +160,12 @@ def dir_versiondb_out():
 
 
 @pytest.fixture
+def dir_versiondb_targets():
+    """Target diff files for versiondb tests."""
+    return TESTSPATH / "test_targets/subcmd_versiondb"
+
+
+@pytest.fixture
 def dir_seq():
     """Sequence files for tests."""
     return FIXTUREPATH / "sequences"
