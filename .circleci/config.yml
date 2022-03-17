@@ -79,6 +79,8 @@ jobs:
              make                     ;#  Run the makefile.
              make sqlite3.c           ;#  Build the "amalgamation" source file
              make test                ;#  Run some tests (requires Tcl)
+             ls
+             ls ../sqlite-version-3.36.0
 
 
       - run:
