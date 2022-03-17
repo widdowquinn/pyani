@@ -82,8 +82,9 @@ jobs:
              ls
              echo 'export PATH=$PWD/sqlite3:$PATH' >> $BASH_ENV
              source $BASH_ENV
+             echo $PATH
              # cd
-             # sqlite3 -help
+             sqlite3 -help
 
       - run:
           name: install dependencies
