@@ -26,7 +26,7 @@ from pyani import versiondb, pyani_files, pyani_tools
 from pyani.pyani_orm import PyaniORMException, get_session, add_alembic
 from tools import modify_namespace
 
-import pyani_config
+from pyani import pyani_config
 
 
 # Create environment variables for alembic to access
