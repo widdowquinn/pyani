@@ -312,7 +312,9 @@ class Comparison(Base):
     program = Column(String)
     version = Column(String)
     fragsize = Column(Integer)  # in fastANI this is fragLength
-    maxmatch = Column(Boolean)  # in fastANi this is Null
+
+    # create_constraint keyword is needed for portability between sqlalchemy 1.3 and 1.4
+    maxmatch = Column(Boolean, create_constraint=True)  # in fastANi this is Null
     kmersize = Column(Integer)
     minmatch = Column(Float)
 
