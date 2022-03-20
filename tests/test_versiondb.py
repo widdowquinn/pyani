@@ -318,14 +318,15 @@ def test_versiondb_upgrade(
         stdout=subprocess.PIPE,
     )
 
-    actual_diff = "".join(
+    expected_diff = "".join(
         open(dir_versiondb_targets / "upgrade_minus_head.diff", "r").readlines()
     )
-
+    sys.stdout.write(f"Expected_diff: {expected_diff}\n\n")
+    sys.stdout.write(f"Actual diff: {result.stdout.decode()}\n\n")
     # Move files
     cleanup(abs_dbpath, "upgrade", dir_versiondb_out, args)
 
-    assert result.stdout.decode() == actual_diff
+    assert result.stdout.decode() == expected_diff
 
 
 def test_versiondb_downgrade(
@@ -368,14 +369,15 @@ def test_versiondb_downgrade(
         stdout=subprocess.PIPE,
     )
 
-    actual_diff = "".join(
+    expected_diff = "".join(
         open(dir_versiondb_targets / "downgrade_minus_base.diff", "r").readlines()
     )
-
+    sys.stdout.write(f"Expected_diff: {expected_diff}\n\n")
+    sys.stdout.write(f"Actual diff: {result.stdout.decode()}\n\n")
     # Move output files
     cleanup(abs_dbpath, "downgrade", dir_versiondb_out, args)
 
-    assert result.stdout.decode() == actual_diff
+    assert result.stdout.decode() == expected_diff
 
 
 # Test alternate dbname
@@ -421,14 +423,15 @@ def test_versiondb_altdb(
         stdout=subprocess.PIPE,
     )
 
-    actual_diff = "".join(
+    expected_diff = "".join(
         open(dir_versiondb_targets / "altdb_minus_head.diff", "r").readlines()
     )
-
+    sys.stdout.write(f"Expected_diff: {expected_diff}\n\n")
+    sys.stdout.write(f"Actual diff: {result.stdout.decode()}\n\n")
     # Move files
     cleanup(abs_dbpath, "altdb", dir_versiondb_out, args)
 
-    assert result.stdout.decode() == actual_diff
+    assert result.stdout.decode() == expected_diff
 
 
 # Test alt_config result
@@ -466,7 +469,7 @@ def test_versiondb_alt_config(
     targetdb_dump = dumpdb(args.target)
 
     # Run diff
-    diff_cmd = ["diff", "--suppress-common-lines", enddb_dump, targetdb_dump]
+    diff_cmd = ["diff", "-y", "--suppress-common-lines", enddb_dump, targetdb_dump]
     result = subprocess.run(
         diff_cmd,
         shell=False,
