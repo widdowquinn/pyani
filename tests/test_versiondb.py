@@ -216,14 +216,14 @@ def cleanup(abs_dbpath, test, dir_versiondb_out, args):
     # if the file already exists, so this is a two-step process
     # Copy files to new location
     shutil.copy(abs_dbpath, dir_versiondb_out / test)
-    shutil.copy(f"{abs_dbpath}.sql", dir_versiondb_out / test)
-    shutil.copy(f"{args.target}.sql", dir_versiondb_out / test)
+    # shutil.copy(f"{abs_dbpath}.sql", dir_versiondb_out / test)
+    # shutil.copy(f"{args.target}.sql", dir_versiondb_out / test)
     shutil.copy(f"{args.start}.sql", dir_versiondb_out / test)
 
     # Remove old files
     os.remove(abs_dbpath)
-    os.remove(f"{abs_dbpath}.sql")
-    os.remove(f"{args.target}.sql")
+    # os.remove(f"{abs_dbpath}.sql")
+    # os.remove(f"{args.target}.sql")
     os.remove(f"{args.start}.sql")
 
     # This file is not generated in the downgrade test
@@ -305,12 +305,12 @@ def test_versiondb_upgrade(
     versiondb.migrate_database(args.direction, args, timestamp="testing")
 
     # Dump altered and target databases
-    enddb_dump = dumpdb(abs_dbpath)
+    # enddb_dump = dumpdb(abs_dbpath)
 
-    targetdb_dump = dumpdb(args.target)
+    # targetdb_dump = dumpdb(args.target)
 
     # Run diff
-    diff_cmd = ["diff", "-y", "--suppress-common-lines", enddb_dump, targetdb_dump]
+    diff_cmd = ["sqldiff", "--schema", abs_dbpath, args.target]
     result = subprocess.run(
         diff_cmd,
         shell=False,
@@ -318,11 +318,11 @@ def test_versiondb_upgrade(
         stdout=subprocess.PIPE,
     )
 
-    expected_diff = "".join(
-        open(dir_versiondb_targets / "upgrade_minus_head.diff", "r").readlines()
-    )
+    expected_diff = ""
+
     sys.stdout.write(f"Expected_diff: {expected_diff}\n\n")
     sys.stdout.write(f"Actual diff: {result.stdout.decode()}\n\n")
+
     # Move files
     cleanup(abs_dbpath, "upgrade", dir_versiondb_out, args)
 
@@ -356,12 +356,8 @@ def test_versiondb_downgrade(
     # Run test migration
     versiondb.migrate_database(args.direction, args, timestamp="testing")
 
-    # Dump altered and target databases
-    enddb_dump = dumpdb(abs_dbpath)
-    targetdb_dump = dumpdb(args.target)
-
     # Run diff
-    diff_cmd = ["diff", "-y", "--suppress-common-lines", enddb_dump, targetdb_dump]
+    diff_cmd = ["sqldiff", "--schema", abs_dbpath, args.target]
     result = subprocess.run(
         diff_cmd,
         shell=False,
@@ -369,11 +365,11 @@ def test_versiondb_downgrade(
         stdout=subprocess.PIPE,
     )
 
-    expected_diff = "".join(
-        open(dir_versiondb_targets / "downgrade_minus_base.diff", "r").readlines()
-    )
+    expected_diff = "DROP TABLE alembic_version;\n"
+
     sys.stdout.write(f"Expected_diff: {expected_diff}\n\n")
     sys.stdout.write(f"Actual diff: {result.stdout.decode()}\n\n")
+
     # Move output files
     cleanup(abs_dbpath, "downgrade", dir_versiondb_out, args)
 
@@ -410,12 +406,8 @@ def test_versiondb_altdb(
     # Run test migration
     versiondb.migrate_database(args.direction, args, timestamp="testing")
 
-    # Dump altered and target databases
-    enddb_dump = dumpdb(abs_dbpath)
-    targetdb_dump = dumpdb(args.target)
-
     # Run diff
-    diff_cmd = ["diff", "-y", "--suppress-common-lines", enddb_dump, targetdb_dump]
+    diff_cmd = ["sqldiff", "--schema", abs_dbpath, args.target]
     result = subprocess.run(
         diff_cmd,
         shell=False,
@@ -423,11 +415,11 @@ def test_versiondb_altdb(
         stdout=subprocess.PIPE,
     )
 
-    expected_diff = "".join(
-        open(dir_versiondb_targets / "altdb_minus_head.diff", "r").readlines()
-    )
+    expected_diff = ""
+
     sys.stdout.write(f"Expected_diff: {expected_diff}\n\n")
     sys.stdout.write(f"Actual diff: {result.stdout.decode()}\n\n")
+
     # Move files
     cleanup(abs_dbpath, "altdb", dir_versiondb_out, args)
 
