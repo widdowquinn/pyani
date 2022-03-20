@@ -474,14 +474,15 @@ def test_versiondb_alt_config(
         stdout=subprocess.PIPE,
     )
 
-    actual_diff = "".join(
+    expected_diff = "".join(
         open(
             "/Users/baileythegreen/Software/pyani/tests/fixtures/versiondb/upgrade_minus_head.diff",
             "r",
         ).readlines()
     )
-
+    sys.stdout.write(f"Expected_diff: {expected_diff}\n\n")
+    sys.stdout.write(f"Actual diff: {result.stdout.decode()}\n\n")
     # Move files
     cleanup(abs_dbpath, "alt_config", dir_versiondb_out, args)
 
-    assert result.stdout.decode() == actual_diff
+    assert result.stdout.decode() == expected_diff
