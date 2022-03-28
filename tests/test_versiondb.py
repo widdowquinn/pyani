@@ -144,7 +144,7 @@ def expected_diffs(namespace):
     }.get(namespace, None)
 
 
-# Create database dump
+# Create database dump—a version that can be edited using sed
 def dumpdb(abs_dbpath):
     """Dump contents of database to a plain-text file."""
 
@@ -168,6 +168,7 @@ def name_base_reqs(startdb_dump):
 
     # Edit .dump file so that the unique constraint is named
     # This is required in order to subsequently modify it
+    # In-place usage differs on macOs vs Linux
     if platform.system() == "Darwin":
         sed_cmd = [
             "sed",
@@ -400,3 +401,6 @@ def test_versiondb_altdb(
     cleanup(abs_dbpath, "altdb", dir_versiondb_out, args)
 
     assert result.stdout.decode() == expected_diff
+
+
+# Dry-run tests still to be done
