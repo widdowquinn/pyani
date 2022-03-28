@@ -54,6 +54,10 @@ However, there may be cases where it is necessary to downgrade a database to a s
 Performing a dry run
 ~~~~~~~~~~~~~~~~~~~
 
+.. NOTE::
+
+    This option has been implemented, but tests for it are still in the works.
+
 This following command creates an SQL file, ``./test_database.downgrade.YYYY-MM-DD_HH-MM-SS.sql``, (in the same directory as ``./test_database``) containing the raw SQL that would produce the necessary changes to the database to migrate it to the specified version (in this case, downgrading it to ``base``):
 
 .. code-block:: bash
