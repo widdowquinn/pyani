@@ -259,7 +259,6 @@ def test_versiondb_upgrade(
     generic_versiondb_namespace,
     dir_versiondb_in,
     dir_versiondb_out,
-    dir_versiondb_targets,
 ):
     """Test upgrade of database."""
     # Test setup
@@ -306,9 +305,7 @@ def test_versiondb_upgrade(
     assert result.stdout.decode() == expected_diff
 
 
-def test_versiondb_downgrade(
-    downgrade_namespace, dir_versiondb_in, dir_versiondb_out, dir_versiondb_targets
-):
+def test_versiondb_downgrade(downgrade_namespace, dir_versiondb_in, dir_versiondb_out):
     """Test downgrade of database."""
     # Test setup
     # Retrieve test namespace and
@@ -354,9 +351,7 @@ def test_versiondb_downgrade(
 
 
 # Test alternate dbname
-def test_versiondb_altdb(
-    altdb_namespace, dir_versiondb_in, dir_versiondb_out, dir_versiondb_targets
-):
+def test_versiondb_altdb(altdb_namespace, dir_versiondb_in, dir_versiondb_out):
     """Test upgrade of database using an alternate database name and config file, such as in a multidb situation."""
     # Test setup
     # Retrieve test namespace and
