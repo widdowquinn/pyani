@@ -310,7 +310,7 @@ def test_versiondb_upgrade(
     # targetdb_dump = dumpdb(args.target)
 
     # Run diff
-    diff_cmd = ["sqldiff", "--schema", abs_dbpath, args.target]
+    diff_cmd = [pyani_config.SQLDIFF_DEFAULT, "--schema", abs_dbpath, args.target]
     result = subprocess.run(
         diff_cmd,
         shell=False,
@@ -357,7 +357,7 @@ def test_versiondb_downgrade(
     versiondb.migrate_database(args.direction, args, timestamp="testing")
 
     # Run diff
-    diff_cmd = ["sqldiff", "--schema", abs_dbpath, args.target]
+    diff_cmd = [pyani_config.SQLDIFF_DEFAULT, "--schema", abs_dbpath, args.target]
     result = subprocess.run(
         diff_cmd,
         shell=False,
@@ -407,7 +407,7 @@ def test_versiondb_altdb(
     versiondb.migrate_database(args.direction, args, timestamp="testing")
 
     # Run diff
-    diff_cmd = ["sqldiff", "--schema", abs_dbpath, args.target]
+    diff_cmd = [pyani_config.SQLDIFF_DEFAULT, "--schema", abs_dbpath, args.target]
     result = subprocess.run(
         diff_cmd,
         shell=False,
