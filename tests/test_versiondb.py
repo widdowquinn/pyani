@@ -113,17 +113,6 @@ def altdb_namespace(generic_versiondb_namespace):
 
 
 @pytest.fixture
-def alt_config_namespace(generic_versiondb_namespace):
-    """Namespace for pyani versiondb -c alt_config."""
-    return modify_namespace(
-        generic_versiondb_namespace,
-        dbpath="pyanidb_alt_config",
-        dbname="pyanidb_altdb",
-        alembic_config="alt_alembic_config.ini",
-    )
-
-
-@pytest.fixture
 def dry_up_namespace(generic_versiondb_namespace):
     """Namespace for pyani versiondb dry-run upgrade."""
     return modify_namespace(
@@ -149,10 +138,9 @@ def dry_down_namespace(generic_versiondb_namespace):
 def expected_diffs(namespace):
     """Expected (acceptable) differences between output and target databases."""
     return {
-        "upgrade": b"2a3,7\n> CREATE TABLE alembic_version (\n> \tversion_num VARCHAR(32) NOT NULL, \n> \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n> );\n> INSERT INTO alembic_version VALUES('92f7f6b1626e');\n54,65c59\n< CREATE TABLE runs_comparisons (\n< \tcomparison_id INTEGER, \n< \trun_id INTEGER, \n< \tFOREIGN KEY(comparison_id) REFERENCES comparisons (comparison_id), \n< \tFOREIGN KEY(run_id) REFERENCES runs (run_id)\n< );\n< CREATE TABLE alembic_version (\n< \tversion_num VARCHAR(32) NOT NULL, \n< \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n< );\n< INSERT INTO alembic_version VALUES('92f7f6b1626e');\n< CREATE TABLE IF NOT EXISTS \"comparisons\" (\n---\n> CREATE TABLE comparisons (\n81d74\n< \tCHECK (maxmatch IN (0, 1)), \n85a79,84\n> CREATE TABLE runs_comparisons (\n> \tcomparison_id INTEGER, \n> \trun_id INTEGER, \n> \tFOREIGN KEY(comparison_id) REFERENCES comparisons (comparison_id), \n> \tFOREIGN KEY(run_id) REFERENCES runs (run_id)\n> );\n",
-        "downgrade": b'3,6d2\n< CREATE TABLE alembic_version (\n< \tversion_num VARCHAR(32) NOT NULL, \n< \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n< );\n58,64c54\n< CREATE TABLE runs_comparisons (\n< \tcomparison_id INTEGER, \n< \trun_id INTEGER, \n< \tFOREIGN KEY(comparison_id) REFERENCES comparisons (comparison_id), \n< \tFOREIGN KEY(run_id) REFERENCES runs (run_id)\n< );\n< CREATE TABLE IF NOT EXISTS "comparisons" (\n---\n> CREATE TABLE comparisons (\n78,79c68\n< \tCHECK (maxmatch IN (0, 1)), \n< \tCONSTRAINT base_reqs UNIQUE (query_id, subject_id, program, version, fragsize, maxmatch), \n---\n> \tUNIQUE (query_id, subject_id, program, version, fragsize, maxmatch), \n82a72,77\n> CREATE TABLE runs_comparisons (\n> \tcomparison_id INTEGER, \n> \trun_id INTEGER, \n> \tFOREIGN KEY(comparison_id) REFERENCES comparisons (comparison_id), \n> \tFOREIGN KEY(run_id) REFERENCES runs (run_id)\n> );\n',
-        "altdb": b"2a3,7\n> CREATE TABLE alembic_version (\n> \tversion_num VARCHAR(32) NOT NULL, \n> \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n> );\n> INSERT INTO alembic_version VALUES('92f7f6b1626e');\n66a72,73\n> \tkmersize INTEGER, \n> \tminmatch FLOAT, \n68c75\n< \tCONSTRAINT base_reqs UNIQUE (query_id, subject_id, program, version, fragsize, maxmatch), \n---\n> \tCONSTRAINT fastani_reqs UNIQUE (query_id, subject_id, program, version, fragsize, maxmatch, kmersize, minmatch), \n",
-        "alt_config": b"2a3,7\n> CREATE TABLE alembic_version (\n> \tversion_num VARCHAR(32) NOT NULL, \n> \tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n> );\n> INSERT INTO alembic_version VALUES('92f7f6b1626e');\n66a72,73\n> \tkmersize INTEGER, \n> \tminmatch FLOAT, \n68c75\n< \tCONSTRAINT base_reqs UNIQUE (query_id, subject_id, program, version, fragsize, maxmatch), \n---\n> \tCONSTRAINT fastani_reqs UNIQUE (query_id, subject_id, program, version, fragsize, maxmatch, kmersize, minmatch), \n",
+        "upgrade": "",
+        "downgrade": "DROP TABLE alembic_version;\n",
+        "altdb": "",
     }.get(namespace, None)
 
 
@@ -205,9 +193,6 @@ def name_base_reqs(startdb_dump):
 
 def cleanup(abs_dbpath, test, dir_versiondb_out, args):
     """Remove files created for test."""
-    # db = abs_dbpath.name
-    # target = args.target.name
-    # start = args.start.name
 
     dir_versiondb_out.mkdir(exist_ok=True)
     Path(f"{dir_versiondb_out}/{test}").mkdir(exist_ok=True)
@@ -216,14 +201,10 @@ def cleanup(abs_dbpath, test, dir_versiondb_out, args):
     # if the file already exists, so this is a two-step process
     # Copy files to new location
     shutil.copy(abs_dbpath, dir_versiondb_out / test)
-    # shutil.copy(f"{abs_dbpath}.sql", dir_versiondb_out / test)
-    # shutil.copy(f"{args.target}.sql", dir_versiondb_out / test)
     shutil.copy(f"{args.start}.sql", dir_versiondb_out / test)
 
     # Remove old files
     os.remove(abs_dbpath)
-    # os.remove(f"{abs_dbpath}.sql")
-    # os.remove(f"{args.target}.sql")
     os.remove(f"{args.start}.sql")
 
     # This file is not generated in the downgrade test
@@ -303,11 +284,6 @@ def test_versiondb_upgrade(
 
     # Run test migration
     versiondb.migrate_database(args.direction, args, timestamp="testing")
-
-    # Dump altered and target databases
-    # enddb_dump = dumpdb(abs_dbpath)
-
-    # targetdb_dump = dumpdb(args.target)
 
     # Run diff
     diff_cmd = [pyani_config.SQLDIFF_DEFAULT, "--schema", abs_dbpath, args.target]
@@ -422,62 +398,5 @@ def test_versiondb_altdb(
 
     # Move files
     cleanup(abs_dbpath, "altdb", dir_versiondb_out, args)
-
-    assert result.stdout.decode() == expected_diff
-
-
-# Test alt_config result
-@pytest.mark.skip(reason="May no be needed.")
-def test_versiondb_alt_config(
-    alt_config_namespace, dir_versiondb_in, dir_versiondb_out
-):
-    """Test upgrade of database using an alternate config file."""
-    # Test setup
-    # Retrieve test namespace and
-    # Set environment variables and resolve absolute path of database
-    args = alt_config_namespace
-    setenv(dir_versiondb_in, args.dbpath)
-    abs_dbpath = os.environ.get("PYANI_DATABASE")
-
-    # Create dump file
-    startdb_dump = dumpdb(args.start)
-    name_base_reqs(startdb_dump)
-
-    # Run `sqlite3 -init <file>
-    init_cmd = [pyani_config.SQLITE_DEFAULT, abs_dbpath]
-    subprocess.run(
-        init_cmd,
-        stdin=open(startdb_dump),
-        shell=False,
-        stderr=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-    )
-
-    # Run test migration
-    versiondb.migrate_database(args.direction, args, timestamp="testing")
-
-    # Dump altered and target databases
-    enddb_dump = dumpdb(abs_dbpath)
-    targetdb_dump = dumpdb(args.target)
-
-    # Run diff
-    diff_cmd = ["diff", "-y", "--suppress-common-lines", enddb_dump, targetdb_dump]
-    result = subprocess.run(
-        diff_cmd,
-        shell=False,
-        stderr=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-    )
-
-    expected_diff = "".join(
-        open(
-            "/Users/baileythegreen/Software/pyani/tests/fixtures/versiondb/upgrade_minus_head.diff",
-            "r",
-        ).readlines()
-    )
-    sys.stdout.write(f"Expected_diff: {expected_diff}\n\n")
-    sys.stdout.write(f"Actual diff: {result.stdout.decode()}\n\n")
-    # Move files
-    cleanup(abs_dbpath, "alt_config", dir_versiondb_out, args)
 
     assert result.stdout.decode() == expected_diff
