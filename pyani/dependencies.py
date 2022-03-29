@@ -43,6 +43,7 @@ from typing import Generator
 from .anib import get_version as get_blast_version
 from .aniblastall import get_version as get_blastall_version
 from .anim import get_version as get_nucmer_version
+from .fastani import get_version as get_fastani_version
 
 # Dict of dependencies that support pyani
 REQUIREMENTS = [
@@ -113,5 +114,6 @@ def get_tool_versions() -> Generator:
         ("blast+", get_blast_version),
         ("nucmer", get_nucmer_version),
         ("blastall", get_blastall_version),
+        ("fastani", get_fastani_version),
     ]:
         yield (name, func())
