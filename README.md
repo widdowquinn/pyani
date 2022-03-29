@@ -196,7 +196,7 @@ If you wish to use `pyani blastall` or the `ANIblastall` method with the legacy 
 
 **`fastANI` installation (via `conda`) will fail for Python 3.9 on macOS.**
 
-If you are using Python ≥3.9 to run `pyani` on macOS, `fastANI` will fail to install due to errors in the `conda` recipe. Using an earlier version of Python may be the simplest solution. However, you can also install `fastANI` yourself—via `conda`—using a slightly altered version of the command produced from the `conda` recipe, as shown below.
+If you are using Python ≥3.9 to run `pyani` on macOS, `fastANI` will fail to install due to errors in the `conda` recipe (for build `h0a26cfa_0`). Using an earlier version of Python may be the simplest solution. However, you can also install `fastANI` yourself—via `conda`—using a slightly altered version of the command produced from the `conda` recipe, as shown below.
 
 *N.B. We have placed the `fastANI` requirement in its own `requirements-fastani.txt` file so that this will not also cause other installations to fail.*
 
@@ -227,7 +227,7 @@ ${ENV_DIR}/lib/libboost_math_c99.dylib \
 -lstdc++ -lz -lm
 ```
 
-For a more technical overview of the issue, please see https://github.com/widdowquinn/pyani/issues/377.
+For a more technical overview of the issue, and other solutions that may be shared there, please see https://github.com/widdowquinn/pyani/issues/377.
 
 ##### Troubleshooting
 
