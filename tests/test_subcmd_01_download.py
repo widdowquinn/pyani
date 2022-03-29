@@ -58,6 +58,7 @@ especially with CI, we mock the download operations.
 """
 
 import logging
+import subprocess
 
 from argparse import Namespace
 from pathlib import Path
@@ -121,6 +122,19 @@ def test_create_hash():
     test_file = "/this/is/not/a/file"
     with assertions.assertRaises(download.PyaniIndexException):
         download.create_hash(test_file)
+
+
+@pytest.fixture
+def mock_failed_extraction(monkeypatch):
+    def mock_extraction(*args, **kwargs):
+        raise subprocess.CalledProcessError
+
+    monkeypatch.setattr(download, "extract_contigs", mock_extraction)
+
+
+def test_failed_extract_genomes(base_download_namespace, mock_failed_extraction):
+    with assertions.assertRaises(subprocess.CalledProcessError):
+        subcommands.subcmd_download(base_download_namespace)
 
 
 def test_download_dry_run(dryrun_namespace):
