@@ -8,6 +8,7 @@ setup_env:
 	@conda install --file requirements-dev.txt --yes
 	@conda install --file requirements.txt --yes
 	@conda install --file requirements-thirdparty.txt --yes
+	@conda install --file requirements-fastani.txt --yes
 	@pip install -r requirements-pip.txt
 	@pre-commit install
 	@pip install -U -e .
@@ -54,7 +55,7 @@ walkthrough: clean_walkthrough
 	# pyani report --runs C_blochmannia_ANIb/ --formats html,excel,stdout
 	# pyani report --run_results 2 --formats html,excel,stdout C_blochmannia_ANIb/
 	# pyani report --run_matrices 2 --formats html,excel,stdout C_blochmannia_ANIb/
-	# pyani plot --formats png,pdf --method seaborn C_blochmannia_ANIb 2	
+	# pyani plot --formats png,pdf --method seaborn C_blochmannia_ANIb 2
 
 uml:
 	pyreverse -o pdf -p pyani pyani
