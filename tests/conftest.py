@@ -133,7 +133,7 @@ def dir_anim_in():
 @pytest.fixture
 def dir_download_out():
     """Output directory for download tests."""
-    return TESTSPATH / "test_output/subcmd_download"
+    return FIXTUREPATH / "download"
 
 
 @pytest.fixture
