@@ -131,6 +131,12 @@ def dir_anim_in():
 
 
 @pytest.fixture
+def dir_download_out():
+    """Output directory for download tests."""
+    return TESTSPATH / "test_output/subcmd_download"
+
+
+@pytest.fixture
 def dir_fastani_in():
     """Input files for fastANI tests."""
     return FIXTUREPATH / "fastani"

@@ -124,17 +124,10 @@ def test_create_hash():
         download.create_hash(test_file)
 
 
-@pytest.fixture
-def mock_failed_extraction(monkeypatch):
-    def mock_extraction(*args, **kwargs):
-        raise subprocess.CalledProcessError
-
-    monkeypatch.setattr(download, "extract_contigs", mock_extraction)
-
-
-def test_failed_extract_genomes(base_download_namespace, mock_failed_extraction):
+def test_failed_extract_contigs(dir_download_out):
+    """Test for failed extraction of zip file contents."""
     with assertions.assertRaises(subprocess.CalledProcessError):
-        subcommands.subcmd_download(base_download_namespace)
+        download.extract_contigs("bad/file.gz", dir_download_out / "bad_location.txt")
 
 
 def test_download_dry_run(dryrun_namespace):
