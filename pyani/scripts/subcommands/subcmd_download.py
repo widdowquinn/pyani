@@ -47,9 +47,14 @@ from typing import Dict, List, NamedTuple, Optional, Tuple
 
 from Bio import SeqIO
 
-from pyani import download
+from pyani import download, PyaniException
 from pyani.pyani_tools import termcolor
 from pyani.scripts import make_outdir
+
+
+class PyaniDownloadException(PyaniException):
+
+    """Exception raised when a download or archive extraction fails."""
 
 
 class Skipped(NamedTuple):
@@ -164,7 +169,13 @@ def download_data(
             )
             skippedlist.extend(skipped_genomes)
             if not dlstatus.skipped:
-                extract_genomes(args, dlstatus, esummary)
+                try:
+                    extract_genomes(args, dlstatus, esummary)
+                except PyaniDownloadException:
+                    logger.warning(
+                        "Could not extract %s; continuing", dlstatus.outfname
+                    )
+                    continue
                 labeltxt, classtxt = hash_genomes(args, dlstatus, filestem, uid_class)
                 classes.append(classtxt)
                 labels.append(labeltxt)
@@ -195,8 +206,7 @@ def extract_genomes(args: Namespace, dlstatus: download.DLStatus, esummary) -> N
         try:
             download.extract_contigs(dlstatus.outfname, ename)
         except subprocess.CalledProcessError:
-            logger.warning("Could not extract %s; continuing", dlstatus.outfname)
-            pass
+            raise PyaniDownloadException
 
     # Modify sequence ID header if Kraken option active
     if args.kraken:
