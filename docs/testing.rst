@@ -86,7 +86,7 @@ Installation instructions are available in the `sqlite Readme`_, but will need t
 
 .. code-block:: bash
 
-    version=verion-3.37.0        ;#  Pull version number into a variable
+    version=version-3.37.0        ;#  Pull version number into a variable
     wget https://github.com/sqlite/sqlite/archive/refs/tags/${version}.tar.gz
     tar xzf ${version}.tar.gz    ;#  Unpack the source tree into "sqlite"
     mkdir bld                    ;#  Build will occur in a sibling directory
