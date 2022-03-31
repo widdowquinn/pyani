@@ -255,6 +255,7 @@ def test_alembic_cmdline_generation(
 
 
 # Test upgrade
+@pytest.mark.skip_if_exe_missing("sqldiff")
 def test_versiondb_upgrade(
     generic_versiondb_namespace,
     dir_versiondb_in,
@@ -305,6 +306,7 @@ def test_versiondb_upgrade(
     assert result.stdout.decode() == expected_diff
 
 
+@pytest.mark.skip_if_exe_missing("sqldiff")
 def test_versiondb_downgrade(downgrade_namespace, dir_versiondb_in, dir_versiondb_out):
     """Test downgrade of database."""
     # Test setup
@@ -351,6 +353,7 @@ def test_versiondb_downgrade(downgrade_namespace, dir_versiondb_in, dir_versiond
 
 
 # Test alternate dbname
+@pytest.mark.skip_if_exe_missing("sqldiff")
 def test_versiondb_altdb(altdb_namespace, dir_versiondb_in, dir_versiondb_out):
     """Test upgrade of database using an alternate database name and config file, such as in a multidb situation."""
     # Test setup
