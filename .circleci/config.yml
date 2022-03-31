@@ -71,7 +71,7 @@ jobs:
       - run:
            name: install sqlite3
            command: |
-             version=verion-3.37.0
+             version=version-3.37.0
              wget https://github.com/sqlite/sqlite/archive/refs/tags/${version}.tar.gz
              tar xzf ${version}.tar.gz    ;#  Unpack the source tree into "sqlite"
              mkdir bld                ;#  Build will occur in a sibling directory
