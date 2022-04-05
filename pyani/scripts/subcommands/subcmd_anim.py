@@ -195,9 +195,7 @@ def subcmd_anim(args: Namespace) -> None:
             name=name,
         )
     except PyaniORMException:
-        logger.error(
-            "Could not add run %s to the database (exiting)", run_id, exc_info=True
-        )
+        logger.error("Could not add run to the database (exiting)", exc_info=True)
         raise SystemExit(1)
     logger.debug("...added run ID: %s to the database", run_id)
 
