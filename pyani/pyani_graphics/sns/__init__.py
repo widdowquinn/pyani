@@ -197,11 +197,15 @@ def distribution(dfr, outfilename, matname, title=None):
 
     # Modify axes after data is plotted
     for _ in axes:
-        if matname == "sim_errors":
+        if matname.endswith("absdiffs"):
             _.set_xlim(0, _.get_xlim()[1])
-        elif matname in ["hadamard", "coverage"]:
+        elif matname.endswith("diffs"):
+            pass
+        elif matname.split("_")[0] == "sim_errors":
+            _.set_xlim(0, _.get_xlim()[1])
+        elif matname.split("_")[0] in ["hadamard", "coverage"]:
             _.set_xlim(0, 1.01)
-        elif matname == "identity":
+        elif matname.split("_")[0] == "identity":
             _.set_xlim(0.75, 1.01)
 
     # Tidy figure
