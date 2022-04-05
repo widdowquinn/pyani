@@ -404,7 +404,8 @@ def get_heatmap(
 ) -> None:
     """Write a single heatmap for a comparison between two pyani runs.
 
-    :param run_id:  int, run_id for this run
+    :param run_a:  int, run_id for the reference
+    :param run_b:  int, run_id for the query
     :param matdata:  MatrixData object for this heatmap
     :param outfstem:  stem for output graphics files
     :param outfmts:  list of output formats for files
@@ -428,7 +429,7 @@ def get_heatmap(
         GMETHODS[args.method](
             matdata.data,
             outfname,
-            title=f"Compare {matdata.name.title().replace('_', ' ')} run {run_a} vs run {run_b}",
+            title=f"Compare {matdata.name.title().replace('_', ' ')} (run {run_a} - run {run_b})",
             params=params,
         )
 
@@ -448,7 +449,8 @@ def get_distribution(
 ) -> None:
     """Write distribution plots for each matrix type.
 
-    :param run_id:  int, run_id for this run
+    :param run_a:  int, run_id for the reference
+    :param run_b:  int, run_id for the query
     :param matdata:  MatrixData object for this distribution plot
     :param outfstem:  stem for output graphics files
     :param outfmts:  list of output formats for files
@@ -467,7 +469,7 @@ def get_distribution(
             matdata.data,
             outfname,
             matdata.name,
-            title=f"Compare {matdata.name.title().replace('_', ' ')} run {run_a} vs run {run_b}",
+            title=f"Compare {matdata.name.title().replace('_', ' ')} (run {run_a} - run {run_b})",
         )
 
         # Be tidy with matplotlib caches
@@ -558,10 +560,10 @@ def get_bland_altman(
             matdata1.data,
             matdata2.data,
             outfname,
-            # info,
             f"{matdata1.name}",
             f"{matdata2.name}",
-            title=f"{matdata1.name.title().replace('_', ' ')} run {run_a} vs {matdata2.name.title()} run {run_b}",
+            (run_a, run_b),
+            title=f"Bland-Altman plot for {matdata1.name.title().replace('_', ' ')}",
             params=params,
         )
 

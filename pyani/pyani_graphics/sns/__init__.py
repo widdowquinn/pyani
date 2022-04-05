@@ -273,7 +273,15 @@ def scatter(
 
 
 def bland_altman(
-    dfr1, dfr2, outfilename, matname1, matname2, title=None, info=None, params=None
+    dfr1,
+    dfr2,
+    outfilename,
+    matname1,
+    matname2,
+    run_ids,
+    title=None,
+    info=None,
+    params=None,
 ):
     """Return seaborn Bland-Altman plot.
 
@@ -282,12 +290,13 @@ def bland_altman(
     :param outfilename:  path to output file (indicates output format)
     :param matname1:  name of x-axis data
     :param matname2:  name of y-axis data
+    :param run_ids:   tuple of run_ids (ref, query)
     :param title:  title for the plot
     :param info:   information about the data in the plot
     :param params:  a list of parameters for plotting: [colormap, vmin, vmax]
     """
     data = pd.DataFrame()
-
+    ref_id, query_id = run_ids
     data["avg"] = (dfr1 + dfr2).values.flatten() / 2
     data["AminusB"] = (dfr1 - dfr2).values.flatten()
 
@@ -300,9 +309,9 @@ def bland_altman(
     # fig.figtext(1, .5, info)
     fig.set(
         xlabel=f"Average of run {matname1} scores",
-        ylabel=f"Difference between run {matname1} scores",
+        ylabel=f"Difference between {matname1} scores (run {ref_id} - run {query_id})",
     )
-    plt.title(f"Bland-Altman plot for {matname1}")
+    plt.title(title)
 
     fig.tight_layout()
 
