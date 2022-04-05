@@ -414,7 +414,10 @@ def get_heatmap(
     logs = []
     proname = multiprocessing.current_process().name
 
-    cmap = ("BuRd", matdata.data.values.min(), matdata.data.values.max())
+    if "absdiff" in matdata.name:
+        cmap = ("crest", matdata.data.values.min(), matdata.data.values.max(), None)
+    else:
+        cmap = ("icefire", matdata.data.values.min(), matdata.data.values.max(), 0)
 
     for fmt in outfmts:
         outfname = f"{outfstem}.{fmt}"
@@ -497,7 +500,7 @@ def get_scatter(
     proname = multiprocessing.current_process().name
 
     extreme = max(abs(matdata1.data.values.min()), abs(matdata1.data.values.max()))
-    cmap = ("BuRd", extreme * -1, extreme)
+    cmap = ("BuRd", extreme * -1, extreme, None)
     for fmt in outfmts:
         outfname = f"{outfstem}.{fmt}"
         logs.append(f"{proname}: Writing graphics to {outfname}")
@@ -543,7 +546,7 @@ def get_bland_altman(
     proname = multiprocessing.current_process().name
 
     extreme = max(abs(matdata1.data.values.min()), abs(matdata1.data.values.max()))
-    cmap = ("BuRd", extreme * -1, extreme)
+    cmap = ("BuRd", extreme * -1, extreme, None)
     for fmt in outfmts:
         outfname = f"{outfstem}.{fmt}"
 

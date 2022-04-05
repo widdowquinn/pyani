@@ -114,6 +114,7 @@ def get_clustermap(dfr, params, title=None, annot=True):
         cmap=params.cmap,
         vmin=params.vmin,
         vmax=params.vmax,
+        center=params.center,
         col_colors=params.colorbar,
         row_colors=params.colorbar,
         figsize=(params.figsize, params.figsize),
