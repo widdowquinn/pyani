@@ -1,5 +1,6 @@
 # Scratch directory for local testing
 scratch/
+makefile_template
 
 # Mac-related dreck
 .DS_Store
