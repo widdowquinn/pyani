@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2020
+# (c) University of Strathclyde 2019-2022
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2020 University of Strathclyde
+# Copyright (c) 2019-2022 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -84,11 +84,12 @@ def subcmd_plot(args: Namespace) -> int:
     session = pyani_orm.get_session(args.dbpath)
 
     # Parse output formats
-    outfmts = args.formats.split(",")
+    outfmts = args.formats  # .formats.split(",")
     logger.debug("Requested output formats: %s", outfmts)
+    logger.debug("Type of formats variable: %s", type(outfmts))
 
     # Work on each run:
-    run_ids = [int(run) for run in args.run_id.split(",")]
+    run_ids = [int(run) for run in args.run_ids]
     logger.debug("Generating graphics for runs: %s", run_ids)
     for run_id in run_ids:
         write_run_plots(run_id, session, outfmts, args)
@@ -109,10 +110,10 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
     # Get results matrices for the run
     logger.debug("Retrieving results matrices for run %s", run_id)
     results = (
-        session.query(pyani_orm.Run).filter(pyani_orm.Run.run_id == args.run_id).first()
+        session.query(pyani_orm.Run).filter(pyani_orm.Run.run_id == run_id).first()
     )
-    result_label_dict = pyani_orm.get_matrix_labels_for_run(session, args.run_id)
-    result_class_dict = pyani_orm.get_matrix_classes_for_run(session, args.run_id)
+    result_label_dict = pyani_orm.get_matrix_labels_for_run(session, run_id)
+    result_class_dict = pyani_orm.get_matrix_classes_for_run(session, run_id)
     logger.debug(
         f"Have {len(result_label_dict)} labels and {len(result_class_dict)} classes"
     )
@@ -160,8 +161,10 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
     )
 
     # Run the plotting commands
+    logger.debug("Running plotting commands")
     for func, options in plotting_commands:
-        pool.apply_async(func, options, {})
+        logger.debug("Running %s with options %s", func, options)
+        pool.apply_async(func, args=options)
 
     # Close worker pool
     pool.close()
@@ -169,10 +172,7 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
 
 
 def write_distribution(
-    run_id: int,
-    matdata: MatrixData,
-    outfmts: List[str],
-    args: Namespace,
+    run_id: int, matdata: MatrixData, outfmts: List[str], args: Namespace
 ) -> None:
     """Write distribution plots for each matrix type.
 
@@ -187,12 +187,15 @@ def write_distribution(
     for fmt in outfmts:
         outfname = Path(args.outdir) / f"distribution_{matdata.name}_run{run_id}.{fmt}"
         logger.debug("\tWriting graphics to %s", outfname)
-        DISTMETHODS[args.method](
+        DISTMETHODS[args.method[0]](
             matdata.data,
             outfname,
             matdata.name,
             title=f"matrix_{matdata.name}_run{run_id}",
         )
+
+    # Be tidy with matplotlib caches
+    plt.close("all")
 
 
 def write_heatmap(
@@ -221,7 +224,7 @@ def write_heatmap(
         logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw heatmap
-        GMETHODS[args.method](
+        GMETHODS[args.method[0]](
             matdata.data,
             outfname,
             title=f"matrix_{matdata.name}_run{run_id}",
@@ -263,7 +266,7 @@ def write_scatter(
         logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw scatterplot
-        SMETHODS[args.method](
+        SMETHODS[args.method[0]](
             matdata1.data,
             matdata2.data,
             outfname,

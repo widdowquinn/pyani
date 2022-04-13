@@ -55,6 +55,13 @@ from . import pyani_jobs
 from .pyani_tools import BLASTcmds, BLASTfunctions, BLASTexes, ANIResults
 from pyani import pyani_files
 
+from . import PyaniException
+
+
+class PyaniblastallException(PyaniException):
+
+    """ANIblastall-specific exception for pyani."""
+
 
 def get_version(blastall_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
     r"""Return BLAST blastall version as a string.
@@ -74,7 +81,7 @@ def get_version(blastall_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
     The following circumstances are explicitly reported as strings
 
     - no executable at passed path
-    - non-executable file at passed path
+    - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
     - no version info returned
     - executable cannot be run on this OS
     """

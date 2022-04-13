@@ -59,7 +59,7 @@ CITATION_INFO = [
         "If you use pyani in your work, please cite the following publication:", "green"
     ),
     termcolor(
-        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,", "yellow",
+        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,", "yellow"
     ),
     termcolor(
         "\t& Toth, I.K. (2016) 'Genomics and taxonomy in diagnostics for", "yellow"
@@ -100,7 +100,7 @@ def run_main(argv: Optional[List[str]] = None) -> int:
     if args.version:
         sys.stderr.write(f"{VERSION_INFO}\n")
         return 0
-    
+
     # Catch requests for citation and version information
     if sys.argv[1].startswith("-"):
         if args.citation:
@@ -162,6 +162,9 @@ def add_log_headers():
         "\tFriedberg I, Hamelryck T, Kauff F, Wilczynski B and de Hoon MJL",
         "\t(2009) Biopython: freely available Python tools for computational",
         "\tmolecular biology and bioinformatics. Bioinformatics, 25, 1422-1423",
+        f"\t{termcolor('fastANI', 'cyan')}: Jain C, Rodriguez-R LM, Phillippy AM, Konstantinidis K, and",
+        "\tAluru S (2018) 'High throughput ANI analysis of 90K prokaryotic",
+        "\tgenomes reveals clear species boundaries.' Nature Communications 9, 5114",
     ]
     for line in dep_citations:
         logger.info(line)

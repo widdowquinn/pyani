@@ -99,7 +99,13 @@ from Bio import SeqIO  # type: ignore
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
+from . import PyaniException
 from .pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
+
+
+class PyaniANIbException(PyaniException):
+
+    """ANIb-specific exception for pyani."""
 
 
 def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
@@ -120,17 +126,20 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
     The following circumstances are explicitly reported as strings
 
     - no executable at passed path
-    - non-executable file at passed path
+    - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
     - no version info returned
     """
-    blastn_path = Path(shutil.which(blast_exe))  # type:ignore
 
-    if blastn_path is None:
+    try:
+        blastn_path = Path(shutil.which(blast_exe))  # type:ignore
+
+    except TypeError:
         return f"{blast_exe} is not found in $PATH"
 
     if not blastn_path.is_file():  # no executable
         return f"No blastn executable at {blastn_path}"
 
+    # This should catch cases when the file can't be executed by the user
     if not os.access(blastn_path, os.X_OK):  # file exists but not executable
         return f"blastn exists at {blastn_path} but not executable"
 
@@ -142,6 +151,7 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
         stderr=subprocess.PIPE,
         check=True,
     )
+
     version = re.search(  # type: ignore
         r"(?<=blastn:\s)[0-9\.]*\+", str(result.stdout + result.stderr, "utf-8")
     ).group()

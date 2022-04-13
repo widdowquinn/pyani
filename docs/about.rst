@@ -9,6 +9,7 @@ About ``pyani``
 - ANIb (average nucleotide identity using ``BLAST+``)
 - ANIblastall (average nucleotide identity using ``legacy BLAST``)
 - ANIm (average nucleotide identity using ``MUMmer``)
+- fastANI (average nucleotide identity using ``fastANI``)
 - TETRA (4-mer sequence profiles)
 
 -------------------

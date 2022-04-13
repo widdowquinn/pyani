@@ -110,7 +110,9 @@ def populate_cmdsets(job: Job, cmdsets: List, depth: int) -> List:
 
 
 # Run a set of command lines using multiprocessing
-def multiprocessing_run(cmdlines: List, workers: Optional[int] = None) -> int:
+def multiprocessing_run(
+    cmdlines: List, workers: Optional[int] = None, logger: Optional[Logger] = None
+) -> int:
     """Distributes passed command-line jobs using multiprocessing.
 
     :param cmdlines:  iterable, command line strings
@@ -119,6 +121,8 @@ def multiprocessing_run(cmdlines: List, workers: Optional[int] = None) -> int:
     Returns the sum of exit codes from each job that was run. If
     all goes well, this should be 0. Anything else and the calling
     function should act accordingly.
+
+    Sends a warning to the logger if a comparison fails; the warning consists of the specific command line that has failed.
     """
     # Run jobs
     # If workers is None or greater than the number of cores available,
@@ -138,4 +142,11 @@ def multiprocessing_run(cmdlines: List, workers: Optional[int] = None) -> int:
     ]
     pool.close()
     pool.join()
+
+    # Print a warning so individual runs that fail can be identified
+    for r in results:
+        if r.get().returncode != 0:
+            if logger:  # Try to be informative, if the logger module is being used
+                logger.warning(f"Comparison failed: {' '.join(r.get().args)}")
+
     return sum([r.get().returncode for r in results])
