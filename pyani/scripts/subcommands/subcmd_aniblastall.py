@@ -112,25 +112,25 @@ def subcmd_aniblastall(args: Namespace) -> None:
 
     # Get BLASTALL version - this will be used in the database entreis
     blastall_version = aniblastall.get_version(args.blastall_exe)
-    logger.info(termcolor(f"BLAST+ blastall version: {blastall_version}", "cyan"))
+    logger.info(termcolor("BLAST+ blastall version: %s", blastall_version, "cyan"))
 
     # Use provided name, or make new one for this analysis
     start_time = datetime.datetime.now()
     name = args.name or "_".join(["ANIblastall", start_time.isoformat()])
-    logger.info(termcolor(f"Analysis name: {name}", "cyan"))
+    logger.info(termcolor("Analysis name: %s", name, "cyan"))
 
     # Connect to existing database (which may be "clean" or have old analyses)
-    logger.debug(f"Connecting to database {args.dbpath}")
+    logger.debug("Connecting to database %s", args.dbpath)
     try:
         session = get_session(args.dbpath)
     except Exception:
         logger.error(
-            f"Could not connect to database {args.dbpath} (exiting)", exc_info=True
+            "Could not connect to database %s (exiting)", args.dbpath, exc_info=True
         )
         raise SystemExit(1)
 
     # Add information about this run to the database
-    logger.debug(f"Adding run info to database {args.dbpath}...")
+    logger.debug("Adding run info to database %s...", args.dbpath)
     try:
         run, run_id = add_run(
             session,
@@ -143,10 +143,10 @@ def subcmd_aniblastall(args: Namespace) -> None:
     except PyaniORMException:
         logger.error("Could not add run to the database (exiting)", exc_info=True)
         raise SystemExit(1)
-    logger.debug(f"\t...added run ID: {run_id} to the database")
+    logger.debug("\t...added run ID: %s to the database", run_id)
 
     # Identify input files for comparison, and populate the database
-    logger.debug(f"Adding files for run {run_id} to database...")
+    logger.debug("Adding files for run %s to database...", run_id)
     try:
         genome_ids = add_run_genomes(
             session, run, args.indir, args.classes, args.labels
@@ -156,21 +156,21 @@ def subcmd_aniblastall(args: Namespace) -> None:
             "Could not add genomes to database for run (exiting)", exc_info=True
         )
         raise SystemExit(1)
-    logger.debug(f"\t...added genome IDs for run {run_id}: {genome_ids}")
+    logger.debug("\t...added genome IDs for run %s: %s", run_id, genome_ids)
 
     # Get list of genomes for this anlaysis from the database
     logger.info("Compiling genomes for comparison")
     genomes = run.genomes.all()
-    logger.debug(f"\tCollected {len(genomes)} genomes for this run")
+    logger.debug("\tCollected %s genomes for this run", len(genomes))
 
     # Create output directories. We create the amin parent directory (args.outdir), but
     # also subdirectories for the BLAST databases.
-    logger.debug(f"Creating output directory {args.outdir}")
+    logger.debug("Creating output directory %s", args.outdir)
     try:
         os.makedirs(args.outdir, exist_ok=True)
     except IOError:
         logger.error(
-            f"Could not create output directory {args.outdir} (exiting)", exc_info=True
+            "Could not create output directory %s (exiting)", args.outdir, exc_info=True
         )
         raise SystemError(1)
     fragdir = Path(str(args.outdir)) / "fragments"
@@ -188,7 +188,6 @@ def subcmd_aniblastall(args: Namespace) -> None:
         fragpath, fragsizes = fragment_fasta_file(
             Path(str(genome.path)), Path(str(fragdir)), args.fragsize
         )
-        logger.info(f"fragsizes: {type(fragsizes)}")
         fragfiles.update({Path(genome.path).stem: fragpath})
         fraglens.update({Path(genome.path).stem: fragsizes})
 
@@ -216,7 +215,7 @@ def subcmd_aniblastall(args: Namespace) -> None:
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
     comparisons = list(permutations(tqdm(genomes, disable=args.disable_tqdm), 2))
-    logger.info(f"\t...total pairwise comparisons to be performed: {len(comparisons)}")
+    logger.info("\t...total pairwise comparisons to be performed: %s", len(comparisons))
 
     # Check for existing comparisons; if one has already been done (for the same
     # software package, version, and setting) we add the comparison to this run,
@@ -226,7 +225,7 @@ def subcmd_aniblastall(args: Namespace) -> None:
         session, run, comparisons, "blastall", blastall_version, args.fragsize, False
     )
     logger.info(
-        f"\t...after check, still need to run {len(comparisons_to_run)} comparisons"
+        "\t...after check, still need to run %s comparisons", len(comparisons_to_run)
     )
 
     # If there are no comparisons to run, update the Run matrices and exit
@@ -250,12 +249,13 @@ def subcmd_aniblastall(args: Namespace) -> None:
     if args.recovery:
         logger.warning("Entering recovery mode...")
         logger.debug(
-            f"\tIn this mode, existing comparison output from {args.outdir} is reused"
+            "\tIn this mode, existing comparison output from %s is reused", args.outdir
         )
         existing_files = collect_existing_output(args.outdir, "blastall", args)
         if existing_files:
             logger.debug(
-                f"\tIdentified {len(existing_files)} existing output files for reuse, existing_files[0] (et cetera)"
+                "\tIdentified %s existing output files for reuse, existing_files[0] (et cetera)",
+                len(existing_files),
             )
         else:
             logger.debug("\tIdentified no existing output files")
@@ -270,10 +270,10 @@ def subcmd_aniblastall(args: Namespace) -> None:
     joblist = generate_joblist(
         comparisons_to_run, existing_files, fragfiles.values(), fraglens.values(), args
     )
-    logger.debug(f"...created {len(joblist)} blastall jobs")
+    logger.debug("...created %s blastall jobs", len(joblist))
 
     # Pass jobs to appropriate scheduler
-    logger.debug(f"Passing {len(joblist)} jobs to {args.scheduler}")
+    logger.debug("Passing %s jobs to %s", len(joblist), args.scheduler)
     run_aniblastall_jobs(joblist, args)
     logger.info("...jobs complete.")
 
@@ -320,10 +320,10 @@ def generate_joblist(
         blastallcmd = aniblastall.generate_blastall_commands(
             qfrags, Path(subject.path), args.outdir, args.blastall_exe
         )
-        logger.debug(f"Commands to run:\n\t{blastallcmd}\n")
+        logger.debug("Commands to run:\n\t%s\n", blastallcmd)
         outprefix = blastallcmd.split()[4][:-10]  # prefix for blastall output
         outfname = Path(outprefix + ".blast_tab")
-        logger.debug(f"Expected output file for db: {outfname}")
+        logger.debug("Expected output file for db: %s", outfname)
 
         # If we are in recovery mode, we are salvaging output from a previous
         # run, and do not necessarily need to rerun all the jobs. In this case,
@@ -334,7 +334,7 @@ def generate_joblist(
         # added to the database whether they come from recovery mode or are run
         # in this call of the script.
         if args.recovery and outfname in existing_files:
-            logger.debug(f"Recovering output from {outfname}, not submitting job")
+            logger.debug("Recovering output from %s, not submitting job", outfname)
             # Need to track the expected output, but set the job itself to None.
             joblist.append(
                 ComparisonJob(
@@ -395,7 +395,7 @@ def run_aniblastall_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
     :param args:     command-line arguments for the run
     """
     logger = logging.getLogger(__name__)
-    logger.debug(f"Scheduler: {args.scheduler}")
+    logger.debug("Scheduler: %s", args.scheduler)
 
     # Entries with None seen in recovery mode:
     jobs = [_.job for _ in joblist if _.job]
@@ -405,7 +405,7 @@ def run_aniblastall_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
         if not args.workers:
             logger.debug("(using maximum number of worker threads)")
         else:
-            logger.debug(f"(using {args.workers} worker threads, if available)")
+            logger.debug("(using %s worker threads, if available)", args.workers)
         cumval = run_mp.run_dependency_graph(jobs, workers=args.workers)
         if cumval > 0:
             logger.error(
@@ -415,8 +415,8 @@ def run_aniblastall_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
         logger.info("Multiprocessing run completed without error.")
     elif args.scheduler.lower() == "sge":
         logger.info("Running jobs with SGE")
-        logger.debug(f"Setting jobarray group size to {args.sgegroupsize}")
-        logger.debug(f"Joblist contains {len(joblist)}")
+        logger.debug("Setting jobarray group size to %s", args.sgegroupsize)
+        logger.debug("Joblist contains %s", len(joblist))
         run_sge.run_dependency_graph(
             jobs,
             jgprefix=args.jobprefix,
@@ -424,7 +424,7 @@ def run_aniblastall_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
             sgeargs=args.sgeargs,
         )
     else:
-        logger.error(termcolor(f"Scheduler {args.scheduler} not recognised", "red"))
+        logger.error(termcolor("Scheduler %s not recognised", args.scheduler, "red"))
         raise SystemError(1)
 
 
@@ -451,12 +451,10 @@ def update_comparison_results(
 
     # Add individual results to Comparison table
     for job in tqdm(joblist, disable=args.disable_tqdm):
-        logger.debug(f"\t{job.query.description} vs {job.subject.description}")
+        logger.debug("\t%s vs %s", job.query.description, job.subject.description)
         aln_length, sim_errs, ani_pid = aniblastall.parse_blast_tab(
             job.outfile, fraglens
         )
-        logger.debug(f"Results: {aln_length}, {sim_errs}, {ani_pid}")
-        logger.debug(f"Results: {type(aln_length)}, {type(sim_errs)}, {type(ani_pid)}")
         qcov = aln_length / job.query.length
         scov = aln_length / job.subject.length
         run.comparisons.append(
