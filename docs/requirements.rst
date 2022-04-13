@@ -44,6 +44,14 @@ An alternative implementation of ANIb (average nucleotide identity using ``BLAST
 
 - `Legacy NCBI-BLAST (not supported) <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy.NOTSUPPORTED/>`_
 
+^^^^^^^^^^^^^^^^^
+``fastANI`` v1.32
+^^^^^^^^^^^^^^^^^
+
+To carry out fastANI (average nucleotide identity using ``fastANI``) analysis, genome sequences are compared using the ``fastANI`` tool.
+
+- `fastANI <https://github.com/ParBLiSS/FastANI>`_
+
 ^^^^^^^
 SQLite3
 ^^^^^^^
