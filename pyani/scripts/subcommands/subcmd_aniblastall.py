@@ -132,7 +132,7 @@ def subcmd_aniblastall(args: Namespace) -> None:
     # Add information about this run to the database
     logger.debug(f"Adding run info to database {args.dbpath}...")
     try:
-        run = add_run(
+        run, run_id = add_run(
             session,
             method="ANIblastall",
             cmdline=args.cmdline,
@@ -143,20 +143,20 @@ def subcmd_aniblastall(args: Namespace) -> None:
     except PyaniORMException:
         logger.error("Could not add run to the database (exiting)", exc_info=True)
         raise SystemExit(1)
-    logger.debug(f"\t...added run ID: {run} to the database")
+    logger.debug(f"\t...added run ID: {run_id} to the database")
 
     # Identify input files for comparison, and populate the database
-    logger.debug(f"Adding files for {run} to database...")
+    logger.debug(f"Adding files for run {run_id} to database...")
     try:
         genome_ids = add_run_genomes(
             session, run, args.indir, args.classes, args.labels
         )
     except PyaniORMException:
         logger.error(
-            f"Could not add genomes to database for run {run} (exiting)", exc_info=True
+            "Could not add genomes to database for run (exiting)", exc_info=True
         )
         raise SystemExit(1)
-    logger.debug(f"\t...added gnome IDs: {genome_ids}")
+    logger.debug(f"\t...added genome IDs for run {run_id}: {genome_ids}")
 
     # Get list of genomes for this anlaysis from the database
     logger.info("Compiling genomes for comparison")
