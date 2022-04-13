@@ -125,6 +125,8 @@ def run_main(argv: Optional[List[str]] = None) -> int:
     add_log_headers()
 
     # Check the database file exists, if one is given
+    # `dbpath` is not in the namespace for all subcommands,
+    # such as `download`, so a `try/except` is needed here
     try:
         if args.dbpath:
             logger.info("Checking for database file: {args.dbpath}")
