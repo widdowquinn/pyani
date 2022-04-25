@@ -73,6 +73,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
+            pip install virtualenv
             python3 -m venv venv
             . venv/bin/activate
             pip install --upgrade pip setuptools virtualenv
