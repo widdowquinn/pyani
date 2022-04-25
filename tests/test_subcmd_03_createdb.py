@@ -75,8 +75,23 @@ class TestCreatedbSubcommand(unittest.TestCase):
         self.logger.addHandler(logging.NullHandler())
 
         # Command line namespaces
-        self.argsdict = {"createdb": Namespace(dbpath=self.dbpath, force=True)}
+        self.argsdict = {
+            "create_newdb": Namespace(dbpath=self.dbpath, force=False),
+            "create_newdb_force": Namespace(dbpath=self.dbpath, force=True),
+        }
 
-    def test_createdb(self):
-        """Test creation of empty pyani database."""
-        subcommands.subcmd_createdb(self.argsdict["createdb"])
+    def test_create_newdb(self):
+        """Test creation of new empty pyani database."""
+        # Remove existing dbpath first
+        self.dbpath.unlink(missing_ok=True)
+
+        # Create new database
+        subcommands.subcmd_createdb(self.argsdict["create_newdb"])
+
+    def test_create_newdb_force(self):
+        """Test creation of new pyani database, overwriting old."""
+        # Ensure dbpath exists
+        assert self.dbpath.exists()
+
+        # Create new database
+        subcommands.subcmd_createdb(self.argsdict["create_newdb_force"])
