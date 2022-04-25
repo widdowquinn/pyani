@@ -73,10 +73,6 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            python -m pip install --upgrade pip
-            pip install virtualenv
-            python -m venv venv
-            . venv/bin/activate
             pip install --upgrade pip setuptools virtualenv
             pip install -r requirements.txt
             pip install -r requirements-dev.txt
@@ -85,19 +81,17 @@ jobs:
 
       - save_cache:
           paths:
-            - ./venv
+            - .pyenv
           key: pyani-dependencies-pip-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
 
       - run:
           name: install pyani
           command: |
-            . venv/bin/activate
             pip install -e .  # Install the repo as a package
 
       - run:
           name: run tests
           command: |
-            . venv/bin/activate
             pytest -v --cov=pyani --cov-report xml:.coverage.xml
 
       - store_artifacts:
