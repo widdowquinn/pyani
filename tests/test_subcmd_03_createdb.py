@@ -56,6 +56,8 @@ passed as the sole argument to the appropriate subcommand.
 import logging
 import unittest
 
+import pytest
+
 from argparse import Namespace
 from pathlib import Path
 
@@ -87,6 +89,15 @@ class TestCreatedbSubcommand(unittest.TestCase):
 
         # Create new database
         subcommands.subcmd_createdb(self.argsdict["create_newdb"])
+
+    def test_create_newdb_fail(self):
+        """Test creation of new pyani database, overwriting old."""
+        # Ensure dbpath exists
+        assert self.dbpath.exists()
+
+        # Create new database
+        with pytest.raises(SystemError):  # This should raise a SystemError
+            subcommands.subcmd_createdb(self.argsdict["create_newdb"])
 
     def test_create_newdb_force(self):
         """Test creation of new pyani database, overwriting old."""
