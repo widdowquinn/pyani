@@ -85,7 +85,9 @@ class TestCreatedbSubcommand(unittest.TestCase):
     def test_create_newdb(self):
         """Test creation of new empty pyani database."""
         # Remove existing dbpath first
-        self.dbpath.unlink(missing_ok=True)
+        # The missing_ok argument does not come in until Python 3.8
+        if self.dbpath.exists():
+            self.dbpath.unlink()
 
         # Create new database
         subcommands.subcmd_createdb(self.argsdict["create_newdb"])
