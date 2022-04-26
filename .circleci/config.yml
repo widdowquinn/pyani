@@ -41,15 +41,9 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: set_environment_variables
-          command: |
-            PYTHONVER=`python --version | sed -r 's/ /_/g'`
-            echo $PYTHONVER
-
       - restore_cache:
           keys:
-            - pyani-dependencies-pip-{{ .Environment.PYTHONVER }}-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}-{{ checksum "requirements-fastani.txt" }}-{{ checksum "requirements-pyqt-conda.txt" }}-{{ checksum "requirements-pyqt-pip.txt" }}
+            - pyani-dependencies-pip-{{ .Environment.CIRCLE_JOB }}-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}-{{ checksum "requirements-fastani.txt" }}-{{ checksum "requirements-pyqt-conda.txt" }}-{{ checksum "requirements-pyqt-pip.txt" }}
             - pyani-dependencies-pip-
 
       - run:
