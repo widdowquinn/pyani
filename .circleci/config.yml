@@ -11,8 +11,7 @@ workflows:
   version: 2.1
   test:
     jobs:
-      - test-3_10:
-        context: pyani
+      - test-3_10
       - test-3_9
       - test-3_8
       - test-3_7
@@ -45,7 +44,8 @@ jobs:
       - run:
           name: set_environment_variables
           command: |
-            export PYTHONVER=`python --version | sed -r 's/ /_/g'`
+            PYTHONVER=`python --version | sed -r 's/ /_/g'`
+            echo $PYTHONVER
 
       - restore_cache:
           keys:
