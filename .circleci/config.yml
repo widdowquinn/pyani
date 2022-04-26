@@ -91,10 +91,18 @@ jobs:
           command: |
             pip install -e .  # Install the repo as a package
 
+      # Slow tests are separated out to avoid hitting context deadlines on CircleCI
       - run:
-          name: run tests
+          name: run fast tests
           command: |
-            python -m pytest -v --cov=pyani --cov-report xml:.coverage.xml
+            python -m pytest -v -m "not slow" --cov=pyani --cov-report xml:.coverage_fast.xml
+
+      # Slow tests are separated out to avoid hitting context deadlines on CircleCI
+      - run:
+          name: run slow tests
+          no_output_timeout: 30m
+          command: |
+            python -m pytest -v -m "slow" --cov=pyani --cov-report xml:.coverage_slow.xml
 
       - store_artifacts:
           path: tests/test_output
