@@ -12,8 +12,7 @@ workflows:
   test:
     jobs:
       - test-3_10:
-        context:
-          - pyani
+        context: pyani
       - test-3_9
       - test-3_8
       - test-3_7
