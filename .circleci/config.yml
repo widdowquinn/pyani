@@ -112,7 +112,7 @@ jobs:
           destination: .coverage.xml
 
       - codecov/upload:
-          file: .coverage.xml
+          file: .coverage*.xml
 
   test-3_6:
     <<: *test-template
