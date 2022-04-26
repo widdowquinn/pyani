@@ -114,8 +114,11 @@ jobs:
           path: .coverage_slow.xml
           destination: .coverage_slow.xml
 
+      # CodeCov merges separate report uploads: https://docs.codecov.com/docs/merging-reports
       - codecov/upload:
-          file: '.coverage*.xml'
+          file: '.coverage_fast.xml'
+      - codecov/upload:
+          file: '.coverage_slow.xml'
 
   test-3_6:
     <<: *test-template
