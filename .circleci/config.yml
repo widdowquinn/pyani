@@ -14,18 +14,10 @@ workflows:
       - test-3_10:
         context:
           - pyani
-      - test-3_9:
-        context:
-          - pyani
-      - test-3_8:
-        context:
-          - pyani
-      - test-3_7:
-        context:
-          - pyani
-      - test-3_6:
-        context:
-          - pyani
+      - test-3_9
+      - test-3_8
+      - test-3_7
+      - test-3_6
   weekly:
     triggers:
       - schedule:
@@ -35,21 +27,11 @@ workflows:
               only:
                 - master
     jobs:
-      - test-3_10:
-        context:
-          - pyani
-      - test-3_9:
-        context:
-          - pyani
-      - test-3_8:
-        context:
-          - pyani
-      - test-3_7:
-        context:
-          - pyani
-      - test-3_6:
-        context:
-          - pyani
+      - test-3_10
+      - test-3_9
+      - test-3_8
+      - test-3_7
+      - test-3_6
 
 jobs:
   test-3_8: &test-template
