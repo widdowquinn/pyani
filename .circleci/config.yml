@@ -11,11 +11,21 @@ workflows:
   version: 2.1
   test:
     jobs:
-      - test-3_10
-      - test-3_9
-      - test-3_8
-      - test-3_7
-      - test-3_6
+      - test-3_10:
+        context:
+          - pyani
+      - test-3_9:
+        context:
+          - pyani
+      - test-3_8:
+        context:
+          - pyani
+      - test-3_7:
+        context:
+          - pyani
+      - test-3_6:
+        context:
+          - pyani
   weekly:
     triggers:
       - schedule:
@@ -25,11 +35,21 @@ workflows:
               only:
                 - master
     jobs:
-      - test-3_10
-      - test-3_9
-      - test-3_8
-      - test-3_7
-      - test-3_6
+      - test-3_10:
+        context:
+          - pyani
+      - test-3_9:
+        context:
+          - pyani
+      - test-3_8:
+        context:
+          - pyani
+      - test-3_7:
+        context:
+          - pyani
+      - test-3_6:
+        context:
+          - pyani
 
 jobs:
   test-3_8: &test-template
@@ -41,9 +61,14 @@ jobs:
     steps:
       - checkout
 
+      - run:
+          name: set_environment_variables
+          command: |
+            export PYTHONVER=`python --version | sed -r 's/ /_/g'`
+
       - restore_cache:
           keys:
-            - pyani-dependencies-pip-{{ python --version | sed -r 's/ /_/g' }}-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}-{{ checksum "requirements-fastani.txt" }}-{{ checksum "requirements-pyqt-conda.txt" }}-{{ checksum "requirements-pyqt-pip.txt" }}
+            - pyani-dependencies-pip-{{ .Environment.PYTHONVER }}-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}-{{ checksum "requirements-fastani.txt" }}-{{ checksum "requirements-pyqt-conda.txt" }}-{{ checksum "requirements-pyqt-pip.txt" }}
             - pyani-dependencies-pip-
 
       - run:
@@ -84,7 +109,7 @@ jobs:
       - save_cache:
           paths:
             - .pyenv
-          key: pyani-dependencies-pip-{{ python --version | sed -r 's/ /_/g' }}-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}-{{ checksum "requirements-fastani.txt" }}-{{ checksum "requirements-pyqt-conda.txt" }}-{{ checksum "requirements-pyqt-pip.txt" }}
+          key: pyani-dependencies-pip-{{ .Environment.PYTHONVER }}-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}-{{ checksum "requirements-fastani.txt" }}-{{ checksum "requirements-pyqt-conda.txt" }}-{{ checksum "requirements-pyqt-pip.txt" }}
 
       - run:
           name: install pyani
