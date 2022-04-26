@@ -48,9 +48,10 @@ pytest -v
 import logging
 import unittest
 
-from pathlib import Path
+import pytest
 
 from argparse import Namespace
+from pathlib import Path
 
 from pyani.scripts import subcommands
 
@@ -185,10 +186,12 @@ class TestReportSubcommand(unittest.TestCase):
         """Test reporting of run results in the database."""
         subcommands.subcmd_report(self.argsdict["run_results"])
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_matrices(self):
         """Test reporting of run matrices in the database."""
         subcommands.subcmd_report(self.argsdict["run_matrices"])
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_no_matrix_labels(self):
         """Test row and column labeling of run matrices."""
         subcommands.subcmd_report(self.argsdict["no_matrix_labels"])
