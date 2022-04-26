@@ -83,7 +83,7 @@ jobs:
 
       - save_cache:
           paths:
-            - .pyenv
+            - /home/circleci/.pyenv
           key: pyani-dependencies-pip-{{ .Environment.CIRCLE_JOB }}-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}-{{ checksum "requirements-fastani.txt" }}-{{ checksum "requirements-pyqt-conda.txt" }}-{{ checksum "requirements-pyqt-pip.txt" }}
 
       - run:
