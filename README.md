@@ -103,6 +103,7 @@ DOI: [10.1039/C5AY02550H](https://doi.org/10.1039/C5AY02550H)
     - [`pip`](#pip)
     - [Third-party tools](#third-party-tools)
     - [NOTE: Installing legacy BLAST](#note-installing-legacy-blast)
+    - [Note: Installing fastANi](#note-installing-fastani)
   - [Documentation (v0.3)](#documentation-v03)
     - [Older documentation (v0.2)](#older-documentation-v02)
   - [Bugs, issues, problems and questions](#bugs-issues-problems-and-questions)
@@ -196,42 +197,9 @@ If you wish to use `pyani blastall` or the `ANIblastall` method with the legacy 
 
 **`fastANI` installation (via `conda`) will fail for Python 3.9 on macOS.**
 
-If you are using Python ≥3.9 to run `pyani` on macOS, `fastANI` will fail to install due to errors in the `conda` recipe (for build `h0a26cfa_0`). Using an earlier version of Python may be the simplest solution. However, you can also install `fastANI` yourself—via `conda`—using a slightly altered version of the command produced from the `conda` recipe, as shown below.
+If you are using Python ≥3.9 to run `pyani` on macOS, `fastANI` will fail to install due to errors in the `conda` recipe (for build `h0a26cfa_0`). 
 
-*N.B. We have placed the `fastANI` requirement in its own `requirements-fastani.txt` file so that this will not also cause other installations to fail.*
-
-##### Bypassing `conda`
-
-```bash
-c++ -O3 -DNDEBUG -std=c++11 -Isrc \
--I ${ENV_DIR}/lib/include -mmacosx-version-min=10.7 \
--stdlib=libc++ -Xpreprocessor -fopenmp -lomp \
--DUSE_BOOST src/cgi/core_genome_identity.cpp -o fastANI \
-${ENV_DIR}/lib/lib/libboost_math_c99.a \
--lstdc++ -lz -lm
-```
-
-Two alterations need to be made to the file name specified in the fifth line here:
-
-1. One of the `/lib`s should be removed.
-1. The file extension should be changed from `.a`, to `.dylib`.
-
-The resultant command ought to look something like this (with ${ENV_DIR} being wherever you're installing `fastANI`):
-
-```bash
-c++ -O3 -DNDEBUG -std=c++11 -Isrc \
--I ${ENV_DIR}/lib/include -mmacosx-version-min=10.7 \
--stdlib=libc++ -Xpreprocessor -fopenmp -lomp \
--DUSE_BOOST src/cgi/core_genome_identity.cpp -o fastANI \
-${ENV_DIR}/lib/libboost_math_c99.dylib \
--lstdc++ -lz -lm
-```
-
-For a more technical overview of the issue, and other solutions that may be shared there, please see https://github.com/widdowquinn/pyani/issues/377.
-
-##### Troubleshooting
-
-This solution is how one of our developers managed to solve the problem. We hope it works for you, but can not guarantee this. Unfortunately, if this does not work for you, we will also not be able to troubleshoot the issue. In this instance, please file an issue at https://github.com/bioconda/bioconda-recipes.
+If you encounter this problem, please see the [this section of the wiki]https://github.com/widdowquinn/pyani/wiki/Known-issues-with-third-party-tools#fastani-installation-via-conda-will-fail-for-python-39-on-macos) for help resolving it.
 
 -----
 
@@ -519,7 +487,7 @@ With large datasets, `--method mpl` (matplotlib) is recommended.
 
 Please be aware that the matrix orientation differs for these two options; so, with `seaborn` (the default, `--method seaborn`), the orientation of self-comparisons is top left to bottom right (`\`), while with `matplotlib` (`--method mpl`) the orientation is bottom left to top right (`/`).
 
-### 6. Classifying Genomes from Analysis Results
+<!-- ### 6. Classifying Genomes from Analysis Results -->
 
 -----
 
