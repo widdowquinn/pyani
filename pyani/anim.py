@@ -107,25 +107,40 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
     The following circumstances are explicitly reported as strings
 
     - no executable at passed path
-    - non-executable file at passed path
+    - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
     - no version info returned
     """
-    nucmer_path = Path(shutil.which(nucmer_exe))  # type:ignore
 
-    if nucmer_path is None:
+    try:
+        nucmer_path = Path(shutil.which(nucmer_exe))  # type:ignore
+    except TypeError:
         return f"{nucmer_exe} is not found in $PATH"
 
     if not nucmer_path.is_file():  # no executable
         return f"No nucmer at {nucmer_path}"
 
+    # This should catch cases when the file can't be executed by the user
     if not os.access(nucmer_path, os.X_OK):  # file exists but not executable
         return f"nucmer exists at {nucmer_path} but not executable"
 
     cmdline = [nucmer_exe, "-V"]  # type: List
     result = subprocess.run(
-        cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+        cmdline,
+        shell=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
     )
-    match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
+
+    # version information appears in different places for
+    # different nucmer releases
+    if result.stderr:  # expected to work for <= MUMmer3
+        match = re.search(
+            r"(?<=version\s)[0-9\.]*", str(result.stderr + result.stdout, "utf-8")
+        )
+    elif result.stdout:  # expected to work for MUMmer4
+        match = re.search(r"[0-9a-z\.]*", str(result.stdout, "utf-8"))
+
     version = match.group()  # type: ignore
 
     if 0 == len(version.strip()):

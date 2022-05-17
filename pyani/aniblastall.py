@@ -45,6 +45,12 @@ import subprocess
 from pathlib import Path
 
 from . import pyani_config
+from . import PyaniException
+
+
+class PyaniblastallException(PyaniException):
+
+    """ANIblastall-specific exception for pyani."""
 
 
 def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
@@ -65,20 +71,21 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
     The following circumstances are explicitly reported as strings
 
     - no executable at passed path
-    - non-executable file at passed path
+    - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
     - no version info returned
     - executable cannot be run on this OS
     """
     logger = logging.getLogger(__name__)
 
-    blastall_path = Path(shutil.which(blast_exe))  # type:ignore
-
-    if blastall_path is None:
+    try:
+        blastall_path = Path(shutil.which(blast_exe))  # type:ignore
+    except TypeError:
         return f"{blast_exe} is not found in $PATH"
 
     if not blastall_path.is_file():  # no executable
         return f"No blastall at {blastall_path}"
 
+    # This should catch cases when the file can't be executed by the user
     if not os.access(blastall_path, os.X_OK):  # file exists but not executable
         return f"blastall exists at {blastall_path} but not executable"
 
@@ -95,12 +102,14 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
             stderr=subprocess.PIPE,
             check=False,  # blastall doesn't return 0
         )
-        version = re.search(  # type: ignore
-            r"(?<=blastall\s)[0-9\.]*", str(result.stderr, "utf-8")
-        ).group()
+
     except OSError:
         logger.warning("blastall executable will not run", exc_info=True)
         return f"blastall exists at {blastall_path} but could not be executed"
+
+    version = re.search(  # type: ignore
+        r"(?<=blastall\s)[0-9\.]*", str(result.stderr, "utf-8")
+    ).group()
 
     if 0 == len(version.strip()):
         return f"blastall exists at {blastall_path} but could not retrieve version"

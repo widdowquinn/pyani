@@ -49,10 +49,11 @@ import logging
 import os
 import unittest
 
+import matplotlib.pyplot as plt
+import pytest
+
 from argparse import Namespace
 from pathlib import Path
-
-import matplotlib.pyplot as plt
 
 from pyani.scripts import subcommands
 
@@ -76,7 +77,7 @@ class TestPlotSubcommand(unittest.TestCase):
         self.argsdict = {
             "mpl_pdf": Namespace(
                 outdir=self.outdir / "mpl",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="pdf",
                 method="mpl",
@@ -84,7 +85,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "mpl_png": Namespace(
                 outdir=self.outdir / "mpl",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="png",
                 method="mpl",
@@ -92,7 +93,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "mpl_svg": Namespace(
                 outdir=self.outdir / "mpl",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="svg",
                 method="mpl",
@@ -100,7 +101,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "mpl_jpg": Namespace(
                 outdir=self.outdir / "mpl",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="jpg",
                 method="mpl",
@@ -108,7 +109,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "seaborn_pdf": Namespace(
                 outdir=self.outdir / "seaborn",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="pdf",
                 method="seaborn",
@@ -116,7 +117,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "seaborn_png": Namespace(
                 outdir=self.outdir / "seaborn",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="png",
                 method="seaborn",
@@ -124,7 +125,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "seaborn_svg": Namespace(
                 outdir=self.outdir / "seaborn",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="svg",
                 method="seaborn",
@@ -132,7 +133,7 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
             "seaborn_jpg": Namespace(
                 outdir=self.outdir / "seaborn",
-                run_id=self.run_id,
+                run_ids=self.run_id,
                 dbpath=self.dbpath,
                 formats="jpg",
                 method="seaborn",
@@ -140,41 +141,49 @@ class TestPlotSubcommand(unittest.TestCase):
             ),
         }
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_plot_mpl_pdf(self):
         """Test PDF output from Matplotlib."""
         subcommands.subcmd_plot(self.argsdict["mpl_pdf"])
         plt.close("all")
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_plot_mpl_png(self):
         """Test PNG output from Matplotlib."""
         subcommands.subcmd_plot(self.argsdict["mpl_png"])
         plt.close("all")
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_plot_mpl_svg(self):
         """Test SVG output from Matplotlib."""
         subcommands.subcmd_plot(self.argsdict["mpl_svg"])
         plt.close("all")
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_plot_mpl_jpg(self):
         """Test JPG output from Matplotlib."""
         subcommands.subcmd_plot(self.argsdict["mpl_jpg"])
         plt.close("all")
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_plot_seaborn_pdf(self):
         """Test PDF output from Matplotlib."""
         subcommands.subcmd_plot(self.argsdict["seaborn_pdf"])
         plt.close("all")
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_plot_seaborn_png(self):
         """Test PNG output from Matplotlib."""
         subcommands.subcmd_plot(self.argsdict["seaborn_png"])
         plt.close("all")
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_plot_seaborn_svg(self):
         """Test SVG output from Matplotlib."""
         subcommands.subcmd_plot(self.argsdict["seaborn_svg"])
         plt.close("all")
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_plot_seaborn_jpg(self):
         """Test JPG output from Matplotlib."""
         subcommands.subcmd_plot(self.argsdict["seaborn_jpg"])

@@ -37,7 +37,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 """Code to implement Seaborn graphics output for ANI analyses."""
-import sys
+
+import warnings
+
 import matplotlib  # pylint: disable=C0411
 import pandas as pd
 import seaborn as sns
@@ -109,18 +111,38 @@ def get_clustermap(dfr, params, title=None, annot=True):
     :param title:  str, plot title
     :param annot:  Boolean, add text for cell values?
     """
-    fig = sns.clustermap(
-        dfr,
-        cmap=params.cmap,
-        vmin=params.vmin,
-        vmax=params.vmax,
-        center=params.center,
-        col_colors=params.colorbar,
-        row_colors=params.colorbar,
-        figsize=(params.figsize, params.figsize),
-        linewidths=params.linewidths,
-        annot=annot,
-    )
+
+    # If we do not catch warnings here, then we often get the following warning:
+    #   ClusterWarning: scipy.cluster: The symmetric non-negative hollow
+    #   observation matrix looks suspiciously like an uncondensed distance matrix
+    # The usual solution would be to convert the array with
+    # scipy.spatial.distance.squareform(), but this requires that all values in
+    # the main diagonal are zero, which is not the case for ANI.
+    # As we know this is a (1-distance) matrix, we could just set the diagonal
+    # to zero and fudge it, but this is not a good solution. Instead, we suppress
+    # the warning in a context manager for this function call only, because we
+    # know the warning is not relevant.
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=(
+                "scipy.cluster: The symmetric non-negative "
+                "hollow observation matrix looks suspiciously like an "
+                "uncondensed distance matrix"
+            ),
+        )
+        fig = sns.clustermap(
+            dfr,
+            cmap=params.cmap,
+            vmin=params.vmin,
+            vmax=params.vmax,
+            center=params.center,
+            col_colors=params.colorbar,
+            row_colors=params.colorbar,
+            figsize=(params.figsize, params.figsize),
+            linewidths=params.linewidths,
+            annot=annot,
+        )
 
     # add labels for each of the input genomes
     add_labels(fig, params)

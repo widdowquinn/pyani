@@ -22,13 +22,13 @@ In brief, the analysis proceeds as follows for a set of input prokaryotic genome
 The output values are recorded in the ``pyani`` database.
 
 .. NOTE::
-    The `NCBI-BLAST+` comparisons are asymmetric, and performed in both directions for a pair of genomes (i.e. "fragmented A vs complete B" and "fragmented B vs complete A").
+    The `NCBI-BLAST+`_ comparisons are asymmetric, and performed in both directions for a pair of genomes (i.e. "fragmented A vs complete B" and "fragmented B vs complete A").
 
 .. TIP::
-    The `NCBI-BLAST+` comparisons are embarrasingly parallel, and can be distributed across cores on an `Open Grid Scheduler`_-compatible cluster, using the ``--scheduler SGE`` option.
+    The `NCBI-BLAST+`_ comparisons are embarrasingly parallel, and can be distributed across cores on an `Open Grid Scheduler`_-compatible cluster, using the ``--scheduler SGE`` option.
 
 .. ATTENTION::
-    ``pyani anib`` requires that a working copy of `NCBI-BLAST+` is available. Please see :ref:`pyani-installation` for information about installing this package.
+    ``pyani anib`` requires that a working copy of `NCBI-BLAST+`_ is available. Please see :ref:`pyani-installation` for information about installing this package.
 
 For more information about the ``pyani anib`` subcommand, please see the :ref:`pyani-subcmd-anib` page, or issue the command ``pyani anib -h`` to see the inline help.
 
@@ -51,8 +51,11 @@ This instructs ``pyani`` to perform ANIb on the genome FASTA files in ``<INPUT_D
 .. NOTE::
     While running, ``pyani anib`` will show progress bars unless these are disabled with the option ``--disable_tqdm``
 
+This command will write the intermediate `NCBI-BLAST+`_ output to the directory ``genomes_ANIb``, where the results can be inspected if required.
 
-.. code-block:: bash
+..
+  I am unsure if this is relevant for anib
+  .. code-block:: bash
 
     $ ls genomes_ANIb/
     blastn_output
@@ -64,7 +67,7 @@ This instructs ``pyani`` to perform ANIb on the genome FASTA files in ``<INPUT_D
 Perform ANIb analysis with Open Grid Scheduler
 ----------------------------------------------
 
-The ``blastn`` comparison step of ANIb is embarrassingly parallel, and ``blastn`` jobs can be distributed across cores in a cluster using the `Open Grid Scheduler`. To enable this during the analysis, use the ``--scheduler SGE`` option:
+The `NCBI-BLAST+`_ comparisons are embarrassingly parallel, and `NCBI-BLAST+`_ jobs can be distributed across cores in a cluster using the `Open Grid Scheduler`_. To enable this during the analysis, use the ``--scheduler SGE`` option:
 
 .. code-block:: bash
 
@@ -74,7 +77,7 @@ The ``blastn`` comparison step of ANIb is embarrassingly parallel, and ``blastn`
     Jobs are submitted as *array jobs* to keep the scheduler queue short.
 
 .. NOTE::
-    If ``--scheduler SGE`` is not specified, all ``blastn`` jobs are run locally with ``Python``'s ``multiprocessing`` module.
+    If ``--scheduler SGE`` is not specified, all `NCBI-BLAST+`_ jobs are run locally with ``Python``'s ``multiprocessing`` module.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Controlling parameters of Open Grid Scheduler
@@ -92,7 +95,7 @@ These allow for useful control of job execution. For example, the command:
 
     pyani anib --scheduler SGE --SGEgroupsize 5000 -i genomes -o genomes_ANIb
 
-will batch ``blastn`` jobs in groups of 500 for the scheduler. The command:
+will batch `NCBI-BLAST+`_ jobs in groups of 500 for the scheduler. The command:
 
 .. code-block:: bash
 

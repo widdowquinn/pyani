@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2020
+# (c) University of Strathclyde 2019-2022
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2020 University of Strathclyde
+# Copyright (c) 2019-2022 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,7 @@
 """Provides the report subcommand for pyani."""
 
 import logging
+import warnings
 
 from argparse import Namespace
 from typing import List, NamedTuple
@@ -154,12 +155,7 @@ def subcmd_report(args: Namespace) -> int:
             "genome label",
             "genome class",
         ]
-        report(
-            args,
-            session,
-            formats,
-            ReportParams("runs_genomes", statement, headers),
-        )
+        report(args, session, formats, ReportParams("runs_genomes", statement, headers))
 
     # Report table of all runs in which a genome is involved
     if args.show_genomes_runs:
@@ -196,16 +192,11 @@ def subcmd_report(args: Namespace) -> int:
             "method",
             "date run",
         ]
-        report(
-            args,
-            session,
-            formats,
-            ReportParams("genomes_runs", statement, headers),
-        )
+        report(args, session, formats, ReportParams("genomes_runs", statement, headers))
 
     # Report table of comparison results for the indicated runs
     if args.run_results:
-        run_ids = [run_id.strip() for run_id in args.run_results.split(",")]
+        run_ids = [run_id for run_id in args.run_results]
         logger.debug("Attempting to write results tables for runs: %s", run_ids)
         for run_id in run_ids:
             logger.debug("Processing run ID %s", run_id)
@@ -234,6 +225,7 @@ def subcmd_report(args: Namespace) -> int:
                 .filter(Run.run_id == run_id)
                 .statement
             )
+            logger.debug("Results query: %s", statement)
             headers = [
                 "Comparison ID",
                 "Query ID",
@@ -266,7 +258,7 @@ def subcmd_report(args: Namespace) -> int:
     # our matrices directly, here
     if args.run_matrices:
         show_index = not args.no_matrix_labels
-        for run_id in [run_id.strip() for run_id in args.run_matrices.split(",")]:
+        for run_id in [run_id for run_id in args.run_matrices]:
             logger.debug("Extracting matrices for run %s", run_id)
             run = session.query(Run).filter(Run.run_id == run_id).first()
             matlabel_dict = get_matrix_labels_for_run(session, run_id)
@@ -300,12 +292,7 @@ def subcmd_report(args: Namespace) -> int:
     return 0
 
 
-def report(
-    args: Namespace,
-    session,
-    formats: List[str],
-    params: ReportParams,
-) -> None:
+def report(args: Namespace, session, formats: List[str], params: ReportParams) -> None:
     """Write tabular report of pyani runs from database.
 
     :param args:  Namespace of command-line arguments
@@ -319,7 +306,47 @@ def report(
     logger.debug(
         "Writing table of pyani %s from the database to %s.*", params.name, outfname
     )
-    data = pd.read_sql(params.statement, session.bind)
+
+    # With newer versions of SQLAlchemy, Pandas may throw a warning due to the composition
+    # of our statement including a Cartesian product, even though this is what we want:
+    #   SAWarning: SELECT statement has a cartesian product between FROM element(s)
+    #   "runs" and FROM element "genome_query".  Apply join condition(s) between each
+    #   element to resolve.
+    # We could use SQLAlchemy's true() function to force the join condition, but this has
+    # to be done from within Pandas, and is an issue for them to fix.
+    # We suppress the warning, instead.
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=(
+                "SELECT statement has a cartesian product between FROM "
+                'element\\(s\\) "runs" and FROM element "genome_query"'
+            ),
+        )
+        warnings.filterwarnings(
+            "ignore",
+            message=(
+                "SELECT statement has a cartesian product between FROM "
+                'element\\(s\\) "runs" and FROM element "comparisons"'
+            ),
+        )
+        warnings.filterwarnings(
+            "ignore",
+            message=(
+                "SELECT statement has a cartesian product between FROM "
+                'element\\(s\\) "runs" and FROM element "genome_subject"'
+            ),
+        )
+        warnings.filterwarnings(
+            "ignore",
+            message=(
+                "SELECT statement has a cartesian product between FROM "
+                'element\\(s\\) "genome_query", "genome_subject", "comparisons" '
+                'and FROM element "runs"'
+            ),
+        )
+        data = pd.read_sql(params.statement, session.bind)
+
     data.columns = params.headers
     pyani_report.write_dbtable(data, outfname, formats)
 
@@ -331,5 +358,5 @@ def process_formats(args: Namespace) -> List[str]:
     """
     formats = ["tab"]
     if args.formats:
-        formats += [fmt.strip() for fmt in args.formats.split(",")]
+        formats += [fmt for fmt in args.formats]
     return list(set(formats))  # remove duplicates
