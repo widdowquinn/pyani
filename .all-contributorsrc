@@ -189,6 +189,15 @@
         "ideas"
       ]
     },
+    {
+      "login": "ZiliaMR",
+      "name": "Zilia Y. Muñoz Ramirez",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17069965?v=4",
+      "profile": "https://github.com/ZiliaMR",
+      "contributions": [
+        "bug"
+      ]
+    },
   ],
   "contributorsPerLine": 7,
   "projectName": "pyani",
