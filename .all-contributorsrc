@@ -144,6 +144,15 @@
         "bug"
       ]
     },
+    {
+      "login": "jthomp28",
+      "name": "jthomp28",
+      "avatar_url": "https://avatars.githubusercontent.com/u/73444930?v=4",
+      "profile": "https://github.com/jthomp28",
+      "contributions": [
+        "bug"
+      ]
+    }
   ],
   "contributorsPerLine": 7,
   "projectName": "pyani",
