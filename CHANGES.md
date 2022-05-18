@@ -1,12 +1,20 @@
 # CHANGES.md
 
+## v0.2.12
+
+- fix Issue #177: input filenames that contain an open or a closed parenthesis produce the message: 'WARNING: At least one BLAST run failed. ANIb may fail.'
+
+## 0.2.11
+
+- fix Issue #298: `pd.io.common.EmptyDataError` has been deprecated, so empty datafiles are not correctly flagged
+
 ## v0.2.10
 
 - fix Issue #178: input filenames that could be interpreted as floats may break `labels.txt`/`classes.txt` integration, and graphical output
 
 ## v0.2.9
 
-- fix 1ssue #132: TETRA would fail if not all 4-mers present in all input sequences
+- fix Issue #132: TETRA would fail if not all 4-mers present in all input sequences
 
 ## v0.2.8
 
