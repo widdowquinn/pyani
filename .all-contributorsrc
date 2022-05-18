@@ -152,7 +152,16 @@
       "contributions": [
         "bug"
       ]
-    }
+    },
+    {
+      "login": "louellette",
+      "name": "louellette",
+      "avatar_url": "https://avatars.githubusercontent.com/u/24635515?v=4",
+      "profile": "https://github.com/louellette",
+      "contributions": [
+        "ideas"
+      ]
+    },
   ],
   "contributorsPerLine": 7,
   "projectName": "pyani",
