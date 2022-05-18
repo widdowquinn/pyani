@@ -171,6 +171,15 @@
         "ideas"
       ]
     },
+    {
+      "login": "ninjatacoshell",
+      "name": "ninjatacoshell",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17790858?v=4",
+      "profile": "https://github.com/ninjatacoshell",
+      "contributions": [
+        "ideas"
+      ]
+    },
   ],
   "contributorsPerLine": 7,
   "projectName": "pyani",
