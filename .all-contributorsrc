@@ -180,6 +180,15 @@
         "ideas"
       ]
     },
+    {
+      "login": "phbrito",
+      "name": "Patricia H. Brito",
+      "avatar_url": "https://avatars.githubusercontent.com/u/20931119?v=4",
+      "profile": "https://github.com/phbrito",
+      "contributions": [
+        "ideas"
+      ]
+    },
   ],
   "contributorsPerLine": 7,
   "projectName": "pyani",
