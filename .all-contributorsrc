@@ -207,6 +207,15 @@
         "ideas"
       ]
     },
+    {
+      "login": "EricDeveaud",
+      "name": "Eric Deveaud",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6849075?v=4",
+      "profile": "https://github.com/EricDeveaud",
+      "contributions": [
+        "bug"
+      ]
+    },
   ],
   "contributorsPerLine": 7,
   "projectName": "pyani",
