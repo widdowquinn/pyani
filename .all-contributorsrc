@@ -162,6 +162,15 @@
         "ideas"
       ]
     },
+    {
+      "login": "sbridel",
+      "name": "Seb.",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7995272?v=4",
+      "profile": "https://github.com/sbridel",
+      "contributions": [
+        "ideas"
+      ]
+    },
   ],
   "contributorsPerLine": 7,
   "projectName": "pyani",
