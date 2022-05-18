@@ -106,14 +106,15 @@
       ]
     },
     {
-      "login": "TSL-RamKrishna",
+      "login": "TSL-Krishna",
       "name": "Ram Krishna Shrestha",
       "avatar_url": "https://avatars.githubusercontent.com/u/20773891?v=4",
       "profile": "https://github.com/TSL-RamKrishna",
       "contributions": [
         "test",
         "code",
-        "ideas"
+        "ideas",
+        "bug"
       ]
     },
     {
@@ -133,7 +134,16 @@
       "contributions": [
         "bug"
       ]
-    }
+    },
+    {
+      "login": "neelam19051",
+      "name": "neelam19051",
+      "avatar_url": "https://avatars.githubusercontent.com/u/97612372?v=4",
+      "profile": "https://github.com/neelam19051",
+      "contributions": [
+        "bug"
+      ]
+    },
   ],
   "contributorsPerLine": 7,
   "projectName": "pyani",
