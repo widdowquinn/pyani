@@ -3,7 +3,7 @@
 - [Leighton Pritchard](https://github.com/widdowquinn)
 - [Bailey Harrington](https://github.com/baileythegreen)
 - [Peter Cock](https://github.com/peterjc)
-- [Rob Davey]([https://github.com/froggleston](http://www.earlham.ac.uk/rob-davey))
+- [Rob Davey](http://www.earlham.ac.uk/rob-davey)
 - [Nick Waters](https://github.com/nickp60)
 - [ytanizaw](https://github.com/ytanizaw)
 - [Will Trimble](https://github.com/wltrimbl)  <!-- submitted PR was not merged -->
