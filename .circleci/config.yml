@@ -11,6 +11,7 @@ workflows:
   version: 2.1
   test:
     jobs:
+      - test-3_10
       - test-3_9
       - test-3_8
       - test-3_7
@@ -24,6 +25,7 @@ workflows:
               only:
                 - master
     jobs:
+      - test-3_10
       - test-3_9
       - test-3_8
       - test-3_7
@@ -32,7 +34,7 @@ workflows:
 jobs:
   test-3_8: &test-template
     docker:
-      - image: circleci/python:3.8.9
+      - image: cimg/python:3.8.9
 
     working_directory: ~/repo
 
@@ -41,8 +43,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - pyani-dependencies-pip-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
-            - pyani-dependencies-pip-
+            - pyani-dependencies-pip-{{ .Environment.CIRCLE_JOB }}-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}-{{ checksum "requirements-fastani.txt" }}-{{ checksum "requirements-pyqt-conda.txt" }}-{{ checksum "requirements-pyqt-pip.txt" }}
 
       - run:
           name: update apt-get
@@ -88,49 +89,64 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
             pip install --upgrade pip setuptools virtualenv
             pip install -r requirements.txt
             pip install -r requirements-dev.txt
             pip install -r requirements-pip.txt
+            pip install -r requirements-pyqt-pip.txt
 
       - save_cache:
           paths:
-            - ./venv
-          key: pyani-dependencies-pip-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}
+            - /home/circleci/.pyenv
+          key: pyani-dependencies-pip-{{ .Environment.CIRCLE_JOB }}-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}-{{ checksum "requirements-pip.txt" }}-{{ checksum "requirements-thirdparty.txt" }}-{{ checksum "requirements-fastani.txt" }}-{{ checksum "requirements-pyqt-conda.txt" }}-{{ checksum "requirements-pyqt-pip.txt" }}
 
       - run:
           name: install pyani
           command: |
-            . venv/bin/activate
             pip install -e .  # Install the repo as a package
 
+      # Slow tests are separated out to avoid hitting context deadlines on CircleCI
       - run:
-          name: run tests
+          name: run fast tests
           command: |
-            . venv/bin/activate
-            pytest -v --cov=pyani --cov-report xml:.coverage.xml
+            python -m pytest -v -m "not slow" --cov=pyani --cov-report xml:.coverage_fast.xml
+
+      # Slow tests are separated out to avoid hitting context deadlines on CircleCI
+      - run:
+          name: run slow tests
+          no_output_timeout: 30m
+          command: |
+            python -m pytest -v -m "slow" --cov=pyani --cov-report xml:.coverage_slow.xml
 
       - store_artifacts:
           path: tests/test_output
           destination: tests/test_output
       - store_artifacts:
-          path: .coverage.xml
-          destination: .coverage.xml
+          path: .coverage_fast.xml
+          destination: .coverage_fast.xml
+      - store_artifacts:
+          path: .coverage_slow.xml
+          destination: .coverage_slow.xml
 
+      # CodeCov merges separate report uploads: https://docs.codecov.com/docs/merging-reports
       - codecov/upload:
-          file: .coverage.xml
+          file: '.coverage_fast.xml'
+      - codecov/upload:
+          file: '.coverage_slow.xml'
 
   test-3_6:
     <<: *test-template
     docker:
-      - image: circleci/python:3.6.9
+      - image: cimg/python:3.6.9
   test-3_7:
     <<: *test-template
     docker:
-      - image: circleci/python:3.7.10
+      - image: cimg/python:3.7.10
   test-3_9:
     <<: *test-template
     docker:
-      - image: circleci/python:3.9.5
+      - image: cimg/python:3.9.5
+  test-3_10:
+    <<: *test-template
+    docker:
+      - image: cimg/python:3.10.1

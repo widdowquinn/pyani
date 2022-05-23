@@ -3,19 +3,31 @@
 # This file is part of the pyani package distribution
 # (https://github.com/widdowquinn/pyani)
 
-# Set up all development dependencies in the current conda environment
-setup_env:
+# Install conda dependencies
+setup_conda:
 	@conda install --file requirements-dev.txt --yes
 	@conda install --file requirements.txt --yes
 	@conda config --add channels blaze
 	@conda install --file requirements-thirdparty.txt --yes
+	@conda install --file requirements-fastani.txt --yes
+	@conda install --file requirements-pyqt-conda.txt --yes
+
+# Install pip dependencies
+setup_pip:
 	@pip install -r requirements-pip.txt
+
+# Install dependencies, but not pre-commit
+setup_dependencies: setup_conda setup_pip
+	@pip install -U -e .
+
+# Set up all development dependencies and pre-commit in the current conda environment
+setup_env: setup_conda setup_pip
 	@pre-commit install
 	@pip install -U -e .
 
 # Run all tests and display coverage report in a browser
 test:
-	@pytest --cov-report=html --cov=pyani -v tests/ && open htmlcov/index.html
+	@python -m pytest --cov-report=html --cov=pyani -v tests/ && open htmlcov/index.html
 
 # Build and display documentation
 docs: clean_docs
