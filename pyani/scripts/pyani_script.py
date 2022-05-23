@@ -42,6 +42,7 @@
 import logging
 import sys
 import time
+import os
 
 from typing import List, Optional
 
@@ -59,7 +60,8 @@ CITATION_INFO = [
         "If you use pyani in your work, please cite the following publication:", "green"
     ),
     termcolor(
-        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,", "yellow"
+        "\tPritchard, L., Glover, R. H., Humphris, S., Elphinstone, J. G.,",
+        "yellow",
     ),
     termcolor(
         "\t& Toth, I.K. (2016) 'Genomics and taxonomy in diagnostics for", "yellow"
@@ -121,6 +123,21 @@ def run_main(argv: Optional[List[str]] = None) -> int:
     args.cmdline = " ".join(sys.argv)
     logger.info("command-line: %s", args.cmdline)
     add_log_headers()
+
+    # Check the database file exists, if one is given
+    # `dbpath` is not in the namespace for all subcommands, such as `download`, so a `try/except` is needed here
+    # We skip this check for the `createdb`` subcommand
+    if sys.argv[1] != "createdb":
+        try:
+            if args.dbpath:
+                logger.info(f"Checking for database file: {args.dbpath}")
+                if not os.path.isfile(args.dbpath):
+                    logger.error(
+                        f"No database file at {args.dbpath}. Create one using `pyani createdb`."
+                    )
+                    return 0
+        except AttributeError:  # `dbpath` not in argument namespace
+            pass
 
     # Run the subcommand
     returnval = args.func(args)

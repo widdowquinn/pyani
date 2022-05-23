@@ -5,21 +5,16 @@ These tests are intended to be run from the repository root using:
 pytest -v
 """
 
-import os
-
 from pathlib import Path
-from typing import List, NamedTuple, Tuple
+from typing import List, NamedTuple
 
-import pandas as pd
 import pytest
 import unittest
 
-from pandas.util.testing import assert_frame_equal
-
-from pyani import fastani, pyani_files, pyani_tools
+from pyani import fastani
 
 
-### Some classes... to be decided
+# Some classes... to be decided
 
 
 class ComparisonResult(NamedTuple):
@@ -61,22 +56,70 @@ def fastani_cmds_four(path_file_four):  # works
     return FastANIExample(
         path_file_four,
         [
-            "fastANI -q file1.fna -r file1.fna -o fastani_output/file1_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file1.fna -r file2.fna -o fastani_output/file1_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file1.fna -r file3.fna -o fastani_output/file1_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file1.fna -r file4.fna -o fastani_output/file1_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file2.fna -r file1.fna -o fastani_output/file2_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file2.fna -r file2.fna -o fastani_output/file2_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file2.fna -r file3.fna -o fastani_output/file2_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file2.fna -r file4.fna -o fastani_output/file2_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file3.fna -r file1.fna -o fastani_output/file3_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file3.fna -r file2.fna -o fastani_output/file3_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file3.fna -r file3.fna -o fastani_output/file3_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file3.fna -r file4.fna -o fastani_output/file3_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file4.fna -r file1.fna -o fastani_output/file4_vs_file1.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file4.fna -r file2.fna -o fastani_output/file4_vs_file2.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file4.fna -r file3.fna -o fastani_output/file4_vs_file3.fastani --fragLen 3000 -k 16 --minFraction 0.2",
-            "fastANI -q file4.fna -r file4.fna -o fastani_output/file4_vs_file4.fastani --fragLen 3000 -k 16 --minFraction 0.2",
+            (
+                "fastANI -q file1.fna -r file1.fna -o fastani_output/file1_vs_file1.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file1.fna -r file2.fna -o fastani_output/file1_vs_file2.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file1.fna -r file3.fna -o fastani_output/file1_vs_file3.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file1.fna -r file4.fna -o fastani_output/file1_vs_file4.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file2.fna -r file1.fna -o fastani_output/file2_vs_file1.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file2.fna -r file2.fna -o fastani_output/file2_vs_file2.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file2.fna -r file3.fna -o fastani_output/file2_vs_file3.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file2.fna -r file4.fna -o fastani_output/file2_vs_file4.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file3.fna -r file1.fna -o fastani_output/file3_vs_file1.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file3.fna -r file2.fna -o fastani_output/file3_vs_file2.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file3.fna -r file3.fna -o fastani_output/file3_vs_file3.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file3.fna -r file4.fna -o fastani_output/file3_vs_file4.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file4.fna -r file1.fna -o fastani_output/file4_vs_file1.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file4.fna -r file2.fna -o fastani_output/file4_vs_file2.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file4.fna -r file3.fna -o fastani_output/file4_vs_file3.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
+            (
+                "fastANI -q file4.fna -r file4.fna -o fastani_output/file4_vs_file4.fastani "
+                "--fragLen 3000 -k 16 --minFraction 0.2"
+            ),
         ],
     )
 
@@ -91,23 +134,27 @@ def test_get_version_nonetype():
     """Test behaviour when no location for the executable is given."""
     test_file_0 = None
 
-    assert fastani.get_version(test_file_0) == f"{test_file_0} is not found in $PATH"
+    assert (  # nosec: B101
+        fastani.get_version(test_file_0) == f"{test_file_0} is not found in $PATH"
+    )
 
 
 # Test case 1: there is no executable
 def test_get_version_no_exe(executable_missing, monkeypatch):
     """Test behaviour when there is no file at the specified executable location."""
     test_file_1 = Path("/non/existent/blastn")
-    assert fastani.get_version(test_file_1) == f"No fastANI executable at {test_file_1}"
+    assert (  # nosec: B101
+        fastani.get_version(test_file_1) == f"No fastANI executable at {test_file_1}"
+    )
 
 
 # Test case 2: there is a file, but it is not executable
 def test_get_version_exe_not_executable(executable_not_executable, monkeypatch):
     """Test behaviour when the file at the executable location is not executable."""
     test_file_2 = Path("/non/executable/blastn")
-    assert (
+    assert (  # nosec: B101
         fastani.get_version(test_file_2)
-        == f"fastANI exists at {test_file_2} but not executable"
+        == f"fastANI exists at {test_file_2} but not executable"  # nosec: B101
     )
 
 
@@ -115,7 +162,7 @@ def test_get_version_exe_not_executable(executable_not_executable, monkeypatch):
 def test_get_version_exe_no_version(executable_without_version, monkeypatch):
     """Test behaviour when the version for the executable can not be retrieved."""
     test_file_3 = Path("/missing/version/blastn")
-    assert (
+    assert (  # nosec: B101
         fastani.get_version(test_file_3)
         == f"fastANI exists at {test_file_3} but could not retrieve version"
     )
@@ -139,7 +186,7 @@ def test_fastani_single(tmp_path, path_file_two):  # works
         f"-o {dir_fastani / str(path_file_two[0].stem + '_vs_' + path_file_two[1].stem + '.fastani')} "
         f"--fragLen 3000 -k 16 --minFraction 0.2"
     )
-    assert fastcmd == expected
+    assert fastcmd == expected  # nosec: B101
 
 
 def test_fastani_multiple(fastani_cmds_four):
@@ -150,14 +197,14 @@ def test_fastani_multiple(fastani_cmds_four):
     cmds = fastani.generate_fastani_commands(fastani_cmds_four.infiles)
     print(f"\n{cmds}")
     print((fastani_cmds_four.fastcmds))
-    assert cmds == (fastani_cmds_four.fastcmds)
+    assert cmds == (fastani_cmds_four.fastcmds)  # nosec: B101
 
 
 def test_fastani_job_generation(fastani_cmds_four):  # works
     """Generate job names"""
 
     joblist = fastani.generate_fastani_jobs(fastani_cmds_four.infiles, jobprefix="test")
-    assert len(joblist) == 16
+    assert len(joblist) == 16  # nosec: B101
 
     for idx, job in enumerate(joblist):
-        assert job.name == f"test_{idx:06d}"
+        assert job.name == f"test_{idx:06d}"  # nosec: B101
