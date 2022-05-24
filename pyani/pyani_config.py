@@ -161,7 +161,7 @@ def params_mpl(dfm: pd.DataFrame) -> Dict[str, Tuple[str, Any, Any]]:
     DEPRECATED FROM v0.3 onwards
     """
     return {
-        "ANIb_alignment_lengths": ("afmhot", dfm.values.min(), dfm.values.max()),
+        "ANIb_alignment_lengths": ("afmhot", dfm.values.min(), dfm.values.max(), 0),
         "ANIb_percentage_identity": ("spbnd_BuRd", 0, 1, 0),
         "ANIb_alignment_coverage": ("BuRd", 0, 1, 0),
         "ANIb_hadamard": ("hadamard_BuRd", 0, 1, 0),
