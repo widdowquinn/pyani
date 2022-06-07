@@ -51,7 +51,7 @@ import unittest
 
 from pandas.testing import assert_frame_equal
 
-from pyani import anib, pyani_files  # probably don't need anib
+from pyani import pyani_files
 from pyani import aniblastall
 
 # Create object for accessing unittest assertions
