@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# (c) University of Strathclyde 2019-2021
+# (c) University of Strathclyde 2019-2022
 # Author: Bailey Harrington
 #
 # Contact:
@@ -16,7 +16,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2019-2021 University of Strathclyde
+# Copyright (c) 2019-2022 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@ import pandas as pd
 import pytest  # noqa: F401  # pylint: disable=unused-import
 import unittest
 
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 
 from pyani import anib, pyani_files  # probably don't need anib
 from pyani import aniblastall
@@ -263,8 +263,8 @@ def test_parse_legacy_blastdir(aniblastall_output_dir):
         aniblastall_output_dir.legacyblastdir, orglengths, fraglengths
     )
     assert_frame_equal(
-        result.percentage_identity.sort_index(1).sort_index(),
-        aniblastall_output_dir.legacyblastresult.sort_index(1).sort_index(),
+        result.percentage_identity.sort_index(axis=1).sort_index(),
+        aniblastall_output_dir.legacyblastresult.sort_index(axis=1).sort_index(),
     )
 
 
