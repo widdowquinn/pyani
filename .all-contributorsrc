@@ -113,7 +113,8 @@
       "contributions": [
         "test",
         "code",
-        "ideas"
+        "ideas",
+        "bug"
       ]
     },
     {
@@ -133,7 +134,88 @@
       "contributions": [
         "bug"
       ]
-    }
+    },
+    {
+      "login": "neelam19051",
+      "name": "neelam19051",
+      "avatar_url": "https://avatars.githubusercontent.com/u/97612372?v=4",
+      "profile": "https://github.com/neelam19051",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "jthomp28",
+      "name": "jthomp28",
+      "avatar_url": "https://avatars.githubusercontent.com/u/73444930?v=4",
+      "profile": "https://github.com/jthomp28",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "louellette",
+      "name": "louellette",
+      "avatar_url": "https://avatars.githubusercontent.com/u/24635515?v=4",
+      "profile": "https://github.com/louellette",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "sbridel",
+      "name": "Seb.",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7995272?v=4",
+      "profile": "https://github.com/sbridel",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "ninjatacoshell",
+      "name": "ninjatacoshell",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17790858?v=4",
+      "profile": "https://github.com/ninjatacoshell",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "phbrito",
+      "name": "Patricia H. Brito",
+      "avatar_url": "https://avatars.githubusercontent.com/u/20931119?v=4",
+      "profile": "https://github.com/phbrito",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "ZiliaMR",
+      "name": "Zilia Y. Muñoz Ramirez",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17069965?v=4",
+      "profile": "https://github.com/ZiliaMR",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "nclaesnacw",
+      "name": "nclaesnacw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/14940823?v=4",
+      "profile": "https://github.com/nclaesnacw",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "EricDeveaud",
+      "name": "Eric Deveaud",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6849075?v=4",
+      "profile": "https://github.com/EricDeveaud",
+      "contributions": [
+        "bug"
+      ]
+    },
   ],
   "contributorsPerLine": 7,
   "projectName": "pyani",
