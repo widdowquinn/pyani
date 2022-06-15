@@ -103,6 +103,10 @@ def run_main(argv: Optional[List[str]] = None) -> int:
         sys.stderr.write(f"{VERSION_INFO}\n")
         return 0
 
+    # If the command run is not pyani (e.g., `pytest`, then we
+    # don't want to apply pyani-specific checks)
+    if len(sys.argv) == 1 and not sys.argv[0].endswith("pyani"):
+        pass
     # Catch requests for citation and version information
     if sys.argv[1].startswith("-"):
         if args.citation:
