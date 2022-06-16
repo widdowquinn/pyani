@@ -39,6 +39,7 @@
 """Module providing functions for presenting analysis/db output."""
 
 import sys
+import logging
 
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
@@ -202,6 +203,8 @@ def write_dbtable(
 
     colours are used for identity/coverage tables
     """
+    logger = logging.getLogger(__name__)
+
     formatdict = {
         "tab": (dfm.to_csv, {"sep": "\t", "index": show_index}, ".tab"),
         "excel": (dfm.to_excel, {"index": show_index}, ".xlsx"),
@@ -215,4 +218,9 @@ def write_dbtable(
     for fmt in formats:
         func, args, ext = formatdict[fmt]
         ofname = path.with_suffix(ext)
-        func(ofname, **args)
+        try:
+            func(ofname, **args)
+        except ModuleNotFoundError as e:
+            logger.warning("ModuleNotFoundError: %s", e)
+            logger.warning("Skipping %s output", fmt)
+            continue
