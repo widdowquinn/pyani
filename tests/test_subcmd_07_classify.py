@@ -65,6 +65,8 @@ import logging
 import os
 import unittest
 
+import pytest
+
 from argparse import Namespace
 from pathlib import Path
 
@@ -113,10 +115,12 @@ class TestClassifySubcommand(unittest.TestCase):
             ),
         }
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_classify_defaults(self):
         """test classification with default settings"""
         subcommands.subcmd_classify(self.argsdict["default"])
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_classify_no_thresh(self):
         """test classification with no thresholds"""
         subcommands.subcmd_classify(self.argsdict["no_threshold"])

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019-2020
+# (c) University of Strathclyde 2019-2022
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -17,7 +17,7 @@
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019-2020 University of Strathclyde
+# Copyright (c) 2019-2022 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -56,13 +56,16 @@ def build(
     parser = subps.add_parser(
         "report", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
-    # Required positional argument: output directory
+    # Required argument: output directory
     parser.add_argument(
+        "-o",
+        "--outdir",
         action="store",
         dest="outdir",
         default=None,
         type=Path,
         help="output analysis results directory",
+        required=True,
     )
     # Optional arguments
     parser.add_argument(
@@ -92,35 +95,48 @@ def build(
         action="store_true",
         dest="show_runs_genomes",
         default=False,
-        help="Report table of all genomes for each run in " + "database",
+        help="Report table of all genomes for each run in database",
     )
     parser.add_argument(
         "--genomes_runs",
         action="store_true",
         dest="show_genomes_runs",
         default=False,
-        help="Report table of all runs in which each genome "
-        + "in the database participates",
+        help="Report table of all runs in which each genome in the database participates",
     )
     parser.add_argument(
         "--run_results",
         action="store",
         dest="run_results",
-        default=False,
-        help="Report table of results for a pyani run",
+        metavar="RUN_ID",
+        nargs="+",
+        default=None,
+        help="Report table of results for space-separated list of runs",
     )
     parser.add_argument(
         "--run_matrices",
         action="store",
         dest="run_matrices",
+        metavar="RUN_ID",
+        nargs="+",
+        default=None,
+        help="Report matrices of results for space-separated list of runs",
+    )
+    parser.add_argument(
+        "--no_matrix_labels",
+        action="store_true",
+        dest="no_matrix_labels",
         default=False,
-        help="Report matrices of results for a pyani run",
+        help="Turn off row/column labels in output matrix files",
     )
     parser.add_argument(
         "--formats",
         dest="formats",
         action="store",
         default=None,
-        help="Output formats (in addition to .tab)",
+        metavar="FORMAT",
+        nargs="+",
+        choices=("html", "excel", "stdout"),
+        help="Space-separated list of output formats (in addition to .tab); possible values: {html, excel, stdout}",
     )
     parser.set_defaults(func=subcommands.subcmd_report)

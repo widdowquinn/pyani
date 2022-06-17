@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2020
+# (c) University of Strathclyde 2019-2022
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2020 University of Strathclyde
+# Copyright (c) 2019-2022 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,7 @@
 
 import logging
 import os
+import multiprocessing
 
 from argparse import Namespace
 from pathlib import Path
@@ -52,9 +53,9 @@ import pandas as pd
 from pyani import pyani_config, pyani_orm, pyani_graphics
 from pyani.pyani_tools import termcolor, MatrixData
 
-
 # Distribution dictionary of matrix graphics methods
 GMETHODS = {"mpl": pyani_graphics.mpl.heatmap, "seaborn": pyani_graphics.sns.heatmap}
+SMETHODS = {"mpl": pyani_graphics.mpl.scatter, "seaborn": pyani_graphics.sns.scatter}
 # Distribution dictionary of distribution graphics methods
 DISTMETHODS = {
     "mpl": pyani_graphics.mpl.distribution,
@@ -83,21 +84,20 @@ def subcmd_plot(args: Namespace) -> int:
     session = pyani_orm.get_session(args.dbpath)
 
     # Parse output formats
-    outfmts = args.formats.split(",")
+    outfmts = args.formats  # .formats.split(",")
     logger.debug("Requested output formats: %s", outfmts)
+    logger.debug("Type of formats variable: %s", type(outfmts))
 
     # Work on each run:
-    run_ids = [int(run) for run in args.run_id.split(",")]
+    run_ids = [int(run) for run in args.run_ids]
     logger.debug("Generating graphics for runs: %s", run_ids)
     for run_id in run_ids:
-        write_run_heatmaps(run_id, session, outfmts, args)
+        write_run_plots(run_id, session, outfmts, args)
 
     return 0
 
 
-def write_run_heatmaps(
-    run_id: int, session, outfmts: List[str], args: Namespace
-) -> None:
+def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -> None:
     """Write all heatmaps for a specified run to file.
 
     :param run_id:  int, run identifier in database session
@@ -110,13 +110,21 @@ def write_run_heatmaps(
     # Get results matrices for the run
     logger.debug("Retrieving results matrices for run %s", run_id)
     results = (
-        session.query(pyani_orm.Run).filter(pyani_orm.Run.run_id == args.run_id).first()
+        session.query(pyani_orm.Run).filter(pyani_orm.Run.run_id == run_id).first()
     )
-    result_label_dict = pyani_orm.get_matrix_labels_for_run(session, args.run_id)
-    result_class_dict = pyani_orm.get_matrix_classes_for_run(session, args.run_id)
-    logger.debug(f"Have {len(result_label_dict)} labels and {len(result_class_dict)} classes")
+    result_label_dict = pyani_orm.get_matrix_labels_for_run(session, run_id)
+    result_class_dict = pyani_orm.get_matrix_classes_for_run(session, run_id)
+    logger.debug(
+        f"Have {len(result_label_dict)} labels and {len(result_class_dict)} classes"
+    )
 
-    # Write heatmap for each results matrix
+    # Write heatmap and distribution plot for each results matrix
+
+    # Create worker pool and empty command list
+    pool = multiprocessing.Pool(processes=args.workers)
+    plotting_commands = []
+
+    # Build and collect the plotting commands
     for matdata in [
         MatrixData(*_)
         for _ in [
@@ -127,14 +135,44 @@ def write_run_heatmaps(
             ("hadamard", pd.read_json(results.df_hadamard), {}),
         ]
     ]:
-        write_heatmap(
-            run_id, matdata, result_label_dict, result_class_dict, outfmts, args
+        plotting_commands.append(
+            (
+                write_heatmap,
+                [run_id, matdata, result_label_dict, result_class_dict, outfmts, args],
+            )
         )
-        write_distribution(run_id, matdata, outfmts, args)
+        plotting_commands.append((write_distribution, [run_id, matdata, outfmts, args]))
+
+    id_matrix = MatrixData("identity", pd.read_json(results.df_identity), {})
+    cov_matrix = MatrixData("coverage", pd.read_json(results.df_coverage), {})
+    plotting_commands.append(
+        (
+            write_scatter,
+            [
+                run_id,
+                id_matrix,
+                cov_matrix,
+                result_label_dict,
+                result_class_dict,
+                outfmts,
+                args,
+            ],
+        )
+    )
+
+    # Run the plotting commands
+    logger.debug("Running plotting commands")
+    for func, options in plotting_commands:
+        logger.debug("Running %s with options %s", func, options)
+        pool.apply_async(func, args=options)
+
+    # Close worker pool
+    pool.close()
+    pool.join()
 
 
 def write_distribution(
-    run_id: int, matdata: MatrixData, outfmts: List[str], args: Namespace,
+    run_id: int, matdata: MatrixData, outfmts: List[str], args: Namespace
 ) -> None:
     """Write distribution plots for each matrix type.
 
@@ -149,12 +187,15 @@ def write_distribution(
     for fmt in outfmts:
         outfname = Path(args.outdir) / f"distribution_{matdata.name}_run{run_id}.{fmt}"
         logger.debug("\tWriting graphics to %s", outfname)
-        DISTMETHODS[args.method](
+        DISTMETHODS[args.method[0]](
             matdata.data,
             outfname,
             matdata.name,
             title=f"matrix_{matdata.name}_run{run_id}",
         )
+
+    # Be tidy with matplotlib caches
+    plt.close("all")
 
 
 def write_heatmap(
@@ -183,7 +224,7 @@ def write_heatmap(
         logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw heatmap
-        GMETHODS[args.method](
+        GMETHODS[args.method[0]](
             matdata.data,
             outfname,
             title=f"matrix_{matdata.name}_run{run_id}",
@@ -192,3 +233,48 @@ def write_heatmap(
 
     # Be tidy with matplotlib caches
     plt.close("all")
+
+
+def write_scatter(
+    run_id: int,
+    matdata1: MatrixData,
+    matdata2: MatrixData,
+    result_labels: Dict,
+    result_classes: Dict,
+    outfmts: List[str],
+    args: Namespace,
+) -> None:
+    """Write a single scatterplot for a pyani run.
+
+    :param run_id:  int, run_id for this run
+    :param matdata1:  MatrixData object for this scatterplot
+    :param matdata2:  MatrixData object for this scatterplot
+    :param result_labels:  dict of result labels
+    :param result_classes: dict of result classes
+    :param args:  Namespace for command-line arguments
+    :param outfmts:  list of output formats for files
+    """
+    logger = logging.getLogger(__name__)
+
+    logger.info("Writing %s vs %s scatterplot", matdata1.name, matdata2.name)
+    cmap = pyani_config.get_colormap(matdata1.data, matdata1.name)
+    for fmt in outfmts:
+        outfname = (
+            Path(args.outdir)
+            / f"scatter_{matdata1.name}_vs_{matdata2.name}_run{run_id}.{fmt}"
+        )
+        logger.debug("\tWriting graphics to %s", outfname)
+        params = pyani_graphics.Params(cmap, result_labels, result_classes)
+        # Draw scatterplot
+        SMETHODS[args.method[0]](
+            matdata1.data,
+            matdata2.data,
+            outfname,
+            matdata1.name,
+            matdata2.name,
+            title=f"{matdata1.name.title()} vs {matdata2.name.title()}",
+            params=params,
+        )
+
+        # Be tidy with matplotlib caches
+        plt.close("all")

@@ -107,25 +107,40 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
     The following circumstances are explicitly reported as strings
 
     - no executable at passed path
-    - non-executable file at passed path
+    - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
     - no version info returned
     """
-    nucmer_path = Path(shutil.which(nucmer_exe))  # type:ignore
 
-    if nucmer_path is None:
+    try:
+        nucmer_path = Path(shutil.which(nucmer_exe))  # type:ignore
+    except TypeError:
         return f"{nucmer_exe} is not found in $PATH"
 
     if not nucmer_path.is_file():  # no executable
         return f"No nucmer at {nucmer_path}"
 
+    # This should catch cases when the file can't be executed by the user
     if not os.access(nucmer_path, os.X_OK):  # file exists but not executable
         return f"nucmer exists at {nucmer_path} but not executable"
 
     cmdline = [nucmer_exe, "-V"]  # type: List
     result = subprocess.run(
-        cmdline, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+        cmdline,
+        shell=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
     )
-    match = re.search(r"(?<=version\s)[0-9\.]*", str(result.stderr, "utf-8"))
+
+    # version information appears in different places for
+    # different nucmer releases
+    if result.stderr:  # expected to work for <= MUMmer3
+        match = re.search(
+            r"(?<=version\s)[0-9\.]*", str(result.stderr + result.stdout, "utf-8")
+        )
+    elif result.stdout:  # expected to work for MUMmer4
+        match = re.search(r"[0-9a-z\.]*", str(result.stdout, "utf-8"))
+
     version = match.group()  # type: ignore
 
     if 0 == len(version.strip()):
@@ -238,15 +253,17 @@ def construct_nucmer_cmdline(
     NOTE: This command-line writes output data to a subdirectory of the passed
     outdir, called "nucmer_output".
     """
-    logger = logging.getLogger(__name__)
 
     # Cast path strings to pathlib.Path for safety
-    fname1, fname2 = Path(fname1), Path(fname2)
+    fname1, fname2 = sorted([Path(fname1), Path(fname2)])
 
     # Compile commands
+    # Nested output folders to avoid N^2 scaling in files-per-folder
+    # Create folders incrementally (want an error if outdir does not exist)
     outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"]
     outsubdir.mkdir(exist_ok=True)
-    logger.debug(f"{fname1.stem}_vs_{fname2.stem}")
+    outsubdir = outdir / pyani_config.ALIGNDIR["ANIm"] / fname1.stem
+    outsubdir.mkdir(exist_ok=True)
     outprefix = outsubdir / f"{fname1.stem}_vs_{fname2.stem}"
     if maxmatch:
         mode = "--maxmatch"
@@ -363,7 +380,7 @@ def process_deltadir(
 
     # Process directory to identify input files - as of v0.2.4 we use the
     # .filter files that result from delta-filter (1:1 alignments)
-    deltafiles = sorted(delta_dir.glob("*.filter"))
+    deltafiles = sorted(delta_dir.glob("*/*.filter"))
 
     logger.info("%s has %d files to load", delta_dir, len(deltafiles))
     if not deltafiles:

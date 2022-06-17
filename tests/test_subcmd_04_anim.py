@@ -47,6 +47,8 @@ pytest -v
 import logging
 import unittest
 
+import pytest
+
 from argparse import Namespace
 from collections import namedtuple
 from pathlib import Path
@@ -111,6 +113,7 @@ class TestANImSubcommand(unittest.TestCase):
             )
         }
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_anim(self):
         """Test anim run."""
         subcommands.subcmd_anim(self.argsdict["anim"])

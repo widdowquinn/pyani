@@ -39,6 +39,7 @@
 """Module providing functions for presenting analysis/db output."""
 
 import sys
+import logging
 
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
@@ -189,8 +190,7 @@ def write_dbtable(
     dfm: pd.DataFrame,
     path: Path,
     formats: Sequence[str] = ("tab",),
-    index: bool = False,
-    show_index: bool = False,
+    show_index: bool = True,
     colour_num: bool = False,
 ) -> None:
     """Write database result table to output file in named format.
@@ -198,18 +198,19 @@ def write_dbtable(
     :param dfm:  pd.Dataframe
     :param path:  Path to output file
     :param formats:  tuple of str, output file formats
-    :param index:  Boolean
-    :param show_index:  Boolean
+    :param show_index:  output row and column labels
     :param colour_num:  use colours for values in HTML output
 
     colours are used for identity/coverage tables
     """
+    logger = logging.getLogger(__name__)
+
     formatdict = {
-        "tab": (dfm.to_csv, {"sep": "\t", "index": False}, ".tab"),
+        "tab": (dfm.to_csv, {"sep": "\t", "index": show_index}, ".tab"),
         "excel": (dfm.to_excel, {"index": show_index}, ".xlsx"),
         "html": (
             write_styled_html,
-            {"dfm": dfm, "index": index, "colour_num": colour_num},
+            {"dfm": dfm, "index": show_index, "colour_num": colour_num},
             ".html",
         ),
         "stdout": (write_to_stdout, {"dfm": dfm, "show_index": show_index}, ""),
@@ -217,4 +218,9 @@ def write_dbtable(
     for fmt in formats:
         func, args, ext = formatdict[fmt]
         ofname = path.with_suffix(ext)
-        func(ofname, **args)
+        try:
+            func(ofname, **args)
+        except ModuleNotFoundError as e:
+            logger.warning("ModuleNotFoundError: %s", e)
+            logger.warning("Skipping %s output", fmt)
+            continue

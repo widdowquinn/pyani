@@ -46,51 +46,45 @@ These tests are intended to be run from the repository root using:
 pytest -v
 """
 
-import subprocess
-import sys
-import unittest
-
 import pytest
-
-from pyani import pyani_config
 
 
 def test_import_biopython():
     """Test Biopython import."""
-    import Bio
+    import Bio  # noqa: F401
 
 
 def test_import_matplotlib():
     """Test matplotlib import."""
-    import matplotlib
+    import matplotlib  # noqa: F401
 
 
 def test_import_numpy():
     """Test numpy import."""
-    import numpy
+    import numpy  # noqa: F401
 
 
 def test_import_pandas():
     """Test pandas import."""
-    import pandas
+    import pandas  # noqa: F401
 
 
 def test_import_scipy():
     """Test scipy import."""
-    import scipy
+    import scipy  # noqa: F401
 
 
 def test_blastn_available(blastn_available):
     """Test that BLAST+ is available."""
-    assert blastn_available
+    assert blastn_available  # nosec: B101
 
 
 @pytest.mark.xfail(reason="Optional third-party executable (blastall)")
 def test_run_blastall(blastall_available):
     """Test that blastall is available."""
-    assert blastall_available
+    assert blastall_available  # nosec: B101
 
 
 def test_run_nucmer(nucmer_available):
     """Test that nucmer is available."""
-    assert nucmer_available
+    assert nucmer_available  # nosec: B101

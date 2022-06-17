@@ -38,13 +38,13 @@ The basic form of the command is:
 
 .. code-block:: bash
 
-    pyani anim <INPUT_DIRECTORY> <OUTPUT_DIRECTORY>
+    pyani anim -i <INPUT_DIRECTORY> -o <OUTPUT_DIRECTORY>
 
-This instructs ``pyani`` to perform ANIm on the genome FASTA files in ``<INPUT_DIRECTORY>``, and write any output files to ``<OUTPUT_DIRECTORY>``. For example, the following command performs ANIm on genomes in the directory ``genomes`` and writes output to a new directory ``genomes_ANIm``:
+This instructs ``pyani`` to perform ANIm on the genome FASTA files in ``<INPUT_DIRECTORY>``, which is passed to the ``-i`` argument, and write any output files to ``<OUTPUT_DIRECTORY>``, which is passed to the ``-o`` argument. For example, the following command performs ANIm on genomes in the directory ``genomes`` and writes output to a new directory ``genomes_ANIm``:
 
 .. code-block:: bash
 
-    pyani anim genomes genomes_ANIm
+    pyani anim -i genomes -o genomes_ANIm
 
 .. NOTE::
     While running, ``pyani anim`` will show progress bars unless these are disabled with the option ``--disable_tqdm``
@@ -67,7 +67,7 @@ The ``MUMmer`` comparison step of ANIm is embarrassingly parallel, and ``nucmer`
 
 .. code-block:: bash
 
-    pyani anim --scheduler SGE genomes genomes_ANIm
+    pyani anim --scheduler SGE -i genomes -o genomes_ANIm
 
 .. NOTE::
     Jobs are submitted as *array jobs* to keep the scheduler queue short.
@@ -89,19 +89,19 @@ These allow for useful control of job execution. For example, the command:
 
 .. code-block:: bash
 
-    pyani anim --scheduler SGE --SGEgroupsize 5000 genomes genomes_ANIm
+    pyani anim --scheduler SGE --SGEgroupsize 5000 -i genomes -o genomes_ANIm
 
 will batch ``MUMmer`` jobs in groups of 500 for the scheduler. The command:
 
 .. code-block:: bash
 
-    pyani anim --scheduler SGE --jobprefix My_Ace_Job genomes genomes_ANIm
+    pyani anim --scheduler SGE --jobprefix My_Ace_Job -i genomes -o genomes_ANIm
 
 will prepend the string ``My_Ace_Job`` to your job in the scheduler queue. And the command:
 
 .. code-block:: bash
 
-    pyani anim --scheduler SGE --SGEargs "-m e -M my.name@my.domain" 5000 genomes genomes_ANIm
+    pyani anim --scheduler SGE --SGEargs "-m e -M my.name@my.domain" 5000 -i genomes -o genomes_ANIm
 
 will email ``my.name@my.domain`` when the jobs finish.
 
