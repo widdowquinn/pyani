@@ -194,7 +194,7 @@ def write_distribution(
     for fmt in outfmts:
         outfname = Path(args.outdir) / f"distribution_{matdata.name}_run{run_id}.{fmt}"
         logger.debug("\tWriting graphics to %s", outfname)
-        DISTMETHODS[args.method[0]](
+        DISTMETHODS[args.method](
             matdata.data,
             outfname,
             matdata.name,
@@ -227,12 +227,13 @@ def write_heatmap(
     logger.info("Writing %s matrix heatmaps", matdata.name)
     cmap = pyani_config.get_colormap(matdata.data, matdata.name)
     for fmt in outfmts:
-        outfname = Path(args.outdir) / f"matrix_{matdata.name}_run{run_id}.{fmt}"
+        outfname = (
+            Path(args.outdir) / f"matrix_{matdata.name}_run{run_id}_{args.method}.{fmt}"
+        )
         logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw heatmap
         _, newicks = GMETHODS[args.method](
-
             matdata.data,
             outfname,
             title=f"matrix_{matdata.name}_run{run_id}",
@@ -281,7 +282,7 @@ def write_scatter(
         logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw scatterplot
-        SMETHODS[args.method[0]](
+        SMETHODS[args.method](
             matdata1.data,
             matdata2.data,
             outfname,
