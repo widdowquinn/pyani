@@ -213,7 +213,7 @@ Command-line options can be viewed using:
 
 ```bash
 $ genbank_get_genomes_by_taxon.py -h
-usage: genbacnk_get_genomes_by_taxon.py [-h] [-o OUTDIRNAME] [-t TAXON] [-v]
+usage: genbank_get_genomes_by_taxon.py [-h] [-o OUTDIRNAME] [-t TAXON] [-v]
                                         [-f] [--noclobber] [-l LOGFILE]
                                         [--format FORMAT] [--email EMAIL]
                                         [--retries RETRIES]

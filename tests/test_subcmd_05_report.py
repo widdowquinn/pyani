@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) The University of Strathclude 2019
+# (c) The University of Strathclude 2019-2022
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -19,7 +19,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2018 The James Hutton Institute
-# (c) The University of Strathclude 2019
+# (c) The University of Strathclude 2019-2022
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -48,9 +48,10 @@ pytest -v
 import logging
 import unittest
 
-from pathlib import Path
+import pytest
 
 from argparse import Namespace
+from pathlib import Path
 
 from pyani.scripts import subcommands
 
@@ -81,8 +82,9 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes_runs=False,
                 run_results=False,
                 run_matrices=False,
+                no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "genomes": Namespace(
                 outdir=self.outdir,
@@ -93,8 +95,9 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes_runs=False,
                 run_results=False,
                 run_matrices=False,
+                no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "runs_genomes": Namespace(
                 outdir=self.outdir,
@@ -105,8 +108,9 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes_runs=False,
                 run_results=False,
                 run_matrices=False,
+                no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "genomes_runs": Namespace(
                 outdir=self.outdir,
@@ -117,8 +121,9 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes_runs=True,
                 run_results=False,
                 run_matrices=False,
+                no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "run_results": Namespace(
                 outdir=self.outdir,
@@ -129,8 +134,9 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes_runs=False,
                 run_results="1",
                 run_matrices=False,
+                no_matrix_labels=False,
                 force=True,
-                formats="html,excel,stdout",
+                formats=["html", "excel", "stdout"],
             ),
             "run_matrices": Namespace(
                 outdir=self.outdir,
@@ -141,8 +147,22 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes_runs=False,
                 run_results=False,
                 run_matrices="1",
+                no_matrix_labels=False,
                 force=True,
-                formats="html,excel",
+                formats=["html", "excel"],
+            ),
+            "no_matrix_labels": Namespace(
+                outdir=self.outdir,
+                dbpath=self.dbpath,
+                show_runs=False,
+                show_genomes=True,
+                show_runs_genomes=False,
+                show_genomes_runs=False,
+                run_results=False,
+                run_matrices="1",
+                no_matrix_labels=True,
+                force=True,
+                formats=["html", "excel"],
             ),
         }
 
@@ -166,6 +186,12 @@ class TestReportSubcommand(unittest.TestCase):
         """Test reporting of run results in the database."""
         subcommands.subcmd_report(self.argsdict["run_results"])
 
+    @pytest.mark.skip_if_exe_missing("nucmer")
     def test_matrices(self):
         """Test reporting of run matrices in the database."""
         subcommands.subcmd_report(self.argsdict["run_matrices"])
+
+    @pytest.mark.skip_if_exe_missing("nucmer")
+    def test_no_matrix_labels(self):
+        """Test row and column labeling of run matrices."""
+        subcommands.subcmd_report(self.argsdict["no_matrix_labels"])

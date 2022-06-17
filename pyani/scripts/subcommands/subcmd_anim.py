@@ -187,7 +187,7 @@ def subcmd_anim(args: Namespace) -> None:
     # Add information about this run to the database
     logger.debug("Adding run info to database %s...", args.dbpath)
     try:
-        run = add_run(
+        run, run_id = add_run(
             session,
             method="ANIm",
             cmdline=args.cmdline,
@@ -196,20 +196,18 @@ def subcmd_anim(args: Namespace) -> None:
             name=name,
         )
     except PyaniORMException:
-        logger.error(
-            "Could not add run %s to the database (exiting)", run, exc_info=True
-        )
+        logger.error("Could not add run to the database (exiting)", exc_info=True)
         raise SystemExit(1)
-    logger.debug("...added run ID: %s to the database", run)
+    logger.debug("...added run ID: %s to the database", run_id)
 
     # Identify input files for comparison, and populate the database
-    logger.debug("Adding genomes for run %s to database...", run)
+    logger.debug("Adding genomes for run %s to database...", run_id)
     try:
         genome_ids = add_run_genomes(
             session, run, args.indir, args.classes, args.labels
         )
     except PyaniORMException:
-        logger.error("Could not add genomes to database for run %s (exiting)", run)
+        logger.error("Could not add genomes to database for run %s (exiting)", run_id)
         raise SystemExit(1)
     logger.debug("\t...added genome IDs: %s", genome_ids)
 
@@ -238,7 +236,7 @@ def subcmd_anim(args: Namespace) -> None:
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
     comparisons = list(combinations(tqdm(genomes, disable=args.disable_tqdm), 2))
-    logger.info("\t...total parwise comparisons to be performed: %s", len(comparisons))
+    logger.info("\t...total pairwise comparisons to be performed: %s", len(comparisons))
 
     # Check for existing comparisons; if one has been done (for the same
     # software package, version, and setting) we add the comparison to this run,
@@ -250,9 +248,9 @@ def subcmd_anim(args: Namespace) -> None:
         comparisons,
         "nucmer",
         nucmer_version,
-        None,
-        args.maxmatch,
-        args.noextend,
+        fragsize=None,
+        maxmatch=args.maxmatch,
+        noextend=args.noextend,
     )
     logger.info(
         "\t...after check, still need to run %s comparisons", len(comparisons_to_run)
@@ -328,6 +326,7 @@ def generate_joblist(
     existingfiles = set(existingfiles)  # Path objects hashable
 
     joblist = []  # will hold ComparisonJob structs
+    jobs = {"new": 0, "old": 0}  # will hold counts of new/old jobs for reporting
     for idx, (query, subject) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
@@ -359,6 +358,7 @@ def generate_joblist(
             logger.debug("Recovering output from %s, not submitting job", outfname)
             # Need to track the expected output, but set the job itself to None:
             joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, None))
+            jobs["old"] += 1
         else:
             logger.debug("Building job")
             # Build jobs
@@ -366,6 +366,14 @@ def generate_joblist(
             fjob = pyani_jobs.Job("%s_%06d-f" % (args.jobprefix, idx), dcmd)
             fjob.add_dependency(njob)
             joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, fjob))
+            jobs["new"] += 1
+    logger.info(
+        "Results not found for %d comparisons; %d new jobs built.",
+        jobs["new"],
+        jobs["new"],
+    )
+    if existingfiles:
+        logger.info("Retrieving results for %d previous comparisons.", jobs["old"])
     return joblist
 
 

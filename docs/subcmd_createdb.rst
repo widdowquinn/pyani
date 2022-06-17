@@ -8,7 +8,7 @@ The ``createdb`` subcommand creates a new, empty database for ``pyani`` to use i
 
 .. code-block:: text
 
-    usage: pyani.py createdb [-h] [-l LOGFILE] [-v] [--disable_tqdm]
+    usage: pyani createdb [-h] [-l LOGFILE] [-v] [--disable_tqdm]
                          [--dbpath DBPATH] [-f]
 
 

@@ -34,6 +34,8 @@ and we are grateful to all who have contributed to this software:
     <td align="center"><a href="https://b-brankovics.github.io"><img src="https://avatars.githubusercontent.com/u/6728856?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Balázs Brankovics</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=b-brankovics" title="Code">💻</a> <a href="https://github.com/widdowquinn/pyani/issues?q=author%3Ab-brankovics" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/sammywinchester19"><img src="https://avatars.githubusercontent.com/u/67588791?v=4?s=100" width="100px;" alt=""/><br /><sub><b>sammywinchester19</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/issues?q=author%3Asammywinchester19" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/TSL-RamKrishna"><img src="https://avatars.githubusercontent.com/u/20773891?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ram Krishna Shrestha</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/commits?author=TSL-RamKrishna" title="Tests">⚠️</a> <a href="https://github.com/widdowquinn/pyani/commits?author=TSL-RamKrishna" title="Code">💻</a> <a href="#ideas-TSL-RamKrishna" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/dparks1134"><img src="https://avatars.githubusercontent.com/u/3688336?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Donovan Parks</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/issues?q=author%3Adparks1134" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://www.researchgate.net/profile/Zaki-Saati-Santamaria"><img src="https://avatars.githubusercontent.com/u/50806485?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Zaki Saati Santamaría</b></sub></a><br /><a href="https://github.com/widdowquinn/pyani/issues?q=author%3Azakisaati" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
@@ -63,7 +65,7 @@ DOI: [10.1039/C5AY02550H](https://doi.org/10.1039/C5AY02550H)
 [![pyani sourcerank](https://img.shields.io/librariesio/sourcerank/pypi/pyani.svg?logo=koding&logoColor=white)](https://libraries.io/pypi/pyani)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![pyani PyPi version](https://img.shields.io/pypi/v/pyani "PyPI version")](https://pypi.python.org/pypi/pyani)
@@ -132,7 +134,7 @@ DOI: [10.1039/C5AY02550H](https://doi.org/10.1039/C5AY02550H)
 
 Where available, `pyani` can take advantage of multicore systems, and integrates with [SGE/OGE](http://gridscheduler.sourceforge.net/)-type job schedulers for the sequence comparisons.
 
-`pyani` installs the prgram `pyani`, which enables command-line based analysis of genomes.
+`pyani` installs the program `pyani`, which enables command-line based analysis of genomes.
 
 -----
 
@@ -170,12 +172,12 @@ pip3 install pyani
 
 ### Third-party tools
 
-Three alignment packages are required, to use all of `pyani`'s methods: `mummer`, `BLAST+`, and legacy `BLAST`. (*Note that it is not necessary to install all three tools to use `pyani`. You need only install the tools that are required for the method you wish to use.*)
+Four alignment packages are required, to use all of `pyani`'s methods: `mummer`, `BLAST+`, legacy `BLAST`, and `fastANI`. (*Note that it is not necessary to install all four tools to use `pyani`. You need only install the tools that are required for the method you wish to use.*)
 
 The simplest route to obtaining these tools is to use `conda`/`bioconda`:
 
 ```bash
-conda install mummer blast legacy-blast -y
+conda install mummer blast legacy-blast fastani -y
 ```
 
 But they can also be installed by following instructions from the tools' own websites.
@@ -183,12 +185,54 @@ But they can also be installed by following instructions from the tools' own web
 - **BLAST+** (for `anib`) [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
 - **legacy BLAST** (for `aniblastall`) [ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/)
 - **MUMmer** (for `anim`) [http://mummer.sourceforge.net/](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/LATEST/)
+- **fastANI** (for `fastani`) [https://github.com/ParBLiSS/FastANI](https://github.com/ParBLiSS/FastANI)
 
 ### NOTE: Installing legacy BLAST
 
 **The legacy BLAST executable available from NCBI will not run on macOS Big Sur.**
 
 If you wish to use `pyani blastall` or the `ANIblastall` method with the legacy `pyani` interface, you will require a locally-installed copy of this package. This is one of the packages linked in the `requirements-thirdparty.txt` file.
+
+### Note: Installing fastANI
+
+**`fastANI` installation (via `conda`) will fail for Python 3.9 on macOS.**
+
+If you are using Python ≥3.9 to run `pyani` on macOS, `fastANI` will fail to install due to errors in the `conda` recipe (for build `h0a26cfa_0`). Using an earlier version of Python may be the simplest solution. However, you can also install `fastANI` yourself—via `conda`—using a slightly altered version of the command produced from the `conda` recipe, as shown below.
+
+*N.B. We have placed the `fastANI` requirement in its own `requirements-fastani.txt` file so that this will not also cause other installations to fail.*
+
+##### Bypassing `conda`
+
+```bash
+c++ -O3 -DNDEBUG -std=c++11 -Isrc \
+-I ${ENV_DIR}/lib/include -mmacosx-version-min=10.7 \
+-stdlib=libc++ -Xpreprocessor -fopenmp -lomp \
+-DUSE_BOOST src/cgi/core_genome_identity.cpp -o fastANI \
+${ENV_DIR}/lib/lib/libboost_math_c99.a \
+-lstdc++ -lz -lm
+```
+
+Two alterations need to be made to the file name specified in the fifth line here:
+
+1. One of the `/lib`s should be removed.
+1. The file extension should be changed from `.a`, to `.dylib`.
+
+The resultant command ought to look something like this (with ${ENV_DIR} being wherever you're installing `fastANI`):
+
+```bash
+c++ -O3 -DNDEBUG -std=c++11 -Isrc \
+-I ${ENV_DIR}/lib/include -mmacosx-version-min=10.7 \
+-stdlib=libc++ -Xpreprocessor -fopenmp -lomp \
+-DUSE_BOOST src/cgi/core_genome_identity.cpp -o fastANI \
+${ENV_DIR}/lib/libboost_math_c99.dylib \
+-lstdc++ -lz -lm
+```
+
+For a more technical overview of the issue, and other solutions that may be shared there, please see https://github.com/widdowquinn/pyani/issues/377.
+
+##### Troubleshooting
+
+This solution is how one of our developers managed to solve the problem. We hope it works for you, but can not guarantee this. Unfortunately, if this does not work for you, we will also not be able to troubleshoot the issue. In this instance, please file an issue at https://github.com/bioconda/bioconda-recipes.
 
 -----
 
@@ -235,10 +279,10 @@ The first step is to obtain genome data for analysis. `pyani` expects to find ea
 We'll use the `pyani download` subcommand to download all available genomes for *Candidatus Blochmannia* from NCBI. The taxon ID for this grouping is [203804](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=203804&lvl=3&lin=f&keep=1&srchmode=1&unlock).
 
 ```bash
-pyani download C_blochmannia --email my.email@my.domain -t 203804 -v -l C_blochmannia_dl.log
+pyani download -o C_blochmannia --email my.email@my.domain -t 203804 -v -l C_blochmannia_dl.log
 ```
 
-The first argument is the output directory into which the downloaded genomes will be written (`C_blochmannia`). To download anything from NCBI we must provide an email address (`--email my.email@my.domain`), and to specify which taxon subtree we want to download we provide the taxon ID (`-t 203804`).
+The first argument is the output directory into which the downloaded genomes will be written (`-o C_blochmannia`). To download anything from NCBI we must provide an email address (`--email my.email@my.domain`), and to specify which taxon subtree we want to download we provide the taxon ID (`-t 203804`).
 
 Here we also request verbose output (`-v`), and write a log file for reproducible research/diagnosing bugs and errors (`-l C_blochmannia_dl.log`).
 
@@ -316,7 +360,7 @@ Subsequent `pyani` commands will assume this location for the database, but you 
 In this walkthrough, we'll run ANIm on the downloaded genomes, using the command:
 
 ```bash
-pyani anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log \
+pyani anim -i C_blochmannia -o C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log \
     --name "C. blochmannia run 1" \
     --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
 ```
@@ -332,10 +376,10 @@ One reason for using a database backend for analysis results is so that, for ver
 You can test this for yourself by running the analysis command again, as below. You will see a number of messages indicating that genomes have been seen before, and that analyses performed before were skipped:
 
 ```bash
-$ pyani anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log \
+$ pyani anim -i C_blochmannia -o C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log \
     --name "C. blochmannia run 2" \
     --labels C_blochmannia/labels.txt --classes C_blochmannia/classes.txt
-INFO: command-line: pyani anim C_blochmannia C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log
+INFO: command-line: pyani anim -i C_blochmannia -o C_blochmannia_ANIm -v -l C_blochmannia_ANIm.log
 INFO: Running ANIm analysis
 INFO: Adding analysis information to database .pyani/pyanidb
 INFO: Current analysis has ID 2 in this database
@@ -367,9 +411,9 @@ Once an analysis is run, the results are placed in a local `SQLite` database, wh
 The report tables are written to a named directory (compulsory argument), and are written by default to a `.tab` plain-text format, but HTML and Excel format can also be requested with the `--formats` argument:
 
 ```bash
-$ pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel,stdout
-INFO: Processed arguments: Namespace(cmdline='./pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel', dbpath='.pyani/pyanidb', formats='html,excel', func=<function subcmd_report at 0x10c674a60>, logfile=None, outdir='C_blochmannia_ANIm/', run_results=False, show_genomes=False, show_genomes_runs=False, show_runs=True, show_runs_genomes=False, verbose=True)
-INFO: command-line: ./pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel
+$ pyani report -v --runs -o C_blochmannia_ANIm/ --formats html,excel,stdout
+INFO: Processed arguments: Namespace(cmdline='./pyani report -v --runs -o C_blochmannia_ANIm/ --formats html,excel', dbpath='.pyani/pyanidb', formats='html,excel', func=<function subcmd_report at 0x10c674a60>, logfile=None, outdir='C_blochmannia_ANIm/', run_results=False, show_genomes=False, show_genomes_runs=False, show_runs=True, show_runs_genomes=False, verbose=True)
+INFO: command-line: ./pyani report -v --runs -o C_blochmannia_ANIm/ --formats html,excel
 INFO: Creating output in formats: ['excel', 'tab', 'html']
 INFO: Using database: .pyani/pyanidb
 INFO: Writing table of pyani runs from the database to C_blochmannia_ANIm/runs.*
@@ -385,9 +429,9 @@ C_blochmannia_ANIm/
 To see all of the pairwise results for an individual run, the run ID must be provided. It is possible to get results for more than one run ID by providing a comma-separated list of run IDs (though each run's results will be provided in a separate file):
 
 ```bash
-$ pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
-INFO: Processed arguments: Namespace(cmdline='./pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4', dbpath='.pyani/pyanidb', formats='html,excel', func=<function subcmd_report at 0x108616a60>, logfile=None, outdir='C_blochmannia_ANIm/', run_results='1,2,3,4', show_genomes=False, show_genomes_runs=False, show_runs=True, show_runs_genomes=False, verbose=True)
-INFO: command-line: ./pyani report -v --runs C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
+$ pyani report -v --runs -o C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
+INFO: Processed arguments: Namespace(cmdline='./pyani report -v --runs -o C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4', dbpath='.pyani/pyanidb', formats='html,excel', func=<function subcmd_report at 0x108616a60>, logfile=None, outdir='C_blochmannia_ANIm/', run_results='1,2,3,4', show_genomes=False, show_genomes_runs=False, show_runs=True, show_runs_genomes=False, verbose=True)
+INFO: command-line: ./pyani report -v --runs -o C_blochmannia_ANIm/ --formats html,excel --run_results 1,2,3,4
 INFO: Creating output in formats: ['tab', 'excel', 'html']
 INFO: Using database: .pyani/pyanidb
 INFO: Writing table of pyani runs from the database to C_blochmannia_ANIm/runs.*
@@ -402,7 +446,7 @@ INFO: Completed. Time taken: 1.285
 You can see a run's results in the terminal by specifying the `stdout` format. For example, to see the identity, coverage, and other output matrices, you would specify `--run_matrices <RUN>` and `--formats=stdout` as below:
 
 ```bash
-$ pyani report C_blochmannia_ANIm --formats=stdout --run_matrices 1
+$ pyani report -o C_blochmannia_ANIm --formats=stdout --run_matrices 1
 TABLE: C_blochmannia_ANIm/matrix_identity_1
                                                     C. Blochmannia pennsylvanicus BPEN  C. Blochmannia floridanus  C. Blochmannia vafer BVAF  C. Blochmannia chromaiodes 640  B. endosymbiont of Polyrhachis (Hedomyrma) turneri 675  B. endosymbiont of Camponotus (Colobopsis) obliquus 757
 C. Blochmannia pennsylvanicus BPEN                                            1.000000                   0.834866                   0.836903                        0.980244                                           0.843700                                                0.829509
@@ -454,7 +498,7 @@ B. endosymbiont of Camponotus (Colobopsis) obli...                            0.
 The output of a `pyani` run can also be represented graphically, using the `plot` subcommand. For example, the command:
 
 ```bash
-pyani plot C_blochmannia_ANIm 1 -v --formats png,pdf
+pyani plot -o C_blochmannia_ANIm --run_id 1 -v --formats png,pdf
 ```
 
 will place `.pdf` and `.png` format output in the `C_blochmannia_ANIm` output directory for the run with ID 1, generated above. Five heatmaps are generated:

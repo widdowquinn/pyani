@@ -81,6 +81,7 @@ def draw_format_method(fmt, mth, graphics_inputs, tmp_path):
     """Render graphics format and method output."""
     df = pd.read_csv(graphics_inputs.filename, index_col=0, sep="\t")
     fn = {"mpl": pyani_graphics.mpl.heatmap, "seaborn": pyani_graphics.sns.heatmap}
+    sc = {"mpl": pyani_graphics.mpl.scatter, "seaborn": pyani_graphics.sns.scatter}
     params = {"mpl": pyani_config.params_mpl, "seaborn": pyani_config.params_mpl}
     method_params = pyani_graphics.Params(
         params[mth](df)["ANIm_percentage_identity"],
@@ -89,6 +90,15 @@ def draw_format_method(fmt, mth, graphics_inputs, tmp_path):
     )
     fn[mth](
         df, tmp_path / f"{mth}.{fmt}", title=f"{mth}:{fmt} test", params=method_params
+    )
+    sc[mth](
+        df,
+        df,
+        tmp_path / f"{mth}.{fmt}",
+        "matrix1",
+        "matrix2",
+        title=f"{mth}:{fmt} test",
+        params=method_params,
     )
 
 
