@@ -186,7 +186,7 @@ def subcmd_anim(args: Namespace) -> None:
     # Add information about this run to the database
     logger.debug("Adding run info to database %s...", args.dbpath)
     try:
-        run = add_run(
+        run, run_id = add_run(
             session,
             method="ANIm",
             cmdline=args.cmdline,
@@ -195,20 +195,18 @@ def subcmd_anim(args: Namespace) -> None:
             name=name,
         )
     except PyaniORMException:
-        logger.error(
-            "Could not add run %s to the database (exiting)", run, exc_info=True
-        )
+        logger.error("Could not add run to the database (exiting)", exc_info=True)
         raise SystemExit(1)
-    logger.debug("...added run ID: %s to the database", run)
+    logger.debug("...added run ID: %s to the database", run_id)
 
     # Identify input files for comparison, and populate the database
-    logger.debug("Adding genomes for run %s to database...", run)
+    logger.debug("Adding genomes for run %s to database...", run_id)
     try:
         genome_ids = add_run_genomes(
             session, run, args.indir, args.classes, args.labels
         )
     except PyaniORMException:
-        logger.error("Could not add genomes to database for run %s (exiting)", run)
+        logger.error("Could not add genomes to database for run %s (exiting)", run_id)
         raise SystemExit(1)
     logger.debug("\t...added genome IDs: %s", genome_ids)
 
@@ -244,7 +242,13 @@ def subcmd_anim(args: Namespace) -> None:
     # but remove it from the list of comparisons to be performed
     logger.info("Checking database for existing comparison data...")
     comparisons_to_run = filter_existing_comparisons(
-        session, run, comparisons, "nucmer", nucmer_version, None, args.maxmatch
+        session,
+        run,
+        comparisons,
+        "nucmer",
+        nucmer_version,
+        fragsize=None,
+        maxmatch=args.maxmatch,
     )
     logger.info(
         "\t...after check, still need to run %s comparisons", len(comparisons_to_run)

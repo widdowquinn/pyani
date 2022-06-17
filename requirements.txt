@@ -1,5 +1,4 @@
 biopython
-ete3
 matplotlib
 namedlist
 networkx
@@ -9,5 +8,5 @@ pandas
 Pillow
 scipy
 seaborn
-sqlalchemy==1.3.10
+sqlalchemy
 tqdm

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2020
+# (c) University of Strathclyde 2019-2022
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2020 University of Strathclyde
+# Copyright (c) 2019-2022 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -168,6 +168,7 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
     )
 
     # Run the plotting commands
+    logger.debug("Running plotting commands")
     for func, options in plotting_commands:
         result = pool.apply_async(func, options, {}, callback=logger.debug)
         result.get()
@@ -178,10 +179,7 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
 
 
 def write_distribution(
-    run_id: int,
-    matdata: MatrixData,
-    outfmts: List[str],
-    args: Namespace,
+    run_id: int, matdata: MatrixData, outfmts: List[str], args: Namespace
 ) -> None:
     """Write distribution plots for each matrix type.
 
@@ -196,12 +194,15 @@ def write_distribution(
     for fmt in outfmts:
         outfname = Path(args.outdir) / f"distribution_{matdata.name}_run{run_id}.{fmt}"
         logger.debug("\tWriting graphics to %s", outfname)
-        DISTMETHODS[args.method](
+        DISTMETHODS[args.method[0]](
             matdata.data,
             outfname,
             matdata.name,
             title=f"matrix_{matdata.name}_run{run_id}",
         )
+
+    # Be tidy with matplotlib caches
+    plt.close("all")
 
 
 def write_heatmap(
@@ -231,6 +232,7 @@ def write_heatmap(
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw heatmap
         _, newicks = GMETHODS[args.method](
+
             matdata.data,
             outfname,
             title=f"matrix_{matdata.name}_run{run_id}",
@@ -279,7 +281,7 @@ def write_scatter(
         logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw scatterplot
-        SMETHODS[args.method](
+        SMETHODS[args.method[0]](
             matdata1.data,
             matdata2.data,
             outfname,

@@ -38,7 +38,7 @@
 # THE SOFTWARE.
 """Pytest configuration file."""
 
-import subprocess
+import subprocess  # nosec: B404
 import shutil
 import os
 import re
@@ -94,7 +94,7 @@ def blastall_available():
     cmd = str(BLASTALL_DEFAULT)
     # Can't use check=True, as blastall without arguments returns 1!
     try:
-        result = subprocess.run(
+        result = subprocess.run(  # nosec: B603
             cmd,
             shell=False,
             check=False,
@@ -111,7 +111,7 @@ def blastn_available():
     """Returns True if blastn can be run, False otherwise."""
     cmd = [str(BLASTN_DEFAULT), "-version"]
     try:
-        result = subprocess.run(
+        result = subprocess.run(  # nosec: B603
             cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
         )
     except OSError:
@@ -129,6 +129,12 @@ def dir_anib_in():
 def dir_anim_in():
     """Input files for ANIm tests."""
     return FIXTUREPATH / "anim"
+
+
+@pytest.fixture
+def dir_fastani_in():
+    """Input files for fastANI tests."""
+    return FIXTUREPATH / "fastani"
 
 
 @pytest.fixture
@@ -425,7 +431,7 @@ def nucmer_available():
     """Test that nucmer is available."""
     cmd = [str(NUCMER_DEFAULT), "--version"]
     try:
-        result = subprocess.run(
+        result = subprocess.run(  # nosec: B603
             cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
         )
     except OSError:

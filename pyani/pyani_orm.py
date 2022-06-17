@@ -42,6 +42,8 @@
 This SQLAlchemy-based ORM replaces the previous SQL-based module
 """
 
+import logging
+
 from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
@@ -49,6 +51,7 @@ import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
 from sqlalchemy import and_  # type: ignore
+import sqlalchemy
 from sqlalchemy import UniqueConstraint, create_engine, Table
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Boolean
 from sqlalchemy.ext.declarative import declarative_base  # type: ignore
@@ -268,22 +271,31 @@ class Comparison(Base):
     __tablename__ = "comparisons"
     __table_args__ = (
         UniqueConstraint(
-            "query_id", "subject_id", "program", "version", "fragsize", "maxmatch"
+            "query_id",
+            "subject_id",
+            "program",
+            "version",
+            "fragsize",
+            "maxmatch",
+            "kmersize",
+            "minmatch",
         ),
     )
 
     comparison_id = Column(Integer, primary_key=True)
     query_id = Column(Integer, ForeignKey("genomes.genome_id"), nullable=False)
     subject_id = Column(Integer, ForeignKey("genomes.genome_id"), nullable=False)
-    aln_length = Column(Integer)
-    sim_errs = Column(Integer)
+    aln_length = Column(Integer)  # in fastANI this is matchedfrags * fragLength
+    sim_errs = Column(Integer)  # in fastANI this is allfrags - matchedfrags
     identity = Column(Float)
-    cov_query = Column(Float)
-    cov_subject = Column(Float)
+    cov_query = Column(Float)  # in fastANI this is matchedfrags/allfrags
+    cov_subject = Column(Float)  # in fastANI this is Null
     program = Column(String)
     version = Column(String)
-    fragsize = Column(Integer)
-    maxmatch = Column(Boolean)
+    fragsize = Column(Integer)  # in fastANI this is fragLength
+    maxmatch = Column(Boolean)  # in fastANi this is Null
+    kmersize = Column(Integer)
+    minmatch = Column(Float)
 
     query = relationship(
         "Genome", foreign_keys=[query_id], back_populates="query_comparisons"
@@ -298,12 +310,16 @@ class Comparison(Base):
     def __str__(self) -> str:
         """Return string representation of Comparison table row."""
         return str(
-            "Query: {}, Subject: {}, %%ID={}, ({} {})".format(
+            "Query: {}, Subject: {}, %%ID={}, ({} {}), FragSize: {}, MaxMatch: {}, KmerSize: {}, MinMatch: {}".format(
                 self.query_id,
                 self.subject_id,
                 self.identity,
                 self.program,
                 self.version,
+                self.fragsize,
+                self.maxmatch,
+                self.kmersize,
+                self.minmatch,
             )
         )
 
@@ -340,7 +356,16 @@ def get_comparison_dict(session: Any) -> Dict[Tuple, Any]:
     _.program, _.version, _.fragsize, _.maxmatch) tuple
     """
     return {
-        (_.query_id, _.subject_id, _.program, _.version, _.fragsize, _.maxmatch): _
+        (
+            _.query_id,
+            _.subject_id,
+            _.program,
+            _.version,
+            _.fragsize,
+            _.maxmatch,
+            _.kmersize,
+            _.minmatch,
+        ): _
         for _ in session.query(Comparison).all()
     }
 
@@ -400,7 +425,9 @@ def filter_existing_comparisons(
     program,
     version,
     fragsize: Optional[int] = None,
-    maxmatch: Optional[bool] = None,
+    maxmatch: Optional[bool] = False,
+    kmersize: Optional[int] = None,
+    minmatch: Optional[float] = None,
 ) -> List:
     """Filter list of (Genome, Genome) comparisons for those not in the session db.
 
@@ -417,9 +444,36 @@ def filter_existing_comparisons(
     If not, then add the (Genome, Genome) pair to a list for returning as the
     comparisons that still need to be run.
     """
+    logger = logging.getLogger(__name__)
+
     existing_comparisons = get_comparison_dict(session)
+    logger.debug("Existing comparisons\n%s", existing_comparisons)
     comparisons_to_run = []
+    logger.debug(
+        (
+            "Checking for existing comparisons, with unique constraints \n"
+            "\tprogram: %s\n"
+            "\tversion: %s\n"
+            "\tfragsize: %s\n"
+            "\tmaxmatch: %s\n"
+            "\tkmersize: %s\n"
+            "\tminmatch: %s\n"
+        ),
+        program,
+        version,
+        fragsize,
+        maxmatch,
+        kmersize,
+        minmatch,
+    )
     for (qgenome, sgenome) in comparisons:
+        logger.debug(
+            "Checking for existing comparison: %s (%s) vs %s (%s)",
+            qgenome,
+            qgenome.genome_id,
+            sgenome,
+            sgenome.genome_id,
+        )
         try:
             # Associate run with existing comparisons
             run.comparisons.append(
@@ -431,6 +485,8 @@ def filter_existing_comparisons(
                         version,
                         fragsize,
                         maxmatch,
+                        kmersize,
+                        minmatch,
                     )
                 ]
             )
@@ -463,11 +519,11 @@ def add_run(session, method, cmdline, date, status, name):
         session.commit()
     except Exception:
         raise PyaniORMException(f"Could not add run {run} to the database")
-    return run
+    return run, run.run_id
 
 
 def add_run_genomes(
-    session, run, indir: Path, classpath: Path, labelpath: Path
+    session, run, indir: Path, classpath: Path, labelpath: Path, **kwargs
 ) -> List:
     """Add genomes for a run to the database.
 
@@ -517,7 +573,6 @@ def add_run_genomes(
             raise PyaniORMException("Could not read genome files for database import")
         abspath = fastafile.absolute()
         genome_len = get_genome_length(abspath)
-
         # If the genome is not already in the database, add it as a Genome object
         genome = session.query(Genome).filter(Genome.genome_hash == inhash).first()
         if not isinstance(genome, Genome):
@@ -592,15 +647,16 @@ def update_comparison_matrices(session, run) -> None:
     for cmp in run.comparisons.all():
         qid, sid = cmp.query_id, cmp.subject_id
         df_identity.loc[qid, sid] = cmp.identity
-        df_identity.loc[sid, qid] = cmp.identity
         df_coverage.loc[qid, sid] = cmp.cov_query
-        df_coverage.loc[sid, qid] = cmp.cov_subject
         df_alnlength.loc[qid, sid] = cmp.aln_length
-        df_alnlength.loc[sid, qid] = cmp.aln_length
         df_simerrors.loc[qid, sid] = cmp.sim_errs
-        df_simerrors.loc[sid, qid] = cmp.sim_errs
         df_hadamard.loc[qid, sid] = cmp.identity * cmp.cov_query
-        df_hadamard.loc[sid, qid] = cmp.identity * cmp.cov_subject
+        if cmp.program in ["nucmer"]:
+            df_hadamard.loc[sid, qid] = cmp.identity * cmp.cov_subject
+            df_simerrors.loc[sid, qid] = cmp.sim_errs
+            df_alnlength.loc[sid, qid] = cmp.aln_length
+            df_coverage.loc[sid, qid] = cmp.cov_subject
+            df_identity.loc[sid, qid] = cmp.identity
 
     # Add matrices to the database
     run.df_identity = df_identity.to_json()

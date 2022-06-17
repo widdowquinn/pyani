@@ -50,6 +50,7 @@ from pyani.scripts.parsers import (
     anim_parser,
     anib_parser,
     aniblastall_parser,
+    fastani_parser,
     report_parser,
     plot_parser,
     classify_parser,
@@ -82,6 +83,8 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         conduct ANIb analysis
     - aniblastall
         conduct ANIblastall analysis
+    - fastani
+        conduct fastANI analysis
     - report
         generate output describing analyses, genomes, and results
     - plot
@@ -124,6 +127,9 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         subparsers, parents=[parser_common, parser_scheduler, parser_run_common]
     )
     aniblastall_parser.build(
+        subparsers, parents=[parser_common, parser_scheduler, parser_run_common]
+    )
+    fastani_parser.build(
         subparsers, parents=[parser_common, parser_scheduler, parser_run_common]
     )
     report_parser.build(subparsers, parents=[parser_common])

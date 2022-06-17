@@ -180,6 +180,7 @@ def legacy_tetra_mpl_namespace(tmp_path, legacy_ani_namespace):
 
 
 @pytest.mark.skip_if_exe_missing("nucmer")
+@pytest.mark.slow
 def test_legacy_anim_sns(legacy_anim_sns_namespace):
     r"""Use legacy script to run ANIm (seaborn output).
 
@@ -194,6 +195,7 @@ def test_legacy_anim_sns(legacy_anim_sns_namespace):
 
 
 @pytest.mark.skip_if_exe_missing("nucmer")
+@pytest.mark.slow
 def test_legacy_anim_mpl(legacy_anim_mpl_namespace):
     r"""Use legacy script to run ANIm (mpl output).
 
@@ -208,6 +210,7 @@ def test_legacy_anim_mpl(legacy_anim_mpl_namespace):
 
 
 @pytest.mark.skip_if_exe_missing("blastn")
+@pytest.mark.slow
 def test_legacy_anib_sns(legacy_anib_sns_namespace):
     r"""Use legacy script to run ANIb (seaborn output).
 
@@ -222,6 +225,7 @@ def test_legacy_anib_sns(legacy_anib_sns_namespace):
 
 
 @pytest.mark.skip_if_exe_missing("blastn")
+@pytest.mark.slow
 def test_legacy_anib_mpl(legacy_anib_mpl_namespace):
     r"""Use legacy script to run ANIb (mpl output).
 
@@ -235,11 +239,13 @@ def test_legacy_anib_mpl(legacy_anib_mpl_namespace):
     average_nucleotide_identity.run_main(legacy_anib_mpl_namespace)
 
 
+@pytest.mark.slow
 def test_legacy_tetra_sns(legacy_tetra_sns_namespace):
     r"""Use legacy script to run TETRA (seaborn output)."""
     average_nucleotide_identity.run_main(legacy_tetra_sns_namespace)
 
 
+@pytest.mark.slow
 def test_legacy_tetra_mpl(legacy_tetra_mpl_namespace):
     r"""Use legacy script to run TETRA (mpl output)."""
     average_nucleotide_identity.run_main(legacy_tetra_mpl_namespace)
