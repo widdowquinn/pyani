@@ -267,7 +267,7 @@ def test_mummer_single(tmp_path, path_file_two):
         ),
         (
             "delta_filter_wrapper.py delta-filter -1 "
-            f"{outprefix}.delta' "
+            f"{outprefix}.delta "
             f"{outprefix}.filter"
         ),
     )
@@ -293,7 +293,7 @@ def test_genome_sorting(tmp_path, unsorted_genomes):
     second, first = [Path(_.path) for _ in unsorted_genomes]
     outprefix = f"{tmp_path}/nucmer_output/{first.stem}/{first.stem}_vs_{second.stem}"
     expected = (
-        f"nucmer --mum -p {outprefix} {first} {second}",
+        f"nucmer --mum --noextend -p {outprefix} {first} {second}",
         f"delta_filter_wrapper.py delta-filter -1 {outprefix}.delta {outprefix}.filter",
     )
     nucmercmd, filtercmd = anim.construct_nucmer_cmdline(second, first, tmp_path)
