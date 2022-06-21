@@ -81,7 +81,7 @@ jobs:
              make                     ;#  Run the makefile.
              make sqlite3.c           ;#  Build the "amalgamation" source file
              make test                ;#  Run some tests (requires Tcl)
-             echo "export PATH=~/repo/bld:$PATH" >> $BASH_ENV
+             echo 'export PATH=~/repo/bld:$PATH' >> $BASH_ENV
              source $BASH_ENV
              echo $PATH
 
