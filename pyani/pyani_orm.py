@@ -431,7 +431,7 @@ def filter_existing_comparisons(
     maxmatch: Optional[bool] = False,
     kmersize: Optional[int] = None,
     minmatch: Optional[float] = None,
-    extend: Optional[bool] = False,
+    noextend: Optional[bool] = False,
 ) -> List:
     """Filter list of (Genome, Genome) comparisons for those not in the session db.
 
@@ -492,7 +492,7 @@ def filter_existing_comparisons(
                         maxmatch,
                         kmersize,
                         minmatch,
-                        extend,
+                        noextend,
                     )
                 ]
             )
