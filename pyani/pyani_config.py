@@ -56,6 +56,15 @@ FORMATDB_DEFAULT = Path("formatdb")
 QSUB_DEFAULT = Path("qsub")
 FASTANI_DEFAULT = Path("fastANI")
 
+################################ Blueprint #################################
+# The names of some executables will normally need to be added here.
+# This should be however you would expect the required programme to
+# be invoked from the command line, and are used in the parser.
+#
+BLUEPRINT_DEFAULT = Path("blueprint")
+############################## End blueprint ###############################
+
+
 # Stems for output files
 ANIM_FILESTEMS = (
     "ANIm_alignment_lengths",
