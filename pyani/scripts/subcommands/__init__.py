@@ -49,3 +49,10 @@ from .subcmd_listdeps import subcmd_listdeps
 from .subcmd_plot import subcmd_plot
 from .subcmd_report import subcmd_report
 from .subcmd_fastani import subcmd_fastani
+
+################################ Blueprint #################################
+# Import the new subcommand into the namespace
+#
+from .subcmd_blueprint import subcmd_blueprint
+
+############################## End blueprint ###############################
