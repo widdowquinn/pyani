@@ -58,6 +58,11 @@ from pyani.scripts.parsers import (
     common_parser,
     run_common_parser,
     listdeps_parser,
+    ################################ Blueprint #################################
+    # Add the new parser to the import list
+    #
+    blueprint_parser,
+    ############################## End blueprint ###############################
 )
 
 
@@ -90,6 +95,12 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
         generate graphical output describing results
     - classify
         produce graph-based classification of genomes on the basis of ANI analysis
+    ################################ Blueprint #################################
+    # Keep docstring up-to-date
+    #
+    - blueprint
+        an example showing how to set up a new subcommand
+    ############################## End blueprint ###############################
     """
     # Main parent parser
     parser_main = ArgumentParser(
@@ -135,6 +146,19 @@ def parse_cmdline(argv: Optional[List] = None) -> Namespace:
     plot_parser.build(subparsers, parents=[parser_common])
     classify_parser.build(subparsers, parents=[parser_common])
     listdeps_parser.build(subparsers, parents=[parser_common])
+    blueprint_parser.build(subparsers, parents=[parser_common])
+    ################################ Blueprint #################################
+    # The line that actually builds the new parser
+    #
+    # The first argument is the current list of subparsers.
+    #
+    # The second argument is the list of relevant parent parsers.
+    # The list of parents depends on whether the subcommand
+    # needs to provide scheduler options (parser_scheduler),
+    # and things related to analyses, e.g., --labels and --classes
+    # (parser_run_common)
+    # blueprint_parser.build(subparsers, parents=[parser_common])
+    ############################## End blueprint ###############################
 
     # Parse arguments
     # The list comprehension is to allow PosixPaths to be defined and passed in testing
