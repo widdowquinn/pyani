@@ -92,9 +92,13 @@ def get_version(fastani_exe: Path = pyani_config.FASTANI_DEFAULT) -> str:
     """
     try:
         fastani_path = Path(shutil.which(fastani_exe))  # type:ignore
+    # Returns a TypeError if `fastani_exe` is None
     except TypeError:
-        return f"{fastani_exe} is not found in $PATH"
+        return f"expected file location; received {fastani_exe}"
 
+    # If a string that is not an executable is passed to
+    # shutil.which(), the return value will be None, so
+    # this check is still needed
     if fastani_path is None:
         return f"{fastani_exe} is not found in $PATH"
 
