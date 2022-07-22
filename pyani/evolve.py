@@ -100,7 +100,7 @@ class MutatableRecord(SeqIO.SeqRecord):
         sequence = self.seq
         for pair in deletions:
             for event in range(pair.number):
-                start = random.choice(range(len(sequence)))
+                start = random.choice(range(len(sequence) - pair.length))
                 sequence = sequence[:start] + sequence[start + pair.length :]
         self.seq = Seq.Seq(sequence)
         return self
@@ -109,7 +109,7 @@ class MutatableRecord(SeqIO.SeqRecord):
         sequence = self.seq
         for pair in repetitions:
             for event in range(pair.number):
-                start = random.choice(range(len(sequence)))
+                start = random.choice(range(len(sequence) - pair.length))
                 sequence = (
                     sequence[:start]
                     + sequence[start : start + pair.length]
