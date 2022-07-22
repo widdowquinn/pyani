@@ -43,7 +43,7 @@ import datetime
 import logging
 
 from argparse import Namespace
-from itertools import combinations
+from itertools import permutations  # combinations
 from pathlib import Path
 from typing import List, NamedTuple, Tuple
 
@@ -234,7 +234,9 @@ def subcmd_anim(args: Namespace) -> None:
     logger.info(
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
-    comparisons = list(combinations(tqdm(genomes, disable=args.disable_tqdm), 2))
+    comparisons = list(
+        permutations(tqdm(genomes, disable=args.disable_tqdm), 2)
+    )  # combinations(tqdm(genomes, disable=args.disable_tqdm), 2))
     logger.info("\t...total pairwise comparisons to be performed: %s", len(comparisons))
 
     # Check for existing comparisons; if one has been done (for the same

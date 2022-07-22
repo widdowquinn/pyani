@@ -248,7 +248,7 @@ def construct_nucmer_cmdline(
     outdir, called "nucmer_output".
     """
     # Cast path strings to pathlib.Path for safety
-    fname1, fname2 = sorted([Path(fname1), Path(fname2)])
+    fname1, fname2 = Path(fname1), Path(fname2)  # sorted([Path(fname1), Path(fname2)])
 
     # Compile commands
     # Nested output folders to avoid N^2 scaling in files-per-folder
