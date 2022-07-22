@@ -218,7 +218,8 @@ def write_heatmap(
     logger = logging.getLogger(__name__)
 
     logger.info("Writing %s matrix heatmaps", matdata.name)
-    cmap = pyani_config.get_colormap(matdata.data, matdata.name)
+    cmap = ("crest", matdata.data.values.min(), matdata.data.values.max(), None)
+    # cmap = pyani_config.get_colormap(matdata.data, matdata.name)
     for fmt in outfmts:
         outfname = Path(args.outdir) / f"matrix_{matdata.name}_run{run_id}.{fmt}"
         logger.debug("\tWriting graphics to %s", outfname)

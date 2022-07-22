@@ -80,6 +80,7 @@ class Params:  # pylint: disable=too-few-public-methods
         self.cmap = plt.get_cmap(params[0])
         self.vmin = params[1]
         self.vmax = params[2]
+        self.center = params[3]
         self.labels = labels
         self.classes = classes
 
