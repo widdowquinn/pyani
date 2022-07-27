@@ -34,15 +34,15 @@ def repeats_too_large():
     return [MutationEvent(6, 2)]
 
 
-# Test mutation (length doesn't change)
-def test_mutate_large(record, large_mutation_event):
-    record.mutate(large_mutation_event)
-    assert len(record.seq) == 60
+# Test deletion (length decreases)
+def test_delete_large(record, large_mutation_event):
+    record.delete(large_mutation_event)
+    assert len(record.seq) == 54
 
 
-def test_mutate_small(record, small_mutation_events):
-    record.mutate(small_mutation_events)
-    assert len(record.seq) == 60
+def test_delete_small(record, small_mutation_events):
+    record.delete(small_mutation_events)
+    assert len(record.seq) == 54
 
 
 # Test insertion (length increases)
@@ -56,15 +56,15 @@ def test_insert_small(record, small_mutation_events):
     assert len(record.seq) == 66
 
 
-# Test deletion (length decreases)
-def test_delete_large(record, large_mutation_event):
-    record.delete(large_mutation_event)
-    assert len(record.seq) == 54
+# Test mutation (length doesn't change)
+def test_mutate_large(record, large_mutation_event):
+    record.mutate(large_mutation_event)
+    assert len(record.seq) == 60
 
 
-def test_delete_small(record, small_mutation_events):
-    record.delete(small_mutation_events)
-    assert len(record.seq) == 54
+def test_mutate_small(record, small_mutation_events):
+    record.mutate(small_mutation_events)
+    assert len(record.seq) == 60
 
 
 # Test tandem repeat (length increases)
