@@ -77,6 +77,11 @@ class MutatableRecord(SeqIO.SeqRecord):
         return kmer
 
     def delete(self, deletions):
+        """Deletes one or more segments from the sequence; the deletions are given as MutationEvent objects, specifying the length of the deletion and number of occurrences.
+
+        :param deletions:  a list of MutationEvent tuples
+
+        """
         sequence = self.seq
         for pair in deletions:
             for event in range(pair.number):
@@ -86,6 +91,11 @@ class MutatableRecord(SeqIO.SeqRecord):
         return self
 
     def mutate(self, mutations: List[NamedTuple]):
+        """Mutates one or more segments in the sequence; the mutations are given as MutationEvent objects, specifying the length of the mutation and number of occurrences.
+
+        :param mutations:  a list of MutationEvent tuples
+
+        """
         sequence = self.seq
         for pair in mutations:
             for event in range(pair.number):
@@ -96,6 +106,11 @@ class MutatableRecord(SeqIO.SeqRecord):
         return self
 
     def insert(self, insertions):
+        """Inserts one or more segments in the sequence; the insertions are given as MutationEvent objects, specifying the length of the insertion and number of occurrences.
+
+        :param insertions:  a list of MutationEvent tuples
+
+        """
         sequence = self.seq
         for pair in insertions:
             for event in range(pair.number):
@@ -106,6 +121,11 @@ class MutatableRecord(SeqIO.SeqRecord):
         return self
 
     def invert(self, inversions):
+        """Inverts one or more segments in the sequence; the inversions are given as MutationEvent objects, specifying the length of the inversion and number of occurrences.
+
+        :param inversions:  a list of MutationEvent tuples
+
+        """
         sequence = self.seq
         for pair in inversions:
             for event in range(pair.number):
@@ -116,6 +136,12 @@ class MutatableRecord(SeqIO.SeqRecord):
         return self
 
     def repeat(self, repetitions):
+        """Repeats one or more segments in the sequence; the repetitions are given as MutationEvent objects, specifying the length of the repetition and number of occurrences.
+
+        :param repetitions:  a list of MutationEvent tuples
+
+        Extra steps are taken to ensure the repeated portions of code do not overlap. This is accoplished by dividing the sequence into partitions and not operating within the same partition more than once.
+        """
         sequence = str(self.seq)
         for pair in repetitions:
             sys.stdout.write(f"{sequence}")
@@ -141,6 +167,11 @@ class MutatableRecord(SeqIO.SeqRecord):
         return self
 
     def tandem_repeat(self, repetitions):
+        """Repeats one or more segments in the sequence, adjacent to their original occurence; the repetitions are given as MutationEvent objects, specifying the length of the repetition and number of occurrences.
+
+        :param repetitions:  a list of MutationEvent tuples
+
+        """
         sequence = self.seq
         for pair in repetitions:
             for event in range(pair.number):
@@ -154,6 +185,12 @@ class MutatableRecord(SeqIO.SeqRecord):
         return self
 
     def write_to_file(self, file, format="fasta"):
+        """Writes the sequence to a file; defaults to `fasta`.
+
+        :param file:  the output file name
+        :param format:  the desired output format
+
+        """
         with open(file, "w") as output_handle:
             SeqIO.write(self, output_handle, format)
 
