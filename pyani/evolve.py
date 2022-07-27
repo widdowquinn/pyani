@@ -105,6 +105,16 @@ class MutatableRecord(SeqIO.SeqRecord):
         self.seq = Seq.Seq(sequence)
         return self
 
+    def invert(self, inversions):
+        sequence = self.seq
+        for pair in inversions:
+            for event in range(pair.number):
+                start = random.choice(range(len(sequence) - pair.length))
+                inv = sequence[start : start + pair.length]
+                sequence = sequence[:start] + inv[::-1] + sequence[start:]
+        self.seq = Seq.Seq(sequence)
+        return self
+
     def repeat(self, repetitions):
         sequence = str(self.seq)
         for pair in repetitions:
