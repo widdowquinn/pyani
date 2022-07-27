@@ -56,6 +56,17 @@ def test_insert_small(record, small_mutation_events):
     assert len(record.seq) == 66
 
 
+# Test insertion (length increases)
+def test_invert_large(record, large_mutation_event):
+    record.invert(large_mutation_event)
+    assert len(record.seq) == 60
+
+
+def test_invert_small(record, small_mutation_events):
+    record.invert(small_mutation_events)
+    assert len(record.seq) == 60
+
+
 # Test mutation (length doesn't change)
 def test_mutate_large(record, large_mutation_event):
     record.mutate(large_mutation_event)
