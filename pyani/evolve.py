@@ -131,7 +131,9 @@ class MutatableRecord(SeqIO.SeqRecord):
             for event in range(pair.number):
                 start = random.choice(range(len(sequence) - pair.length))
                 inv = sequence[start : start + pair.length]
-                sequence = sequence[:start] + inv[::-1] + sequence[start:]
+                sequence = (
+                    sequence[:start] + inv[::-1] + sequence[start + pair.length :]
+                )
         self.seq = Seq.Seq(sequence)
         return self
 
