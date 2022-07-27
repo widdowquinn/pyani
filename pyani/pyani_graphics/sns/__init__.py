@@ -137,6 +137,7 @@ def get_clustermap(dfr, params, title=None, annot=True):
             figsize=(params.figsize, params.figsize),
             linewidths=params.linewidths,
             annot=annot,
+            # fmt="d"
         )
 
     # add labels for each of the input genomes
