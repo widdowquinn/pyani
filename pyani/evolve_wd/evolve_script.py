@@ -2,14 +2,27 @@ from pyani.evolve import MutatableRecord, MutationEvent
 import random
 from pathlib import Path
 from typing import List, Tuple, NamedTuple
-
+import argparse
 
 outdir = "../sequences"
 
 ntides = ["A", "C", "G", "T"]
 
 
+def parse_args():
+    description = "Creates a set of fake genome sequences."
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument("-v", "--version", action="version", version="%(prog)s dev")
+    parser.add_argument(
+        "-o", "--outdir", dest="outdir", help=("output directory location")
+    )
+    args = parser.parse_args()
+
+    return args
+
+
 def main():
+    args = parse_args()
     sequences = {}
 
     sequence1 = MutatableRecord(
@@ -111,7 +124,7 @@ def main():
     sequences["sequence6a"] = sequence6a
 
     for id, record in sequences.items():
-        record.write_to_file(f"{outdir}/{id}.fasta")
+        record.write_to_file(f"{args.outdir}/{id}.fasta")
 
 
 if __name__ == "__main__":
