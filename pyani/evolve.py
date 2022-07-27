@@ -76,6 +76,15 @@ class MutatableRecord(SeqIO.SeqRecord):
 
         return kmer
 
+    def delete(self, deletions):
+        sequence = self.seq
+        for pair in deletions:
+            for event in range(pair.number):
+                start = random.choice(range(len(sequence) - pair.length))
+                sequence = sequence[:start] + sequence[start + pair.length :]
+        self.seq = Seq.Seq(sequence)
+        return self
+
     def mutate(self, mutations: List[NamedTuple]):
         sequence = self.seq
         for pair in mutations:
@@ -93,28 +102,6 @@ class MutatableRecord(SeqIO.SeqRecord):
                 start = random.choice(range(len(sequence)))
                 mut = self.generate_kmer(pair.length)
                 sequence = sequence[:start] + mut + sequence[start:]
-        self.seq = Seq.Seq(sequence)
-        return self
-
-    def delete(self, deletions):
-        sequence = self.seq
-        for pair in deletions:
-            for event in range(pair.number):
-                start = random.choice(range(len(sequence) - pair.length))
-                sequence = sequence[:start] + sequence[start + pair.length :]
-        self.seq = Seq.Seq(sequence)
-        return self
-
-    def tandem_repeat(self, repetitions):
-        sequence = self.seq
-        for pair in repetitions:
-            for event in range(pair.number):
-                start = random.choice(range(len(sequence) - pair.length))
-                sequence = (
-                    sequence[:start]
-                    + sequence[start : start + pair.length]
-                    + sequence[start:]
-                )
         self.seq = Seq.Seq(sequence)
         return self
 
@@ -139,6 +126,19 @@ class MutatableRecord(SeqIO.SeqRecord):
                     sequence[:insert]
                     + sequence[start : start + pair.length]
                     + sequence[insert:]
+                )
+        self.seq = Seq.Seq(sequence)
+        return self
+
+    def tandem_repeat(self, repetitions):
+        sequence = self.seq
+        for pair in repetitions:
+            for event in range(pair.number):
+                start = random.choice(range(len(sequence) - pair.length))
+                sequence = (
+                    sequence[:start]
+                    + sequence[start : start + pair.length]
+                    + sequence[start:]
                 )
         self.seq = Seq.Seq(sequence)
         return self
