@@ -86,6 +86,7 @@ def get_version(fastani_exe: Path = pyani_config.FASTANI_DEFAULT) -> str:
 
     The following circumstances are explicitly reported as strings:
 
+    - a value of None given for the executable
     - no executable at passed path
     - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
     - no version info returned
