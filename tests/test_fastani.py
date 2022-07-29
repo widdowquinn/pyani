@@ -93,7 +93,7 @@ def test_get_version_nonetype():
 
     assert (
         fastani.get_version(test_file_0)
-        == f"expected file location; received {test_file_0}"
+        == f"expected path to fastANI executable; received {test_file_0}"
     )
 
 
