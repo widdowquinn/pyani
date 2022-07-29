@@ -134,9 +134,11 @@ class MutatableRecord(SeqIO.SeqRecord):
         for pair in inversions:
             for event in range(pair.number):
                 start = random.choice(range(len(sequence) - pair.length))
-                inv = sequence[start : start + pair.length : -1]
-                sequence = sequence[:start] + inv + sequence[start + pair.length :]
-                self.record(start, inv, "invert")
+                inv = sequence[start : start + pair.length]
+                sequence = (
+                    sequence[:start] + inv[::-1] + sequence[start + pair.length :]
+                )
+                self.record(start, inv[::-1], "invert")
         self.seq = Seq.Seq(sequence)
         return self
 
