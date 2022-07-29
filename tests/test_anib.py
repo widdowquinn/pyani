@@ -130,33 +130,44 @@ def test_get_version_nonetype():
     """Test behaviour when no location for the executable is given."""
     test_file_0 = None
 
-    assert anib.get_version(test_file_0) == f"{test_file_0} is not found in $PATH"
-
-
-# Test case 1: there is no executable
-def test_get_version_no_exe(executable_missing, monkeypatch):
-    """Test behaviour when there is no file at the specified executable location."""
-    test_file_1 = Path("/non/existent/blastn")
-    assert anib.get_version(test_file_1) == f"No blastn executable at {test_file_1}"
-
-
-# Test case 2: there is a file, but it is not executable
-def test_get_version_exe_not_executable(executable_not_executable, monkeypatch):
-    """Test behaviour when the file at the executable location is not executable."""
-    test_file_2 = Path("/non/executable/blastn")
     assert (
-        anib.get_version(test_file_2)
-        == f"blastn exists at {test_file_2} but not executable"
+        anib.get_version(test_file_0)
+        == f"expected path to blastn executable; received {test_file_0}"
     )
 
 
-# Test case 3: there is an executable file, but the version can't be retrieved
-def test_get_version_exe_no_version(executable_without_version, monkeypatch):
-    """Test behaviour when the version for the executable can not be retrieved."""
-    test_file_3 = Path("/missing/version/blastn")
+# Test case 1: no such file exists
+def test_get_version_random_string():
+    """Test behaviour when the given 'file' is not one."""
+    test_file_1 = "string"
+
+    assert anib.get_version(test_file_1) == f"{test_file_1} is not found in $PATH"
+
+
+# Test case 2: there is no executable
+def test_get_version_no_exe(executable_missing, monkeypatch):
+    """Test behaviour when there is no file at the specified executable location."""
+    test_file_2 = Path("/non/existent/blastn")
+    assert anib.get_version(test_file_2) == f"No blastn executable at {test_file_2}"
+
+
+# Test case 3: there is a file, but it is not executable
+def test_get_version_exe_not_executable(executable_not_executable, monkeypatch):
+    """Test behaviour when the file at the executable location is not executable."""
+    test_file_3 = Path("/non/executable/blastn")
     assert (
         anib.get_version(test_file_3)
-        == f"blastn exists at {test_file_3} but could not retrieve version"
+        == f"blastn exists at {test_file_3} but not executable"
+    )
+
+
+# Test case 4: there is an executable file, but the version can't be retrieved
+def test_get_version_exe_no_version(executable_without_version, monkeypatch):
+    """Test behaviour when the version for the executable can not be retrieved."""
+    test_file_4 = Path("/missing/version/blastn")
+    assert (
+        anib.get_version(test_file_4)
+        == f"blastn exists at {test_file_4} but could not retrieve version"
     )
 
 
