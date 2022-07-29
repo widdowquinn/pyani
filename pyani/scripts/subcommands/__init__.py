@@ -49,3 +49,4 @@ from .subcmd_listdeps import subcmd_listdeps
 from .subcmd_plot import subcmd_plot
 from .subcmd_report import subcmd_report
 from .subcmd_fastani import subcmd_fastani
+from .subcmd_evolve import subcmd_evolve
