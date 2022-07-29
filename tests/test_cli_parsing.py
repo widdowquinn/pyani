@@ -81,7 +81,11 @@ def test_createdb(args_createdb, monkeypatch):
     def mock_return_none(*args, **kwargs):
         return None
 
+    def mock_add_alembic(*args, **kwargs):
+        return "TEST VERSION"
+
     monkeypatch.setattr(pyani_orm, "create_db", mock_return_none)
+    monkeypatch.setattr(pyani_orm, "add_alembic", mock_add_alembic)
     pyani_script.run_main(args_createdb)
 
 

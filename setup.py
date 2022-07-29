@@ -99,7 +99,14 @@ setuptools.setup(
         ]
     },
     packages=setuptools.find_packages(),
-    package_data={"pyani": ["tests/test_JSpecies/*.tab"]},
+    package_data={
+        "pyani": [
+            "tests/test_JSpecies/*.tab",
+            "alembic.ini",
+            "alembic/*",
+            "alembic/**/*",
+        ]
+    },
     include_package_date=True,
     install_requires=[
         "biopython",

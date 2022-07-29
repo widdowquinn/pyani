@@ -143,6 +143,18 @@ def dir_graphics_in():
 
 
 @pytest.fixture
+def dir_versiondb_in():
+    """Input files for versiondb tests."""
+    return FIXTUREPATH / "versiondb"
+
+
+@pytest.fixture
+def dir_versiondb_out():
+    """Output files for versiondb tests."""
+    return TESTSPATH / "test_output/subcmd_versiondb"
+
+
+@pytest.fixture
 def dir_seq():
     """Sequence files for tests."""
     return FIXTUREPATH / "sequences"

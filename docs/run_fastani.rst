@@ -37,7 +37,7 @@ The basic form of the command is:
 
     pyani fastani -i <INPUT_DIRECTORY> -o <OUTPUT_DIRECTORY>
 
-This instructs ``pyani`` to perform fast ANI on the genome FASTA files in ``<INPUT_DIRECTORY>``, and write any output files to ``<OUTPUT_DIRECTORY>``. For example, the following command performs fastANI on genomes in the directory ``genomes`` and writes output to a new directory ``genoems_fastANI``:
+This instructs ``pyani`` to perform fast ANI on the genome FASTA files in ``<INPUT_DIRECTORY>``, and write any output files to ``<OUTPUT_DIRECTORY>``. For example, the following command performs fastANI on genomes in the directory ``genomes`` and writes output to a new directory ``genomes_fastANI``:
 
 .. code-block:: bash
 
@@ -49,7 +49,7 @@ This instructs ``pyani`` to perform fast ANI on the genome FASTA files in ``<INP
 This command will write the intermediate ``fastANI`` output to the directory ``genomes_fastANI``, where the results can be inspected if required.
 
 .. ATTENTION::
-    To view the output fastANI results, you will need to use the ``pyani report`` or ``pyani plot`` subcommands. Please see :ref:`pyani-subcmd-report` and :ref:`pyani-subcd-plot` for more details.
+    To view the output fastANI results, you will need to use the ``pyani report`` or ``pyani plot`` subcommands. Please see :ref:`pyani-subcmd-report` and :ref:`pyani-subcmd-plot` for more details.
 
 -------------------------------------------------
 Perform fastANI analysis with Open Grid Scheduler

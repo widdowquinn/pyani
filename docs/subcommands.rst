@@ -27,3 +27,4 @@ This document links out to detailed instructions for each of the ``pyani`` subco
     subcmd_classify
     subcmd_listdeps
     subcmd_fastani
+    subcmd_versiondb

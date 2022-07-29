@@ -1,3 +1,5 @@
 blast
 blast-legacy
 mummer
+fastani
+sqlite3

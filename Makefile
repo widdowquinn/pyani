@@ -7,6 +7,7 @@
 setup_conda:
 	@conda install --file requirements-dev.txt --yes
 	@conda install --file requirements.txt --yes
+	@conda config --add channels blaze
 	@conda install --file requirements-thirdparty.txt --yes
 	@conda install --file requirements-fastani.txt --yes
 	@conda install --file requirements-pyqt-conda.txt --yes

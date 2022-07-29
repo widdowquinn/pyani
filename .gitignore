@@ -1,5 +1,7 @@
 # Scratch directory for local testing
 scratch/
+alembic/version.txt
+*/*add_third_column.py
 
 # Mac-related dreck
 .DS_Store

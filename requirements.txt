@@ -10,3 +10,4 @@ scipy
 seaborn
 sqlalchemy
 tqdm
+alembic

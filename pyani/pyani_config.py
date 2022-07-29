@@ -55,6 +55,9 @@ BLASTALL_DEFAULT = Path("blastall")
 FORMATDB_DEFAULT = Path("formatdb")
 QSUB_DEFAULT = Path("qsub")
 FASTANI_DEFAULT = Path("fastANI")
+ALEMBIC_DEFAULT = Path("alembic")
+SQLITE_DEFAULT = Path("sqlite3")
+SQLDIFF_DEFAULT = Path("sqldiff")
 
 # Stems for output files
 ANIM_FILESTEMS = (
