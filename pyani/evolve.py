@@ -5,6 +5,7 @@ from typing import List, Tuple, NamedTuple
 from pathlib import Path
 from Bio import SeqIO, Seq
 from . import PyaniException
+import logging
 
 # Create a list of the nucleotides
 ntides = ["A", "C", "G", "T"]
@@ -87,6 +88,7 @@ class MutatableRecord(SeqIO.SeqRecord):
             for event in range(pair.number):
                 start = random.choice(range(len(sequence) - pair.length))
                 sequence = sequence[:start] + sequence[start + pair.length :]
+                self.record(start, sequence[start : start + pair.length], "delete")
         self.seq = Seq.Seq(sequence)
         return self
 
@@ -102,6 +104,7 @@ class MutatableRecord(SeqIO.SeqRecord):
                 start = random.choice(range(len(sequence) - pair.length))
                 mut = self.generate_kmer(pair.length)
                 sequence = sequence[:start] + mut + sequence[start + pair.length :]
+                self.record(start, mut, "mutate")
         self.seq = Seq.Seq(sequence)
         return self
 
@@ -117,6 +120,7 @@ class MutatableRecord(SeqIO.SeqRecord):
                 start = random.choice(range(len(sequence)))
                 mut = self.generate_kmer(pair.length)
                 sequence = sequence[:start] + mut + sequence[start:]
+                self.record(start, mut, "insert")
         self.seq = Seq.Seq(sequence)
         return self
 
@@ -130,10 +134,9 @@ class MutatableRecord(SeqIO.SeqRecord):
         for pair in inversions:
             for event in range(pair.number):
                 start = random.choice(range(len(sequence) - pair.length))
-                inv = sequence[start : start + pair.length]
-                sequence = (
-                    sequence[:start] + inv[::-1] + sequence[start + pair.length :]
-                )
+                inv = sequence[start : start + pair.length : -1]
+                sequence = sequence[:start] + inv + sequence[start + pair.length :]
+                self.record(start, inv, "invert")
         self.seq = Seq.Seq(sequence)
         return self
 
@@ -165,6 +168,7 @@ class MutatableRecord(SeqIO.SeqRecord):
                     + sequence[start : start + pair.length]
                     + sequence[insert:]
                 )
+                self.record(insert, sequence[start : start + pair.length], "repeat")
         self.seq = Seq.Seq(sequence)
         return self
 
@@ -183,8 +187,25 @@ class MutatableRecord(SeqIO.SeqRecord):
                     + sequence[start : start + pair.length]
                     + sequence[start:]
                 )
+                self.record(
+                    start, sequence[start : start + pair.length], "tandem repeat"
+                )
         self.seq = Seq.Seq(sequence)
         return self
+
+    def record(self, start, fragment, operation):
+        """Record changes made in a log file, if one exists."""
+        logger = logging.getLogger(__name__)
+
+        if logger:
+            logger.info(
+                "ID: %s; operation: %s; start point: %s; affected sequence: %s",
+                self.id,
+                operation,
+                start,
+                fragment,
+            )
+        pass
 
     def write_to_file(self, file, format="fasta"):
         """Writes the sequence to a file; defaults to `fasta`.
