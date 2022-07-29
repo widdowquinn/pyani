@@ -31,13 +31,20 @@ def get_version(alembic_exe: Path = pyani_config.ALEMBIC_DEFAULT) -> str:
 
     The following circumstances are explicitly reported as strings:
 
+    - a value of None given for the executable
     - no executable at passed path
     - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
     - no version info returned
     """
 
     try:
-        alembic_path = Path(shutil.which(alembic_exe))  # type:ignore
+        # Returns a TypeError if `alembic_exe` is None
+        try:
+            alembic_path = shutil.which(alembic_exe)  # type:ignore
+        except TypeError:
+            return f"expected path to alembic executable; received {alembic_exe}"
+        # Returns a TypeError if `alembic_path` is not on the PATH
+        alembic_path = Path(alembic_path)
     except TypeError:
         return f"{alembic_exe} is not found in $PATH"
 
