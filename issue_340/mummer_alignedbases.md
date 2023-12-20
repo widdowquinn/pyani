@@ -384,3 +384,10 @@ which means that a different number of bases are "duplicated" and align in the o
 
 ## What about many-to-many and one-to-one filtering?
 
+The `delta-filter` tool performs an important task relevant to ANI. First we need to consider the `-r` and `-q` flags for this program.
+
+With the `-r` flag, `delta-filter` will return the alignment of each position in the reference sequence to its best hit in the query sequence set. With the `q` flag, `delta-filter` will return the alignment of each position in the query sequence to its best hit in the reference sequence set.
+
+The `-q` option is recommended for mapping query genome sequences to a reference (one-way "best" mapping). 
+
+The 1-to-1 alignment (`-1`) option returns the intersection of the results from these two options: a mapping of query sequences to reference sequences, and vice-versa, where the mapping is _reciprocal_: the same in both directions.
