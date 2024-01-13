@@ -1,0 +1,2 @@
+0d3dd52a810604e4aa37880a487d3317	GCF_002802945.1_ASM280294v1_genomic	Streptomyces sp. TSRI0384-2 scaffold1, whole genome shotgun sequence
+debadf52dd35b1813b0a039b97ec4035	GCF_004195935.1_ASM419593v1_genomic	Streptomyces albidoflavus strain CR33 Scaffold10_1, whole genome shotgun sequence

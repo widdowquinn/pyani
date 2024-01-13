@@ -1,0 +1,2 @@
+7fe0dc43acc2c0574e858421bf40772f	GCF_002803175.1_ASM280317v1_genomic	Streptomyces sp. CB02613 scaffold1, whole genome shotgun sequence
+ddb5da564b788a1d6966a9d6ecd09204	GCF_002910935.1_ASM291093v1_genomic	Streptomyces sp. B226SN101 1000_20763_1301636, whole genome shotgun sequence

@@ -1,0 +1,2 @@
+c067e6eb6bf96a17ac3b0e03e55d30b5	GCF_000253235.1_ASM25323v1_genomic	Streptomyces venezuelae ATCC 10712, complete sequence
+e787abd495bd31844c9e5197810e4f5d	GCF_000819545.1_ASM81954v1_genomic	Streptomyces nodosus strain ATCC 14899 chromosome
