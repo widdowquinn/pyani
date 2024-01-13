@@ -1,0 +1,2 @@
+629da01915767057a6ec136f4d6f8f15	GCA_032918235.1_ASM3291823v1_genomic	Equine parapoxvirus isolate EqPPV/A1, partial genome
+28d9cd0483e14a9675db1f8d47e968b0	GCA_032918245.1_ASM3291824v1_genomic	Equine parapoxvirus isolate EqPPV/B3, partial genome
