@@ -1,8 +1,6 @@
 """This script was written in regards to pyANI issue #340.
 
-The main aim of this scipt is to replicate the results given by dnadiff ny parsing .mdelta file. 
-In this script we will attempt to replicate:
-- TotalLength vaue in out.report
+The main aim of this script is to replicate the value of AlignedBases given by dnadiff by parsing .mdelta file. 
 """
 
 #Set Up
@@ -17,7 +15,7 @@ def parse_delta(infname):
     :param infname: Path to delta file
     """
 
-    TotalLength_ref, TotalLength_qry, current_ref, current_qry =0, 0, None, None
+    current_ref, current_qry = None, None
 
     regions_ref = defaultdict(list) #Hold a dictionary for refence regions
     regions_qry = defaultdict(list) #Hold a dictionary for query regions
@@ -30,16 +28,14 @@ def parse_delta(infname):
                 current_ref = line[0].strip('>')
                 current_qry = line[1]
             if len(line) == 7:
-                TotalLength_ref += abs(int(line[1])-int(line[0]))+1
-                TotalLength_qry += abs(int(line[3])-int(line[2]))+1
-
                 regions_ref[current_ref].append(tuple(sorted(list([int(line[0]), int(line[1])])))) #aligned regions reference
                 regions_qry[current_qry].append(tuple(sorted(list([int(line[2]), int(line[3])])))) #aligned regions qry
+
     #Getting aligned based for reference sequence
     ref_total_aligned_size = 0
     for key in regions_ref:
         ref_tree = intervaltree.IntervalTree.from_tuples(regions_ref[key])
-        ref_tree.merge_overlaps()
+        ref_tree.merge_overlaps(strict=False)
         ref_aligned_size = 0
         for interval in ref_tree:
             ref_aligned_size += interval.end - interval.begin + 1
@@ -49,14 +45,14 @@ def parse_delta(infname):
     query_total_aligned_size = 0
     for key in regions_qry:
         qry_tree = intervaltree.IntervalTree.from_tuples(regions_qry[key])
-        qry_tree.merge_overlaps()
+        qry_tree.merge_overlaps(strict=False)
         qry_aligned_size = 0
         for interval in qry_tree:
             qry_aligned_size += interval.end - interval.begin + 1
         query_total_aligned_size += qry_aligned_size
     
     
-    return ref_total_aligned_size, query_total_aligned_size, TotalLength_ref, TotalLength_qry
+    return ref_total_aligned_size, query_total_aligned_size
 
 
-
+# print(parse_delta(Path("../issue_340_tests_AK/outputs_dnadiff/test_6/donovan_dnadiff.mdelta")))
