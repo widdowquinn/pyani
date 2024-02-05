@@ -20,7 +20,7 @@ def parse_delta(infname):
     regions_ref = defaultdict(list) #Hold a dictionary for refence regions
     regions_qry = defaultdict(list) #Hold a dictionary for query regions
 
-    for line in [_.strip().split() for _ in infname.open("r").readlines()]:
+    for line in [_.strip().split() for _ in Path(infname).open("r").readlines()]:
 
             if line[0] == "NUCMER":  # Skip headers
                     continue
@@ -36,6 +36,7 @@ def parse_delta(infname):
     for key in regions_ref:
         ref_tree = intervaltree.IntervalTree.from_tuples(regions_ref[key])
         ref_tree.merge_overlaps(strict=False)
+        print(ref_tree)
         ref_aligned_size = 0
         for interval in ref_tree:
             ref_aligned_size += interval.end - interval.begin + 1
@@ -55,4 +56,4 @@ def parse_delta(infname):
     return ref_total_aligned_size, query_total_aligned_size
 
 
-# print(parse_delta(Path("../issue_340_tests_AK/outputs_dnadiff/test_6/donovan_dnadiff.mdelta")))
+print(parse_delta(Path("../test_1_incongruencies/out.mdelta")))
