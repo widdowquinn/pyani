@@ -45,7 +45,7 @@ import logging
 from argparse import Namespace
 from itertools import combinations
 from pathlib import Path
-from typing import List, NamedTuple, Tuple
+from typing import Any, List, NamedTuple, Optional, Tuple
 
 from tqdm import tqdm
 
@@ -73,20 +73,18 @@ from pyani.pyani_tools import termcolor
 # Convenience struct describing a pairwise comparison job for the SQLAlchemy
 # implementation
 class ComparisonJob(NamedTuple):
-
     """Pairwise comparison job for the SQLAlchemy implementation."""
 
-    query: str
-    subject: str
+    query: Any  # TODO: replace with appropriate type
+    subject: Any  # TODO: replace with appropriate type
     filtercmd: str
     nucmercmd: str
     outfile: Path
-    job: pyani_jobs.Job
+    job: Optional[pyani_jobs.Job]
 
 
 # Convenience struct describing an analysis run
 class RunData(NamedTuple):
-
     """Convenience struct describing an analysis run."""
 
     method: str
@@ -96,7 +94,6 @@ class RunData(NamedTuple):
 
 
 class ComparisonResult(NamedTuple):
-
     """Convenience struct for a single nucmer comparison result."""
 
     qid: float
@@ -111,7 +108,6 @@ class ComparisonResult(NamedTuple):
 
 
 class ProgData(NamedTuple):
-
     """Convenience struct for comparison program data/info."""
 
     program: str
@@ -119,7 +115,6 @@ class ProgData(NamedTuple):
 
 
 class ProgParams(NamedTuple):
-
     """Convenience struct for comparison parameters.
 
     Use default of zero for fragsize or else db queries will not work
@@ -177,11 +172,11 @@ def subcmd_anim(args: Namespace) -> None:
     logger.debug("Connecting to database %s", args.dbpath)
     try:
         session = get_session(args.dbpath)
-    except Exception:
+    except Exception as exc:
         logger.error(
             "Could not connect to database %s (exiting)", args.dbpath, exc_info=True
         )
-        raise SystemExit(1)
+        raise SystemExit(1) from exc
 
     # Add information about this run to the database
     logger.debug("Adding run info to database %s...", args.dbpath)
@@ -194,9 +189,9 @@ def subcmd_anim(args: Namespace) -> None:
             status="started",
             name=name,
         )
-    except PyaniORMException:
+    except PyaniORMException as exc:
         logger.error("Could not add run to the database (exiting)", exc_info=True)
-        raise SystemExit(1)
+        raise SystemExit(1) from exc
     logger.debug("...added run ID: %s to the database", run_id)
 
     # Identify input files for comparison, and populate the database
@@ -205,9 +200,9 @@ def subcmd_anim(args: Namespace) -> None:
         genome_ids = add_run_genomes(
             session, run, args.indir, args.classes, args.labels
         )
-    except PyaniORMException:
+    except PyaniORMException as exc:
         logger.error("Could not add genomes to database for run %s (exiting)", run_id)
-        raise SystemExit(1)
+        raise SystemExit(1) from exc
     logger.debug("\t...added genome IDs: %s", genome_ids)
 
     # Generate commandlines for NUCmer analysis and output compression
@@ -219,11 +214,11 @@ def subcmd_anim(args: Namespace) -> None:
     logger.debug("Creating output directory %s", deltadir)
     try:
         deltadir.mkdir(exist_ok=True, parents=True)
-    except IOError:
+    except IOError as exc:
         logger.error(
             "Could not create output directory %s (exiting)", deltadir, exc_info=True
         )
-        raise SystemError(1)
+        raise SystemError(1) from exc
 
     # Get list of genome IDs for this analysis from the database
     logger.info("Compiling genomes for comparison")
@@ -321,7 +316,7 @@ def generate_joblist(
     """
     logger = logging.getLogger(__name__)
 
-    existingfiles = set(existingfiles)  # Path objects hashable
+    existingfileset = set(existingfiles)  # Path objects hashable
 
     joblist = []  # will hold ComparisonJob structs
     jobs = {"new": 0, "old": 0}  # will hold counts of new/old jobs for reporting
@@ -351,7 +346,7 @@ def generate_joblist(
         # The comparisons collections always gets updated, so that results are
         # added to the database whether they come from recovery mode or are run
         # in this call of the script.
-        if args.recovery and outfname in existingfiles:
+        if args.recovery and outfname in existingfileset:
             logger.debug("Recovering output from %s, not submitting job", outfname)
             # Need to track the expected output, but set the job itself to None:
             joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, None))
@@ -359,8 +354,8 @@ def generate_joblist(
         else:
             logger.debug("Building job")
             # Build jobs
-            njob = pyani_jobs.Job("%s_%06d-n" % (args.jobprefix, idx), ncmd)
-            fjob = pyani_jobs.Job("%s_%06d-f" % (args.jobprefix, idx), dcmd)
+            njob = pyani_jobs.Job(f"{args.jobprefix}_{idx:06d}-n", ncmd)
+            fjob = pyani_jobs.Job(f"{args.jobprefix}_{idx:06d}-f", dcmd)
             fjob.add_dependency(njob)
             joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, fjob))
             jobs["new"] += 1
@@ -369,7 +364,7 @@ def generate_joblist(
         jobs["new"],
         jobs["new"],
     )
-    if existingfiles:
+    if existingfileset:
         logger.info("Retrieving results for %d previous comparisons.", jobs["old"])
     return joblist
 

@@ -14,3 +14,4 @@ pytest
 pytest-cov
 rstcheck
 sphinx
+types-tqdm
