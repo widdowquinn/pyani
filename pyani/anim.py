@@ -175,6 +175,8 @@ def generate_nucmer_jobs(
     )
     joblist = []
     for idx, ncmd in enumerate(ncmds):
+        #print jobs to see if this part of the code is run (?)
+        print(ncmd)
         njob = pyani_jobs.Job(f"{jobprefix}_{idx:06d}-n", ncmd)
         fjob = pyani_jobs.Job(f"{jobprefix}_{idx:06d}-f", fcmds[idx])
         fjob.add_dependency(njob)
@@ -212,11 +214,21 @@ def generate_nucmer_commands(
     filenames = sorted(filenames)  # enforce ordering of filenames
     for idx, fname1 in enumerate(filenames[:-1]):
         for fname2 in filenames[idx + 1 :]:
+
+            #Comparisions A_vs_B
             ncmd, dcmd = construct_nucmer_cmdline(
                 fname1, fname2, outdir, nucmer_exe, filter_exe, maxmatch
             )
             nucmer_cmdlines.append(ncmd)
             delta_filter_cmdlines.append(dcmd)
+
+            # Comparions B_vs_A
+            ncmd_rvs, dcmd_rvs = construct_nucmer_cmdline(
+                fname2, fname1, outdir, nucmer_exe, filter_exe, maxmatch
+            )
+            nucmer_cmdlines.append(ncmd_rvs)
+            delta_filter_cmdlines.append(dcmd_rvs)
+
     return (nucmer_cmdlines, delta_filter_cmdlines)
 
 
@@ -248,7 +260,7 @@ def construct_nucmer_cmdline(
     outdir, called "nucmer_output".
     """
     # Cast path strings to pathlib.Path for safety
-    fname1, fname2 = sorted([Path(fname1), Path(fname2)])
+    fname1, fname2 = [Path(fname1), Path(fname2)]
 
     # Compile commands
     # Nested output folders to avoid N^2 scaling in files-per-folder
