@@ -28,7 +28,6 @@ jobs:
           activate-environment: pyani-github
           channels: defaults,bioconda,conda-forge
           channel-priority: strict
-          environment-file: etc/pyani-environment.yml
           use-only-tar-bz2: true
 
       - name: Install pip
