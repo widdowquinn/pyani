@@ -28,7 +28,6 @@ jobs:
           activate-environment: pyani-github
           channels: defaults,bioconda,conda-forge
           channel-priority: strict
-          use-only-tar-bz2: true
 
       - name: Install pip
         run: python -m pip install --upgrade pip
