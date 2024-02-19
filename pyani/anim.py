@@ -157,6 +157,7 @@ def generate_nucmer_jobs(
     filter_exe: Path = pyani_config.FILTER_DEFAULT,
     maxmatch: bool = False,
     jobprefix: str = "ANINUCmer",
+    logger: Optional[Logger] = None
 ):
     """Return list of Jobs describing NUCmer command-lines for ANIm.
 
@@ -170,13 +171,14 @@ def generate_nucmer_jobs(
     Loop over all FASTA files, generating Jobs describing NUCmer command lines
     for each pairwise comparison.
     """
+    logger = logging.getLogger(__name__)
+    
     ncmds, fcmds = generate_nucmer_commands(
         filenames, outdir, nucmer_exe, filter_exe, maxmatch
     )
     joblist = []
     for idx, ncmd in enumerate(ncmds):
-        #print jobs to see if this part of the code is run (?)
-        print(ncmd)
+        logger.info("Working with nucmer command: %s" % ncmd)
         njob = pyani_jobs.Job(f"{jobprefix}_{idx:06d}-n", ncmd)
         fjob = pyani_jobs.Job(f"{jobprefix}_{idx:06d}-f", fcmds[idx])
         fjob.add_dependency(njob)

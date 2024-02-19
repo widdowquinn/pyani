@@ -323,7 +323,7 @@ def generate_joblist(
     for idx, (query, subject) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
-        ncmd, dcmd = anim.construct_nucmer_cmdline(
+        ncmd_fwd, dcmd_fwd = anim.construct_nucmer_cmdline(
             query.path,
             subject.path,
             args.outdir,
@@ -331,41 +331,56 @@ def generate_joblist(
             args.filter_exe,
             args.maxmatch,
         )
-        logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
-        outprefix = ncmd.split()[3]  # prefix for NUCmer output
-        if args.nofilter:
-            outfname = Path(outprefix + ".delta")
-        else:
-            outfname = Path(outprefix + ".filter")
-        logger.debug("Expected output file for db: %s", outfname)
+        ncmd_rev, dcmd_rev = anim.construct_nucmer_cmdline(
+            subject.path,
+            query.path,
+            args.outdir,
+            args.nucmer_exe,
+            args.filter_exe,
+            args.maxmatch,
+        )
 
-        # If we're in recovery mode, we don't want to repeat a computational
-        # comparison that already exists, so we check whether the ultimate
-        # output is in the set of existing files and, if not, we add the jobs
+        # Having created forward and reverse commandlines, we need to
+        # run the same operations on both
+        for ncmd, dcmd, qinfo, sinfo in [
+            (ncmd_fwd, dcmd_fwd, query, subject),
+            (ncmd_rev, dcmd_rev, subject, query),
+        ]:
+            logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
+            outprefix = ncmd.split()[3]  # prefix for NUCmer output
+            if args.nofilter:
+                outfname = Path(outprefix + ".delta")
+            else:
+                outfname = Path(outprefix + ".filter")
+            logger.debug("Expected output file for db: %s", str(outfname))
 
-        # The comparisons collections always gets updated, so that results are
-        # added to the database whether they come from recovery mode or are run
-        # in this call of the script.
-        if args.recovery and outfname in existingfileset:
-            logger.debug("Recovering output from %s, not submitting job", outfname)
-            # Need to track the expected output, but set the job itself to None:
-            joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, None))
-            jobs["old"] += 1
-        else:
-            logger.debug("Building job")
-            # Build jobs
-            njob = pyani_jobs.Job(f"{args.jobprefix}_{idx:06d}-n", ncmd)
-            fjob = pyani_jobs.Job(f"{args.jobprefix}_{idx:06d}-f", dcmd)
-            fjob.add_dependency(njob)
-            joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, fjob))
-            jobs["new"] += 1
-    logger.info(
-        "Results not found for %d comparisons; %d new jobs built.",
-        jobs["new"],
-        jobs["new"],
-    )
-    if existingfileset:
-        logger.info("Retrieving results for %d previous comparisons.", jobs["old"])
+            # If we're in recovery mode, we don't want to repeat a computational
+            # comparison that already exists, so we check whether the ultimate
+            # output is in the set of existing files and, if not, we add the jobs
+
+            # The comparisons collections always gets updated, so that results are
+            # added to the database whether they come from recovery mode or are run
+            # in this call of the script.
+            if args.recovery and outfname in existingfileset:
+                logger.debug("Recovering output from %s, not submitting job", outfname)
+                # Need to track the expected output, but set the job itself to None:
+                joblist.append(ComparisonJob(qinfo, sinfo, dcmd, ncmd, outfname, None))
+                jobs["old"] += 1
+            else:
+                logger.debug("Building job")
+                # Build jobs
+                njob = pyani_jobs.Job(f"{args.jobprefix}_{idx:06d}-n", ncmd)
+                fjob = pyani_jobs.Job(f"{args.jobprefix}_{idx:06d}-f", dcmd)
+                fjob.add_dependency(njob)
+                joblist.append(ComparisonJob(qinfo, sinfo, dcmd, ncmd, outfname, fjob))
+                jobs["new"] += 1
+        logger.info(
+            "Results not found for %d comparisons; %d new jobs built.",
+            jobs["new"],
+            jobs["new"],
+        )
+        if existingfileset:
+            logger.info("Retrieving results for %d previous comparisons.", jobs["old"])
     return joblist
 
 
