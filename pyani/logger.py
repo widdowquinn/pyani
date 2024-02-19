@@ -50,14 +50,17 @@ from typing import Optional
 
 
 class NoColorFormatter(logging.Formatter):
-
     """Log formatter that strips terminal colour escape codes from the log message."""
 
     ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
     def format(self, record):
         """Return logger message with terminal escapes removed."""
-        return "[%s] [%s]: %s" % (
+
+        # The use of f-strings isn't compatible with logger messages due to when the
+        # message is formatted, so we use the old-style % formatting here and suppress
+        # the warning.
+        return "[%s] [%s]: %s" % (  # pylint: disable=consider-using-f-string
             record.levelname,
             record.name,
             re.sub(self.ANSI_RE, "", record.msg % record.args),
@@ -97,11 +100,11 @@ def config_logger(args: Optional[Namespace] = None) -> None:
         try:
             if not logdir == Path.cwd():
                 logdir.mkdir(exist_ok=True)
-        except OSError:
+        except OSError as exc:
             logger.error(
                 "Could not create log directory %s (exiting)", logdir, exc_info=True
             )
-            raise SystemExit(1)
+            raise SystemExit(1) from exc
 
         # Create logfile handler
         logformatter = NoColorFormatter()

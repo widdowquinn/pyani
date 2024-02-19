@@ -73,7 +73,6 @@ from .pyani_tools import ANIResults
 
 
 class PyaniANImException(PyaniException):
-
     """ANIm-specific exception for pyani."""
 
 
@@ -107,7 +106,8 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
     The following circumstances are explicitly reported as strings
 
     - no executable at passed path
-    - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
+    - non-executable file at passed path (this includes cases where the user doesn't
+      have execute permissions on the file)
     - no version info returned
     """
 
@@ -262,9 +262,7 @@ def construct_nucmer_cmdline(
         mode = "--maxmatch"
     else:
         mode = "--mum"
-    nucmercmd = "{0} {1} -p {2} {3} {4}".format(
-        nucmer_exe, mode, outprefix, fname1, fname2
-    )
+    nucmercmd = f"{nucmer_exe} {mode} -p {outprefix} {fname1} {fname2}"
     # There's a subtle pathlib.Path issue, here. We must use string concatenation to add suffixes
     # to the outprefix files, as using path.with_suffix() instead can replace part of the filestem
     # in those cases where there is a period in the stem (this occurs frequently as it is part

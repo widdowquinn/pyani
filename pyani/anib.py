@@ -103,7 +103,6 @@ from .pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
 
 
 class PyaniANIbException(PyaniException):
-
     """ANIb-specific exception for pyani."""
 
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# (c) The University of Strathclyde 2021–Present
+# (c) The University of Strathclyde 2021-2024
 # Author: Bailey Harrington
 #
 # Contact: bailey.harrington@strath.ac.uk
@@ -14,7 +14,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2021–Present University of Strathclyde
+# Copyright (c) 2021–2024 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -42,27 +42,23 @@ import re
 import shutil
 import subprocess
 
-from logging import Logger
 from pathlib import Path
-from typing import NamedTuple, Callable, Dict, List, Optional, Tuple
-
-# import pandas as pd
-
-from Bio import SeqIO
+from typing import NamedTuple, Dict, List
 
 from . import pyani_config
 from . import pyani_files
 from . import pyani_jobs
 from . import PyaniException
-from .pyani_tools import ANIResults, BLASTcmds, BLASTexes, BLASTfunctions
+from .pyani_tools import ANIResults
 
 
 class PyaniFastANIException(PyaniException):
-
     """Exception raised when there is a problem with fastANI"""
 
 
 class ComparisonResult(NamedTuple):
+    """Named tuple to hold fastANI comparison results."""
+
     reference: Path
     query: Path
     ani: float
@@ -87,7 +83,8 @@ def get_version(fastani_exe: Path = pyani_config.FASTANI_DEFAULT) -> str:
     The following circumstances are explicitly reported as strings:
 
     - no executable at passed path
-    - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
+    - non-executable file at passed path (this includes cases where the user doesn't
+      have execute permissions on the file)
     - no version info returned
     """
     try:
@@ -221,7 +218,10 @@ def construct_fastani_cmdline(
     outsubdir = outdir / pyani_config.ALIGNDIR["fastANI"]
     outsubdir.mkdir(exist_ok=True)
     outfile = outsubdir / f"{query.stem}_vs_{ref.stem}.fastani"
-    fastcmd = f"{fastani_exe} -q {query} -r {ref} -o {outfile} --fragLen {fragLen} -k {kmerSize} --minFraction {minFraction}"
+    fastcmd = (
+        f"{fastani_exe} -q {query} -r {ref} -o {outfile} "
+        + "--fragLen {fragLen} -k {kmerSize} --minFraction {minFraction}"
+    )
 
     logger.debug("Compiled command: %s", fastcmd)
 
@@ -295,7 +295,8 @@ def process_files(outdir: Path, org_lengths: Dict) -> ANIResults:
     results = ANIResults(list(org_lengths.keys()), "fastANI")
 
     # Fill diagonal NA values for alignment_length with org_lengths
-    # ¶ Is this necessary? Or can ANIm not do org X org comparisons? Will the ANIResults object always have NAs on the diagonal?
+    # ¶ Is this necessary? Or can ANIm not do org X org comparisons?
+    # Will the ANIResults object always have NAs on the diagonal?
     for org, length in list(org_lengths.items()):
         results.alignment_lengths[org][org] = length
 
