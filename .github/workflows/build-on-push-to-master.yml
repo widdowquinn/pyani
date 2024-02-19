@@ -32,14 +32,14 @@ jobs:
       - name: Install pip
         run: python -m pip install --upgrade pip
 
-#      - name: Install Development Requirements
-#        run: conda install --file requirements-dev.txt -y
+      - name: Install Development Requirements
+        run: conda install --file requirements-dev.txt -y
 
-#      - name: Install Requirements
-#        run: conda install --file requirements.txt -y
+      - name: Install Requirements
+        run: conda install --file requirements.txt -y
 
-#      - name: Install third-party tools
-#        run: conda install --file requirements-thirdparty.txt -y
+      - name: Install third-party tools
+        run: conda install --file requirements-thirdparty.txt -y
 
       - name: Install FastANI
         run: conda install --file requirements-fastani.txt -y
@@ -53,14 +53,13 @@ jobs:
       - name: Install pyani
         run: pip install -e .
 
-#      - name: Run Fast Tests with pytest
-#        run: python -m pytest -v -m "not slow" --cov=pyani --cov-report xml:.coverage_fast.xml
+      - name: Run Fast Tests with pytest
+        run: python -m pytest -v -m "not slow" --cov=pyani --cov-report xml:.coverage_fast.xml
 
-#      - name: Upload pytest Results
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: pytest-results-3.11
-#          path: /pyani/test-results-3.11.xml
-#          retention-days: 1
-#        if: ${{ always() }}
-
+      - name: Upload pytest Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results-3.11
+          path: /pyani/test-results-3.11.xml
+          retention-days: 1
+        if: ${{ always() }}
