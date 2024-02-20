@@ -138,6 +138,6 @@ def test_download_c_blochmannia(base_download_namespace, mock_blochmannia_dl):
     subcommands.subcmd_download(base_download_namespace)
 
 
-def test_download_kraken(kraken_namespace):
+def test_download_kraken(kraken_namespace, mock_blochmannia_kraken_dl):
     """C. blochmannia download in Kraken format."""
     subcommands.subcmd_download(kraken_namespace)

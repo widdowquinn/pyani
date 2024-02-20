@@ -657,6 +657,238 @@ def mock_blochmannia_dl(monkeypatch):
 
 
 @pytest.fixture
+def mock_blochmannia_kraken_dl(monkeypatch):
+    """Mocks remote database calls for multi-genome download.
+
+    Masks calls to the download module, for safe testing. This
+    fixture is used for Kraken-compatible file downloads
+    """
+
+    def mock_asmuids(*args, **kwargs):
+        """Mock download.get_asm_uids()."""
+        return ASMIDs(
+            "txid203804[Organism:exp]",
+            9,
+            [
+                "12545401",  # GCF_023016305.1
+                "8228891",  # GCF_014857065.1
+                "5431901",  # GCF_009827135.1
+                "522068",  # GCF_000331065.1
+                "444958",  # GCF_000185985.2
+                "322791",  # GCF_000973545.1
+                "322771",  # GCF_000973505.1
+                "275848",  # GCF_000185985.1
+                "61868",  # GCF_000043285.1
+                "32848",  # GCF_000011745.1
+            ],
+        )
+
+    def mock_ncbi_esummary(*args, **kwargs):
+        """Mock download.get_ncbi_esummary()
+
+        As this is a multi-genome download, the function needs to respond to
+        a passed argument, which is the assembly UID.
+        """
+        data = {
+            "12545401": (
+                {
+                    "Taxid": "101534",
+                    "SpeciesTaxid": "101534",
+                    "AssemblyAccession": "GCF_023016305.1",
+                    "AssemblyName": "ASM230160v1",
+                    "SpeciesName": "Candidatus Blochmannia pennsylvanicus",
+                },
+                "GCF_023016305.1_ASM2301630v1",
+            ),
+            "8228891": (
+                {
+                    "Taxid": "2681987",
+                    "SpeciesTaxid": "2681987",
+                    "AssemblyAccession": "GCF_014857065.1",
+                    "AssemblyName": "ASM1485706v1",
+                    "SpeciesName": "Blochmannia endosymbiont of Colobopsis nipponica",
+                },
+                "GCF_014857065.1_ASM1485706v1",
+            ),
+            "5431901": (
+                {
+                    "Taxid": "2681986",
+                    "SpeciesTaxid": "2681986",
+                    "AssemblyAccession": "GCF_009827135.1",
+                    "AssemblyName": "ASM982713v1",
+                    "SpeciesName": "Blochmannia endosymbiont of Camponotus nipponensis",
+                },
+                "GCF_009827135.1_ASM982713v1",
+            ),
+            "522068": (
+                {
+                    "Taxid": "1240471",
+                    "SpeciesTaxid": "1240471",
+                    "AssemblyAccession": "GCF_000331065.1",
+                    "AssemblyName": "ASM33106v1",
+                    "SpeciesName": "Candidatus Blochmannia chromaiodes",
+                },
+                "GCF_000331065.1_ASM33106v1",
+            ),
+            "444958": (
+                {
+                    "Taxid": "859654",
+                    "SpeciesTaxid": "859654",
+                    "AssemblyAccession": "GCF_000185985.2",
+                    "AssemblyName": "ASM18598v2",
+                    "SpeciesName": "Candidatus Blochmannia vafer",
+                },
+                "GCF_000185985.2_ASM18598v2",
+            ),
+            "322791": (
+                {
+                    "Taxid": "1505597",
+                    "SpeciesTaxid": "1505597",
+                    "AssemblyAccession": "GCF_000973545.1",
+                    "AssemblyName": "ASM97354v1",
+                    "SpeciesName": "Blochmannia endosymbiont of Camponotus (Colobopsis) obliquus",
+                },
+                "GCF_000973545.1_ASM97354v1",
+            ),
+            "322771": (
+                {
+                    "Taxid": "1505596",
+                    "SpeciesTaxid": "1505596",
+                    "AssemblyAccession": "GCF_000973505.1",
+                    "AssemblyName": "ASM97350v1",
+                    "SpeciesName": "Blochmannia endosymbiont of Polyrhachis (Hedomyrma) turneri",
+                },
+                "GCF_000973505.1_ASM97350v1",
+            ),
+            "275848": (
+                {
+                    "Taxid": "859654",
+                    "SpeciesTaxid": "251535",
+                    "AssemblyAccession": "GCF_000185985.2",
+                    "AssemblyName": "ASM18598v2",
+                    "SpeciesName": "Candidatus Blochmannia vafer",
+                },
+                "GCF_000185985.2_ASM18598v2",
+            ),
+            "61868": (
+                {
+                    "Taxid": "203907",
+                    "SpeciesTaxid": "203907",
+                    "AssemblyAccession": "GCF_000043285.1",
+                    "AssemblyName": "ASM4328v1",
+                    "SpeciesName": "Candidatus Blochmannia floridanus",
+                },
+                "GCF_000043285.1_ASM4328v1",
+            ),
+            "32848": (
+                {
+                    "Taxid": "291272",
+                    "SpeciesTaxid": "101534",
+                    "AssemblyAccession": "GCF_000011745.1",
+                    "AssemblyName": "ASM1174v1",
+                    "SpeciesName": "Candidatus Blochmannia floridanus",
+                },
+                "GCF_000011745.1_ASM1174v1",
+            ),
+        }
+
+        return data[args[0]]
+
+    genomedir = FIXTUREPATH / "C_blochmannia_kraken"
+
+    def mock_genome_hash(*args, **kwargs):
+        """Mock download.retrieve_genome_and_hash()."""
+        data = {
+            "GCF_023016305.1_ASM2301630v1": DLStatus(
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
+                genomedir / "GCF_023016305.1_ASM2301630v1_genomic.fna.gz",
+                genomedir / "GCF_023016305.1_ASM2301630v1_hashes.txt",
+                False,
+                None,
+            ),
+            "GCF_014857065.1_ASM1485706v1": DLStatus(
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
+                genomedir / "GCF_014857065.1_ASM1485706v1_genomic.fna.gz",
+                genomedir / "GCF_014857065.1_ASM1485706v1_hashes.txt",
+                False,
+                None,
+            ),
+            "GCF_009827135.1_ASM982713v1": DLStatus(
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
+                genomedir / "GCF_009827135.1_ASM982713v1_genomic.fna.gz",
+                genomedir / "GCF_009827135.1_ASM982713v1_hashes.txt",
+                False,
+                None,
+            ),
+            "GCF_000331065.1_ASM33106v1": DLStatus(
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
+                genomedir / "GCF_000331065.1_ASM33106v1_genomic.fna.gz",
+                genomedir / "GCF_000331065.1_ASM33106v1_hashes.txt",
+                False,
+                None,
+            ),
+            "GCF_000185985.2_ASM18598v2": DLStatus(
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
+                genomedir / "GCF_000185985.2_ASM18598v2_genomic.fna.gz",
+                genomedir / "GCF_000185985.2_ASM18598v2_hashes.txt",
+                False,
+                None,
+            ),
+            "GCF_000973545.1_ASM97354v1": DLStatus(
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
+                genomedir / "GCF_000973545.1_ASM97354v1_genomic.fna.gz",
+                genomedir / "GCF_000973545.1_ASM97354v1_hashes.txt",
+                False,
+                None,
+            ),
+            "GCF_000973505.1_ASM97350v1": DLStatus(
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
+                genomedir / "GCF_000973505.1_ASM97350v1_genomic.fna.gz",
+                genomedir / "GCF_000973505.1_ASM97350v1_hashes.txt",
+                False,
+                None,
+            ),
+            "GCF_000185985.1_ASM18598v1": DLStatus(
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
+                genomedir / "GCF_000185985.1_ASM18598v1_genomic.fna.gz",
+                genomedir / "GCF_000185985.1_ASM18598v1_hashes.txt",
+                False,
+                None,
+            ),
+            "GCF_000043285.1_ASM4328v1": DLStatus(
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
+                genomedir / "GCF_000043285.1_ASM4328v1_genomic.fna.gz",
+                genomedir / "GCF_000043285.1_ASM4328v1_hashes.txt",
+                False,
+                None,
+            ),
+            "GCF_000011745.1_ASM1174v1": DLStatus(
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
+                "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
+                genomedir / "GCF_000011745.1_ASM1174v1_genomic.fna.gz",
+                genomedir / "GCF_000011745.1_ASM1174v1_hashes.txt",
+                False,
+                None,
+            ),
+        }
+
+        return data[args[0]]
+
+    monkeypatch.setattr(download, "get_asm_uids", mock_asmuids)
+    monkeypatch.setattr(download, "get_ncbi_esummary", mock_ncbi_esummary)
+    monkeypatch.setattr(download, "retrieve_genome_and_hash", mock_genome_hash)
+
+
+@pytest.fixture
 def nucmer_available():
     """Test that nucmer is available."""
     cmd = [str(NUCMER_DEFAULT), "--version"]

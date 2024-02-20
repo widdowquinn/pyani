@@ -196,7 +196,11 @@ def extract_genomes(args: Namespace, dlstatus: download.DLStatus, esummary) -> N
 
     # Modify sequence ID header if Kraken option active
     if args.kraken:
-        logger.warning("Modifying downloaded sequence for Kraken compatibility")
+        logger.warning(
+            termcolor(
+                "Modifying downloaded sequence for Kraken compatibility", "magenta"
+            )
+        )
         seqdata = list(SeqIO.parse(ename, "fasta"))
         logger.debug("Modifying %s", ename)
         for seq in seqdata:
