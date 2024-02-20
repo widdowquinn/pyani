@@ -36,8 +36,6 @@
 # THE SOFTWARE.
 """Module providing functions useful for reporting on dependencies."""
 
-# import pkg_resources  # deprecated and replaced by importlib.metadata
-
 from importlib.metadata import distribution, PackageNotFoundError
 from typing import Generator
 
