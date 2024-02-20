@@ -54,13 +54,12 @@ jobs:
         run: pip install -e .
 
       - name: Run Tests with pytest
-        run: python -m pytest -v 
-#        -m "not slow" --cov=pyani --cov-report=xml:.coverage_fast.xml
+        run: python -m pytest -v -m "not slow" --cov=pyani --cov-report=xml:.coverage_fast.xml
 
-      - name: Upload pytest Results
+      - name: Upload coverage Results
         uses: actions/upload-artifact@v4
         with:
           name: pytest-results-3.11
-          path: /pyani/test-results-3.11.xml
+          path: .coverage_fast.xml
           retention-days: 1
         if: ${{ always() }}

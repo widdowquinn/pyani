@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019-2021
+# (c) University of Strathclyde 2019-2024
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -17,7 +17,7 @@
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019-2021 University of Strathclyde
+# Copyright (c) 2019-2024 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,6 @@ TAXONREGEX = re.compile(r"([0-9]\,?){1,}")
 
 # Custom exceptions
 class NCBIDownloadException(Exception):
-
     """General exception for failed NCBI download."""
 
     def __init__(self, msg: str = "Error downloading file from NCBI"):
@@ -75,7 +74,6 @@ class NCBIDownloadException(Exception):
 
 
 class FileExistsException(Exception):
-
     """A specified file exists."""
 
     def __init__(self, msg: str = "Specified file exists"):
@@ -84,12 +82,10 @@ class FileExistsException(Exception):
 
 
 class PyaniIndexException(Exception):
-
     """General exception for indexing with pyani"""
 
 
 class ASMIDs(NamedTuple):
-
     """Matching Assembly ID information for a query taxID."""
 
     query: str
@@ -98,7 +94,6 @@ class ASMIDs(NamedTuple):
 
 
 class Classification(NamedTuple):
-
     """Taxonomic classification for an isolate."""
 
     organism: str
@@ -108,7 +103,6 @@ class Classification(NamedTuple):
 
 
 class DLFileData(NamedTuple):
-
     """Convenience struct for file download data."""
 
     filestem: str
@@ -117,7 +111,6 @@ class DLFileData(NamedTuple):
 
 
 class Hashstatus(NamedTuple):
-
     """Status report on file hash comparison."""
 
     passed: bool
@@ -126,7 +119,6 @@ class Hashstatus(NamedTuple):
 
 
 class DLStatus:
-
     """Download status data."""
 
     def __init__(
@@ -320,6 +312,8 @@ def get_asm_uids(taxon_uid: str, retries: int) -> ASMIDs:
         retmode="xml",
     )
 
+    print(f"{query=} {result_count=} {asm_ids=}")
+
     return ASMIDs(query, result_count, asm_ids)
 
 
@@ -369,6 +363,10 @@ def get_ncbi_esummary(asm_uid, retries, api_key=None) -> Tuple:
         raise NCBIDownloadException(f"Could not get NCBI eSummary for UID {asm_uid}")
 
     filestem = extract_filestem(data)
+
+    print(
+        f'{asm_uid=} {data["Taxid"]=} {data["SpeciesTaxid"]=} {data["AssemblyAccession"]=} {data["AssemblyName"]=} {data["SpeciesName"]=} {filestem=}'
+    )
 
     return (data, filestem)
 
@@ -510,6 +508,8 @@ def retrieve_genome_and_hash(
         download_url(hashurl, outfhash, timeout, disable_tqdm)
     except IOError:
         error = last_exception()
+
+    print(f"{url=} {hashurl=} {outfname=} {outfhash=} {skipped=} {error=}")
 
     return DLStatus(url, hashurl, outfname, outfhash, skipped, error)
 

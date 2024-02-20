@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# (c) University of Strathclyde 2020
+# (c) University of Strathclyde 2020-2024
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -15,7 +15,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2020 University of Strathclyde
+# Copyright (c) 2020-2024 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,9 @@
 # THE SOFTWARE.
 """Module providing functions useful for reporting on dependencies."""
 
-import pkg_resources
+# import pkg_resources  # deprecated and replaced by importlib.metadata
 
+from importlib.metadata import distribution, PackageNotFoundError
 from typing import Generator
 
 from .anib import get_version as get_blast_version
@@ -85,9 +86,10 @@ def get_versions(deplist: str) -> Generator:
     depdict = {"REQUIREMENTS": REQUIREMENTS, "DEVELOPMENT": DEVELOPMENT, "PIP": PIP}
     for depname in sorted(depdict[deplist]):
         try:
-            version = pkg_resources.get_distribution(depname).version
-            loc = pkg_resources.get_distribution(depname).location
-        except pkg_resources.DistributionNotFound:
+            dist = distribution(depname)
+            version = dist.version
+            loc = dist._path
+        except PackageNotFoundError:
             version = "Not Installed"
             loc = "-"
         yield (depname, version, loc)

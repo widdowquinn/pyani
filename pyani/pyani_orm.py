@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2018-2019
-# (c) The University of Strathclyde 2019-2020
+# (c) The University of Strathclyde 2019-2024
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2018-2019 The James Hutton Institute
-# Copyright (c) 2019-2020 The University of Strathclyde
+# Copyright (c) 2019-2024 The University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -54,8 +54,9 @@ from sqlalchemy import and_  # type: ignore
 import sqlalchemy
 from sqlalchemy import UniqueConstraint, create_engine, Table
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float, Boolean
-from sqlalchemy.ext.declarative import declarative_base  # type: ignore
-from sqlalchemy.orm import relationship, sessionmaker  # type: ignore
+
+# from sqlalchemy.ext.declarative import declarative_base  # type: ignore
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker  # type: ignore
 
 from pyani import PyaniException
 from pyani.pyani_files import (
@@ -68,7 +69,6 @@ from pyani.pyani_tools import get_genome_length
 
 
 class PyaniORMException(PyaniException):
-
     """Exception raised when ORM or database interaction fails."""
 
 
@@ -97,7 +97,6 @@ runcomparison = Table(  # pylint: disable=C0103
 
 # Convenience struct for labels and classes
 class LabelTuple(NamedTuple):
-
     """Label and Class for each file."""
 
     label: str
@@ -105,7 +104,6 @@ class LabelTuple(NamedTuple):
 
 
 class Label(Base):
-
     """Describes relationship between genome, run and genome label.
 
     Each genome and run combination can be assigned a single label
@@ -138,7 +136,6 @@ class Label(Base):
 
 
 class BlastDB(Base):
-
     """Describes relationship between genome, run, source BLAST database and query fragments.
 
     Each genome and run combination can be assigned a single BLAST database
@@ -179,7 +176,6 @@ class BlastDB(Base):
 
 
 class Genome(Base):
-
     """Describes an input genome for a pyani run.
 
     - genome_id
@@ -229,7 +225,6 @@ class Genome(Base):
 
 
 class Run(Base):
-
     """Describes a single pyani run."""
 
     __tablename__ = "runs"
@@ -265,7 +260,6 @@ class Run(Base):
 
 
 class Comparison(Base):
-
     """Describes a single pairwise comparison between two genomes."""
 
     __tablename__ = "comparisons"
@@ -466,7 +460,7 @@ def filter_existing_comparisons(
         kmersize,
         minmatch,
     )
-    for (qgenome, sgenome) in comparisons:
+    for qgenome, sgenome in comparisons:
         logger.debug(
             "Checking for existing comparison: %s (%s) vs %s (%s)",
             qgenome,

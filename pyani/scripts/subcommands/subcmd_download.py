@@ -52,7 +52,6 @@ from pyani.scripts import make_outdir
 
 
 class Skipped(NamedTuple):
-
     """Convenience struct for holding information about skipped genomes."""
 
     taxon_id: str
@@ -98,7 +97,9 @@ def dl_info_to_str(esummary, uid_class) -> str:
 
 
 def download_data(
-    args: Namespace, api_key: Optional[str], asm_dict: Dict[str, List],
+    args: Namespace,
+    api_key: Optional[str],
+    asm_dict: Dict[str, List],
 ) -> Tuple[List, List, List]:
     """Download the accessions indicated in the passed dictionary.
 
@@ -131,7 +132,14 @@ def download_data(
                     exc_info=True,
                 )
                 skippedlist.append(
-                    Skipped(tid, uid, "", "", None, "RefSeq",)
+                    Skipped(
+                        tid,
+                        uid,
+                        "",
+                        "",
+                        None,
+                        "RefSeq",
+                    )
                 )  # pylint: disable=no-member
                 continue
 
@@ -163,6 +171,8 @@ def download_data(
                     labeltxt,
                     classtxt,
                 )
+
+    print(f"{classes=} {labels=} {skippedlist=}")
 
     return classes, labels, skippedlist
 

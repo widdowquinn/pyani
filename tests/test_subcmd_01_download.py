@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2024
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -19,7 +19,7 @@
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2024
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -124,11 +124,16 @@ def test_create_hash():
 
 
 def test_download_dry_run(dryrun_namespace):
-    """Dry run of C. blochmannia download."""
+    """Dry run of C. blochmannia download.
+
+    Remote database access is mocked for this test as the number of genomes
+    increased over time, and the test would be slow and subject to network
+    issues.
+    """
     subcommands.subcmd_download(dryrun_namespace)
 
 
-def test_download_c_blochmannia(base_download_namespace):
+def test_download_c_blochmannia(base_download_namespace, mock_blochmannia_dl):
     """Test C. blochmannia download."""
     subcommands.subcmd_download(base_download_namespace)
 
