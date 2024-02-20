@@ -562,112 +562,88 @@ def mock_blochmannia_dl(monkeypatch):
 
         return data[args[0]]
 
+    genomedir = FIXTUREPATH / "C_blochmannia"
+
     def mock_genome_hash(*args, **kwargs):
         """Mock download.retrieve_genome_and_hash()."""
         data = {
             "GCF_023016305.1_ASM2301630v1": DLStatus(
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_023016305.1_ASM2301630v1_genomic.fna.gz",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_023016305.1_ASM2301630v1_hashes.txt",
+                genomedir / "GCF_023016305.1_ASM2301630v1_genomic.fna.gz",
+                genomedir / "GCF_023016305.1_ASM2301630v1_hashes.txt",
                 False,
                 None,
             ),
             "GCF_014857065.1_ASM1485706v1": DLStatus(
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_014857065.1_ASM1485706v1_genomic.fna.gz",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_014857065.1_ASM1485706v1_hashes.txt",
+                genomedir / "GCF_014857065.1_ASM1485706v1_genomic.fna.gz",
+                genomedir / "GCF_014857065.1_ASM1485706v1_hashes.txt",
                 False,
                 None,
             ),
             "GCF_009827135.1_ASM982713v1": DLStatus(
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_009827135.1_ASM982713v1_genomic.fna.gz",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_009827135.1_ASM982713v1_hashes.txt",
+                genomedir / "GCF_009827135.1_ASM982713v1_genomic.fna.gz",
+                genomedir / "GCF_009827135.1_ASM982713v1_hashes.txt",
                 False,
                 None,
             ),
             "GCF_000331065.1_ASM33106v1": DLStatus(
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_000331065.1_ASM33106v1_genomic.fna.gz",
-                FIXTUREPATH / "C_blochmannia" / "GCF_000331065.1_ASM33106v1_hashes.txt",
+                genomedir / "GCF_000331065.1_ASM33106v1_genomic.fna.gz",
+                genomedir / "GCF_000331065.1_ASM33106v1_hashes.txt",
                 False,
                 None,
             ),
             "GCF_000185985.2_ASM18598v2": DLStatus(
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_000185985.2_ASM18598v2_genomic.fna.gz",
-                FIXTUREPATH / "C_blochmannia" / "GCF_000185985.2_ASM18598v2_hashes.txt",
+                genomedir / "GCF_000185985.2_ASM18598v2_genomic.fna.gz",
+                genomedir / "GCF_000185985.2_ASM18598v2_hashes.txt",
                 False,
                 None,
             ),
             "GCF_000973545.1_ASM97354v1": DLStatus(
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_000973545.1_ASM97354v1_genomic.fna.gz",
-                FIXTUREPATH / "C_blochmannia" / "GCF_000973545.1_ASM97354v1_hashes.txt",
+                genomedir / "GCF_000973545.1_ASM97354v1_genomic.fna.gz",
+                genomedir / "GCF_000973545.1_ASM97354v1_hashes.txt",
                 False,
                 None,
             ),
             "GCF_000973505.1_ASM97350v1": DLStatus(
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_000973505.1_ASM97350v1_genomic.fna.gz",
-                FIXTUREPATH / "C_blochmannia" / "GCF_000973505.1_ASM97350v1_hashes.txt",
+                genomedir / "GCF_000973505.1_ASM97350v1_genomic.fna.gz",
+                genomedir / "GCF_000973505.1_ASM97350v1_hashes.txt",
                 False,
                 None,
             ),
             "GCF_000185985.1_ASM18598v1": DLStatus(
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_000185985.1_ASM18598v1_genomic.fna.gz",
-                FIXTUREPATH / "C_blochmannia" / "GCF_000185985.1_ASM18598v1_hashes.txt",
+                genomedir / "GCF_000185985.1_ASM18598v1_genomic.fna.gz",
+                genomedir / "GCF_000185985.1_ASM18598v1_hashes.txt",
                 False,
                 None,
             ),
             "GCF_000043285.1_ASM4328v1": DLStatus(
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_000043285.1_ASM4328v1_genomic.fna.gz",
-                FIXTUREPATH / "C_blochmannia" / "GCF_000043285.1_ASM4328v1_hashes.txt",
+                genomedir / "GCF_000043285.1_ASM4328v1_genomic.fna.gz",
+                genomedir / "GCF_000043285.1_ASM4328v1_hashes.txt",
                 False,
                 None,
             ),
             "GCF_000011745.1_ASM1174v1": DLStatus(
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy_genomic.fna.gz",
                 "ftp://ftp.ncbi.nlm.nih.gov/dummy/md5checksums.txt",
-                FIXTUREPATH
-                / "C_blochmannia"
-                / "GCF_000011745.1_ASM1174v1_genomic.fna.gz",
-                FIXTUREPATH / "C_blochmannia" / "GCF_000011745.1_ASM1174v1_hashes.txt",
+                genomedir / "GCF_000011745.1_ASM1174v1_genomic.fna.gz",
+                genomedir / "GCF_000011745.1_ASM1174v1_hashes.txt",
                 False,
                 None,
             ),
