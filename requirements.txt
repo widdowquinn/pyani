@@ -6,6 +6,7 @@ numpy
 openpyxl
 pandas
 Pillow
+pyarrow
 scipy
 seaborn
 sqlalchemy
