@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019
+# (c) University of Strathclyde 2019-2024
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -17,7 +17,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019 University of Strathclyde
+# Copyright (c) 2019-2024 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -187,6 +187,8 @@ def calculate_correlations(tetra_z: Dict[str, Dict[str, float]]) -> pd.DataFrame
                 [zdiffs[0][i] * zdiffs[1][i] for i in range(len(zdiffs[0]))]
             )
             zdiffs2 = [sum([z * z for z in zdiffs[0]]), sum([z * z for z in zdiffs[1]])]
-            correlations[org1][org2] = diffprods / math.sqrt(zdiffs2[0] * zdiffs2[1])
-            correlations[org2][org1] = correlations[org1][org2]
+            correlations.loc[org1, org2] = diffprods / math.sqrt(
+                zdiffs2[0] * zdiffs2[1]
+            )
+            correlations.loc[org2, org1] = correlations.loc[org1, org2]
     return correlations

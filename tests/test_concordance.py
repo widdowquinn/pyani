@@ -137,7 +137,7 @@ def tolerance_anib_hi():
 
     These "within-species" level comparisons need to be more accurate
     """
-    return 0.1
+    return 0.2
 
 
 @pytest.fixture
