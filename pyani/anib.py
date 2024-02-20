@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019-2021
+# (c) University of Strathclyde 2019-2024
 # Author: Leighton Pritchard
 #
 # Contact: leighton.pritchard@strath.ac.uk
@@ -16,7 +16,7 @@
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019-2021 University of Strathclyde
+# Copyright (c) 2019-2024 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -527,7 +527,7 @@ def process_blast(
 
     # Fill diagonal NA values for alignment_length with org_lengths
     for org, length in list(org_lengths.items()):
-        results.alignment_lengths[org][org] = length
+        results.alignment_lengths.loc[org, org] = length
 
     # Process .blast_tab files assuming that the filename format holds:
     # org1_vs_org2.blast_tab:

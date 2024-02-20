@@ -381,7 +381,7 @@ def process_deltadir(
 
     # Fill diagonal NA values for alignment_length with org_lengths
     for org, length in list(org_lengths.items()):
-        results.alignment_lengths[org][org] = length
+        results.alignment_lengths.loc[org, org] = length
 
     # Process .delta files assuming that the filename format holds:
     # org1_vs_org2.delta
