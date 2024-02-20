@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# (c) The University of Strathclyde 2019
+# (c) The University of Strathclyde 2019-2024
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -17,7 +17,7 @@
 #
 # The MIT License
 #
-# (c) The University of Strathclyde 2019
+# (c) The University of Strathclyde 2019-2024
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -60,9 +60,9 @@ import matplotlib.gridspec as gridspec  # noqa: E402,E501 # pylint: disable=wron
 
 
 # Register Matplotlib colourmaps
-plt.register_cmap(cmap=pyani_config.CMAP_SPBND_BURD)
-plt.register_cmap(cmap=pyani_config.CMAP_HADAMARD_BURD)
-plt.register_cmap(cmap=pyani_config.CMAP_BURD)
+matplotlib.colormaps.register(pyani_config.CMAP_SPBND_BURD)
+matplotlib.colormaps.register(pyani_config.CMAP_HADAMARD_BURD)
+matplotlib.colormaps.register(pyani_config.CMAP_BURD)
 
 # Matplotlib version dictates bug fixes
 MPLVERSION = matplotlib.__version__
@@ -402,7 +402,7 @@ def scatter(
 
     # Return figure output, and write, if required
     plt.subplots_adjust(top=0.85)  # Leave room for title
-    fig.set_tight_layout(True)
+    fig.set_layout_engine(layout="tight")
     if outfilename:
         fig.savefig(outfilename)
     return fig

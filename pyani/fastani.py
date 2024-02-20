@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # (c) The University of Strathclyde 2021-2024
-# Author: Bailey Harrington
+# Authors: Bailey Harrington, Leighton Pritchard
 #
-# Contact: bailey.harrington@strath.ac.uk
+# Contact: leighton.pritchard@strath.ac.uk
 #
-# Bailey Harrington,
+# Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
 # Cathedral Street,
 # Glasgow,
@@ -220,7 +220,7 @@ def construct_fastani_cmdline(
     outfile = outsubdir / f"{query.stem}_vs_{ref.stem}.fastani"
     fastcmd = (
         f"{fastani_exe} -q {query} -r {ref} -o {outfile} "
-        + "--fragLen {fragLen} -k {kmerSize} --minFraction {minFraction}"
+        + f"--fragLen {fragLen} -k {kmerSize} --minFraction {minFraction}"
     )
 
     logger.debug("Compiled command: %s", fastcmd)

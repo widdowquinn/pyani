@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2024
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2013-2019 The James Hutton Institute
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2024
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
