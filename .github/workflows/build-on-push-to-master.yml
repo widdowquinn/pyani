@@ -32,6 +32,8 @@ jobs:
           auto-activate-base: false
           channels: defaults,bioconda,conda-forge
           channel-priority: flexible
+
+      - name: Check Miniconda Installation
         run: |
           conda info
           conda list
