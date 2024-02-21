@@ -276,6 +276,10 @@ def subcmd_report(args: Namespace) -> int:
     # Report matrices of comparison results for the indicated runs
     # For ANIm, all results other than coverage are symmetric matrices,
     # so we only get results in the forward direction.
+    # WARNING - THIS ASSUMPTION (symmetry) IS NOT TRUE FOR ANIm!!!
+    # We should be getting both forward and reverse results, and combining
+    # them into a single matrix. This is under development 2024-02-21
+    # Issue #340
     # As we need to pull down the matrices as Pandas dataframes by reading from
     # JSON, we don't bother with a helper function like report(), and write out
     # our matrices directly, here

@@ -378,7 +378,7 @@ def get_matrix_labels_for_run(session: Any, run_id: int) -> Dict:
     """
     results = (
         session.query(Genome.genome_id, Label.label)
-        .join(rungenome, Run)
+        .join(rungenome, Genome.genome_id == rungenome.c.genome_id)
         .join(
             Label, and_(Genome.genome_id == Label.genome_id, Run.run_id == Label.run_id)
         )

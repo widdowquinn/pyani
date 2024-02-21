@@ -131,7 +131,7 @@ class TestReportSubcommand(unittest.TestCase):
                 show_genomes=False,
                 show_runs_genomes=False,
                 show_genomes_runs=False,
-                run_results="1",
+                run_results="1,2",
                 run_matrices=False,
                 no_matrix_labels=False,
                 force=True,
