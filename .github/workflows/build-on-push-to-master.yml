@@ -30,7 +30,7 @@ jobs:
           python-version: "3.11"
           activate-environment: pyani-github
           auto-activate-base: false
-          channels: defaults,bioconda,conda-forge
+          channels: nodefaults,bioconda,conda-forge
           channel-priority: strict
 
       - name: Check Miniconda Installation
