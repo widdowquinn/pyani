@@ -1,4 +1,4 @@
-name: build-on-push-to-master
+name: build-macos
 
 on:
   push:
@@ -47,11 +47,11 @@ jobs:
         run: conda install --file requirements.txt -y
 
       - name: Install third-party tools
-        run: conda install --file requirements-thirdparty.txt -y
+        run: conda install --file requirements-thirdparty-macos.txt -y
 
       - name: Install and Check FastANI
         run: |
-          conda install --file requirements-fastani.txt -y
+          conda install --file requirements-fastani-macos.txt -y
           fastani -h
 
       - name: Install PyQT

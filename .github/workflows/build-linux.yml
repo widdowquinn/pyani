@@ -47,11 +47,11 @@ jobs:
         run: conda install --file requirements.txt -y
 
       - name: Install third-party tools
-        run: conda install --file requirements-thirdparty.txt -y
+        run: conda install --file requirements-thirdparty-linux.txt -y
 
       - name: Install and Check FastANI
         run: |
-          conda install --file requirements-fastani.txt -y
+          conda install --file requirements-fastani-linux.txt -y
           fastani -h
 
       - name: Install PyQT
