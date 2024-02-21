@@ -53,8 +53,11 @@ jobs:
       - name: Install pyani
         run: pip install -e .
 
+      - name: Check pytest modules
+        run: python -m pytest -v --collect-only
+
       - name: Run Tests with pytest
-        run: pytest -v -m "not slow" --cov=pyani --cov-report=xml:.coverage_fast.xml
+        run: python -m pytest -v -m "not slow" --cov=pyani --cov-report=xml:.coverage_fast.xml
 
       - name: Upload coverage Results
         uses: actions/upload-artifact@v4
