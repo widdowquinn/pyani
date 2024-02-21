@@ -31,7 +31,7 @@ jobs:
           activate-environment: pyani-github
           auto-activate-base: false
           channels: defaults,bioconda,conda-forge
-          channel-priority: flexible
+          channel-priority: strict
 
       - name: Check Miniconda Installation
         run: |
