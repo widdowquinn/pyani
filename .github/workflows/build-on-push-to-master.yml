@@ -9,6 +9,10 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }} 
     defaults:
@@ -18,16 +22,11 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      # - name: Install Python
-      #   uses: actions/setup-python@v5
-      #   with:
-      #     python-version: "3.11"
-
-      - name: Install Miniconda
+      - name: Install Miniconda (Python ${{ matrix.python-version }})
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
           activate-environment: pyani-github
           auto-activate-base: false
           channels: defaults,bioconda,conda-forge
@@ -68,12 +67,12 @@ jobs:
         run: python -m pytest -v --collect-only
 
       - name: Run Tests with pytest
-        run: python -m pytest -v -m "not slow" --cov=pyani --cov-report=xml:.coverage_fast.xml
+        run: python -m pytest -v --cov=pyani --cov-report=xml:.coverage_fast.xml
 
       - name: Upload coverage Results
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-results-3.11
-          path: .coverage_fast.xml
+          name: test-coverage-${{ matrix.python-version }}
+          path: .coverage-${{ matrix.python-version }}.xml
           retention-days: 1
         if: ${{ always() }}
