@@ -30,8 +30,8 @@ jobs:
           python-version: "3.11"
           activate-environment: pyani-github
           auto-activate-base: false
-          channels: nodefaults,bioconda,conda-forge
-          channel-priority: strict
+          channels: defaults,bioconda,conda-forge
+          channel-priority: flexible
 
       - name: Check Miniconda Installation
         run: |
@@ -50,8 +50,10 @@ jobs:
       - name: Install third-party tools
         run: conda install --file requirements-thirdparty.txt -y
 
-      - name: Install FastANI
-        run: conda install --file requirements-fastani.txt -y
+      - name: Install and Check FastANI
+        run: |
+          conda install --file requirements-fastani.txt -y
+          fastani -h
 
       - name: Install PyQT
         run: conda install --file requirements-pyqt-conda.txt -y
