@@ -54,7 +54,7 @@ jobs:
         run: pip install -e .
 
       - name: Run Tests with pytest
-        run: python -m pytest -v -m "not slow" --cov=pyani --cov-report=xml:.coverage_fast.xml
+        run: pytest -v -m "not slow" --cov=pyani --cov-report=xml:.coverage_fast.xml
 
       - name: Upload coverage Results
         uses: actions/upload-artifact@v4
