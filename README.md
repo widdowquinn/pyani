@@ -57,7 +57,8 @@ DOI: [10.1039/C5AY02550H](https://doi.org/10.1039/C5AY02550H)
 
 -----
 
-![macOS Python 3.11 build](https://github.com/widdowquinn/pyani/actions/workflows/build-on-push-to-master.yml/badge.svg)
+![macOS Python 3.11 build](https://github.com/widdowquinn/pyani/actions/workflows/build-macos.yml/badge.svg)
+![Linux Python 3.11 build](https://github.com/widdowquinn/pyani/actions/workflows/build-linux.yml/badge.svg)
 [![codecov.io coverage](https://img.shields.io/codecov/c/github/widdowquinn/pyani/master.svg)](https://codecov.io/github/widdowquinn/pyani)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f3e56b2bf118471aabf09514a3e6af75)](https://www.codacy.com/manual/widdowquinn/pyani?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=widdowquinn/pyani&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/widdowquinn/pyani/badge)](https://www.codefactor.io/repository/github/widdowquinn/pyani)

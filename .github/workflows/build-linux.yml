@@ -1,4 +1,4 @@
-name: build-on-push-to-master
+name: build-linux
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
@@ -67,7 +67,7 @@ jobs:
         run: python -m pytest -v --collect-only
 
       - name: Run Tests with pytest
-        run: python -m pytest -v --cov=pyani --cov-report=xml:.coverage_fast.xml
+        run: python -m pytest -v --cov=pyani --cov-report=xml:.coverage-${{ matrix.python-version }}.xml
 
       - name: Upload coverage Results
         uses: actions/upload-artifact@v4
