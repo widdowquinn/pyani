@@ -120,6 +120,12 @@ def subcmd_report(args: Namespace) -> int:
         report(args, session, formats, ReportParams("genomes", statement, headers))
 
     # Report table of all genomes used for each run
+    # This is essentially an expanded equivalent of:
+    # SELECT genomes.genome_id, runs_genomes.run_id, labels.label_id
+    #  FROM genomes
+    #    JOIN runs_genomes ON genomes.genome_id == runs_genomes.genome_id
+    #    JOIN labels ON (genomes.genome_id = labels.genome_id
+    #                    AND runs_genomes.run_id = labels.run_id);
     if args.show_runs_genomes:
         statement = (
             session.query(
@@ -146,7 +152,6 @@ def subcmd_report(args: Namespace) -> int:
             .order_by(Run.run_id, Genome.genome_id)
             .statement
         )
-        print(f"{str(statement)=}")
         headers = [
             "run ID",
             "run name",
@@ -162,6 +167,16 @@ def subcmd_report(args: Namespace) -> int:
         report(args, session, formats, ReportParams("runs_genomes", statement, headers))
 
     # Report table of all runs in which a genome is involved
+    # Compiles the equivalent of:
+    # SELECT genomes.genome_id, runs.run_id, genomes.description, genomes.path,
+    #        genomes.genome_hash, labels.label, labels.class_label,
+    #        runs.name, runs.method, runs.date
+    #   FROM genomes
+    #     JOIN runs_genomes ON genomes.genome_id = runs_genomes.genome_id
+    #     JOIN labels ON genomes.genome_id = labels.genome_id
+    #                    AND runs_genomes.run_id = labels.run_id
+    #     JOIN runs ON runs.run_id = runs_genomes.run_id
+    #  ORDER BY genomes.genome_id, runs.run_id
     if args.show_genomes_runs:
         statement = (
             session.query(
@@ -176,11 +191,15 @@ def subcmd_report(args: Namespace) -> int:
                 Run.method,
                 Run.date,
             )
-            .join(rungenome, Run.run_id == rungenome.c.run_id)
+            .join(rungenome, Genome.genome_id == rungenome.c.genome_id)
             .join(
                 Label,
-                and_(Genome.genome_id == Label.genome_id, Run.run_id == Label.run_id),
+                and_(
+                    Genome.genome_id == Label.genome_id,
+                    rungenome.c.run_id == Label.run_id,
+                ),
             )
+            .join(Run, Run.run_id == rungenome.c.run_id)
             .order_by(Genome.genome_id, Run.run_id)
             .statement
         )
