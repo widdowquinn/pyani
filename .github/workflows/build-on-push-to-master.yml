@@ -11,14 +11,17 @@ jobs:
     runs-on: macos-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }} 
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+      # - name: Install Python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: "3.11"
 
       - name: Install Miniconda
         uses: conda-incubator/setup-miniconda@v3
@@ -26,8 +29,12 @@ jobs:
           auto-update-conda: true
           python-version: "3.11"
           activate-environment: pyani-github
+          auto-activate-base: false
           channels: defaults,bioconda,conda-forge
           channel-priority: flexible
+        run: |
+          conda info
+          conda list
 
       - name: Install pip
         run: python -m pip install --upgrade pip
