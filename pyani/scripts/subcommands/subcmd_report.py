@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2022
+# (c) University of Strathclyde 2019-2024
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2022 University of Strathclyde
+# Copyright (c) 2019-2024 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -64,12 +64,11 @@ from pyani.pyani_tools import label_results_matrix, termcolor, MatrixData
 
 
 class ReportParams(NamedTuple):
-
     """Report query/header data."""
 
     name: str  # name of table being reported
-    statement: str  #  SQL statement of query
-    headers: List[str]  #  Column headers for table
+    statement: str  # SQL statement of query
+    headers: List[str]  # Column headers for table
 
 
 def subcmd_report(args: Namespace) -> int:
@@ -138,11 +137,16 @@ def subcmd_report(args: Namespace) -> int:
             .join(rungenome, Genome.genome_id == rungenome.c.genome_id)
             .join(
                 Label,
-                and_(Genome.genome_id == Label.genome_id, Run.run_id == Label.run_id),
+                and_(
+                    Genome.genome_id == Label.genome_id,
+                    rungenome.c.run_id == Label.run_id,
+                ),
             )
+            .join(Run, Run.run_id == rungenome.c.run_id)
             .order_by(Run.run_id, Genome.genome_id)
             .statement
         )
+        print(f"{str(statement)=}")
         headers = [
             "run ID",
             "run name",
