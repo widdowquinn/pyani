@@ -59,6 +59,8 @@ import re
 import shutil
 import subprocess
 import sys
+import intervaltree
+from collections import defaultdict
 
 from logging import Logger
 from pathlib import Path
@@ -157,7 +159,7 @@ def generate_nucmer_jobs(
     filter_exe: Path = pyani_config.FILTER_DEFAULT,
     maxmatch: bool = False,
     jobprefix: str = "ANINUCmer",
-    logger: Optional[Logger] = None
+    logger: Optional[Logger] = None,
 ):
     """Return list of Jobs describing NUCmer command-lines for ANIm.
 
@@ -172,7 +174,7 @@ def generate_nucmer_jobs(
     for each pairwise comparison.
     """
     logger = logging.getLogger(__name__)
-    
+
     ncmds, fcmds = generate_nucmer_commands(
         filenames, outdir, nucmer_exe, filter_exe, maxmatch
     )
@@ -217,7 +219,7 @@ def generate_nucmer_commands(
     for idx, fname1 in enumerate(filenames[:-1]):
         for fname2 in filenames[idx + 1 :]:
 
-            #Comparisions A_vs_B
+            # Comparisions A_vs_B
             ncmd, dcmd = construct_nucmer_cmdline(
                 fname1, fname2, outdir, nucmer_exe, filter_exe, maxmatch
             )
@@ -334,29 +336,41 @@ def parse_delta(filename: Path) -> Tuple[int, int]:
     A is the reference and has length 11. There are two insertions (positive delta),
     and one deletion (negative delta). Alignment length is then 11 + 1 = 12.
     """
-    in_aln, aln_length, sim_errors = False, 0, 0
+    current_ref, current_qry, saln_length, qaln_length, sim_errors = None, None, 0, 0, 0
+
+    regions_sub = defaultdict(list)  # Hold a dictionary for query regions
+    regions_qry = defaultdict(list)  # Hold a dictionary for query regions
+
     for line in [_.strip().split() for _ in filename.open("r").readlines()]:
         if line[0] == "NUCMER" or line[0].startswith(">"):  # Skip headers
             continue
+        # Lines starting with ">" indicate which sequences are aligned
+        if line[0].startswith(">"):
+            current_ref = line[0].strip(">")
+            current_qry = line[1]
         # Lines with seven columns are alignment region headers:
         if len(line) == 7:
-            aln_length += abs(int(line[1]) - int(line[0])) + 1  # reference length
+            regions_sub[current_ref].append(
+                tuple(sorted(list([int(line[0]), int(line[1])])))
+            )  # aligned regions reference
+            regions_qry[current_qry].append(
+                tuple(sorted(list([int(line[2]), int(line[3])])))
+            )  # aligned regions qry
             sim_errors += int(line[4])  # count of non-identities and indels
-            in_aln = True
-        # Lines with a single column (following a header) report numbers of symbols
-        # until next insertion (+ve) or deletion (-ve) in the reference; one line per
-        # insertion/deletion; the alignment always ends with 0
-        if in_aln and line[0].startswith("0"):
-            in_aln = False
-        elif in_aln:
-            # Add one to the alignment length for each reference insertion; subtract
-            # one for each deletion
-            val = int(line[0])
-            if val < 1:  # deletion in reference
-                aln_length += 1
-            elif val == 0:  # ends the alignment entry
-                in_aln = False
-    return aln_length, sim_errors
+
+    for seq_id in regions_qry:
+        qry_tree = intervaltree.IntervalTree.from_tuples(regions_qry[seq_id])
+        qry_tree.merge_overlaps(strict=False)
+        for interval in qry_tree:
+            qaln_length += interval.end - interval.begin + 1
+
+    for seq_id in regions_sub:
+        ref_tree = intervaltree.IntervalTree.from_tuples(regions_sub[seq_id])
+        ref_tree.merge_overlaps(strict=False)
+        for interval in ref_tree:
+            saln_length += interval.end - interval.begin + 1
+
+    return saln_length, qaln_length, sim_errors
 
 
 # Parse all the .delta files in the passed directory
