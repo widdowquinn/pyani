@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# (c) The University of Strathclyde 2021–Present
-# Author: Bailey Harrington
+# (c) The University of Strathclyde 2021–2024
+# Authors: Leighton Pritchard, Bailey Harrington
 #
-# Contact: bailey.harrington@strath.ac.uk
+# Contact: leighton.pritchard@strath.ac.uk
 #
-# Bailey Harrington,
+# Leighton Pritchard,
 # Strathclyde Institute for Pharmacy and Biomedical Sciences,
 # Cathedral Street,
 # Glasgow,
@@ -14,7 +14,7 @@
 #
 # The MIT License
 #
-# Copyright (c) 2021–Present University of Strathclyde
+# Copyright (c) 2021–2024 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +75,6 @@ from pyani.pyani_tools import termcolor
 # Convenience struct describing a pairwise comparison job for the SQLAlchemy
 # implementation
 class ComparisonJob(NamedTuple):
-
     """Pairwise comparison job for the SQLAlchemy implementation"""
 
     query: str
@@ -90,7 +89,6 @@ class ComparisonJob(NamedTuple):
 
 # Convenience struct describing an analysis run
 class RunData(NamedTuple):
-
     """Convenience struct describing an analysis run."""
 
     method: str
@@ -100,7 +98,6 @@ class RunData(NamedTuple):
 
 
 class ComparisonResult(NamedTuple):
-
     """Convenience struct for a single fastani comparison result."""
 
     qid: float
