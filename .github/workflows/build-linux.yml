@@ -52,7 +52,7 @@ jobs:
       - name: Install and Check FastANI
         run: |
           conda install --file requirements-fastani-linux.txt -y
-          fastani -h
+          fastANI -h
 
       - name: Install PyQT
         run: conda install --file requirements-pyqt-conda.txt -y
