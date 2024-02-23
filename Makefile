@@ -7,20 +7,33 @@
 setup_conda:
 	@conda install --file requirements-dev.txt --yes
 	@conda install --file requirements.txt --yes
-	@conda install --file requirements-thirdparty.txt --yes
-	@conda install --file requirements-fastani.txt --yes
 	@conda install --file requirements-pyqt-conda.txt --yes
+
+setup_conda_macos:
+	@conda install --file requirements-thirdparty-macos.txt --yes
+	@conda install --file requirements-fastani-macos.txt --yes
+
+setup_conda_linux:
+	@conda install --file requirements-thirdparty-linux.txt --yes
+	@conda install --file requirements-fastani-linux.txt --yes
 
 # Install pip dependencies
 setup_pip:
 	@pip install -r requirements-pip.txt
 
 # Install dependencies, but not pre-commit
-setup_dependencies: setup_conda setup_pip
+setup_dependencies_macos: setup_conda setup_conda_macos setup_pip
+	@pip install -U -e .
+
+setup_dependencies_linux: setup_conda setup_conda_linux setup_pip
 	@pip install -U -e .
 
 # Set up all development dependencies and pre-commit in the current conda environment
-setup_env: setup_conda setup_pip
+setup_env_macos: setup_conda setup_conda_macos setup_pip
+	@pre-commit install
+	@pip install -U -e .
+
+setup_env_macos: setup_conda setup_conda_linux setup_pip
 	@pre-commit install
 	@pip install -U -e .
 
