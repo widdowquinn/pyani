@@ -291,7 +291,7 @@ def construct_nucmer_cmdline(
 
 
 # Parse NUCmer delta file to get total alignment length and total sim_errors
-def parse_delta(filename: Path) -> Tuple[int, int]:
+def parse_delta(filename: Path) -> Tuple[int, int, int]:
     """Return (alignment length, similarity errors) tuple from passed .delta.
 
     :param filename:  Path, path to the input .delta file
@@ -370,7 +370,7 @@ def parse_delta(filename: Path) -> Tuple[int, int]:
         for interval in ref_tree:
             saln_length += interval.end - interval.begin + 1
 
-    return saln_length, qaln_length, sim_errors
+    return (saln_length, qaln_length, sim_errors)
 
 
 # Parse all the .delta files in the passed directory
