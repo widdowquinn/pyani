@@ -80,5 +80,5 @@ jobs:
       - name: Codacy Coverage Report
         run: 
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report \
-          -l Python -r .coverage-linux-${{ matrix.python-version }}.xml
+          -l Python -r .coverage-macos-${{ matrix.python-version }}.xml
         if: ${{ always() }}
