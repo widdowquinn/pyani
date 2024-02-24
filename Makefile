@@ -33,7 +33,7 @@ setup_env_macos: setup_conda setup_conda_macos setup_pip
 	@pre-commit install
 	@pip install -U -e .
 
-setup_env_macos: setup_conda setup_conda_linux setup_pip
+setup_env_linux: setup_conda setup_conda_linux setup_pip
 	@pre-commit install
 	@pip install -U -e .
 

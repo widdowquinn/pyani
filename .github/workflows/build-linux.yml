@@ -69,7 +69,7 @@ jobs:
       - name: Run Tests with pytest
         run: python -m pytest -v --cov=pyani --cov-report=xml:.coverage-linux-${{ matrix.python-version }}.xml
 
-      - name: Upload coverage Results
+      - name: Store coverage Results
         uses: actions/upload-artifact@v4
         with:
           name: test-coverage-linux-${{ matrix.python-version }}
@@ -77,10 +77,11 @@ jobs:
           retention-days: 3
         if: ${{ always() }}
 
-      - name: Codacy Coverage Report
-        run: 
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report \
-          -r .coverage-linux-${{ matrix.python-version }}.xml
+      - name: Codacy Coverage Reporter
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: .coverage-linux-${{ matrix.python-version }}.xml
         if: ${{ always() }}
 
       - name: Codecov Coverage Report
