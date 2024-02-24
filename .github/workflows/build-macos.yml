@@ -67,7 +67,7 @@ jobs:
         run: python -m pytest -v --collect-only
 
       - name: Run Tests with pytest
-        run: python -m pytest -v --cov=pyani --cov-report=xml:.coverage-${{ matrix.python-version }}.xml
+        run: python -m pytest -v --cov=pyani --cov-report=xml:.coverage-macos-${{ matrix.python-version }}.xml
 
       - name: Upload coverage Results
         uses: actions/upload-artifact@v4
@@ -87,8 +87,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true # optional (default = false)
-          files: ./coverage1.xml,./coverage2.xml # optional
-          flags: unittests # optional
+          files: .coverage-macos-${{ matrix.python-version }}.xml # optional
           name: codecov-umbrella # optional
           token: ${{ secrets.CODECOV_TOKEN }} # required
           verbose: true # optional (default = false)
