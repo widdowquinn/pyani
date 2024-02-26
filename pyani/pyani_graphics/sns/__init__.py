@@ -42,6 +42,9 @@ import warnings
 import matplotlib  # pylint: disable=C0411
 import pandas as pd
 import seaborn as sns
+import logging
+from typing import List, Dict
+from pyani import pyani_config
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402,E501 # pylint: disable=wrong-import-position,wrong-import-order,ungrouped-imports
@@ -132,6 +135,7 @@ def get_clustermap(dfr, params, title=None, annot=True):
             cmap=params.cmap,
             vmin=params.vmin,
             vmax=params.vmax,
+            center=params.center,
             col_colors=params.colorbar,
             row_colors=params.colorbar,
             figsize=(params.figsize, params.figsize),
@@ -144,8 +148,7 @@ def get_clustermap(dfr, params, title=None, annot=True):
 
     fig.cax.yaxis.set_label_position("left")
     if title:
-        fig.cax.set_ylabel(title)
-
+        fig.ax_heatmap.set_title(title, pad=1000, fontdict={"fontsize": 75})
     # Return clustermap
     return fig
 
@@ -215,11 +218,15 @@ def distribution(dfr, outfilename, matname, title=None):
 
     # Modify axes after data is plotted
     for _ in axes:
-        if matname == "sim_errors":
+        if matname.endswith("absdiffs"):
             _.set_xlim(0, _.get_xlim()[1])
-        elif matname in ["hadamard", "coverage"]:
+        elif matname.endswith("diffs"):
+            pass
+        elif matname.split("_")[0] == "sim_errors":
+            _.set_xlim(0, _.get_xlim()[1])
+        elif matname.split("_")[0] in ["hadamard", "coverage"]:
             _.set_xlim(0, 1.01)
-        elif matname == "identity":
+        elif matname.split("_")[0] == "identity":
             _.set_xlim(0.75, 1.01)
 
     # Tidy figure
@@ -283,4 +290,53 @@ def scatter(
         fig.savefig(outfilename)
 
     # Return clustermap
+    return fig
+
+
+def bland_altman(
+    dfr1,
+    dfr2,
+    outfilename,
+    matname1,
+    matname2,
+    run_ids,
+    title=None,
+    info=None,
+    params=None,
+):
+    """Return seaborn Bland-Altman plot.
+
+    :param dfr1:  pandas DataFrame with x-axis data
+    :param dfr2:  pandas DataFrame with y-axis data
+    :param outfilename:  path to output file (indicates output format)
+    :param matname1:  name of x-axis data
+    :param matname2:  name of y-axis data
+    :param run_ids:   tuple of run_ids (ref, query)
+    :param title:  title for the plot
+    :param info:   information about the data in the plot
+    :param params:  a list of parameters for plotting: [colormap, vmin, vmax]
+    """
+    data = pd.DataFrame()
+    ref_id, query_id = run_ids
+    data["avg"] = (dfr1 + dfr2).values.flatten() / 2
+    data["AminusB"] = (dfr1 - dfr2).values.flatten()
+
+    fig = sns.lmplot(
+        x="avg", y="AminusB", data=data, fit_reg=False, scatter_kws={"s": 2}, height=9
+    )
+
+    fig.ax.hlines(0, fig.ax.get_xbound()[0], fig.ax.get_xbound()[1], linewidths=1)
+    fig.ax.margins(x=0)
+    # fig.figtext(1, .5, info)
+    fig.set(
+        xlabel=f"Average of run {matname1} scores",
+        ylabel=f"Difference between {matname1} scores (run {ref_id} - run {query_id})",
+    )
+    plt.title(title)
+
+    fig.tight_layout()
+
+    if outfilename:
+        plt.savefig(outfilename)
+
     return fig
