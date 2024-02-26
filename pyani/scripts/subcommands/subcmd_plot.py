@@ -56,11 +56,14 @@ from pyani.pyani_tools import termcolor, MatrixData
 # Distribution dictionary of matrix graphics methods
 GMETHODS = {"mpl": pyani_graphics.mpl.heatmap, "seaborn": pyani_graphics.sns.heatmap}
 SMETHODS = {"mpl": pyani_graphics.mpl.scatter, "seaborn": pyani_graphics.sns.scatter}
+# TMETHODS = {"seaborn": pyani_graphics.seaborn.}
 # Distribution dictionary of distribution graphics methods
 DISTMETHODS = {
     "mpl": pyani_graphics.mpl.distribution,
     "seaborn": pyani_graphics.sns.distribution,
 }
+
+NEWICKS = {}
 
 
 def subcmd_plot(args: Namespace) -> int:
@@ -93,6 +96,10 @@ def subcmd_plot(args: Namespace) -> int:
     logger.debug("Generating graphics for runs: %s", run_ids)
     for run_id in run_ids:
         write_run_plots(run_id, session, outfmts, args)
+
+        if NEWICKS:
+            write_newicks(args, run_id)
+        NEWICKS.clear()
 
     return 0
 
@@ -163,8 +170,8 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
     # Run the plotting commands
     logger.debug("Running plotting commands")
     for func, options in plotting_commands:
-        logger.debug("Running %s with options %s", func, options)
-        pool.apply_async(func, args=options)
+        result = pool.apply_async(func, options, {}, callback=logger.debug)
+        result.get()
 
     # Close worker pool
     pool.close()
@@ -187,7 +194,7 @@ def write_distribution(
     for fmt in outfmts:
         outfname = Path(args.outdir) / f"distribution_{matdata.name}_run{run_id}.{fmt}"
         logger.debug("\tWriting graphics to %s", outfname)
-        DISTMETHODS[args.method[0]](
+        DISTMETHODS[args.method](
             matdata.data,
             outfname,
             matdata.name,
@@ -220,19 +227,28 @@ def write_heatmap(
     logger.info("Writing %s matrix heatmaps", matdata.name)
     cmap = pyani_config.get_colormap(matdata.data, matdata.name)
     for fmt in outfmts:
-        outfname = Path(args.outdir) / f"matrix_{matdata.name}_run{run_id}.{fmt}"
+        outfname = (
+            Path(args.outdir) / f"matrix_{matdata.name}_run{run_id}_{args.method}.{fmt}"
+        )
         logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw heatmap
-        GMETHODS[args.method[0]](
+        _, newicks = GMETHODS[args.method](
             matdata.data,
             outfname,
             title=f"matrix_{matdata.name}_run{run_id}",
             params=params,
+            format=fmt,
+            args=args,
         )
+
+    # If Newick strings were generated, add them to NEWICKS.
+    if newicks:
+        NEWICKS.update(newicks)
 
     # Be tidy with matplotlib caches
     plt.close("all")
+    return
 
 
 def write_scatter(
@@ -266,7 +282,7 @@ def write_scatter(
         logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw scatterplot
-        SMETHODS[args.method[0]](
+        SMETHODS[args.method](
             matdata1.data,
             matdata2.data,
             outfname,
@@ -278,3 +294,11 @@ def write_scatter(
 
         # Be tidy with matplotlib caches
         plt.close("all")
+
+
+def write_newicks(args: Namespace, run_id):
+    # If Newick strings were generated, write them out.
+    newick_file = Path(args.outdir) / f"newicks_run{run_id}.nw"
+    with open(newick_file, "w") as nfh:
+        for name, nw in NEWICKS.items():
+            nfh.write(f"{name}\t{nw}\n")

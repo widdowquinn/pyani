@@ -54,6 +54,8 @@ import matplotlib  # pylint: disable=C0411
 from . import mpl  # noqa: F401  # matplotlib wrappers
 from . import sns  # noqa: F401  # seaborn wrappers
 
+from . import tree
+
 # Specify matplotlib backend. This *must* be done before pyplot import, but
 # raises errors with flake8 etc. So we comment out the specific error
 matplotlib.use("Agg")

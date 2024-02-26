@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019-2022
+# (c) University of Strathclyde 2019-2020
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -17,7 +17,7 @@
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019-2022 University of Strathclyde
+# Copyright (c) 2019-2020 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,22 @@ from typing import List, Optional
 from pyani.scripts import subcommands
 
 
+def get_tree_list(tree_string: str):
+    possible_trees = {
+        "i": "identity",
+        "c": "coverage",
+        "a": "aln_lengths",
+        "s": "sim_errors",
+        "h": "hadamard",
+    }
+    return [possible_trees[_] for _ in tree_string]
+
+
+def get_axes_list(axes_string: str):
+    axes = {"c": "columns", "r": "rows"}
+    return [axes[_] for _ in axes_string]
+
+
 def build(
     subps: _SubParsersAction, parents: Optional[List[ArgumentParser]] = None
 ) -> None:
@@ -58,7 +74,7 @@ def build(
     --method        (graphics method to use)
     """
     parser = subps.add_parser(
-        "plot", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
+        "tree", parents=parents, formatter_class=ArgumentDefaultsHelpFormatter
     )
     # Required arguments: output directory and run ID
     parser.add_argument(
@@ -105,11 +121,11 @@ def build(
         "--method",
         dest="method",
         action="store",
-        default="seaborn",
+        default="ete3",  # "seaborn",
         metavar="METHOD",
         nargs=1,
-        choices=["seaborn", "mpl", "plotly"],
-        help="graphics method to use for plotting; options (seaborn, mpl, plotly)",
+        choices=["ete3"],  # ["seaborn", "mpl", "plotly"],
+        help="graphics method to use for plotting; options (ete3)",  # "(seaborn, mpl, plotly)",
     )
     parser.add_argument(
         "--workers",
@@ -121,11 +137,20 @@ def build(
         "(default zero, meaning use all available cores)",
     )
     parser.add_argument(
-        "--tree",
-        dest="tree",
-        action="store_true",
-        default=False,
-        help="tree formats to generate",
-        # choices=["newick", "dendrogram"]
+        "--trees",
+        dest="trees",
+        #     action="store_true",
+        #     default=False,
+        type=get_tree_list,
+        metavar="TREES",
+        help="A string (such as: icash, cah, shi) specifying which trees to generate, made up of their initials: {'i': 'identity', 'c': 'coverage', 'a': 'aln_length', 's': 'sim_errors', 'h': 'hadamard'}",
     )
-    parser.set_defaults(func=subcommands.subcmd_plot)
+    parser.add_argument(
+        "--axes",
+        dest="axes",
+        default="cr",
+        type=get_axes_list,
+        metavar="AXES",
+        help="A string indicating which axes to plot. One of (c, r, cr); c = columns, r = rows, cr = both",
+    )
+    parser.set_defaults(func=subcommands.subcmd_tree)
