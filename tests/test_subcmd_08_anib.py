@@ -59,7 +59,7 @@ import os
 import unittest
 
 from argparse import Namespace
-from collections import namedtuple
+from typing import NamedTuple
 from pathlib import Path
 
 import pytest
@@ -68,17 +68,24 @@ from pyani.scripts import subcommands
 
 
 # Convenience struct with paths to third-party executables
-ThirdPartyExes = namedtuple("ThirdPartyExes", "blastn_exe format_exe")
+class ThirdPartyExes(NamedTuple):
+    blastn_exe: Path
+    format_exe: Path
+
 
 # Convenience struct with paths to working directories
-DirPaths = namedtuple("DirPaths", "indir outdir")
+class DirPaths(NamedTuple):
+    indir: Path
+    outdir: Path
+
 
 # Convenience struct for label/class files
-LabelPaths = namedtuple("LabelPaths", "classes labels")
+class LabelPaths(NamedTuple):
+    classes: Path
+    labels: Path
 
 
-@pytest.mark.xfail(reason="ANIb is not currently fully implemented")
-class TestANIbsubcommand(unittest.TestCase):
+class TestANIbSubcommand(unittest.TestCase):
 
     """Class defining tests of the pyani anib subcommand."""
 
@@ -106,13 +113,13 @@ class TestANIbsubcommand(unittest.TestCase):
                 outdir=self.dirpaths.outdir,
                 dbpath=self.dbpath,
                 force=False,
-                name="test_subcmd anib",
+                name="test_subcmd_anib",
                 classes=self.lblfiles.classes,
                 labels=self.lblfiles.labels,
                 recovery=False,
                 cmdline="ANIb test suite",
                 blastn_exe=self.exes.blastn_exe,
-                filter_exe=self.exes.format_exe,
+                format_exe=self.exes.format_exe,
                 fragsize=1020,
                 scheduler=self.scheduler,
                 workers=None,

@@ -55,7 +55,7 @@ import pandas as pd
 import pytest
 
 from pyani import run_multiprocessing as run_mp
-from pyani import anib, anim, tetra, pyani_files
+from pyani import anib, aniblastall, anim, tetra, pyani_files
 
 
 def parse_jspecies(infile):
@@ -227,13 +227,13 @@ def test_anib_concordance(
         paths_concordance_fna, tmp_path, fragment_length
     )
     jobgraph = anib.make_job_graph(
-        paths_concordance_fna, fragfiles, anib.make_blastcmd_builder("ANIb", tmp_path)
+        paths_concordance_fna, fragfiles, anib.make_blastcmd_builder(tmp_path)
     )
     assert 0 == run_mp.run_dependency_graph(jobgraph)  # Jobs must run correctly
 
     # Process BLAST output
     result_pid = anib.process_blast(
-        tmp_path, orglengths, fraglengths, mode="ANIb"
+        tmp_path, orglengths, fraglengths
     ).percentage_identity
 
     # Compare JSpecies output to results. We do this in two blocks,
@@ -266,19 +266,19 @@ def test_aniblastall_concordance(
     orglengths = pyani_files.get_sequence_lengths(paths_concordance_fna)
 
     # Perform ANIblastall on the input directory contents
-    fragfiles, fraglengths = anib.fragment_fasta_files(
+    fragfiles, fraglengths = aniblastall.fragment_fasta_files(
         paths_concordance_fna, tmp_path, fragment_length
     )
-    jobgraph = anib.make_job_graph(
+    jobgraph = aniblastall.make_job_graph(
         paths_concordance_fna,
         fragfiles,
-        anib.make_blastcmd_builder("ANIblastall", tmp_path),
+        aniblastall.make_blastcmd_builder(tmp_path),
     )
     assert 0 == run_mp.run_dependency_graph(jobgraph)  # Jobs must run correctly
 
     # Process BLAST output
-    result_pid = anib.process_blast(
-        tmp_path, orglengths, fraglengths, mode="ANIblastall"
+    result_pid = aniblastall.process_blast(
+        tmp_path, orglengths, fraglengths
     ).percentage_identity
 
     # Compare JSpecies output to results

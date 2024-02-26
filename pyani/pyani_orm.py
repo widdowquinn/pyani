@@ -47,6 +47,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
+
 import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
 
@@ -320,6 +321,39 @@ class Comparison(Base):
     def __repr__(self) -> str:
         """Return string representation of Comparison table object."""
         return "<Comparison(comparison_id={})>".format(self.comparison_id)
+
+
+def add_blastdb(session, genome, run, fragpath, dbpath, fragsizes, dbcmd) -> None:
+    """Update the Blastdb table with a fragment dictionary for genome.
+
+    :param session:         active pyanidb session via ORM
+    :param genome:          Genome ORM object
+    :param run:             Run ORM object for the current ANIb run
+    :param fragpath:        Path to the fragment sequence file for Genome
+    :param dbpath:          Path to the database file
+    :param fragsizes:       fragment size dictionary for Genome
+    :param dbcmd:           command used to generate database
+
+    """
+    try:
+        blastdb = BlastDB(
+            genome_id=genome.genome_id,
+            run_id=run.run_id,
+            fragpath=str(fragpath),
+            dbpath=str(dbpath),
+            fragsizes=fragsizes,
+            dbcmd=dbcmd,
+        )
+    except Exception:
+        raise PyaniORMException(
+            f"Could not create {genome} blast database with command line: {dbcmd}"
+        )
+    try:
+        session.add(blastdb)
+        session.commit()
+    except Exception:
+        raise PyaniORMException(f"Could not add blastdb for {genome} to the database")
+    return blastdb
 
 
 def create_db(dbpath: Path) -> None:
@@ -620,6 +654,8 @@ def update_comparison_matrices(session, run) -> None:
     :param session:       active pyanidb session via ORM
     :param run:           Run ORM object for the current ANIm run
     """
+    logger = logging.getLogger(__name__)
+
     # Create dataframes for storing in the Run table
     # Rows and columns are the (ordered) list of genome IDs
     genome_ids = sorted([_.genome_id for _ in run.genomes.all()])
@@ -639,6 +675,9 @@ def update_comparison_matrices(session, run) -> None:
 
     # Loop over all comparisons for the run and fill in result matrices
     for cmp in run.comparisons.all():
+        logger.debug(f"Comparison: {cmp}")
+        logger.debug(f"Alignment length: {cmp.aln_length}")
+        # logger.debug(f"ANI alignment length: {cmp.ani_alnlen}")
         qid, sid = cmp.query_id, cmp.subject_id
         df_identity.loc[qid, sid] = cmp.identity
         df_coverage.loc[qid, sid] = cmp.cov_query
@@ -652,6 +691,7 @@ def update_comparison_matrices(session, run) -> None:
             df_coverage.loc[sid, qid] = cmp.cov_subject
             df_identity.loc[sid, qid] = cmp.identity
 
+    logger.debug(f"Alnlength df: {df_alnlength.head()}")
     # Add matrices to the database
     run.df_identity = df_identity.to_json()
     run.df_coverage = df_coverage.to_json()

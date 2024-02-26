@@ -83,6 +83,7 @@ aligned sequence identity used to calculate ANI.
 
 import os
 import platform
+import logging
 import re
 import shutil
 import subprocess
@@ -151,7 +152,7 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
     )
 
     version = re.search(  # type: ignore
-        r"(?<=blastn:\s)[0-9\.]*\+", str(result.stdout, "utf-8")
+        r"(?<=blastn:\s)[0-9\.]*\+", str(result.stdout + result.stderr, "utf-8")
     ).group()
 
     if 0 == len(version.strip()):
@@ -255,7 +256,7 @@ def build_db_jobs(infiles: List[Path], blastcmds: BLASTcmds) -> Dict:
 
 
 def make_blastcmd_builder(
-    mode: str,
+    # method: str,
     outdir: Path,
     format_exe: Optional[Path] = None,
     blast_exe: Optional[Path] = None,
@@ -263,32 +264,20 @@ def make_blastcmd_builder(
 ) -> BLASTcmds:
     """Return BLASTcmds object for construction of BLAST commands.
 
-    :param mode:  str, the kind of ANIb analysis (ANIb or ANIblastall)
     :param outdir:
     :param format_exe:
     :param blast_exe:
     :param prefix:
     """
-    if mode == "ANIb":  # BLAST/formatting executable depends on mode
-        blastcmds = BLASTcmds(
-            BLASTfunctions(construct_makeblastdb_cmd, construct_blastn_cmdline),
-            BLASTexes(
-                format_exe or pyani_config.MAKEBLASTDB_DEFAULT,
-                blast_exe or pyani_config.BLASTN_DEFAULT,
-            ),
-            prefix,
-            outdir,
-        )
-    else:
-        blastcmds = BLASTcmds(
-            BLASTfunctions(construct_formatdb_cmd, construct_blastall_cmdline),
-            BLASTexes(
-                format_exe or pyani_config.FORMATDB_DEFAULT,
-                blast_exe or pyani_config.BLASTALL_DEFAULT,
-            ),
-            prefix,
-            outdir,
-        )
+    blastcmds = BLASTcmds(
+        BLASTfunctions(construct_makeblastdb_cmd, construct_blastn_cmdline),
+        BLASTexes(
+            format_exe or pyani_config.MAKEBLASTDB_DEFAULT,
+            blast_exe or pyani_config.BLASTN_DEFAULT,
+        ),
+        prefix,
+        outdir,
+    )
     return blastcmds
 
 
@@ -301,9 +290,6 @@ def make_job_graph(
     :param infiles:  list of paths to input FASTA files
     :param fragfiles:  list of paths to fragmented input FASTA files
     :param blastcmds:
-
-    By default, will run ANIb - it *is* possible to make a mess of passing the
-    wrong executable for the mode you're using.
 
     All items in the returned graph list are BLAST executable jobs that must
     be run *after* the corresponding database creation. The Job objects
@@ -347,31 +333,26 @@ def make_job_graph(
     return joblist
 
 
-# Generate list of makeblastdb command lines from passed filenames
-def generate_blastdb_commands(
-    filenames: List[Path],
-    outdir: Path,
-    blastdb_exe: Optional[Path] = None,
-    mode: str = "ANIb",
-) -> List[Tuple[str, Path]]:
-    """Return list of makeblastdb command-lines for ANIb/ANIblastall.
-
-    :param filenames:  a list of paths to input FASTA files
-    :param outdir:  path to output directory
-    :param blastdb_exe:  path to the makeblastdb executable
-    :param mode:  str, ANIb analysis type (ANIb or ANIblastall)
-    """
-    if mode == "ANIb":
-        construct_db_cmdline = construct_makeblastdb_cmd
-    else:
-        construct_db_cmdline = construct_formatdb_cmd
-    if blastdb_exe is None:
-        cmdlines = [construct_db_cmdline(fname, outdir) for fname in filenames]
-    else:
-        cmdlines = [
-            construct_db_cmdline(fname, outdir, blastdb_exe) for fname in filenames
-        ]
-    return cmdlines
+## Generate list of makeblastdb command lines from passed filenames
+# def generate_blastdb_commands(
+#     filenames: List[Path],
+#     outdir: Path,
+#     blastdb_exe: Optional[Path] = None,
+# ) -> List[Tuple[str, Path]]:
+#     """Return list of makeblastdb command-lines for ANIb.
+#
+#     :param filenames:  a list of paths to input FASTA files
+#     :param outdir:  path to output directory
+#     :param blastdb_exe:  path to the makeblastdb executable
+#     :param method:  str, ANIb analysis type (ANIb)
+#     """
+#     if blastdb_exe is None:
+#         cmdlines = [construct_makeblastdb_cmd(fname, outdir) for fname in filenames]
+#     else:
+#         cmdlines = [
+#             construct_makeblastdb_cmd(fname, outdir, blastdb_exe) for fname in filenames
+#         ]
+#     return cmdlines
 
 
 # Generate single makeblastdb command line
@@ -384,111 +365,64 @@ def construct_makeblastdb_cmd(
     :param outdir:  Path, directory for output
     :param blastdb_exe:  Path, path to the makeblastdb executable
     """
-    outfilename = outdir / filename.name
+    outfilename = outdir / filename.name.replace("-fragments", "")
     return (
         f"{blastdb_exe} -dbtype nucl -in {filename} -title {filename.stem} -out {outfilename}",
         outfilename,
     )
 
 
-# Generate single makeblastdb command line
-def construct_formatdb_cmd(
-    filename: Path, outdir: Path, blastdb_exe: Path = pyani_config.FORMATDB_DEFAULT
-) -> Tuple[str, Path]:
-    """Return formatdb command and path to output file.
-
-    :param filename:  Path, input filename
-    :param outdir:  Path, path to output directory
-    :param blastdb_exe:  Path, path to the formatdb executable
-    """
-    newfilename = outdir / filename.name
-    shutil.copy(filename, newfilename)
-    return (f"{blastdb_exe} -p F -i {newfilename} -t {filename.stem}", newfilename)
-
-
 # Generate list of BLASTN command lines from passed filenames
 def generate_blastn_commands(
-    filenames: List[Path],
+    query: Path,
+    subject: Path,
     outdir: Path,
     blast_exe: Optional[Path] = None,
-    mode: str = "ANIb",
 ) -> List[str]:
-    """Return a list of blastn command-lines for ANIm.
+    """Return a list of blastn command-lines for ANIb.
 
-    :param filenames:  a list of paths to fragmented input FASTA files
+    :param query:  a paths to the query's fragmented input FASTA file
+    :param subject:  a paths to the subject's fragmented input FASTA file
     :param outdir:  path to output directory
     :param blastn_exe:  path to BLASTN executable
-    :param mode:  str, analysis type (ANIb or ANIblastall)
+    :param method:  str, analysis type (ANIb)
 
     Assumes that the fragment sequence input filenames have the form
     ACCESSION-fragments.ext, where the corresponding BLAST database filenames
     have the form ACCESSION.ext. This is the convention followed by the
     fragment_FASTA_files() function above.
     """
-    if mode == "ANIb":
-        construct_blast_cmdline = construct_blastn_cmdline  # type: Callable
+    subj_db = outdir / "blastdbs" / Path(str(subject.name))
+    if blast_exe is None:
+        cmdline = construct_blastn_cmdline(query, subj_db, outdir)
     else:
-        construct_blast_cmdline = construct_blastall_cmdline
-    cmdlines = []
-    for idx, fname1 in enumerate(filenames[:-1]):
-        dbname1 = Path(str(fname1).replace("-fragments", ""))
-        for fname2 in filenames[idx + 1 :]:
-            dbname2 = Path(str(fname2).replace("-fragments", ""))
-            if blast_exe is None:
-                cmdlines.append(construct_blast_cmdline(fname1, dbname2, outdir))
-                cmdlines.append(construct_blast_cmdline(fname2, dbname1, outdir))
-            else:
-                cmdlines.append(
-                    construct_blast_cmdline(fname1, dbname2, outdir, blast_exe)
-                )
-                cmdlines.append(
-                    construct_blast_cmdline(fname2, dbname1, outdir, blast_exe)
-                )
-    return cmdlines
+        cmdline = construct_blastn_cmdline(query, subj_db, outdir, blast_exe)
+    return cmdline
 
 
 # Generate single BLASTN command line
 def construct_blastn_cmdline(
-    fname1: Path,
-    fname2: Path,
+    query: Path,
+    subj_db: Path,
     outdir: Path,
     blastn_exe: Path = pyani_config.BLASTN_DEFAULT,
 ) -> str:
     """Return a single blastn command.
 
-    :param fname1:
-    :param fname2:
-    :param outdir:
+    :param query:  Path, FASTA file for query genome
+    :param subj_db:  Path, database of fragments for subject genome
+    :param outdir:  Path, to the output directory
     :param blastn_exe:  str, path to blastn executable
     """
-    prefix = outdir / f"{fname1.stem.replace('-fragments', '')}_vs_{fname2.stem}"
+    prefix = Path(outdir) / Path(
+        f"{query.stem.replace('-fragments', '')}_vs_{subj_db.stem}"
+    )
     return (
-        f"{blastn_exe} -out {prefix}.blast_tab -query {fname1} -db {fname2} "
+        f"{blastn_exe} -out {prefix}.blast_tab -query {query} -db {subj_db} "
         "-xdrop_gap_final 150 -dust no -evalue 1e-15 -max_target_seqs 1 -outfmt "
         "'6 qseqid sseqid length mismatch pident nident qlen slen "
         "qstart qend sstart send positive ppos gaps' "
         "-task blastn"
-    )
-
-
-# Generate single BLASTALL command line
-def construct_blastall_cmdline(
-    fname1: Path,
-    fname2: Path,
-    outdir: Path,
-    blastall_exe: Path = pyani_config.BLASTALL_DEFAULT,
-) -> str:
-    """Return single blastall command.
-
-    :param fname1:
-    :param fname2:
-    :param outdir:
-    :param blastall_exe:  str, path to BLASTALL executable
-    """
-    prefix = outdir / f"{fname1.stem.replace('-fragments', '')}_vs_{fname2.stem}"
-    return (
-        f"{blastall_exe} -p blastn -o {prefix}.blast_tab -i {fname1} -d {fname2} "
-        "-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8"
     )
 
 
@@ -497,7 +431,7 @@ def process_blast(
     blast_dir: Path,
     org_lengths: Dict,
     fraglengths: Dict,
-    mode: str = "ANIb",
+    method: str = "ANIb",
     logger: Optional[Logger] = None,
 ) -> ANIResults:
     """Return tuple of ANIb results for .blast_tab files in the output dir.
@@ -506,7 +440,7 @@ def process_blast(
     :param org_lengths:  Dict, the base count for each input sequence
     :param fraglengths:  dictionary of query sequence fragment lengths, only
         needed for BLASTALL output
-    :param mode:  str, analysis type (ANIb or ANIblastall)
+    :param method:  str, analysis type (ANIb)
     :param logger:  a logger for messages
 
     Returns the following pandas dataframes in an ANIResults object;
@@ -523,7 +457,7 @@ def process_blast(
     # Process directory to identify input files
     blastfiles = pyani_files.get_input_files(blast_dir, ".blast_tab")
     # Hold data in ANIResults object
-    results = ANIResults(list(org_lengths.keys()), mode)
+    results = ANIResults(list(org_lengths.keys()), method)
 
     # Fill diagonal NA values for alignment_length with org_lengths
     for org, length in list(org_lengths.items()):
@@ -552,7 +486,7 @@ def process_blast(
                     blastfile,
                 )
             continue
-        resultvals = parse_blast_tab(blastfile, fraglengths, mode)
+        resultvals = parse_blast_tab(blastfile, fraglengths)
         query_cover = float(resultvals[0]) / org_lengths[qname]
 
         # Populate dataframes: when assigning data, we need to note that
@@ -566,15 +500,13 @@ def process_blast(
 
 
 # Parse BLASTALL output to get total alignment length and mismatches
-def parse_blast_tab(
-    filename: Path, fraglengths: Dict, mode: str = "ANIb"
-) -> Tuple[int, int, int]:
+def parse_blast_tab(filename: Path, fraglengths: Dict) -> Tuple[int, int, int]:
     """Return (alignment length, similarity errors, mean_pid) tuple.
 
     :param filename:  Path, path to .blast_tab file
     :param fraglengths:  Optional[Dict], dictionary of fragment lengths for each
         genome.
-    :param mode:  str, analysis type (ANIb or ANIblastall)
+    :param method:  str, analysis type (ANIb)
 
     Calculate the alignment length and total number of similarity errors (as
     we would with ANIm), as well as the Goris et al.-defined mean identity
@@ -587,41 +519,25 @@ def parse_blast_tab(
     over an alignable region of at least 70% of their length.
     '''
     """
-    # Assuming that the filename format holds org1_vs_org2.blast_tab:
-    qname = filename.stem.split("_vs_")[0]
+    logger = logging.getLogger(__name__)
+
     # Load output as dataframe
-    if mode == "ANIblastall":
-        qfraglengths = fraglengths[qname]
-        columns = [
-            "sid",
-            "blast_pid",
-            "blast_alnlen",
-            "blast_mismatch",
-            "blast_gaps",
-            "q_start",
-            "q_end",
-            "s_start",
-            "s_end",
-            "e_Value",
-            "bit_score",
-        ]
-    else:
-        columns = [
-            "sbjct_id",
-            "blast_alnlen",
-            "blast_mismatch",
-            "blast_pid",
-            "blast_identities",
-            "qlen",
-            "slen",
-            "q_start",
-            "q_end",
-            "s_start",
-            "s_end",
-            "blast_pos",
-            "ppos",
-            "blast_gaps",
-        ]
+    columns = [
+        "sbjct_id",
+        "blast_alnlen",
+        "blast_mismatch",
+        "blast_pid",
+        "blast_identities",
+        "qlen",
+        "slen",
+        "q_start",
+        "q_end",
+        "s_start",
+        "s_end",
+        "blast_pos",
+        "ppos",
+        "blast_gaps",
+    ]
     # We may receive an empty BLASTN output file, if there are no significant
     # regions of homology. This causes pandas to throw an error on CSV import.
     # To get past this, we create an empty dataframe with the appropriate
@@ -631,11 +547,8 @@ def parse_blast_tab(
         data.columns = columns
     except pd.io.common.EmptyDataError:
         data = pd.DataFrame(columns=columns)
-    # Add new column for fragment length, only for BLASTALL
-    if mode == "ANIblastall":
-        data["qlen"] = pd.Series(
-            [qfraglengths[idx] for idx in data.index], index=data.index
-        )
+    # logger.debug(f"Index: {[idx for idx in data.index]}")
+    logger.debug(f"data: {data.head()}")
     # Add new columns for recalculated alignment length, proportion, and
     # percentage identity
     data["ani_alnlen"] = data["blast_alnlen"] - data["blast_gaps"]

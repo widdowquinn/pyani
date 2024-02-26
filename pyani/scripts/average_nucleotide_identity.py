@@ -141,7 +141,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from pyani import (
-    anib,
+    # anib,
     anim,
     tetra,
     pyani_config,
@@ -627,6 +627,7 @@ def make_sequence_fragments(
     for ANIb methods), and writes BLAST databases of these fragments,
     and fragment lengths of sequences, to local files.
     """
+    global anib
     fragfiles, fraglengths = anib.fragment_fasta_files(infiles, blastdir, args.fragsize)
     # Export fragment lengths as JSON, in case we re-run with --skip_blastn
     fragpath = blastdir / "fraglengths.json"
@@ -659,7 +660,7 @@ def run_blast(
         # Run BLAST database-building and executables from a jobgraph
         logger.info("Creating job dependency graph")
         jobgraph = anib.make_job_graph(
-            infiles, fragfiles, anib.make_blastcmd_builder(args.method, blastdir)
+            infiles, fragfiles, anib.make_blastcmd_builder(blastdir)
         )
         if args.scheduler == "multiprocessing":
             logger.info("Running dependency graph with multiprocessing")
@@ -740,9 +741,7 @@ def unified_anib(
     # Process pairwise BLASTN output
     logger.info("Processing pairwise %s BLAST output.", args.method)
     try:
-        data = anib.process_blast(
-            blastdir, org_lengths, fraglengths=fraglengths, mode=args.method
-        )
+        data = anib.process_blast(blastdir, org_lengths, fraglengths=fraglengths)
     except ZeroDivisionError:
         logger.error("One or more BLAST output files has a problem.")
         if not args.skip_blastn:
@@ -956,6 +955,12 @@ def run_main(argsin: Optional[Namespace] = None) -> int:
     args = process_arguments(argsin)
     logger = logging.getLogger(__name__)
     config_logger(args)
+
+    # Conditionally load correct blast module
+    if args.method == "ANIb":
+        globals()["anib"] = __import__("pyani.anib", fromlist="pyani")
+    elif args.method == "ANIblastall":
+        globals()["anib"] = __import__("pyani.aniblastall", fromlist="pyani")
 
     # Ensure argument validity and get method function/config
     test_class_label_paths(args, logger)

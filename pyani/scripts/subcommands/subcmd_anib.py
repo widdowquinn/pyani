@@ -43,26 +43,50 @@ import datetime
 import json
 import logging
 import os
+import subprocess
 
 from argparse import Namespace
 from itertools import permutations
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, NamedTuple, Tuple, Dict
 
 from Bio import SeqIO
 from tqdm import tqdm
 
-from pyani import anib
+from pyani import (
+    PyaniException,
+    anib,
+    pyani_config,
+    pyani_jobs,
+    run_sge,
+    run_multiprocessing as run_mp,
+)
 from pyani.pyani_files import collect_existing_output
 from pyani.pyani_orm import (
-    PyaniORMException,
     add_run,
     add_run_genomes,
+    add_blastdb,
+    Comparison,
     filter_existing_comparisons,
     get_session,
+    PyaniORMException,
     update_comparison_matrices,
 )
 from pyani.pyani_tools import termcolor
+
+
+# Convenience struct describing a pairwise comparison job for the SQLAlchemy
+# implementation
+class ComparisonJob(NamedTuple):
+
+    """Pairwise comparison job for the SQLAlchemy implementation."""
+
+    query: str
+    subject: str
+    blastcmd: str
+    outfile: Path
+    fragsize: int
+    job: pyani_jobs.Job
 
 
 def subcmd_anib(args: Namespace) -> None:
@@ -89,11 +113,11 @@ def subcmd_anib(args: Namespace) -> None:
 
     The calculated values are stored in the local SQLite3 database.
     """
+    # Create logger
     logger = logging.getLogger(__name__)
 
-    logger.info(
-        termcolor("Running ANIm analysis", "red")
-    )  # announce that we're starting
+    # Announce the analysis
+    logger.info(termcolor("Running ANIb analysis", "red"))
 
     # Get BLAST+ version - this will be used in the database entries
     blastn_version = anib.get_version(args.blastn_exe)
@@ -102,7 +126,7 @@ def subcmd_anib(args: Namespace) -> None:
     # Use provided name, or make new one for this analysis
     start_time = datetime.datetime.now()
     name = args.name or "_".join(["ANIb", start_time.isoformat()])
-    logger.info("Analysis name: %s", name)
+    logger.info(termcolor("Analysis name: %s", "cyan"), name)
 
     # Connect to existing database (which may be "clean" or have old analyses)
     logger.debug("Connecting to database %s", args.dbpath)
@@ -142,6 +166,7 @@ def subcmd_anib(args: Namespace) -> None:
             run_id,
             exc_info=True,
         )
+        raise SystemExit(1)
     logger.debug("\t...added genome IDs: %s", genome_ids)
 
     # Get list of genomes for this analysis from the database
@@ -156,7 +181,7 @@ def subcmd_anib(args: Namespace) -> None:
         os.makedirs(args.outdir, exist_ok=True)
     except IOError:
         logger.error(
-            f"Could not create output directory {args.outdir} (exiting)", exc_info=True
+            "Could not create output directory %s (exiting)", args.outdir, exc_info=True
         )
         raise SystemError(1)
     fragdir = Path(str(args.outdir)) / "fragments"
@@ -168,16 +193,30 @@ def subcmd_anib(args: Namespace) -> None:
     # Create a new sequence fragment file and a new BLAST+ database for each input genome,
     # and add this data to the database as a row in BlastDB
     logger.info("Creating input sequence fragment files")
+    fragfiles = {}
+    fraglens = {}
     for genome in genomes:
-        fragpath, fraglengths = fragment_fasta_file(
+        fragpath, fragsizes = fragment_fasta_file(
             Path(str(genome.path)), Path(str(fragdir)), args.fragsize
         )
-        print(fragpath, len(fraglengths))
-        # blastdb = add_blastdb(
-        #     session, genome, run, fragpath, dbpath, fraglengths, dbcmd
-        # )
+        fragfiles.update({genome: fragpath})
+        fraglens.update({genome: fragsizes})
 
-    raise NotImplementedError
+        dbcmd, blastdbpath = anib.construct_makeblastdb_cmd(
+            Path(genome.path), blastdbdir  # fragpath, blastdbdir
+        )  # args.outdir)
+
+        subprocess.run(
+            dbcmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+
+        add_blastdb(
+            session, genome, run, fragpath, blastdbpath, json.dumps(fragsizes), dbcmd
+        )
 
     # Generate all pair permutations of genome IDs as a list of (Genome, Genome) tuples
     logger.info(
@@ -191,10 +230,10 @@ def subcmd_anib(args: Namespace) -> None:
     # but remove it from the list of comparisons to be performed
     logger.info("Checking database for existing comparison data...")
     comparisons_to_run = filter_existing_comparisons(
-        session, run, comparisons, "blastn", blastn_version, args.fragsize, None
+        session, run, comparisons, "blastn", blastn_version, args.fragsize, False
     )
     logger.info(
-        f"\t...after check, still need to run {len(comparisons_to_run)} comparisons"
+        "\t...after check, still need to run %s comparisons", len(comparisons_to_run)
     )
 
     # If there are no comparisons to run, update the Run matrices and exit
@@ -214,64 +253,123 @@ def subcmd_anib(args: Namespace) -> None:
     # run, and do not necessarily need to rerun all the jobs. In this case,
     # we prepare a list of output files we want to recover from the results
     # in the output directory.
+    # ¶ Should this use output files, or pull from the database?
     if args.recovery:
         logger.warning("Entering recovery mode...")
         logger.debug(
             "\tIn this mode, existing comparison output from %s is reused", args.outdir
         )
-        existingfiles = collect_existing_output(args.outdir, "blastn", args)
-        if existingfiles:
+        existing_files = collect_existing_output(args.outdir, "blastn", args)
+        if existing_files:
             logger.debug(
                 "\tIdentified %s existing output files for reuse, %s (etc)",
-                len(existingfiles),
-                existingfiles[0],
+                len(existing_files),
+                existing_files[0],
             )
         else:
             logger.debug("\tIdentified no existing output files")
     else:
-        existingfiles = list()
+        existing_files = list()
         logger.debug("\tAssuming no pre-existing output files")
 
-    # Split the input genome files into contiguous fragments of the specified size,
-    # as described in Goris et al. We create a new directory to hold sequence
-    # fragments, away from the main genomes
-    logger.info("Splitting input genome files into %snt fragments...", args.fragsize)
-    fragdir = Path(args.outdir) / "fragments"
-    os.makedirs(fragdir, exist_ok=True)
-    fragfiles, fraglens = anib.fragment_fasta_files(
-        [Path(str(_.path)) for _ in genomes],
-        Path(args.outdir) / "fragments",
-        args.fragsize,
-    )
-    logger.debug("...wrote %s fragment files to %s", len(fragfiles), fragdir)
+    ## Split the input genome files into contiguous fragments of the specified size,
+    ## as described in Goris et al. We create a new directory to hold sequence
+    ## fragments, away from the main genomes
+    # logger.info("Splitting input genome files into %snt fragments...", args.fragsize)
+    # fragdir = Path(args.outdir) / "fragments"
+    # os.makedirs(fragdir, exist_ok=True)
+    # fragfiles, fraglens = anib.fragment_fasta_files(
+    #     [Path(str(_.path)) for _ in genomes],
+    #     Path(args.outdir) / "fragments",
+    #     args.fragsize,
+    # )
+    # logger.debug("...wrote %s fragment files to %s", len(fragfiles), fragdir)
 
     # Create list of BLASTN jobs for each comparison still to be performed
     logger.info("Creating blastn jobs for ANIb...")
+    # This method considered, but doesn't get fraglens
+    # fragfiles =  [file for file in fragdir.iterdir()]
     joblist = generate_joblist(
-        comparisons_to_run, existingfiles, fragfiles, fraglens, args
+        comparisons_to_run, existing_files, fragfiles.values(), fraglens.values(), args
     )
     logger.debug("...created %s blastn jobs", len(joblist))
 
-    raise NotImplementedError
+    # Pass jobs to appropriate scheduler
+    logger.debug("Passing %s jobs to %s...", len(joblist), args.scheduler)
+    run_anib_jobs(joblist, args)
+    logger.info("...jobs complete.")
+
+    # Process output and add results to database
+    # This requires us to drop out of threading/multiprocessing: Python's SQLite3
+    # interface doesn't allow sharing connections and cursors
+    logger.info("Adding comparison results to database...")
+    update_comparison_results(joblist, run, session, blastn_version, fraglens, args)
+    update_comparison_matrices(session, run)
+    logger.info("...database updated.")
 
 
 def generate_joblist(
     comparisons: List,
-    existingfiles: List,
+    existing_files: List,
     fragfiles: List,
-    fraglens: List,
+    fragsizes: List,
     args: Namespace,
-) -> NotImplementedError:
+) -> List[ComparisonJob]:
     """Return list of ComparisonJobs.
 
     :param comparisons:  list of (Genome, Genome) tuples for which comparisons are needed
-    :param existingfiles:  list of pre-existing BLASTN+ outputs
-    :param fragfiles:
-    :param fraglens:
+    :param existing_files:  list of pre-existing BLASTN+ outputs
+    :param fragfiles:  list of files containing genome fragments
+    :param fragsizes:  list of fragment lengths
     :param args:  Namespace, command-line arguments
     """
-    # logger = logging.getLogger(__name__)
-    raise NotImplementedError
+    logger = logging.getLogger(__name__)
+
+    existing_files = set(existing_files)  # Path objects hashable
+
+    joblist = []  # will hold ComparisonJob structs
+    for idx, (query, subject) in enumerate(
+        tqdm(comparisons, disable=args.disable_tqdm)
+    ):
+        qprefix, qsuffix = (
+            args.outdir / "fragments" / Path(query.path).stem,
+            Path(query.path).suffix,
+        )
+        qfrags = Path(f"{qprefix}-fragments{qsuffix}")
+
+        blastcmd = anib.generate_blastn_commands(
+            qfrags, Path(subject.path), args.outdir, args.blastn_exe
+        )
+        logger.debug("Commands to run:\n\t%s\n", blastcmd)
+        outprefix = blastcmd.split()[2][:-10]  # prefix for blastn output
+        outfname = Path(outprefix + ".blast_tab")
+        logger.debug("Expected output file for db: %s", outfname)
+
+        # If we are in recovery mode, we are salvaging output from a previous
+        # run, and do not necessarily need to rerun all the jobs. In this case,
+        # we prepare a list of output files we want to recover from the results
+        # in the output directory.
+
+        # The comparisons collection always gets updated, so that results are
+        # added to the database whether they come from recovery mode or are run
+        # in this call of the script.
+        if args.recovery and outfname in existing_files:
+            logger.debug("Recovering output from %s, not submitting job", outfname)
+            # Need to track the expected output, but set the job itself to None.
+            joblist.append(
+                ComparisonJob(query, subject, blastcmd, outfname, args.fragsize, None)
+            )
+        else:
+            logger.debug("Building job")
+            # Build job
+            blastjob = pyani_jobs.Job("%s_%06d-blast" % (args.jobprefix, idx), blastcmd)
+            joblist.append(
+                ComparisonJob(
+                    query, subject, blastcmd, outfname, args.fragsize, blastjob
+                )
+            )
+    return joblist
+    # raise NotImplementedError
 
 
 def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path, str]:
@@ -302,6 +400,97 @@ def fragment_fasta_file(inpath: Path, outdir: Path, fragsize: int) -> Tuple[Path
             idx += fragsize
 
     # Write fragments to output file
-    fragpath = outdir / f"{inpath.stem}-fragments.fasta"
+    fragpath = outdir / f"{inpath.stem}-fragments.fna"
     SeqIO.write(outseqs, fragpath, "fasta")
-    return fragpath, json.dumps(sizedict)
+    return fragpath, sizedict
+
+
+def run_anib_jobs(joblist: List[ComparisonJob], args: Namespace) -> None:
+    """Pass ANIb blastn jobs to the scheduler.
+
+    :param joblist:           list of ComparisonJob namedtuples
+    :param args:              command-line arguments for the run
+    """
+    logger = logging.getLogger(__name__)
+    logger.debug("Scheduler: %s", args.scheduler)
+
+    # Entries with None seen in recovery mode:
+    jobs = [_.job for _ in joblist if _.job]
+
+    if args.scheduler == "multiprocessing":
+        logger.info("Running jobs with multiprocessing")
+        if not args.workers:
+            logger.debug("(using maximum number of worker threads)")
+        else:
+            logger.debug("(using %d worker threads, if available)", args.workers)
+        cumval = run_mp.run_dependency_graph(jobs, workers=args.workers)
+        if cumval > 0:
+            logger.error(
+                "At least one blastn comparison failed. Please investigate (exiting)"
+            )
+            raise PyaniException("Multiprocessing run failed in ANIb")
+        logger.info("Multiprocessing run completed without error")
+    elif args.scheduler.lower() == "sge":
+        logger.info("Running jobs with SGE")
+        logger.debug("Setting jobarray group size to %d", args.sgegroupsize)
+        logger.debug("Joblist contains %d jobs", len(joblist))
+        run_sge.run_dependency_graph(
+            jobs,
+            jgprefix=args.jobprefix,
+            sgegroupsize=args.sgegroupsize,
+            sgeargs=args.sgeargs,
+        )
+    else:
+        logger.error(termcolor("Scheduler %s not recognised", "red"), args.scheduler)
+        raise SystemError(1)
+
+
+#
+#
+def update_comparison_results(
+    joblist: List[ComparisonJob],
+    run,
+    session,
+    blastn_version: str,
+    fraglens: Dict,
+    args: Namespace,
+) -> None:
+    """Update the Comparision table with the completed result set.
+
+    :param joblist:         list of ComparisonJob namedtuples
+    :param run:             Run ORM object for the current ANIb run
+    :param session:         active pyanidb session via ORM
+    :param blastn_version:  version of blastn used for the comparison
+    :param fraglens:     dictionary of fragment lengths for each genome
+    :param args:            command-line arguments for this run
+
+    The Comparison table stores individual comparison results, one per row.
+    """
+    logger = logging.getLogger(__name__)
+
+    # Add individual results to Comparison table
+    for job in tqdm(joblist, disable=args.disable_tqdm):
+        logger.debug("\t%s vs %s", job.query.description, job.subject.description)
+        aln_length, sim_errs, ani_pid = anib.parse_blast_tab(job.outfile, fraglens)
+
+        qcov = aln_length / job.query.length
+        scov = aln_length / job.subject.length
+        run.comparisons.append(
+            Comparison(
+                query=job.query,
+                subject=job.subject,
+                aln_length=int(aln_length),
+                sim_errs=int(sim_errs),
+                identity=ani_pid,
+                cov_query=qcov,
+                cov_subject=scov,
+                program="blastn",
+                version=blastn_version,
+                fragsize=job.fragsize,
+                maxmatch=False,
+            )
+        )
+    #
+    # Populate db
+    logger.debug("Committing results to database")
+    session.commit()

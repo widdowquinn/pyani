@@ -69,20 +69,20 @@ def build(
         "--indir",
         action="store",
         dest="indir",
-        default=None,
+        # default=None,
+        required=True,
         type=Path,
         help="input genome directory",
-        required=True,
     )
     parser.add_argument(
         "-o",
         "--outdir",
         action="store",
         dest="outdir",
-        default=None,
+        # default=None,
+        required=True,
         type=Path,
         help="output analysis results directory",
-        required=True,
     )
     # Optional arguments
     parser.add_argument(
