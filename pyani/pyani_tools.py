@@ -106,7 +106,11 @@ class ANIResults:
         self.mode = mode
 
     def add_tot_length(
-        self, qname: str, sname: str, value: float, sym: bool = True
+        self,
+        qname: str,
+        sname: str,
+        query_alignment_length: float,
+        subject_alignment_length: Optional[float] = None,
     ) -> None:
         """Add a total length value to self.alignment_lengths.
 
@@ -115,9 +119,9 @@ class ANIResults:
         :param value:
         :param sym:
         """
-        self.alignment_lengths.loc[qname, sname] = value
-        if sym:
-            self.alignment_lengths.loc[sname, qname] = value
+        self.alignment_lengths.loc[qname, sname] = query_alignment_length
+        if subject_alignment_length:
+            self.alignment_lengths.loc[sname, qname] = subject_alignment_length
 
     def add_sim_errors(
         self, qname: str, sname: str, value: float, sym: bool = True
@@ -133,17 +137,23 @@ class ANIResults:
         if sym:
             self.similarity_errors.loc[sname, qname] = value
 
-    def add_pid(self, qname: str, sname: str, value: float, sym: bool = True) -> None:
+    def add_pid(
+        self,
+        qname: str,
+        sname: str,
+        qidentity: float,
+        sidentity: Optional[float] = None,
+    ) -> None:
         """Add a percentage identity value to self.percentage_identity.
 
         :param qname:
         :param sname:
-        :param value:
-        :param sym:
+        :param qidentity:
+        :param sidentity:
         """
-        self.percentage_identity.loc[qname, sname] = value
-        if sym:
-            self.percentage_identity.loc[sname, qname] = value
+        self.percentage_identity.loc[qname, sname] = qidentity
+        if sidentity:
+            self.percentage_identity.loc[sname, qname] = sidentity
 
     def add_coverage(
         self, qname: str, sname: str, qcover: float, scover: Optional[float] = None

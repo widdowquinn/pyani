@@ -370,7 +370,7 @@ def parse_delta(filename: Path) -> Tuple[int, int, int]:
         for interval in ref_tree:
             saln_length += interval.end - interval.begin + 1
 
-    return (saln_length, qaln_length, sim_errors)
+    return (qaln_length, saln_length, sim_errors)
 
 
 # Parse all the .delta files in the passed directory
@@ -434,15 +434,15 @@ def process_deltadir(
                     deltafile,
                 )
             continue
-        tot_length, tot_sim_error = parse_delta(deltafile)
-        if tot_length == 0 and logger is not None:
+        query_tot_length, subject_tot_length, tot_sim_error = parse_delta(deltafile)
+        if subject_tot_length == 0 and logger is not None:
             if logger:
                 logger.warning(
                     "Total alignment length reported in %s is zero!", deltafile
                 )
             sys.exit("Zero length alignment!")
-        query_cover = float(tot_length) / org_lengths[qname]
-        sbjct_cover = float(tot_length) / org_lengths[sname]
+        query_cover = float(query_tot_length) / org_lengths[qname]
+        sbjct_cover = float(subject_tot_length) / org_lengths[sname]
 
         # Calculate percentage ID of aligned length. This may fail if
         # total length is zero.
@@ -450,15 +450,17 @@ def process_deltadir(
         # Common causes are that a NUCmer run failed, or that a very
         # distant sequence was included in the analysis.
         try:
-            perc_id = 1 - float(tot_sim_error) / tot_length
+            subject_perc_id = 1 - float(tot_sim_error) / subject_tot_length
+            query_perc_id = 1 - float(tot_sim_error) / query_tot_length
         except ZeroDivisionError:
-            perc_id = 0  # set arbitrary value of zero identity
+            subject_perc_id = 0  # set arbitrary value of zero identity
+            query_perc_id = 0
             results.zero_error = True
 
         # Populate dataframes: when assigning data from symmetrical MUMmer
         # output, both upper and lower triangles will be populated
-        results.add_tot_length(qname, sname, tot_length)
+        results.add_tot_length(qname, sname, query_tot_length, subject_tot_length)
         results.add_sim_errors(qname, sname, tot_sim_error)
-        results.add_pid(qname, sname, perc_id)
+        results.add_pid(qname, sname, query_perc_id, subject_perc_id)
         results.add_coverage(qname, sname, query_cover, sbjct_cover)
     return results

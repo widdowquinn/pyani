@@ -279,9 +279,11 @@ class Comparison(Base):
     comparison_id = Column(Integer, primary_key=True)
     query_id = Column(Integer, ForeignKey("genomes.genome_id"), nullable=False)
     subject_id = Column(Integer, ForeignKey("genomes.genome_id"), nullable=False)
-    aln_length = Column(Integer)  # in fastANI this is matchedfrags * fragLength
+    query_aln_length = Column(Integer)  # in fastANI this is matchedfrags * fragLength
+    subject_aln_length = Column(Integer)
     sim_errs = Column(Integer)  # in fastANI this is allfrags - matchedfrags
-    identity = Column(Float)
+    query_identity = Column(Float)
+    subject_identity = Column(Float)
     cov_query = Column(Float)  # in fastANI this is matchedfrags/allfrags
     cov_subject = Column(Float)  # in fastANI this is Null
     program = Column(String)
@@ -307,7 +309,7 @@ class Comparison(Base):
             "Query: {}, Subject: {}, %%ID={}, ({} {}), FragSize: {}, MaxMatch: {}, KmerSize: {}, MinMatch: {}".format(
                 self.query_id,
                 self.subject_id,
-                self.identity,
+                self.query_identity,
                 self.program,
                 self.version,
                 self.fragsize,
@@ -349,6 +351,7 @@ def get_comparison_dict(session: Any) -> Dict[Tuple, Any]:
     Returns Comparison objects, keyed by (_.query_id, _.subject_id,
     _.program, _.version, _.fragsize, _.maxmatch) tuple
     """
+
     return {
         (
             _.query_id,
@@ -615,6 +618,8 @@ def add_run_genomes(
 
 
 def update_comparison_matrices(session, run) -> None:
+    logger = logging.getLogger(__name__)
+
     """Update the Run table with summary matrices for the analysis.
 
     :param session:       active pyanidb session via ORM
@@ -638,19 +643,21 @@ def update_comparison_matrices(session, run) -> None:
         df_alnlength.loc[genome.genome_id, genome.genome_id] = genome.length
 
     # Loop over all comparisons for the run and fill in result matrices
+
+    logger.debug("Existing comparisons\n%s", run.comparisons.all())
     for cmp in run.comparisons.all():
         qid, sid = cmp.query_id, cmp.subject_id
-        df_identity.loc[qid, sid] = cmp.identity
+        df_identity.loc[qid, sid] = cmp.query_identity
         df_coverage.loc[qid, sid] = cmp.cov_query
-        df_alnlength.loc[qid, sid] = cmp.aln_length
+        df_alnlength.loc[qid, sid] = cmp.query_aln_length
         df_simerrors.loc[qid, sid] = cmp.sim_errs
-        df_hadamard.loc[qid, sid] = cmp.identity * cmp.cov_query
-        if cmp.program in ["nucmer"]:
-            df_hadamard.loc[sid, qid] = cmp.identity * cmp.cov_subject
+        df_hadamard.loc[qid, sid] = cmp.query_identity * cmp.cov_query
+        if (qid, sid) == (sid, qid):
+            df_hadamard.loc[sid, qid] = cmp.query_identity * cmp.cov_subject
             df_simerrors.loc[sid, qid] = cmp.sim_errs
-            df_alnlength.loc[sid, qid] = cmp.aln_length
-            df_coverage.loc[sid, qid] = cmp.cov_subject
-            df_identity.loc[sid, qid] = cmp.identity
+            df_alnlength.loc[sid, qid] = cmp.query_aln_length
+            df_coverage.loc[sid, qid] = cmp.cov_query
+            df_identity.loc[sid, qid] = cmp.query_identity
 
     # Add matrices to the database
     run.df_identity = df_identity.to_json()

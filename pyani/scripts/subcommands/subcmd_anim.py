@@ -442,7 +442,7 @@ def update_comparison_results(
     # Add individual results to Comparison table
     for job in tqdm(joblist, disable=args.disable_tqdm):
         logger.debug("\t%s vs %s", job.subject.description, job.query.description)
-        saln_length, qaln_length, sim_errs = anim.parse_delta(job.outfile)
+        qaln_length, saln_length, sim_errs = anim.parse_delta(job.outfile)
         qcov = qaln_length / job.query.length
         scov = saln_length / job.subject.length
         logger.debug(
@@ -460,16 +460,20 @@ def update_comparison_results(
             job.subject.description,
         )
         try:
-            pid = 1 - sim_errs / qaln_length
+            query_pid = 1 - sim_errs / qaln_length
+            subject_pid = 1 - sim_errs / saln_length
         except ZeroDivisionError:  # aln_length was zero (no alignment)
-            pid = 0
+            query_pid = 0
+            subject_pid = 0
         run.comparisons.append(
             Comparison(
                 query=job.query,
                 subject=job.subject,
-                aln_length=qaln_length,
+                query_aln_length=qaln_length,
+                subject_aln_length=saln_length,
                 sim_errs=sim_errs,
-                identity=pid,
+                query_identity=query_pid,
+                subject_identity=subject_pid,
                 cov_query=qcov,
                 cov_subject=scov,
                 program="nucmer",
