@@ -336,24 +336,24 @@ def parse_delta(filename: Path) -> Tuple[int, int, int]:
     A is the reference and has length 11. There are two insertions (positive delta),
     and one deletion (negative delta). Alignment length is then 11 + 1 = 12.
     """
-    current_ref, current_qry, saln_length, qaln_length, sim_errors = None, None, 0, 0, 0
+    current_qry, current_sub, saln_length, qaln_length, sim_errors = None, None, 0, 0, 0
 
     regions_sub = defaultdict(list)  # Hold a dictionary for query regions
     regions_qry = defaultdict(list)  # Hold a dictionary for query regions
 
     for line in [_.strip().split() for _ in filename.open("r").readlines()]:
-        if line[0] == "NUCMER" or line[0].startswith(">"):  # Skip headers
+        if line[0] == "NUCMER":  # Skip headers
             continue
         # Lines starting with ">" indicate which sequences are aligned
         if line[0].startswith(">"):
-            current_ref = line[0].strip(">")
-            current_qry = line[1]
+            current_qry = line[0].strip(">")
+            current_sub = line[1]
         # Lines with seven columns are alignment region headers:
         if len(line) == 7:
-            regions_sub[current_ref].append(
+            regions_qry[current_qry].append(
                 tuple(sorted(list([int(line[0]), int(line[1])])))
             )  # aligned regions reference
-            regions_qry[current_qry].append(
+            regions_sub[current_sub].append(
                 tuple(sorted(list([int(line[2]), int(line[3])])))
             )  # aligned regions qry
             sim_errors += int(line[4])  # count of non-identities and indels
