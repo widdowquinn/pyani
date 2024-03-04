@@ -336,9 +336,9 @@ def parse_delta(filename: Path) -> Tuple[int, int, int]:
     A is the reference and has length 11. There are two insertions (positive delta),
     and one deletion (negative delta). Alignment length is then 11 + 1 = 12.
     """
-    current_qry, current_sub, saln_length, qaln_length, sim_errors = None, None, 0, 0, 0
+    current_ref, current_qry, raln_length, qaln_length, sim_errors = None, None, 0, 0, 0
 
-    regions_sub = defaultdict(list)  # Hold a dictionary for query regions
+    regions_ref = defaultdict(list)  # Hold a dictionary for query regions
     regions_qry = defaultdict(list)  # Hold a dictionary for query regions
 
     for line in [_.strip().split() for _ in filename.open("r").readlines()]:
@@ -346,14 +346,14 @@ def parse_delta(filename: Path) -> Tuple[int, int, int]:
             continue
         # Lines starting with ">" indicate which sequences are aligned
         if line[0].startswith(">"):
-            current_qry = line[0].strip(">")
-            current_sub = line[1]
+            current_ref = line[0].strip(">")
+            current_qry = line[1]
         # Lines with seven columns are alignment region headers:
         if len(line) == 7:
-            regions_qry[current_qry].append(
+            regions_ref[current_ref].append(
                 tuple(sorted(list([int(line[0]), int(line[1])])))
             )  # aligned regions reference
-            regions_sub[current_sub].append(
+            regions_qry[current_qry].append(
                 tuple(sorted(list([int(line[2]), int(line[3])])))
             )  # aligned regions qry
             sim_errors += int(line[4])  # count of non-identities and indels
@@ -364,13 +364,13 @@ def parse_delta(filename: Path) -> Tuple[int, int, int]:
         for interval in qry_tree:
             qaln_length += interval.end - interval.begin + 1
 
-    for seq_id in regions_sub:
-        ref_tree = intervaltree.IntervalTree.from_tuples(regions_sub[seq_id])
+    for seq_id in regions_ref:
+        ref_tree = intervaltree.IntervalTree.from_tuples(regions_ref[seq_id])
         ref_tree.merge_overlaps(strict=False)
         for interval in ref_tree:
-            saln_length += interval.end - interval.begin + 1
+            raln_length += interval.end - interval.begin + 1
 
-    return (qaln_length, saln_length, sim_errors)
+    return (raln_length, qaln_length, sim_errors)
 
 
 # Parse all the .delta files in the passed directory

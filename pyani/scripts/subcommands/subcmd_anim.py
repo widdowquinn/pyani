@@ -320,20 +320,20 @@ def generate_joblist(
 
     joblist = []  # will hold ComparisonJob structs
     jobs = {"new": 0, "old": 0}  # will hold counts of new/old jobs for reporting
-    for idx, (query, subject) in enumerate(
+    for idx, (subject, query) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
         ncmd_fwd, dcmd_fwd = anim.construct_nucmer_cmdline(
-            subject.path,
             query.path,
+            subject.path,
             args.outdir,
             args.nucmer_exe,
             args.filter_exe,
             args.maxmatch,
         )
         ncmd_rev, dcmd_rev = anim.construct_nucmer_cmdline(
-            query.path,
             subject.path,
+            query.path,
             args.outdir,
             args.nucmer_exe,
             args.filter_exe,
@@ -441,7 +441,9 @@ def update_comparison_results(
 
     # Add individual results to Comparison table
     for job in tqdm(joblist, disable=args.disable_tqdm):
-        logger.debug("\t%s vs %s", job.subject.description, job.query.description)
+        logger.debug(
+            "\t%s vs %s; job %s", job.query.description, job.subject.description, job
+        )
         qaln_length, saln_length, sim_errs = anim.parse_delta(job.outfile)
         qcov = qaln_length / job.query.length
         scov = saln_length / job.subject.length
