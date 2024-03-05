@@ -444,7 +444,7 @@ def filter_existing_comparisons(
     logger = logging.getLogger(__name__)
 
     existing_comparisons = get_comparison_dict(session)
-    logger.debug("Existing comparisons\n%s", existing_comparisons)
+    logger.debug("Existing comparisons\n\t%s", existing_comparisons)
     comparisons_to_run = []
     logger.debug(
         (
