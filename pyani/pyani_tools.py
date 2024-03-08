@@ -141,8 +141,7 @@ class ANIResults:
         self,
         qname: str,
         sname: str,
-        qidentity: float,
-        sidentity: Optional[float] = None,
+        perc_id: float,
     ) -> None:
         """Add a percentage identity value to self.percentage_identity.
 
@@ -151,9 +150,7 @@ class ANIResults:
         :param qidentity:
         :param sidentity:
         """
-        self.percentage_identity.loc[qname, sname] = qidentity
-        if sidentity:
-            self.percentage_identity.loc[sname, qname] = sidentity
+        self.percentage_identity.loc[qname, sname] = perc_id
 
     def add_coverage(
         self, qname: str, sname: str, qcover: float, scover: Optional[float] = None

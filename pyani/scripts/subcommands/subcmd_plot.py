@@ -78,6 +78,7 @@ def subcmd_plot(args: Namespace) -> int:
     logger.info("Writing output to: %s", args.outdir)
     os.makedirs(args.outdir, exist_ok=True)
     logger.info("Rendering method: %s", args.method)
+    logger.info("Rendering method: %s", args)
 
     # Connect to database session
     logger.debug("Activating session for database: %s", args.dbpath)
@@ -141,6 +142,7 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
                 [run_id, matdata, result_label_dict, result_class_dict, outfmts, args],
             )
         )
+
         plotting_commands.append((write_distribution, [run_id, matdata, outfmts, args]))
 
     id_matrix = MatrixData("identity", pd.read_json(results.df_identity), {})
@@ -193,7 +195,6 @@ def write_distribution(
             matdata.name,
             title=f"matrix_{matdata.name}_run{run_id}",
         )
-
     # Be tidy with matplotlib caches
     plt.close("all")
 
@@ -264,6 +265,7 @@ def write_scatter(
             / f"scatter_{matdata1.name}_vs_{matdata2.name}_run{run_id}.{fmt}"
         )
         logger.debug("\tWriting graphics to %s", outfname)
+
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw scatterplot
         SMETHODS[args.method[0]](
