@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2022
+# (c) University of Strathclyde 2019-2024
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2022 University of Strathclyde
+# Copyright (c) 2019-2024 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -207,6 +207,9 @@ def test_deltadir_parsing(delta_output_dir):
     seqfiles = pyani_files.get_fasta_files(delta_output_dir.seqdir)
     orglengths = pyani_files.get_sequence_lengths(seqfiles)
     result = anim.process_deltadir(delta_output_dir.deltadir, orglengths)
+    print(result.percentage_identity.sort_index(axis=1).sort_index())  # results of test
+    print(delta_output_dir.deltaresult.sort_index(axis=1).sort_index())  # expected results
+
     assert_frame_equal(
         result.percentage_identity.sort_index(axis=1).sort_index(),
         delta_output_dir.deltaresult.sort_index(axis=1).sort_index(),

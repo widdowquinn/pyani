@@ -454,6 +454,7 @@ def process_deltadir(
     # Process .delta files assuming that the filename format holds:
     # org1_vs_org2.delta
     for deltafile in deltafiles:
+        print(deltafile)
         qname, sname = deltafile.stem.split("_vs_")
 
         # We may have .delta files from other analyses in the same directory
