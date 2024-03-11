@@ -383,8 +383,8 @@ def parse_delta(filename: Path) -> Tuple[int, int, float, int]:
             )  # aligned regions qry
 
             # Calculate aligned bases for each sequence
-            ref_aln_lengths = int(line[1]) - int(line[0]) + 1
-            qry_aln_lengths = int(line[3]) - int(line[2]) + 1
+            ref_aln_lengths = abs(int(line[1]) - int(line[0])) + 1
+            qry_aln_lengths = abs(int(line[3]) - int(line[2])) + 1
             aligned_bases.append(ref_aln_lengths)
             aligned_bases.append(qry_aln_lengths)
 
