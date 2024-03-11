@@ -444,7 +444,7 @@ def update_comparison_results(
         logger.debug(
             "\t%s vs %s; job %s", job.query.description, job.subject.description, job
         )
-        qaln_length, saln_length, sim_errs = anim.parse_delta(job.outfile)
+        qaln_length, saln_length, pc_id, sim_errs = anim.parse_delta(job.outfile)
         qcov = qaln_length / job.query.length
         scov = saln_length / job.subject.length
         logger.debug(
@@ -461,12 +461,6 @@ def update_comparison_results(
             saln_length,
             job.subject.description,
         )
-        try:
-            query_pid = 1 - sim_errs / qaln_length
-            subject_pid = 1 - sim_errs / saln_length
-        except ZeroDivisionError:  # aln_length was zero (no alignment)
-            query_pid = 0
-            subject_pid = 0
         run.comparisons.append(
             Comparison(
                 query=job.query,
@@ -474,8 +468,7 @@ def update_comparison_results(
                 query_aln_length=qaln_length,
                 subject_aln_length=saln_length,
                 sim_errs=sim_errs,
-                query_identity=query_pid,
-                subject_identity=subject_pid,
+                perc_id=pc_id,
                 cov_query=qcov,
                 cov_subject=scov,
                 program="nucmer",

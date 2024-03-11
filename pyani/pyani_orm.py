@@ -282,8 +282,7 @@ class Comparison(Base):
     query_aln_length = Column(Integer)  # in fastANI this is matchedfrags * fragLength
     subject_aln_length = Column(Integer)
     sim_errs = Column(Integer)  # in fastANI this is allfrags - matchedfrags
-    query_identity = Column(Float)
-    subject_identity = Column(Float)
+    perc_id = Column(Float)
     cov_query = Column(Float)  # in fastANI this is matchedfrags/allfrags
     cov_subject = Column(Float)  # in fastANI this is Null
     program = Column(String)
@@ -309,7 +308,7 @@ class Comparison(Base):
             "Query: {}, Subject: {}, %%ID={}, ({} {}), FragSize: {}, MaxMatch: {}, KmerSize: {}, MinMatch: {}".format(
                 self.query_id,
                 self.subject_id,
-                self.query_identity,
+                self.perc_id,
                 self.program,
                 self.version,
                 self.fragsize,
@@ -647,17 +646,17 @@ def update_comparison_matrices(session, run) -> None:
     logger.debug("Existing comparisons\n%s", run.comparisons.all())
     for cmp in run.comparisons.all():
         qid, sid = cmp.query_id, cmp.subject_id
-        df_identity.loc[qid, sid] = cmp.query_identity
+        df_identity.loc[qid, sid] = cmp.perc_id
         df_coverage.loc[qid, sid] = cmp.cov_query
         df_alnlength.loc[qid, sid] = cmp.query_aln_length
         df_simerrors.loc[qid, sid] = cmp.sim_errs
-        df_hadamard.loc[qid, sid] = cmp.query_identity * cmp.cov_query
+        df_hadamard.loc[qid, sid] = cmp.perc_id * cmp.cov_query
         if (qid, sid) == (sid, qid):
-            df_hadamard.loc[sid, qid] = cmp.query_identity * cmp.cov_subject
+            df_hadamard.loc[sid, qid] = cmp.perc_id * cmp.cov_subject
             df_simerrors.loc[sid, qid] = cmp.sim_errs
             df_alnlength.loc[sid, qid] = cmp.query_aln_length
             df_coverage.loc[sid, qid] = cmp.cov_query
-            df_identity.loc[sid, qid] = cmp.query_identity
+            df_identity.loc[sid, qid] = cmp.perc_id
 
     # Add matrices to the database
     run.df_identity = df_identity.to_json()
