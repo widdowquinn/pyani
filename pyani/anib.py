@@ -559,7 +559,7 @@ def process_blast(
         # we have asymmetrical data from BLAST output, so only the
         # upper triangle is populated
         results.add_tot_length(qname, sname, resultvals[0])
-        results.add_sim_errors(qname, sname, resultvals[1], sym=False)
+        results.add_sim_errors(qname, sname, resultvals[1])
         results.add_pid(qname, sname, 0.01 * resultvals[2])
         results.add_coverage(qname, sname, query_cover)
     return results
