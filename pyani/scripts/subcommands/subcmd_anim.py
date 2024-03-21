@@ -447,28 +447,13 @@ def update_comparison_results(
         qaln_length, saln_length, pc_id, sim_errs = anim.parse_delta(job.outfile)
         qcov = qaln_length / job.query.length
         scov = saln_length / job.subject.length
-        logger.debug(
-            "query cov \t%s, query length: %s, query aln length: %s, query descripton: %s",
-            qcov,
-            job.query.length,
-            qaln_length,
-            job.query.description,
-        )
-        logger.debug(
-            "subject cov \t%s, subject length: %s, subject aln length: %s, subject descripton: %s",
-            scov,
-            job.subject.length,
-            saln_length,
-            job.subject.description,
-        )
         run.comparisons.append(
             Comparison(
                 query=job.query,
                 subject=job.subject,
-                query_aln_length=qaln_length,
-                subject_aln_length=saln_length,
+                aln_length=qaln_length,
                 sim_errs=sim_errs,
-                perc_id=pc_id,
+                identity=pc_id,
                 cov_query=qcov,
                 cov_subject=scov,
                 program="nucmer",

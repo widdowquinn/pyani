@@ -46,16 +46,19 @@ pytest -v
 """
 
 from pyani.anim import parse_delta
+import unittest
 
 
 def test_anim_delta(dir_anim_in):
     """Test parsing of NUCmer delta file.
-    
-    We expect (reference alignment length, query alignment 
-    length, weighted average identity, and similarity error 
+
+    We expect (reference alignment length, query alignment
+    length, weighted average identity, and similarity error
     count)
     """
     # TODO: allow for rounding error in the returned percentage
     #       identity (this may vary depending on machine/Python
     #       version)
-    assert (4016947, 4017751, 0.9994572767031752, 2191) == parse_delta(dir_anim_in / "NC_002696_vs_NC_011916.delta")
+    assert (4016947, 4017751, 0.9994572767031752, 2191) == parse_delta(
+        dir_anim_in / "NC_002696_vs_NC_011916.delta"
+    )

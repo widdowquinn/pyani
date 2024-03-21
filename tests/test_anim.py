@@ -319,6 +319,11 @@ def test_mummer_job_generation(mummer_cmds_four):
         assert job.dependencies[0].name == "test_%06d-n" % idx
 
 
+@unittest.skip(
+    "This test currently fails because we no longer sort genomes. \
+     This is because we now run forward and reverse comparisions. \
+     Keeping this test for now."
+)
 def test_genome_sorting(tmp_path, unsorted_genomes):
     second, first = [Path(_.path) for _ in unsorted_genomes]
     outprefix = f"{tmp_path}/nucmer_output/{first.stem}/{first.stem}_vs_{second.stem}"

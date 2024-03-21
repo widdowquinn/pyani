@@ -279,10 +279,9 @@ class Comparison(Base):
     comparison_id = Column(Integer, primary_key=True)
     query_id = Column(Integer, ForeignKey("genomes.genome_id"), nullable=False)
     subject_id = Column(Integer, ForeignKey("genomes.genome_id"), nullable=False)
-    query_aln_length = Column(Integer)  # in fastANI this is matchedfrags * fragLength
-    subject_aln_length = Column(Integer)
+    aln_length = Column(Integer)  # in fastANI this is matchedfrags * fragLength
     sim_errs = Column(Integer)  # in fastANI this is allfrags - matchedfrags
-    perc_id = Column(Float)
+    identity = Column(Float)
     cov_query = Column(Float)  # in fastANI this is matchedfrags/allfrags
     cov_subject = Column(Float)  # in fastANI this is Null
     program = Column(String)
@@ -646,17 +645,17 @@ def update_comparison_matrices(session, run) -> None:
     logger.debug("Existing comparisons\n%s", run.comparisons.all())
     for cmp in run.comparisons.all():
         qid, sid = cmp.query_id, cmp.subject_id
-        df_identity.loc[qid, sid] = cmp.perc_id
+        df_identity.loc[qid, sid] = cmp.identity
         df_coverage.loc[qid, sid] = cmp.cov_query
-        df_alnlength.loc[qid, sid] = cmp.query_aln_length
+        df_alnlength.loc[qid, sid] = cmp.aln_length
         df_simerrors.loc[qid, sid] = cmp.sim_errs
-        df_hadamard.loc[qid, sid] = cmp.perc_id * cmp.cov_query
+        df_hadamard.loc[qid, sid] = cmp.identity * cmp.cov_query
         if (qid, sid) == (sid, qid):
-            df_hadamard.loc[sid, qid] = cmp.perc_id * cmp.cov_subject
+            df_hadamard.loc[sid, qid] = cmp.identity * cmp.cov_subject
             df_simerrors.loc[sid, qid] = cmp.sim_errs
-            df_alnlength.loc[sid, qid] = cmp.query_aln_length
+            df_alnlength.loc[sid, qid] = cmp.aln_length
             df_coverage.loc[sid, qid] = cmp.cov_query
-            df_identity.loc[sid, qid] = cmp.perc_id
+            df_identity.loc[sid, qid] = cmp.identity
 
     # Add matrices to the database
     run.df_identity = df_identity.to_json()
