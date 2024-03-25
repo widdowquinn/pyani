@@ -43,7 +43,7 @@ import datetime
 import logging
 
 from argparse import Namespace
-from itertools import combinations
+from itertools import permutations
 from pathlib import Path
 from typing import Any, List, NamedTuple, Optional, Tuple
 
@@ -229,7 +229,7 @@ def subcmd_anim(args: Namespace) -> None:
     logger.info(
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
-    comparisons = list(combinations(tqdm(genomes, disable=args.disable_tqdm), 2))
+    comparisons = list(permutations(tqdm(genomes, disable=args.disable_tqdm), 2))
     logger.info("\t...total pairwise comparisons to be performed: %s", len(comparisons))
 
     # Check for existing comparisons; if one has been done (for the same
@@ -323,7 +323,7 @@ def generate_joblist(
     for idx, (subject, query) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
-        ncmd_fwd, dcmd_fwd = anim.construct_nucmer_cmdline(
+        ncmd, dcmd = anim.construct_nucmer_cmdline(
             query.path,
             subject.path,
             args.outdir,
@@ -331,21 +331,11 @@ def generate_joblist(
             args.filter_exe,
             args.maxmatch,
         )
-        ncmd_rev, dcmd_rev = anim.construct_nucmer_cmdline(
-            subject.path,
-            query.path,
-            args.outdir,
-            args.nucmer_exe,
-            args.filter_exe,
-            args.maxmatch,
-        )
+
         logger.debug("Commands to run:\n\t%s, %s", query, subject)
         # Having created forward and reverse commandlines, we need to
         # run the same operations on both
-        for ncmd, dcmd, qinfo, sinfo in [
-            (ncmd_fwd, dcmd_fwd, query, subject),
-            (ncmd_rev, dcmd_rev, subject, query),
-        ]:
+        for ncmd, dcmd, qinfo, sinfo in [(ncmd, dcmd, query, subject)]:
             logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
             outprefix = ncmd.split()[3]  # prefix for NUCmer output
             if args.nofilter:
@@ -374,13 +364,14 @@ def generate_joblist(
                 fjob.add_dependency(njob)
                 joblist.append(ComparisonJob(qinfo, sinfo, dcmd, ncmd, outfname, fjob))
                 jobs["new"] += 1
-        logger.info(
-            "Results not found for %d comparisons; %d new jobs built.",
-            jobs["new"],
-            jobs["new"],
-        )
-        if existingfileset:
-            logger.info("Retrieving results for %d previous comparisons.", jobs["old"])
+    logger.info(
+        "Results not found for %d comparisons; %d new jobs built.",
+        jobs["new"],
+        jobs["new"],
+    )
+    if existingfileset:
+        logger.info("Retrieving results for %d previous comparisons.", jobs["old"])
+
     return joblist
 
 
