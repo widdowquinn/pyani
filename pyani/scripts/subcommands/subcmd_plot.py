@@ -44,6 +44,7 @@ import os
 import multiprocessing
 
 from argparse import Namespace
+from io import StringIO
 from pathlib import Path
 from typing import Dict, List
 
@@ -78,7 +79,7 @@ def subcmd_plot(args: Namespace) -> int:
     logger.info("Writing output to: %s", args.outdir)
     os.makedirs(args.outdir, exist_ok=True)
     logger.info("Rendering method: %s", args.method)
-    logger.info("Rendering method: %s", args)
+    logger.info("Arguments passed: %s", args)
 
     # Connect to database session
     logger.debug("Activating session for database: %s", args.dbpath)
@@ -129,11 +130,11 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
     for matdata in [
         MatrixData(*_)
         for _ in [
-            ("identity", pd.read_json(results.df_identity), {}),
-            ("coverage", pd.read_json(results.df_coverage), {}),
-            ("aln_lengths", pd.read_json(results.df_alnlength), {}),
-            ("sim_errors", pd.read_json(results.df_simerrors), {}),
-            ("hadamard", pd.read_json(results.df_hadamard), {}),
+            ("identity", pd.read_json(StringIO(results.df_identity)), {}),
+            ("coverage", pd.read_json(StringIO(results.df_coverage)), {}),
+            ("aln_lengths", pd.read_json(StringIO(results.df_alnlength)), {}),
+            ("sim_errors", pd.read_json(StringIO(results.df_simerrors)), {}),
+            ("hadamard", pd.read_json(StringIO(results.df_hadamard)), {}),
         ]
     ]:
         plotting_commands.append(
@@ -145,8 +146,10 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
 
         plotting_commands.append((write_distribution, [run_id, matdata, outfmts, args]))
 
-    id_matrix = MatrixData("identity", pd.read_json(results.df_identity), {})
-    cov_matrix = MatrixData("coverage", pd.read_json(results.df_coverage), {})
+    logger.debug("Have %d plotting commands at step 1", len(plotting_commands))
+
+    id_matrix = MatrixData("identity", pd.read_json(StringIO(results.df_identity)), {})
+    cov_matrix = MatrixData("coverage", pd.read_json(StringIO(results.df_coverage)), {})
     plotting_commands.append(
         (
             write_scatter,
@@ -161,6 +164,7 @@ def write_run_plots(run_id: int, session, outfmts: List[str], args: Namespace) -
             ],
         )
     )
+    logger.debug("Have %d plotting commands at step 2", len(plotting_commands))
 
     # Run the plotting commands
     logger.debug("Running plotting commands")
@@ -189,7 +193,7 @@ def write_distribution(
     for fmt in outfmts:
         outfname = Path(args.outdir) / f"distribution_{matdata.name}_run{run_id}.{fmt}"
         logger.debug("\tWriting graphics to %s", outfname)
-        DISTMETHODS[args.method[0]](
+        DISTMETHODS[args.method](
             matdata.data,
             outfname,
             matdata.name,
@@ -225,7 +229,7 @@ def write_heatmap(
         logger.debug("\tWriting graphics to %s", outfname)
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw heatmap
-        GMETHODS[args.method[0]](
+        GMETHODS[args.method](
             matdata.data,
             outfname,
             title=f"matrix_{matdata.name}_run{run_id}",
@@ -268,7 +272,7 @@ def write_scatter(
 
         params = pyani_graphics.Params(cmap, result_labels, result_classes)
         # Draw scatterplot
-        SMETHODS[args.method[0]](
+        SMETHODS[args.method](
             matdata1.data,
             matdata2.data,
             outfname,
