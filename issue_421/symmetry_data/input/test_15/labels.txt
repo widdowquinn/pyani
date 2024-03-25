@@ -1,0 +1,2 @@
+5dd717d4fdf3aa1c94d2a1fa862e6d2e	GCA_900459635.1_50279_E01_genomic	Streptococcus pneumoniae strain NCTC13755 genome assembly, contig: ERS1275658SCcontig000002, whole genome shotgun sequence
+bf2614338eed1485c2c2b48f65195baa	GCA_900459705.1_43071_B02_genomic	Streptococcus pneumoniae strain NCTC11891 genome assembly, contig: ERS986333SCcontig000007, whole genome shotgun sequence

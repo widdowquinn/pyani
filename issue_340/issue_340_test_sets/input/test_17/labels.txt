@@ -1,0 +1,2 @@
+a23cad03bf37892eb4e94fdf639dc25c	GCF_900095885.1_Daq1742_genomic	Dickeya aquatica strain 174/2 chromosome 1, complete sequence
+e0b9e381d5cbfeb7ea910c90aa334a8c	GCF_900195285.2_Pc0421_3_genomic	Pectobacterium parvum strain s0421, whole genome shotgun sequence

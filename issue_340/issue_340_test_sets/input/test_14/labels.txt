@@ -1,0 +1,2 @@
+1fce0dbd242ab3f8e256e3ebcd836bdd	GCA_030252755.1_ASM3025275v1_genomic	Staphylococcus aureus strain CC239-MRSA-III(var.) isolate Trinidad&Tobago_2020-021_7037M chromosome, complete genome
+2ee37c874696d9535f03db860bbee2b5	GCA_900457755.1_35910_E01_genomic	Staphylococcus aureus strain NCTC13626 genome assembly, contig: ERS659566SCcontig000002, whole genome shotgun sequence

@@ -43,7 +43,7 @@ import datetime
 import logging
 
 from argparse import Namespace
-from itertools import combinations
+from itertools import permutations
 from pathlib import Path
 from typing import Any, List, NamedTuple, Optional, Tuple
 
@@ -229,7 +229,7 @@ def subcmd_anim(args: Namespace) -> None:
     logger.info(
         "Compiling pairwise comparisons (this can take time for large datasets)..."
     )
-    comparisons = list(combinations(tqdm(genomes, disable=args.disable_tqdm), 2))
+    comparisons = list(permutations(tqdm(genomes, disable=args.disable_tqdm), 2))
     logger.info("\t...total pairwise comparisons to be performed: %s", len(comparisons))
 
     # Check for existing comparisons; if one has been done (for the same
@@ -320,7 +320,7 @@ def generate_joblist(
 
     joblist = []  # will hold ComparisonJob structs
     jobs = {"new": 0, "old": 0}  # will hold counts of new/old jobs for reporting
-    for idx, (query, subject) in enumerate(
+    for idx, (subject, query) in enumerate(
         tqdm(comparisons, disable=args.disable_tqdm)
     ):
         ncmd, dcmd = anim.construct_nucmer_cmdline(
@@ -331,34 +331,39 @@ def generate_joblist(
             args.filter_exe,
             args.maxmatch,
         )
-        logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
-        outprefix = ncmd.split()[3]  # prefix for NUCmer output
-        if args.nofilter:
-            outfname = Path(outprefix + ".delta")
-        else:
-            outfname = Path(outprefix + ".filter")
-        logger.debug("Expected output file for db: %s", outfname)
 
-        # If we're in recovery mode, we don't want to repeat a computational
-        # comparison that already exists, so we check whether the ultimate
-        # output is in the set of existing files and, if not, we add the jobs
+        logger.debug("Commands to run:\n\t%s, %s", query, subject)
+        # Having created forward and reverse commandlines, we need to
+        # run the same operations on both
+        for ncmd, dcmd, qinfo, sinfo in [(ncmd, dcmd, query, subject)]:
+            logger.debug("Commands to run:\n\t%s\n\t%s", ncmd, dcmd)
+            outprefix = ncmd.split()[3]  # prefix for NUCmer output
+            if args.nofilter:
+                outfname = Path(outprefix + ".delta")
+            else:
+                outfname = Path(outprefix + ".filter")
+            logger.debug("Expected output file for db: %s", str(outfname))
 
-        # The comparisons collections always gets updated, so that results are
-        # added to the database whether they come from recovery mode or are run
-        # in this call of the script.
-        if args.recovery and outfname in existingfileset:
-            logger.debug("Recovering output from %s, not submitting job", outfname)
-            # Need to track the expected output, but set the job itself to None:
-            joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, None))
-            jobs["old"] += 1
-        else:
-            logger.debug("Building job")
-            # Build jobs
-            njob = pyani_jobs.Job(f"{args.jobprefix}_{idx:06d}-n", ncmd)
-            fjob = pyani_jobs.Job(f"{args.jobprefix}_{idx:06d}-f", dcmd)
-            fjob.add_dependency(njob)
-            joblist.append(ComparisonJob(query, subject, dcmd, ncmd, outfname, fjob))
-            jobs["new"] += 1
+            # If we're in recovery mode, we don't want to repeat a computational
+            # comparison that already exists, so we check whether the ultimate
+            # output is in the set of existing files and, if not, we add the jobs
+
+            # The comparisons collections always gets updated, so that results are
+            # added to the database whether they come from recovery mode or are run
+            # in this call of the script.
+            if args.recovery and outfname in existingfileset:
+                logger.debug("Recovering output from %s, not submitting job", outfname)
+                # Need to track the expected output, but set the job itself to None:
+                joblist.append(ComparisonJob(qinfo, sinfo, dcmd, ncmd, outfname, None))
+                jobs["old"] += 1
+            else:
+                logger.debug("Building job")
+                # Build jobs
+                njob = pyani_jobs.Job(f"{args.jobprefix}_{idx:06d}-n", ncmd)
+                fjob = pyani_jobs.Job(f"{args.jobprefix}_{idx:06d}-f", dcmd)
+                fjob.add_dependency(njob)
+                joblist.append(ComparisonJob(qinfo, sinfo, dcmd, ncmd, outfname, fjob))
+                jobs["new"] += 1
     logger.info(
         "Results not found for %d comparisons; %d new jobs built.",
         jobs["new"],
@@ -366,6 +371,7 @@ def generate_joblist(
     )
     if existingfileset:
         logger.info("Retrieving results for %d previous comparisons.", jobs["old"])
+
     return joblist
 
 
@@ -426,21 +432,19 @@ def update_comparison_results(
 
     # Add individual results to Comparison table
     for job in tqdm(joblist, disable=args.disable_tqdm):
-        logger.debug("\t%s vs %s", job.query.description, job.subject.description)
-        aln_length, sim_errs = anim.parse_delta(job.outfile)
-        qcov = aln_length / job.query.length
-        scov = aln_length / job.subject.length
-        try:
-            pid = 1 - sim_errs / aln_length
-        except ZeroDivisionError:  # aln_length was zero (no alignment)
-            pid = 0
+        logger.debug(
+            "\t%s vs %s; job %s", job.query.description, job.subject.description, job
+        )
+        qaln_length, saln_length, pc_id, sim_errs = anim.parse_delta(job.outfile)
+        qcov = qaln_length / job.query.length
+        scov = saln_length / job.subject.length
         run.comparisons.append(
             Comparison(
                 query=job.query,
                 subject=job.subject,
-                aln_length=aln_length,
+                aln_length=qaln_length,
                 sim_errs=sim_errs,
-                identity=pid,
+                identity=pc_id,
                 cov_query=qcov,
                 cov_subject=scov,
                 program="nucmer",

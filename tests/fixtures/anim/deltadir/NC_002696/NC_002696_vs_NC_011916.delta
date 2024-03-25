@@ -1,4 +1,4 @@
-/Users/lpritc/Development/GitHub/pyani/tests/test_ani_data/NC_002696.fna /Users/lpritc/Development/GitHub/pyani/tests/test_ani_data/NC_011916.fna
+/Users/lpritc/Documents/Development/GitHub/pyani/tests/fixtures/anim/sequences/NC_002696.fna /Users/lpritc/Documents/Development/GitHub/pyani/tests/fixtures/anim/sequences/NC_011916.fna
 NUCMER
 >NC_002696_part_1 gi|221232939|ref|NC_011916.1| 1050 4042929
 1 1050 1 1050 0 0 0

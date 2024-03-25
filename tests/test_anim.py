@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) University of Strathclyde 2019-2022
+# (c) University of Strathclyde 2019-2024
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -18,7 +18,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# Copyright (c) 2019-2022 University of Strathclyde
+# Copyright (c) 2019-2024 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -95,7 +95,9 @@ def delta_output_dir(dir_anim_in):
 @pytest.fixture
 def deltafile_parsed(dir_anim_in):
     """Example parsed deltafile data."""
-    return DeltaParsed(dir_anim_in / "test.delta", (4074148, 2191))
+    return DeltaParsed(
+        dir_anim_in / "test.delta", (4016947, 4017751, 0.9994621994447228, 2191)
+    )
 
 
 @pytest.fixture
@@ -105,11 +107,17 @@ def mummer_cmds_four(path_file_four):
         path_file_four,
         [
             "nucmer --mum -p nucmer_output/file1/file1_vs_file2 file1.fna file2.fna",
+            "nucmer --mum -p nucmer_output/file2/file2_vs_file1 file2.fna file1.fna",
             "nucmer --mum -p nucmer_output/file1/file1_vs_file3 file1.fna file3.fna",
+            "nucmer --mum -p nucmer_output/file3/file3_vs_file1 file3.fna file1.fna",
             "nucmer --mum -p nucmer_output/file1/file1_vs_file4 file1.fna file4.fna",
+            "nucmer --mum -p nucmer_output/file4/file4_vs_file1 file4.fna file1.fna",
             "nucmer --mum -p nucmer_output/file2/file2_vs_file3 file2.fna file3.fna",
+            "nucmer --mum -p nucmer_output/file3/file3_vs_file2 file3.fna file2.fna",
             "nucmer --mum -p nucmer_output/file2/file2_vs_file4 file2.fna file4.fna",
+            "nucmer --mum -p nucmer_output/file4/file4_vs_file2 file4.fna file2.fna",
             "nucmer --mum -p nucmer_output/file3/file3_vs_file4 file3.fna file4.fna",
+            "nucmer --mum -p nucmer_output/file4/file4_vs_file3 file4.fna file3.fna",
         ],
         [
             (
@@ -119,8 +127,18 @@ def mummer_cmds_four(path_file_four):
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
+                "nucmer_output/file2/file2_vs_file1.delta "
+                "nucmer_output/file2/file2_vs_file1.filter"
+            ),
+            (
+                "delta_filter_wrapper.py delta-filter -1 "
                 "nucmer_output/file1/file1_vs_file3.delta "
                 "nucmer_output/file1/file1_vs_file3.filter"
+            ),
+            (
+                "delta_filter_wrapper.py delta-filter -1 "
+                "nucmer_output/file3/file3_vs_file1.delta "
+                "nucmer_output/file3/file3_vs_file1.filter"
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
@@ -129,8 +147,18 @@ def mummer_cmds_four(path_file_four):
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
+                "nucmer_output/file4/file4_vs_file1.delta "
+                "nucmer_output/file4/file4_vs_file1.filter"
+            ),
+            (
+                "delta_filter_wrapper.py delta-filter -1 "
                 "nucmer_output/file2/file2_vs_file3.delta "
                 "nucmer_output/file2/file2_vs_file3.filter"
+            ),
+            (
+                "delta_filter_wrapper.py delta-filter -1 "
+                "nucmer_output/file3/file3_vs_file2.delta "
+                "nucmer_output/file3/file3_vs_file2.filter"
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
@@ -139,8 +167,18 @@ def mummer_cmds_four(path_file_four):
             ),
             (
                 "delta_filter_wrapper.py delta-filter -1 "
+                "nucmer_output/file4/file4_vs_file2.delta "
+                "nucmer_output/file4/file4_vs_file2.filter"
+            ),
+            (
+                "delta_filter_wrapper.py delta-filter -1 "
                 "nucmer_output/file3/file3_vs_file4.delta "
                 "nucmer_output/file3/file3_vs_file4.filter"
+            ),
+            (
+                "delta_filter_wrapper.py delta-filter -1 "
+                "nucmer_output/file4/file4_vs_file3.delta "
+                "nucmer_output/file4/file4_vs_file3.filter"
             ),
         ],
     )
@@ -207,6 +245,10 @@ def test_deltadir_parsing(delta_output_dir):
     seqfiles = pyani_files.get_fasta_files(delta_output_dir.seqdir)
     orglengths = pyani_files.get_sequence_lengths(seqfiles)
     result = anim.process_deltadir(delta_output_dir.deltadir, orglengths)
+    print(result.percentage_identity.sort_index(axis=1).sort_index())  # results of test
+    print(
+        delta_output_dir.deltaresult.sort_index(axis=1).sort_index()
+    )  # expected results
     assert_frame_equal(
         result.percentage_identity.sort_index(axis=1).sort_index(),
         delta_output_dir.deltaresult.sort_index(axis=1).sort_index(),
@@ -269,7 +311,7 @@ def test_mummer_job_generation(mummer_cmds_four):
     Tests that the correct dependency graph and naming scheme is produced.
     """
     joblist = anim.generate_nucmer_jobs(mummer_cmds_four.infiles, jobprefix="test")
-    assert len(joblist) == 6
+    assert len(joblist) == 12
 
     for idx, job in enumerate(joblist):
         assert job.name == "test_%06d-f" % idx  # filter job name
@@ -277,6 +319,11 @@ def test_mummer_job_generation(mummer_cmds_four):
         assert job.dependencies[0].name == "test_%06d-n" % idx
 
 
+@unittest.skip(
+    "This test currently fails because we no longer sort genomes. \
+     This is because we now run forward and reverse comparisions. \
+     Keeping this test for now."
+)
 def test_genome_sorting(tmp_path, unsorted_genomes):
     second, first = [Path(_.path) for _ in unsorted_genomes]
     outprefix = f"{tmp_path}/nucmer_output/{first.stem}/{first.stem}_vs_{second.stem}"

@@ -307,7 +307,7 @@ class Comparison(Base):
             "Query: {}, Subject: {}, %%ID={}, ({} {}), FragSize: {}, MaxMatch: {}, KmerSize: {}, MinMatch: {}".format(
                 self.query_id,
                 self.subject_id,
-                self.identity,
+                self.perc_id,
                 self.program,
                 self.version,
                 self.fragsize,
@@ -349,6 +349,7 @@ def get_comparison_dict(session: Any) -> Dict[Tuple, Any]:
     Returns Comparison objects, keyed by (_.query_id, _.subject_id,
     _.program, _.version, _.fragsize, _.maxmatch) tuple
     """
+
     return {
         (
             _.query_id,
@@ -441,7 +442,7 @@ def filter_existing_comparisons(
     logger = logging.getLogger(__name__)
 
     existing_comparisons = get_comparison_dict(session)
-    logger.debug("Existing comparisons\n%s", existing_comparisons)
+    logger.debug("Existing comparisons\n\t%s", existing_comparisons)
     comparisons_to_run = []
     logger.debug(
         (
@@ -615,6 +616,8 @@ def add_run_genomes(
 
 
 def update_comparison_matrices(session, run) -> None:
+    logger = logging.getLogger(__name__)
+
     """Update the Run table with summary matrices for the analysis.
 
     :param session:       active pyanidb session via ORM
@@ -638,6 +641,8 @@ def update_comparison_matrices(session, run) -> None:
         df_alnlength.loc[genome.genome_id, genome.genome_id] = genome.length
 
     # Loop over all comparisons for the run and fill in result matrices
+
+    logger.debug("Existing comparisons\n%s", run.comparisons.all())
     for cmp in run.comparisons.all():
         qid, sid = cmp.query_id, cmp.subject_id
         df_identity.loc[qid, sid] = cmp.identity
@@ -645,11 +650,11 @@ def update_comparison_matrices(session, run) -> None:
         df_alnlength.loc[qid, sid] = cmp.aln_length
         df_simerrors.loc[qid, sid] = cmp.sim_errs
         df_hadamard.loc[qid, sid] = cmp.identity * cmp.cov_query
-        if cmp.program in ["nucmer"]:
+        if (qid, sid) == (sid, qid):
             df_hadamard.loc[sid, qid] = cmp.identity * cmp.cov_subject
             df_simerrors.loc[sid, qid] = cmp.sim_errs
             df_alnlength.loc[sid, qid] = cmp.aln_length
-            df_coverage.loc[sid, qid] = cmp.cov_subject
+            df_coverage.loc[sid, qid] = cmp.cov_query
             df_identity.loc[sid, qid] = cmp.identity
 
     # Add matrices to the database

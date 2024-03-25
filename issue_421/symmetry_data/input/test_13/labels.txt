@@ -1,0 +1,2 @@
+b7313db49029a32b837303e089f4e318	GCA_029537415.1_ASM2953741v1_genomic	Bacillus subtilis strain DSM 10 chromosome, complete genome
+82d6aae41c3ba0b2740f31701d4b724f	GCA_035804595.1_ASM3580459v1_genomic	Bacillus subtilis strain CBP-3225 CBP-3225_S42_contig_0000001, whole genome shotgun sequence
