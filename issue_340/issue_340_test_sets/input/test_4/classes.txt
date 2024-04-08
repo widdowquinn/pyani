@@ -1,2 +1,0 @@
-9c487cb9b85731b72df899c0e39617df	GCA_000865085.1_ViralMultiSegProj15622_genomic	Influenza A virus (A/New York/392/2004(H3N2)) segment 1, complete sequence
-67cd6006f0d298d428b0508391a45d96	GCA_000866645.1_ViralMultiSegProj15620_genomic	Influenza A virus (A/Korea/426/68(H2N2)) polymerase 2 (PB2) gene, complete cds

@@ -1,2 +1,0 @@
-afd0604f8e4f2de2c744e3182adafb60	GCA_031122125.1_ASM3112212v1_genomic	Feline coronavirus UU5, complete genome
-03b1d6eda863b245e0e98b22ce1f2b04	GCA_031127985.1_ASM3112798v1_genomic	Feline coronavirus UU18, complete genome

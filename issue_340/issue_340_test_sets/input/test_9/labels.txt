@@ -1,2 +1,0 @@
-64bdb47cab7699da1747dbe97cd9071c	GCA_003114255.1_ASM311425v1_genomic	Hepatitis B virus DNA, complete genome, clone:USG769
-680edd7d3082f10c956ac9a27f1aa8c4	GCA_900324095.1_RISE563_genomic	Hepatitis B virus isolate RISE563 genome assembly, complete genome: monopartite

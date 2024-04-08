@@ -1,2 +1,0 @@
-3db7b4d0bb95288894ced4683c1a52f8	GCA_002240575.1_ASM224057v1_genomic	Clavibacter michiganensis subsp. michiganensis strain LMG 7333 LMG7333-contig1, whole genome shotgun sequence
-74fb16cc59b835571945dc166226d836	GCA_009796005.1_ASM979600v1_genomic	Clavibacter michiganensis subsp. michiganensis strain CFBP6885 CFBP6885_contig000001, whole genome shotgun sequence

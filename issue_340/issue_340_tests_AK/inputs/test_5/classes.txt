@@ -1,2 +1,0 @@
-c6e847fe9e2086b229788c6c5053d77d	GCA_000011605.1_ASM1160v1_genomic	Erwinia carotovora subsp. atroseptica SCRI1043, complete genome
-e268506c2d7047cad4e0c94b625231f6	GCA_000696465.1_ASM69646v1_genomic	Pectobacterium atrosepticum strain JG10-08, complete genome

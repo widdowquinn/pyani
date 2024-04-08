@@ -1,2 +1,0 @@
-728fd8911b8e6205815931c97dd437df	GCA_023530365.1_ASM2353036v1_genomic	Variola virus strain India 1964 7124 Vellore, complete genome
-ebab40ce95f92e82e715896891963f84	GCA_025630175.1_ASM2563017v1_genomic	Variola virus strain Congo 1970 v70-60, complete genome

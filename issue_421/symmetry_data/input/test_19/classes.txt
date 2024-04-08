@@ -1,2 +1,0 @@
-8317c8cac11ccab5bf52ef0b91cbb1e1	GCA_008801385.1_ASM880138v1_genomic	Agrobacterium tumefaciens strain CCUG 3354 contig_0000001, whole genome shotgun sequence
-ebb70e8a7b3206ebaedb8f770ebf435c	GCA_030811615.1_ASM3081161v1_genomic	Agrobacterium tumefaciens strain CC68 Ga0466843_01, whole genome shotgun sequence

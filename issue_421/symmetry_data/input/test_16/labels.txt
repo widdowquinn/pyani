@@ -1,2 +1,0 @@
-9bf24cce37845fe186437da697090c27	GCA_008801675.1_ASM880167v1_genomic	Pseudomonas aeruginosa strain CCUG 551 contig_0000001, whole genome shotgun sequence
-90da967811b5871002a49595e3882f2f	GCA_024169805.1_ASM2416980v1_genomic	Pseudomonas aeruginosa strain DSM 50071 Ga0454265_01, whole genome shotgun sequence

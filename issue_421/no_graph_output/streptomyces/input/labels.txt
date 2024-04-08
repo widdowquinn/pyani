@@ -1,2 +1,0 @@
-0d3dd52a810604e4aa37880a487d3317	GCF_002802945.1_ASM280294v1_genomic	Streptomyces sp. TSRI0384-2 scaffold1, whole genome shotgun sequence
-4d6a0ef7cc747e7ef588d984b1dc7538	GCF_003369795.1_ASM336979v1_genomic	Streptomyces sp. CB09001 chromosome, complete genome

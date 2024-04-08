@@ -1,2 +1,0 @@
-d90d094ba7654945ac17156759fb2478	GCA_000258845.1_ASM25884v1_genomic	Helicobacter pylori NCTC 11637 = CCUG 17874 = ATCC 43504 = JCM 12093 strain CCUG 17874 Contig1, whole genome shotgun sequence
-0e00868fe219b62d608b8c3d0f6c4a5a	GCA_023024775.1_ASM2302477v1_genomic	Helicobacter pylori strain Hpfe087 Hpfe087.fasta_1, whole genome shotgun sequence
