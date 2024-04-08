@@ -159,7 +159,6 @@ def generate_nucmer_jobs(
     filter_exe: Path = pyani_config.FILTER_DEFAULT,
     maxmatch: bool = False,
     jobprefix: str = "ANINUCmer",
-    logger: Optional[Logger] = None,
 ):
     """Return list of Jobs describing NUCmer command-lines for ANIm.
 
@@ -291,7 +290,6 @@ def construct_nucmer_cmdline(
 
 
 def parse_delta(filename: Path) -> Tuple[int, int, float, int]:
-
     """Return (reference alignment length, query alignment length, average identity, similarity erors)
 
     :param filename: Path to the input .delta file
