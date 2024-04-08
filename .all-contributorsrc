@@ -215,6 +215,17 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "kiepczi",
+      "name": "Angelika Kiepas",
+      "avatar_url": "https://avatars.githubusercontent.com/u/72203476?v=4",
+      "profile": "https://github.com/kiepczi",
+      "contributions": [
+        "code",
+        "design",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -222,5 +233,7 @@
   "projectOwner": "widdowquinn",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitType": "docs",
+  "commitConvention": "angular"
 }
