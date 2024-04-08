@@ -24,17 +24,14 @@
       ]
     },
     {
-      "login": "baileythegreen",
-      "name": "Bailey Harrington",
-      "avatar_url": "https://avatars.githubusercontent.com/u/12277715?v=4",
-      "profile": "https://github.com/baileythegreen",
+      "login": "kiepczi",
+      "name": "Angelika Kiepas",
+      "avatar_url": "https://avatars.githubusercontent.com/u/72203476?v=4",
+      "profile": "https://github.com/kiepczi",
       "contributions": [
         "code",
-        "doc",
         "design",
-        "ideas",
-        "infra",
-        "tool"
+        "test"
       ]
     },
     {
@@ -217,14 +214,17 @@
       ]
     },
     {
-      "login": "kiepczi",
-      "name": "Angelika Kiepas",
-      "avatar_url": "https://avatars.githubusercontent.com/u/72203476?v=4",
-      "profile": "https://github.com/kiepczi",
+      "login": "baileythegreen",
+      "name": "Bailey Harrington",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12277715?v=4",
+      "profile": "https://github.com/baileythegreen",
       "contributions": [
         "code",
+        "doc",
         "design",
-        "test"
+        "ideas",
+        "infra",
+        "tool"
       ]
     }
   ],
