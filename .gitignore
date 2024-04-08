@@ -45,6 +45,9 @@ C_blochmannia*/
 classes_pyani.pdf
 packages_pyani.pdf
 
+# Issue development output
+issue_*/
+
 # SGE output
 stderr/
 stdout/
