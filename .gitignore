@@ -44,6 +44,9 @@ tests/test_JSpecies/pyani_3_species/
 C_blochmannia*/
 classes_pyani.pdf
 packages_pyani.pdf
+fix_palette_output/
+new_anim_tests_output/
+new_anim_tests
 
 # Issue development output
 issue_*/
@@ -76,3 +79,8 @@ venv-*
 # Extra documentation output
 classes_pyani.pdf
 packages_pyani.pdf
+api/
+
+# Extraneous .dtd files
+uilist.dtd
+esummary_assembly.dtd
