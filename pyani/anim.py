@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2016-2019
-# (c) University of Strathclyde 2019-2021
+# (c) University of Strathclyde 2019-2024
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -17,7 +17,7 @@
 # The MIT License
 #
 # Copyright (c) 2016-2019 The James Hutton Institute
-# Copyright (c) 2019-2021 University of Strathclyde
+# Copyright (c) 2019-2024 University of Strathclyde
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,8 @@ import re
 import shutil
 import subprocess
 import sys
+import intervaltree
+from collections import defaultdict
 
 from logging import Logger
 from pathlib import Path
@@ -170,11 +172,14 @@ def generate_nucmer_jobs(
     Loop over all FASTA files, generating Jobs describing NUCmer command lines
     for each pairwise comparison.
     """
+    logger = logging.getLogger(__name__)
+
     ncmds, fcmds = generate_nucmer_commands(
         filenames, outdir, nucmer_exe, filter_exe, maxmatch
     )
     joblist = []
     for idx, ncmd in enumerate(ncmds):
+        logger.info("Working with nucmer command: %s" % ncmd)
         njob = pyani_jobs.Job(f"{jobprefix}_{idx:06d}-n", ncmd)
         fjob = pyani_jobs.Job(f"{jobprefix}_{idx:06d}-f", fcmds[idx])
         fjob.add_dependency(njob)
@@ -212,11 +217,21 @@ def generate_nucmer_commands(
     filenames = sorted(filenames)  # enforce ordering of filenames
     for idx, fname1 in enumerate(filenames[:-1]):
         for fname2 in filenames[idx + 1 :]:
+
+            # Comparisions A_vs_B
             ncmd, dcmd = construct_nucmer_cmdline(
                 fname1, fname2, outdir, nucmer_exe, filter_exe, maxmatch
             )
             nucmer_cmdlines.append(ncmd)
             delta_filter_cmdlines.append(dcmd)
+
+            # Comparions B_vs_A
+            ncmd_rvs, dcmd_rvs = construct_nucmer_cmdline(
+                fname2, fname1, outdir, nucmer_exe, filter_exe, maxmatch
+            )
+            nucmer_cmdlines.append(ncmd_rvs)
+            delta_filter_cmdlines.append(dcmd_rvs)
+
     return (nucmer_cmdlines, delta_filter_cmdlines)
 
 
@@ -248,7 +263,7 @@ def construct_nucmer_cmdline(
     outdir, called "nucmer_output".
     """
     # Cast path strings to pathlib.Path for safety
-    fname1, fname2 = sorted([Path(fname1), Path(fname2)])
+    fname1, fname2 = [Path(fname1), Path(fname2)]
 
     # Compile commands
     # Nested output folders to avoid N^2 scaling in files-per-folder
@@ -274,21 +289,15 @@ def construct_nucmer_cmdline(
     return (nucmercmd, filtercmd)
 
 
-# Parse NUCmer delta file to get total alignment length and total sim_errors
-def parse_delta(filename: Path) -> Tuple[int, int]:
-    """Return (alignment length, similarity errors) tuple from passed .delta.
+def parse_delta(filename: Path) -> Tuple[int, int, float, int]:
+    """Return (reference alignment length, query alignment length, average identity, similarity erors)
 
-    :param filename:  Path, path to the input .delta file
+    :param filename: Path to the input .delta file
 
-    Extracts the aligned length and number of similarity errors for each
-    aligned uniquely-matched region, and returns the cumulative total for
-    each as a tuple.
+    Calculates the aligned lengths for reference and query and average nucleotide
+    identity, and returns the cumulative total for each as a tuple.
 
-    Similarity errors are defined in the .delta file spec (see below) as
-    non-positive match scores. For NUCmer output, this is identical to the
-    number of errors (non-identities and indels).
-
-    Delta file format has seven numbers in the lines of interest:
+    The delta file format contains seven numbers in the lines of interest:
     see http://mummer.sourceforge.net/manual/ for specification
 
     - start on query
@@ -300,49 +309,106 @@ def parse_delta(filename: Path) -> Tuple[int, int]:
         [NOTE: with PROmer this is equal to error count]
     - stop codons (always zero for nucmer)
 
-    To calculate alignment length, we take the length of the aligned region of
-    the reference (no gaps), and process the delta information. This takes the
-    form of one value per line, following the header sequence. Positive values
-    indicate an insertion in the reference; negative values a deletion in the
-    reference (i.e. an insertion in the query). The total length of the alignment
-    is then:
+    We report ANIm identity by finding an average across all alignments using
+    the following formula:
 
-    reference_length + insertions - deletions
+    sum of weighted identical bases / sum of aligned bases from each fragment
 
     For example:
 
-    A = ABCDACBDCAC$
-    B = BCCDACDCAC$
-    Delta = (1, -3, 4, 0)
-    A = ABC.DACBDCAC$
-    B = .BCCDAC.DCAC$
+    reference.fasta query.fasta
+    NUCMER
+    >ref_seq_A ref_seq_B 40 40
+    1 10 1 11 5 5 0
+    -1
+    0
+    15 20 25 30 0 0 0
 
-    A is the reference and has length 11. There are two insertions (positive delta),
-    and one deletion (negative delta). Alignment length is then 11 + 1 = 12.
+    The delta file tells us there are two alignments. The first alignment runs from base 1
+    to base 10 in the reference sequence, and from base 1 to 11 in the query sequence
+    with a similarity error of 5. The second alignment runs from base 15 to 20 in
+    the reference, and base 25 to 30 in the query with 0 similarity errors. To calculate
+    the %ID, we can:
+
+    - Find the number of all aligned bases from each sequence:
+    aligned reference bases region 1 = 10 - 1 + 1 = 10
+    aligned query bases region 1 = 11 - 1 + 1 = 11
+    aligned reference bases region 2 = 20 - 15 + 1 = 6
+    aligned query bases region 2 = 30 - 25 + 1 = 6
+
+    - Find weighted identical bases
+    alignment 1 identity weighted = (10 + 11) - (2 * 5) = 11
+    alignment 2 identity weighted = (6 + 6) - (2 * 0) = 12
+
+    - Calculate %ID
+    (11 + 12) / (10 + 11 + 6 + 6) = 0.696969696969697
+
+    To calculate alignment lengths, we extract the regions of each alignment
+    (either for query or reference) provided in the .delta file and merge the overlapping
+    regions with IntervalTree. Then, we calculate the total sum of all aligned regions.
     """
-    in_aln, aln_length, sim_errors = False, 0, 0
+
+    current_ref, current_qry, raln_length, qaln_length, sim_error, avrg_ID = (
+        None,
+        None,
+        0,
+        0,
+        0,
+        0.0,
+    )
+
+    regions_ref = defaultdict(list)  # Hold a dictionary for query regions
+    regions_qry = defaultdict(list)  # Hold a dictionary for query regions
+
+    aligned_bases = []  # Hold a list for aligned bases for each sequence
+    weighted_identical_bases = []  # Hold a list for weighted identical bases
+
     for line in [_.strip().split() for _ in filename.open("r").readlines()]:
-        if line[0] == "NUCMER" or line[0].startswith(">"):  # Skip headers
+        if line[0] == "NUCMER":  # Skip headers
             continue
+        # Lines starting with ">" indicate which sequences are aligned
+        if line[0].startswith(">"):
+            current_ref = line[0].strip(">")
+            current_qry = line[1]
         # Lines with seven columns are alignment region headers:
         if len(line) == 7:
-            aln_length += abs(int(line[1]) - int(line[0])) + 1  # reference length
-            sim_errors += int(line[4])  # count of non-identities and indels
-            in_aln = True
-        # Lines with a single column (following a header) report numbers of symbols
-        # until next insertion (+ve) or deletion (-ve) in the reference; one line per
-        # insertion/deletion; the alignment always ends with 0
-        if in_aln and line[0].startswith("0"):
-            in_aln = False
-        elif in_aln:
-            # Add one to the alignment length for each reference insertion; subtract
-            # one for each deletion
-            val = int(line[0])
-            if val < 1:  # deletion in reference
-                aln_length += 1
-            elif val == 0:  # ends the alignment entry
-                in_aln = False
-    return aln_length, sim_errors
+            # Obtaining aligned regions needed to check for overlaps
+            regions_ref[current_ref].append(
+                tuple(sorted(list([int(line[0]), int(line[1])])))
+            )  # aligned regions reference
+            regions_qry[current_qry].append(
+                tuple(sorted(list([int(line[2]), int(line[3])])))
+            )  # aligned regions qry
+
+            # Calculate aligned bases for each sequence
+            ref_aln_lengths = abs(int(line[1]) - int(line[0])) + 1
+            qry_aln_lengths = abs(int(line[3]) - int(line[2])) + 1
+            aligned_bases.append(ref_aln_lengths)
+            aligned_bases.append(qry_aln_lengths)
+
+            # Calculate weighted identical bases
+            sim_error += int(line[4])
+            weighted_identical_bases.append(
+                (ref_aln_lengths + qry_aln_lengths) - (2 * int(line[4]))
+            )
+
+    # Calculate average %ID
+    avrg_ID = sum(weighted_identical_bases) / sum(aligned_bases)
+
+    # Calculate total aligned bases (no overlaps)
+    for seq_id in regions_qry:
+        qry_tree = intervaltree.IntervalTree.from_tuples(regions_qry[seq_id])
+        qry_tree.merge_overlaps(strict=False)
+        for interval in qry_tree:
+            qaln_length += interval.end - interval.begin + 1
+
+    for seq_id in regions_ref:
+        ref_tree = intervaltree.IntervalTree.from_tuples(regions_ref[seq_id])
+        ref_tree.merge_overlaps(strict=False)
+        for interval in ref_tree:
+            raln_length += interval.end - interval.begin + 1
+
+    return (raln_length, qaln_length, avrg_ID, sim_error)
 
 
 # Parse all the .delta files in the passed directory
@@ -406,30 +472,25 @@ def process_deltadir(
                     deltafile,
                 )
             continue
-        tot_length, tot_sim_error = parse_delta(deltafile)
-        if tot_length == 0 and logger is not None:
+        (
+            query_tot_length,
+            subject_tot_length,
+            weighted_identity,
+            tot_sim_error,
+        ) = parse_delta(deltafile)
+        if subject_tot_length == 0 and logger is not None:
             if logger:
                 logger.warning(
                     "Total alignment length reported in %s is zero!", deltafile
                 )
             sys.exit("Zero length alignment!")
-        query_cover = float(tot_length) / org_lengths[qname]
-        sbjct_cover = float(tot_length) / org_lengths[sname]
-
-        # Calculate percentage ID of aligned length. This may fail if
-        # total length is zero.
-        # The ZeroDivisionError that would arise should be handled
-        # Common causes are that a NUCmer run failed, or that a very
-        # distant sequence was included in the analysis.
-        try:
-            perc_id = 1 - float(tot_sim_error) / tot_length
-        except ZeroDivisionError:
-            perc_id = 0  # set arbitrary value of zero identity
-            results.zero_error = True
+        query_cover = float(query_tot_length) / org_lengths[qname]
+        sbjct_cover = float(subject_tot_length) / org_lengths[sname]
+        perc_id = weighted_identity
 
         # Populate dataframes: when assigning data from symmetrical MUMmer
         # output, both upper and lower triangles will be populated
-        results.add_tot_length(qname, sname, tot_length)
+        results.add_tot_length(qname, sname, query_tot_length, subject_tot_length)
         results.add_sim_errors(qname, sname, tot_sim_error)
         results.add_pid(qname, sname, perc_id)
         results.add_coverage(qname, sname, query_cover, sbjct_cover)

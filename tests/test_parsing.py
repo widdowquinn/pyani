@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # (c) The James Hutton Institute 2017-2019
-# (c) The University of Strathclude 2019-2020
+# (c) The University of Strathclude 2019-2024
 # Author: Leighton Pritchard
 #
 # Contact:
@@ -19,7 +19,7 @@
 # The MIT License
 #
 # Copyright (c) 2017-2019 The James Hutton Institute
-# (c) The University of Strathclude 2019-2020
+# Copyright (c) 2029-2024 The University of Strathclude
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -46,9 +46,19 @@ pytest -v
 """
 
 from pyani.anim import parse_delta
+import unittest
 
 
 def test_anim_delta(dir_anim_in):
-    """Test parsing of NUCmer delta file."""
-    aln, sim = parse_delta(dir_anim_in / "NC_002696_vs_NC_011916.delta")
-    assert (aln, sim) == (4074148, 2191)
+    """Test parsing of NUCmer delta file.
+
+    We expect (reference alignment length, query alignment
+    length, weighted average identity, and similarity error
+    count)
+    """
+    # TODO: allow for rounding error in the returned percentage
+    #       identity (this may vary depending on machine/Python
+    #       version)
+    assert (4016947, 4017751, 0.9994621994447228, 2191) == parse_delta(
+        dir_anim_in / "NC_002696_vs_NC_011916.delta"
+    )

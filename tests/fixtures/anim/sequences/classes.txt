@@ -1,0 +1,4 @@
+f19cb07198a41a4406a22b2f57a6b5e7	NC_002696	gi|16124256|ref|NC_002696.2| Caulobacter crescentus CB15 chromosome, complete genome
+073194224aa8c13bebc1d14a3e74a3e7	NC_010338	Caulobacter sp. K31 chromosome, complete genome
+9d72a8fb513cf9cc8cc6605a0ad4e837	NC_011916	Caulobacter crescentus NA1000, complete genome
+9a9e23bfc5a184b8149e07e267d133b0	NC_014100	Caulobacter segnis ATCC 21756 chromosome, complete genome
