@@ -123,14 +123,20 @@ def get_version(blast_exe: Path = pyani_config.BLASTN_DEFAULT) -> str:
 
     The following circumstances are explicitly reported as strings
 
+    - a value of None given for the executable
     - no executable at passed path
     - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
     - no version info returned
     """
 
     try:
-        blastn_path = Path(shutil.which(blast_exe))  # type:ignore
-
+        # Returns a TypeError if `blast_exe` is None
+        try:
+            blastn_path = shutil.which(blast_exe)  # type:ignore
+        except TypeError:
+            return f"expected path to blastn executable; received {blast_exe}"
+        # Returns a TypeError if `blastn_path` is not on the PATH
+        blastn_path = Path(blastn_path)
     except TypeError:
         return f"{blast_exe} is not found in $PATH"
 
@@ -417,7 +423,7 @@ def generate_blastn_commands(
 
     :param filenames:  a list of paths to fragmented input FASTA files
     :param outdir:  path to output directory
-    :param blastn_exe:  path to BLASTN executable
+    :param blast_exe:  path to BLASTN executable
     :param mode:  str, analysis type (ANIb or ANIblastall)
 
     Assumes that the fragment sequence input filenames have the form
@@ -452,18 +458,18 @@ def construct_blastn_cmdline(
     fname1: Path,
     fname2: Path,
     outdir: Path,
-    blastn_exe: Path = pyani_config.BLASTN_DEFAULT,
+    blast_exe: Path = pyani_config.BLASTN_DEFAULT,
 ) -> str:
     """Return a single blastn command.
 
     :param fname1:
     :param fname2:
     :param outdir:
-    :param blastn_exe:  str, path to blastn executable
+    :param blast_exe:  str, path to blastn executable
     """
     prefix = outdir / f"{fname1.stem.replace('-fragments', '')}_vs_{fname2.stem}"
     return (
-        f"{blastn_exe} -out {prefix}.blast_tab -query {fname1} -db {fname2} "
+        f"{blast_exe} -out {prefix}.blast_tab -query {fname1} -db {fname2} "
         "-xdrop_gap_final 150 -dust no -evalue 1e-15 -max_target_seqs 1 -outfmt "
         "'6 qseqid sseqid length mismatch pident nident qlen slen "
         "qstart qend sstart send positive ppos gaps' "

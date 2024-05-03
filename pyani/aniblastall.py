@@ -70,6 +70,7 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
 
     The following circumstances are explicitly reported as strings
 
+    - a value of None given for the executable
     - no executable at passed path
     - non-executable file at passed path (this includes cases where the user doesn't have execute permissions on the file)
     - no version info returned
@@ -78,7 +79,13 @@ def get_version(blast_exe: Path = pyani_config.BLASTALL_DEFAULT) -> str:
     logger = logging.getLogger(__name__)
 
     try:
-        blastall_path = Path(shutil.which(blast_exe))  # type:ignore
+        # Returns a TypeError if `blast_exe` is None
+        try:
+            blastall_path = shutil.which(blast_exe)  # type:ignore
+        except TypeError:
+            return f"expected path to blastall executable; received {blast_exe}"
+        # Returns a TypeError if `blastall_path` is not on the PATH
+        blastall_path = Path(blastall_path)
     except TypeError:
         return f"{blast_exe} is not found in $PATH"
 

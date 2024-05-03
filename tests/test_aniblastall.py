@@ -57,34 +57,45 @@ def test_get_version_nonetype():
     test_file_0 = None
 
     assert (
-        aniblastall.get_version(test_file_0) == f"{test_file_0} is not found in $PATH"
+        aniblastall.get_version(test_file_0)
+        == f"expected path to blastall executable; received {test_file_0}"
     )
 
 
-# Test case 1: there is no executable
+# Test case 1: no such file exists
+def test_get_version_random_string():
+    """Test behaviour when the given 'file' is not one."""
+    test_file_1 = "string"
+
+    assert (
+        aniblastall.get_version(test_file_1) == f"{test_file_1} is not found in $PATH"
+    )
+
+
+# Test case 2: there is no executable
 def test_get_version_missing_exe(executable_missing):
     """Test behaviour when there is no file at the specified executable location."""
-    test_file_1 = Path("/non/existent/blastall")
-    assert aniblastall.get_version(test_file_1) == f"No blastall at {test_file_1}"
+    test_file_2 = Path("/non/existent/blastall")
+    assert aniblastall.get_version(test_file_2) == f"No blastall at {test_file_2}"
 
 
-# Test case 2: there is a file, but it is not executable
+# Test case 3: there is a file, but it is not executable
 def test_get_version_not_executable(executable_not_executable):
     """Test behaviour when the file at the executable location is not executable."""
-    test_file_2 = Path("/non/executable/blastall")
+    test_file_3 = Path("/non/executable/blastall")
     assert (
-        aniblastall.get_version(test_file_2)
-        == f"blastall exists at {test_file_2} but not executable"
+        aniblastall.get_version(test_file_3)
+        == f"blastall exists at {test_file_3} but not executable"
     )
 
 
-# Test case 3: there is an executable file, but the version can't be retrieved
+# Test case 4: there is an executable file, but the version can't be retrieved
 def test_get_version_no_version(executable_without_version):
     """Test behaviour when the version for the executable can not be retrieved."""
-    test_file_3 = Path("/missing/version/blastall")
+    test_file_4 = Path("/missing/version/blastall")
     assert (
-        aniblastall.get_version(test_file_3)
-        == f"blastall exists at {test_file_3} but could not retrieve version"
+        aniblastall.get_version(test_file_4)
+        == f"blastall exists at {test_file_4} but could not retrieve version"
     )
 
 
