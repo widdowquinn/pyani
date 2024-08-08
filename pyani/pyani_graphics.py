@@ -67,14 +67,13 @@ from . import pyani_config  # noqa: E402
 
 
 # Register Matplotlib colourmaps
-plt.register_cmap(cmap=pyani_config.CMAP_SPBND_BURD)
-plt.register_cmap(cmap=pyani_config.CMAP_HADAMARD_BURD)
-plt.register_cmap(cmap=pyani_config.CMAP_BURD)
+plt.colormaps.register(cmap=pyani_config.CMAP_SPBND_BURD)
+plt.colormaps.register(cmap=pyani_config.CMAP_HADAMARD_BURD)
+plt.colormaps.register(cmap=pyani_config.CMAP_BURD)
 
 
 # Convenience class to hold heatmap graphics parameters
 class Params(object):  # pylint: disable=too-few-public-methods
-
     """Convenience class to hold heatmap rendering parameters."""
 
     def __init__(self, params, labels=None, classes=None):
@@ -116,9 +115,7 @@ def get_seaborn_colorbar(dfr, classes):
         lvl: pal
         for (lvl, pal) in zip(
             levels,
-            sns.cubehelix_palette(
-                len(levels), light=0.9, dark=0.1, reverse=True, start=1, rot=-2
-            ),
+            sns.cubehelix_palette(len(levels), light=0.9, dark=0.1, reverse=True, start=1, rot=-2),
         )
     }
     lvl_pal = {cls: paldict[lvl] for (cls, lvl) in list(classes.items())}
@@ -326,9 +323,7 @@ def add_mpl_colorscale(fig, heatmap_gs, ax_map, params, title=None):
         exponent = int(floor(log10(params.vmax))) - 1
         cbticks = [int(round(e, -exponent)) for e in cbticks]
 
-    scale_subplot = gridspec.GridSpecFromSubplotSpec(
-        1, 3, subplot_spec=heatmap_gs[0, 0], wspace=0.0, hspace=0.0
-    )
+    scale_subplot = gridspec.GridSpecFromSubplotSpec(1, 3, subplot_spec=heatmap_gs[0, 0], wspace=0.0, hspace=0.0)
     scale_ax = fig.add_subplot(scale_subplot[0, 1])
     cbar = fig.colorbar(ax_map, scale_ax, ticks=cbticks)
     if title:
@@ -358,9 +353,7 @@ def heatmap_mpl(dfr, outfilename=None, title=None, params=None):
     fig = plt.figure(figsize=(figsize, figsize))
     # if title:
     #     fig.suptitle(title)
-    heatmap_gs = gridspec.GridSpec(
-        2, 2, wspace=0.0, hspace=0.0, width_ratios=[0.3, 1], height_ratios=[0.3, 1]
-    )
+    heatmap_gs = gridspec.GridSpec(2, 2, wspace=0.0, hspace=0.0, width_ratios=[0.3, 1], height_ratios=[0.3, 1])
 
     # Add column and row dendrograms/axes to figure
     coldend = add_mpl_dendrogram(dfr, fig, heatmap_gs, orientation="col")

@@ -62,7 +62,6 @@ from pyani import anib, pyani_files
 
 
 class TestBLASTCmdline(unittest.TestCase):
-
     """Class defining tests of BLAST command-line generation."""
 
     def setUp(self):
@@ -70,9 +69,7 @@ class TestBLASTCmdline(unittest.TestCase):
         self.indir = os.path.join("tests", "test_input", "anib")
         self.outdir = os.path.join("tests", "test_output", "anib")
         self.seqdir = os.path.join("tests", "test_input", "sequences")
-        self.infiles = [
-            os.path.join(self.seqdir, fname) for fname in os.listdir(self.seqdir)
-        ]
+        self.infiles = [os.path.join(self.seqdir, fname) for fname in os.listdir(self.seqdir)]
         self.fraglen = 1000
         self.fmtdboutdir = os.path.join(self.outdir, "formatdb")
         self.fmtdbcmd = " ".join(
@@ -88,15 +85,10 @@ class TestBLASTCmdline(unittest.TestCase):
                 "makeblastdb -dbtype nucl -in",
                 "tests/test_input/sequences/NC_002696.fna",
                 "-title NC_002696 -out",
-                os.path.join(
-                    "tests", "test_output", "anib", "makeblastdb", "NC_002696.fna"
-                ),
+                os.path.join("tests", "test_output", "anib", "makeblastdb", "NC_002696.fna"),
             ]
         )
-        self.blastdbfnames = [
-            os.path.join(self.seqdir, fname)
-            for fname in ("NC_002696.fna", "NC_010338.fna")
-        ]
+        self.blastdbfnames = [os.path.join(self.seqdir, fname) for fname in ("NC_002696.fna", "NC_010338.fna")]
         self.blastdbtgt = [
             (
                 " ".join(
@@ -146,9 +138,7 @@ class TestBLASTCmdline(unittest.TestCase):
         self.blastncmd = " ".join(
             [
                 "blastn -out",
-                os.path.join(
-                    "tests", "test_output", "anib", "NC_002696_vs_NC_010338.blast_tab"
-                ),
+                os.path.join("tests", "test_output", "anib", "NC_002696_vs_NC_010338.blast_tab"),
                 "-query tests/test_input/sequences/NC_002696.fna",
                 "-db tests/test_input/sequences/NC_010338.fna",
                 "-xdrop_gap_final 150 -dust no -evalue 1e-15",
@@ -160,9 +150,7 @@ class TestBLASTCmdline(unittest.TestCase):
         self.blastallcmd = " ".join(
             [
                 "blastall -p blastn -o",
-                os.path.join(
-                    "tests", "test_output", "anib", "NC_002696_vs_NC_010338.blast_tab"
-                ),
+                os.path.join("tests", "test_output", "anib", "NC_002696_vs_NC_010338.blast_tab"),
                 "-i tests/test_input/sequences/NC_002696.fna",
                 "-d tests/test_input/sequences/NC_010338.fna",
                 "-X 150 -q -1 -F F -e 1e-15 -b 1 -v 1 -m 8",
@@ -266,23 +254,19 @@ class TestBLASTCmdline(unittest.TestCase):
             [
                 (
                     "tests/test_output/anib/NC_002696.fna",
-                    "formatdb -p F -i tests/test_output/anib/NC_002696.fna "
-                    + "-t NC_002696",
+                    "formatdb -p F -i tests/test_output/anib/NC_002696.fna " + "-t NC_002696",
                 ),
                 (
                     "tests/test_output/anib/NC_010338.fna",
-                    "formatdb -p F -i tests/test_output/anib/NC_010338.fna "
-                    + "-t NC_010338",
+                    "formatdb -p F -i tests/test_output/anib/NC_010338.fna " + "-t NC_010338",
                 ),
                 (
                     "tests/test_output/anib/NC_011916.fna",
-                    "formatdb -p F -i tests/test_output/anib/NC_011916.fna "
-                    + "-t NC_011916",
+                    "formatdb -p F -i tests/test_output/anib/NC_011916.fna " + "-t NC_011916",
                 ),
                 (
                     "tests/test_output/anib/NC_014100.fna",
-                    "formatdb -p F -i tests/test_output/anib/NC_014100.fna "
-                    + "-t NC_014100",
+                    "formatdb -p F -i tests/test_output/anib/NC_014100.fna " + "-t NC_014100",
                 ),
             ]
         )
@@ -293,65 +277,49 @@ class TestBLASTCmdline(unittest.TestCase):
     @nottest  #  legacy BLAST deprecated
     def test_formatdb_generation(self):
         """generate formatdb command-line."""
-        cmd = anib.construct_formatdb_cmd(
-            os.path.join(self.seqdir, "NC_002696.fna"), self.fmtdboutdir
-        )
+        cmd = anib.construct_formatdb_cmd(os.path.join(self.seqdir, "NC_002696.fna"), self.fmtdboutdir)
         assert_equal(cmd[0], self.fmtdbcmd)  # correct command
         assert os.path.isfile(cmd[1])  # creates new file
 
     def test_makeblastdb_generation(self):
         """generate makeblastdb command-line."""
-        cmd = anib.construct_makeblastdb_cmd(
-            os.path.join(self.seqdir, "NC_002696.fna"), self.makeblastdbdir
-        )
+        cmd = anib.construct_makeblastdb_cmd(os.path.join(self.seqdir, "NC_002696.fna"), self.makeblastdbdir)
         assert_equal(cmd[0], self.makeblastdbcmd)  # correct command
 
     def test_blastdb_commands(self):
         """generate BLAST+ db commands."""
         # BLAST+
-        cmds = anib.generate_blastdb_commands(
-            self.blastdbfnames, self.outdir, mode="ANIb"
-        )
+        cmds = anib.generate_blastdb_commands(self.blastdbfnames, self.outdir, mode="ANIb")
         assert_equal(cmds, self.blastdbtgt)
 
     @nottest  #  legacy BLAST deprecated
     def test_legacy_blastdb_commands(self):
         """generate legacy BLAST db commands."""
         # legacy
-        cmds = anib.generate_blastdb_commands(
-            self.blastdbfnames, self.outdir, mode="ANIblastall"
-        )
+        cmds = anib.generate_blastdb_commands(self.blastdbfnames, self.outdir, mode="ANIblastall")
         assert_equal(cmds, self.blastdbtgtlegacy)
 
     def test_blastn_generation(self):
         """generate BLASTN+ command-line."""
-        cmd = anib.construct_blastn_cmdline(
-            self.blastdbfnames[0], self.blastdbfnames[1], self.outdir
-        )
+        cmd = anib.construct_blastn_cmdline(self.blastdbfnames[0], self.blastdbfnames[1], self.outdir)
         assert_equal(cmd, self.blastncmd)
 
     @nottest  #  legacy BLAST deprecated
     def test_blastall_generation(self):
         """generate legacy BLASTN command-line."""
-        cmd = anib.construct_blastall_cmdline(
-            self.blastdbfnames[0], self.blastdbfnames[1], self.outdir
-        )
+        cmd = anib.construct_blastall_cmdline(self.blastdbfnames[0], self.blastdbfnames[1], self.outdir)
         assert_equal(cmd, self.blastallcmd)
 
     def test_blastn_commands(self):
         """generate BLASTN+ commands."""
         # BLAST+
-        cmds = anib.generate_blastn_commands(
-            self.blastdbfnames, self.outdir, mode="ANIb"
-        )
+        cmds = anib.generate_blastn_commands(self.blastdbfnames, self.outdir, mode="ANIb")
         assert_equal(cmds, self.blastntgt)
 
     @nottest  #  legacy BLAST deprecated
     def test_legacy_blastn_commands(self):
         """generate legacy BLASTN commands."""
-        cmds = anib.generate_blastn_commands(
-            self.blastdbfnames, self.outdir, mode="ANIblastall"
-        )
+        cmds = anib.generate_blastn_commands(self.blastdbfnames, self.outdir, mode="ANIblastall")
         assert_equal(cmds, self.blastalltgt)
 
     @nottest  #  legacy BLAST deprecated
@@ -359,17 +327,13 @@ class TestBLASTCmdline(unittest.TestCase):
         """generate dictionary of legacy BLASTN database jobs."""
         blastcmds = anib.make_blastcmd_builder("ANIblastall", self.outdir)
         jobdict = anib.build_db_jobs(self.infiles, blastcmds)
-        assert_equal(
-            sorted([(k, v.script) for (k, v) in jobdict.items()]), self.blastalljobdict
-        )
+        assert_equal(sorted([(k, v.script) for (k, v) in jobdict.items()]), self.blastalljobdict)
 
     def test_blastn_dbjobdict(self):
         """generate dictionary of BLASTN+ database jobs."""
         blastcmds = anib.make_blastcmd_builder("ANIb", self.outdir)
         jobdict = anib.build_db_jobs(self.infiles, blastcmds)
-        assert_equal(
-            sorted([(k, v.script) for (k, v) in jobdict.items()]), self.blastnjobdict
-        )
+        assert_equal(sorted([(k, v.script) for (k, v) in jobdict.items()]), self.blastnjobdict)
 
     def test_blastn_graph(self):
         """create jobgraph for BLASTN+ jobs."""
@@ -400,7 +364,6 @@ class TestBLASTCmdline(unittest.TestCase):
 
 
 class TestFragments(unittest.TestCase):
-
     """Class defining tests of ANIb FASTA fragmentation"""
 
     def setUp(self):
@@ -442,7 +405,6 @@ class TestFragments(unittest.TestCase):
 
 
 class TestParsing(unittest.TestCase):
-
     """Class defining tests of BLAST output parsing."""
 
     def setUp(self):
@@ -502,9 +464,7 @@ class TestParsing(unittest.TestCase):
         result = anib.parse_blast_tab(self.fname, fragdata, 0.3, 0.7, mode="ANIb")
         assert_equal(result, (4016551, 93, 99.997693577050029))
         # ANIblastall output
-        result = anib.parse_blast_tab(
-            self.fname_legacy, fragdata, 0.3, 0.7, mode="ANIblastall"
-        )
+        result = anib.parse_blast_tab(self.fname_legacy, fragdata, 0.3, 0.7, mode="ANIblastall")
         assert_equal(result, (1966922, 406104, 78.578978313253018))
 
     def test_blastdir_processing(self):
@@ -514,8 +474,8 @@ class TestParsing(unittest.TestCase):
         # ANIb
         result = anib.process_blast(self.anibdir, orglengths, fraglengths, mode="ANIb")
         assert_frame_equal(
-            result.percentage_identity.sort_index(1).sort_index(),
-            self.anibtgt.sort_index(1).sort_index(),
+            result.percentage_identity.sort_index(axis=1).sort_index(),
+            self.anibtgt.sort_index(axis=1).sort_index(),
         )
 
     @nottest  #  legacy BLAST deprecated
@@ -524,9 +484,7 @@ class TestParsing(unittest.TestCase):
         orglengths = pyani_files.get_sequence_lengths(self.infnames)
         fraglengths = anib.get_fraglength_dict(self.fragfiles)
         # ANIblastall
-        result = anib.process_blast(
-            self.aniblastalldir, orglengths, fraglengths, mode="ANIblastall"
-        )
+        result = anib.process_blast(self.aniblastalldir, orglengths, fraglengths, mode="ANIblastall")
         assert_frame_equal(
             result.percentage_identity.sort_index(1).sort_index(),
             self.aniblastalltgt.sort_index(1).sort_index(),

@@ -41,7 +41,7 @@ sge : clean test_sge
 
 ANIm :
 	@echo "Testing ANIm analysis..."
-	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_M) \
+	average_nucleotide_identity.py -i $(DATA) -o $(OUT_M) \
 	  -m ANIm --classes $(CLASSES) --labels $(LABELS) -g -v \
 	  $(LAZYMUMMER) --gformat $(GFORMAT) --gmethod $(GMETHOD)
 	@echo "ANIm analysis test done"
@@ -49,7 +49,7 @@ ANIm :
 
 ANIm_sge :
 	@echo "Testing ANIm analysis with SGE..."
-	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_M) \
+	average_nucleotide_identity.py -i $(DATA) -o $(OUT_M) \
 	  -m ANIm --classes $(CLASSES) --labels $(LABELS) -g -v \
 	  --scheduler SGE $(LAZYMUMMER) --gformat $(GFORMAT)\
 	  --gmethod $(GMETHOD)
@@ -58,7 +58,7 @@ ANIm_sge :
 
 ANIb :
 	@echo "Testing ANIb analysis..."
-	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_B) \
+	average_nucleotide_identity.py -i $(DATA) -o $(OUT_B) \
 	  -m ANIb --classes $(CLASSES) --labels $(LABELS) -g -v \
 	  $(LAZYBLAST) --gformat $(GFORMAT) --gmethod $(GMETHOD)
 	@echo "ANIb analysis test done"
@@ -66,7 +66,7 @@ ANIb :
 
 ANIb_sge :
 	@echo "Testing ANIb analysis with SGE..."
-	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_B) \
+	average_nucleotide_identity.py -i $(DATA) -o $(OUT_B) \
 	  -m ANIb --classes $(CLASSES) --labels $(LABELS) -g -v \
 	  --scheduler SGE $(LAZYBLAST) --gformat $(GFORMAT) \
 	  --gmethod $(GMETHOD)
@@ -83,7 +83,7 @@ ANIblastall :
 
 ANIblastall_sge :
 	@echo "Testing ANIblastall analysis with SGE..."
-	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_BLASTALL) \
+	average_nucleotide_identity.py -i $(DATA) -o $(OUT_BLASTALL) \
 	  -m ANIblastall --classes $(CLASSES) --labels $(LABELS) -g -v \
 	  --scheduler SGE $(LAZYBLAST) --gformat $(GFORMAT)
 	  --gmethod $(GMETHOD)
@@ -94,7 +94,7 @@ BLAST : ANIb ANIblastall
 
 TETRA :
 	@echo "Testing TETRA analysis..."
-	./average_nucleotide_identity.py -i $(DATA) -o $(OUT_TETRA) \
+	average_nucleotide_identity.py -i $(DATA) -o $(OUT_TETRA) \
 	  -m TETRA --classes $(CLASSES) --labels $(LABELS) -g -v \
 	  $(LAZYTETRA) --gformat $(GFORMAT) --gmethod $(GMETHOD)
 	@echo "TETRA analysis test done"

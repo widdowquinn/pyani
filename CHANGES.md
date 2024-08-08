@@ -1,5 +1,10 @@
 # CHANGES.md
 
+## v0.2.0.13
+
+- fix pandas API call: sort_index() now requires the axis keyword
+- change deprecated matplotlib register_colormap() to matplotlib.colormaps.register()
+
 ## v0.2.12
 
 - fix Issue #177: input filenames that contain an open or a closed parenthesis produce the message: 'WARNING: At least one BLAST run failed. ANIb may fail.'

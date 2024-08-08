@@ -63,7 +63,6 @@ from pyani import anim, pyani_files
 
 
 class TestNUCmerCmdline(unittest.TestCase):
-
     """Class defining tests of NUCmer command-line generation."""
 
     def setUp(self):
@@ -152,16 +151,12 @@ class TestNUCmerCmdline(unittest.TestCase):
         Tests that a single NUCmer/delta-filter command-line pair is
         produced correctly
         """
-        cmds = anim.construct_nucmer_cmdline(
-            "file1.fna", "file2.fna", outdir=self.outdir
-        )
+        cmds = anim.construct_nucmer_cmdline("file1.fna", "file2.fna", outdir=self.outdir)
         assert_equal(cmds, (self.ntgt, self.ftgt))
 
     def test_maxmatch_cmd_generation(self):
         """generate NUCmer command line with maxmatch."""
-        ncmd, fcmd = anim.construct_nucmer_cmdline(
-            "file1.fna", "file2.fna", outdir=self.outdir, maxmatch=True
-        )
+        ncmd, fcmd = anim.construct_nucmer_cmdline("file1.fna", "file2.fna", outdir=self.outdir, maxmatch=True)
         assert_equal(ncmd, self.ntgtmax)
 
     def test_multi_cmd_generation(self):
@@ -182,13 +177,10 @@ class TestNUCmerCmdline(unittest.TestCase):
         for idx, job in enumerate(joblist):
             assert_equal(job.name, "test_%06d-f" % idx)  # filter job name
             assert_equal(len(job.dependencies), 1)  # has NUCmer job
-            assert_equal(
-                job.dependencies[0].name, "test_%06d-n" % idx
-            )  # NUCmer job name
+            assert_equal(job.dependencies[0].name, "test_%06d-n" % idx)  # NUCmer job name
 
 
 class TestDeltafileProcessing(unittest.TestCase):
-
     """Class defining tests for .delta/.filter file parsing"""
 
     def setUp(self):
@@ -219,6 +211,6 @@ class TestDeltafileProcessing(unittest.TestCase):
         orglengths = pyani_files.get_sequence_lengths(seqfiles)
         result = anim.process_deltadir(self.deltadir, orglengths)
         assert_frame_equal(
-            result.percentage_identity.sort_index(1).sort_index(),
-            self.df_pid.sort_index(1).sort_index(),
+            result.percentage_identity.sort_index(axis=1).sort_index(),
+            self.df_pid.sort_index(axis=1).sort_index(),
         )
