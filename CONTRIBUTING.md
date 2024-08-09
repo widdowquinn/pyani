@@ -287,7 +287,7 @@ pytest --cov-report=html --cov=pyani -v tests/
 
 When you submit a pull request on GitHub, automated tests will be run, and results reported on the pull request. **All tests must pass before a pull request will be merged.**
 
-We currently use [CircleCI](https://circleci.com/gh/widdowquinn/pyani) to run tests. The configuration file can be found in the repository as `.circleci/config.yml`.
+We currently use [GitHub Actions](https://github.com/widdowquinn/pyani/actions/) to run tests. The configuration file can be found in the repository under `.github/workflows/`.
 
 Currently, `pyani` is tested under Python 3.6 and 3.7, and coverage is reported at [`CodeCov`](https://codecov.io/gh/widdowquinn/pyani/branch/development).
 
