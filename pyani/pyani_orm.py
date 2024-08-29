@@ -307,7 +307,7 @@ class Comparison(Base):
             "Query: {}, Subject: {}, %%ID={}, ({} {}), FragSize: {}, MaxMatch: {}, KmerSize: {}, MinMatch: {}".format(
                 self.query_id,
                 self.subject_id,
-                self.perc_id,
+                self.identity,
                 self.program,
                 self.version,
                 self.fragsize,
