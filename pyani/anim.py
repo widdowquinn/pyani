@@ -112,14 +112,19 @@ def get_version(nucmer_exe: Path = pyani_config.NUCMER_DEFAULT) -> str:
       have execute permissions on the file)
     - no version info returned
     """
-
     try:
-        nucmer_path = Path(shutil.which(nucmer_exe))  # type:ignore
+        # Returns a TypeError if `nucmer_exe` is None
+        try:
+            nucmer_path = shutil.which(nucmer_exe)  # type:ignore
+        except TypeError:
+            return f"expected path to nucmer executable; received {nucmer_exe}"
+        # Returns a TypeError if `nucmer_path` is not on the PATH
+        nucmer_path = Path(nucmer_path)
     except TypeError:
         return f"{nucmer_exe} is not found in $PATH"
 
     if not nucmer_path.is_file():  # no executable
-        return f"No nucmer at {nucmer_path}"
+        return f"No nucmer executable at {nucmer_path}"
 
     # This should catch cases when the file can't be executed by the user
     if not os.access(nucmer_path, os.X_OK):  # file exists but not executable
