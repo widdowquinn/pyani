@@ -310,7 +310,8 @@ def heatmap(dfr, outfilename=None, title=None, params=None):
 
     # Layout figure grid and add title
     # Set figure size by the number of rows in the dataframe
-    figsize = max(8, dfr.shape[0] * 0.175)
+    figsize = max(8, dfr.shape[0] * 0.3)
+
     fig = plt.figure(figsize=(figsize, figsize))
     # if title:
     #     fig.suptitle(title)
@@ -403,6 +404,49 @@ def scatter(
     # Return figure output, and write, if required
     plt.subplots_adjust(top=0.85)  # Leave room for title
     fig.set_layout_engine(layout="tight")
+    if outfilename:
+        fig.savefig(outfilename)
+    return fig
+
+
+def bland_altman(
+    dfr1, dfr2, outfilename, matname1, matname2, title=None, info=None, params=None
+):
+    """Return matplotlib Bland-Altman plot.
+
+    :param dfr1:  pandas DataFrame with x-axis data
+    :param dfr2:  pandas DataFrame with y-axis data
+    :param outfilename:  path to output file (indicates output format)
+    :param matname1:  name of x-axis data
+    :param matname2:  name of y-axis data
+    :param title:  title for the plot
+    :param info:   information about the data in the plot
+    :param params:  a list of parameters for plotting: [colormap, vmin, vmax]
+    """
+    # Make an empty dataframe to collect the input data in
+    data = pd.DataFrame()
+
+    # Add data
+    data["avg"] = (dfr1 + dfr2).values.flatten() / 2
+    data["AminusB"] = (dfr1 - dfr2).values.flatten()
+
+    # Add lable information, if available
+    # if params.labels:
+    #     hue = "labels"
+    #  combined['labels'] =   #  add labels to dataframe; unsure of their configuration at this point
+    # else:
+    hue = None
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    fig.suptitle(f"Bland-Altman plot for {matname1}")
+    ax.set_xlabel(f"Average of run {matname1} scores")
+    ax.set_ylabel(f"Difference between run {matname1} scores")
+
+    plt.scatter("avg", "AminusB", data=data, c=hue, s=2)
+
+    # Return figure output, and write, if required
+    plt.subplots_adjust(top=0.85)  # Leave room for title
+    fig.set_tight_layout(True)
     if outfilename:
         fig.savefig(outfilename)
     return fig
