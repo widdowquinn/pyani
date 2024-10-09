@@ -871,7 +871,11 @@ def process_arguments(args: Optional[Namespace]) -> Namespace:
     shows the version and exits.
     """
     # Catch execution with no arguments
-    if len(sys.argv) == 1:
+    # But only for the `average_nucleotide_identity.py` executable (`pytest` was also being caught here)
+    if (
+        len(sys.argv) == 1
+        and Path(sys.argv[0]).name == "average_nucleotide_identity.py"
+    ):
         sys.stderr.write("pyani version: {0}\n".format(__version__))
         raise SystemExit(0)
 
