@@ -44,6 +44,7 @@ import warnings
 
 from argparse import Namespace
 from typing import List, NamedTuple
+from io import StringIO
 from pathlib import Path
 
 import pandas as pd
@@ -300,7 +301,7 @@ def subcmd_report(args: Namespace) -> int:
                 ]
             ]:
                 logger.debug("Writing %s results", matdata.name)
-                matrix = pd.read_json(matdata.data)
+                matrix = pd.read_json(StringIO(matdata.data))
                 # Matrix rows and columns are labelled if there's a label dictionary,
                 # and take the dataframe index otherwise
                 matrix = label_results_matrix(matrix, matlabel_dict)

@@ -74,7 +74,7 @@ def build_joblist(jobgraph) -> List:
     :param jobgraph:
     """
     logger = logging.getLogger(__name__)
-    
+
     jobset = set()  # type: Set
     for job in jobgraph:
         jobset = populate_jobset(job, jobset, depth=1)
@@ -136,8 +136,7 @@ def run_dependency_graph(
     logger = logging.getLogger(__name__)
 
     logger.debug("Received jobgraph with %d jobs", len(jobgraph))
-    
-    
+
     jobs_main = []  # Can be run first, before deps
     jobs_deps = []  # Depend on the main jobs
 
@@ -273,7 +272,7 @@ def submit_safe_jobs(
     """
     logger = logging.getLogger(__name__)
     logger.debug("Received %s jobs", len(jobs))
-    
+
     # Loop over each job, constructing SGE command-line based on job settings
     for job in jobs:
         job.out = root_dir / "stdout"
