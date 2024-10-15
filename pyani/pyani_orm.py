@@ -635,7 +635,7 @@ def update_comparison_matrices(session, run) -> None:
     # Set appropriate diagonals for each matrix
     np.fill_diagonal(df_identity.values, 1.0)
     np.fill_diagonal(df_coverage.values, 1.0)
-    np.fill_diagonal(df_simerrors.values, 1.0)
+    np.fill_diagonal(df_simerrors.values, 0.0)
     np.fill_diagonal(df_hadamard.values, 1.0)
     for genome in run.genomes.all():
         df_alnlength.loc[genome.genome_id, genome.genome_id] = genome.length
