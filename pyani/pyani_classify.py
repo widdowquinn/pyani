@@ -40,6 +40,7 @@
 """Module providing functions to generate clusters/species hypotheses."""
 
 from typing import Dict, List, NamedTuple, Tuple
+from io import StringIO
 
 import networkx as nx  # type: ignore
 import pandas as pd  # type: ignore
@@ -75,8 +76,12 @@ def build_graph_from_results(
     :param id_min:      - minimum identity for an edge
     """
     # Parse identity and coverage matrices
-    mat_identity = label_results_matrix(pd.read_json(results.df_identity), label_dict)
-    mat_coverage = label_results_matrix(pd.read_json(results.df_coverage), label_dict)
+    mat_identity = label_results_matrix(
+        pd.read_json(StringIO(results.df_identity)), label_dict
+    )
+    mat_coverage = label_results_matrix(
+        pd.read_json(StringIO(results.df_coverage)), label_dict
+    )
 
     node_names = mat_coverage.columns
     rows = []
