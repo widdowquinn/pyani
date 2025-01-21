@@ -1,3 +1,3 @@
 blast
 blast-legacy
-mummer=3.23=h6de7cb9_11
+mummer=3.23
