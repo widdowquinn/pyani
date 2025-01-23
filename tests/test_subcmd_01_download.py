@@ -58,6 +58,7 @@ especially with CI, we mock the download operations.
 """
 
 import logging
+import subprocess
 
 from argparse import Namespace
 from pathlib import Path
@@ -121,6 +122,12 @@ def test_create_hash():
     test_file = "/this/is/not/a/file"
     with assertions.assertRaises(download.PyaniIndexException):
         download.create_hash(test_file)
+
+
+def test_failed_extract_contigs(dir_download_out):
+    """Test for failed extraction of zip file contents."""
+    with assertions.assertRaises(subprocess.CalledProcessError):
+        download.extract_contigs("bad/file.gz", dir_download_out / "bad_location.txt")
 
 
 def test_download_dry_run(dryrun_namespace):
