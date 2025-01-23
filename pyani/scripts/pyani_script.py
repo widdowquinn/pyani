@@ -45,6 +45,7 @@ import time
 import os
 
 from typing import List, Optional
+from pathlib import Path
 
 from pyani.logger import config_logger
 from pyani.pyani_tools import termcolor
@@ -103,8 +104,12 @@ def run_main(argv: Optional[List[str]] = None) -> int:
         sys.stderr.write(f"{VERSION_INFO}\n")
         return 0
 
+    # If the command run is not pyani (e.g., `pytest`, then we
+    # don't want to apply pyani-specific checks)
+    if len(sys.argv) == 1 and Path(sys.argv[0]).name != "pyani":
+        return
     # Catch requests for citation and version information
-    if sys.argv[1].startswith("-"):
+    elif sys.argv[1].startswith("-"):
         if args.citation:
             sys.stderr.write(f"{VERSION_INFO}\n")
             sys.stderr.write("\n".join(CITATION_INFO) + "\n")
